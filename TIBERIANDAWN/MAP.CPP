@@ -1814,7 +1814,9 @@ void MapClass::CFELogic(void){
                         TerrainClass * thisterrain = thiscell->Cell_Terrain();
                         if (thisterrain && thisterrain->Class->IsTiberiumSpawn){
                             VisceroidTreeFrustrationCount++;
-                            if (Random_Pick(0, 99) < VisceroidTreeFrustrationCount + 4){ // 5% chance + 1% per failed try since last spawn
+                            // 5% chance + 1% per failed try since last spawn
+                            // scale odds inversely with growstrength so visceroid spawning stays constant when tib growth is turned up
+                            if (CFE_Patch_FullRange_Random_Pick(0, 99 * growthstrength) < VisceroidTreeFrustrationCount + 4){ 
                                 UnitClass * unit = new UnitClass(UNIT_VICE, HOUSE_JP);
                                 if (unit) {
                                     if (Scan_Place_Object(unit, cell)){
