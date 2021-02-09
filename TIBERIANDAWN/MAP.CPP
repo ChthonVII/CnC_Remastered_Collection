@@ -1816,7 +1816,7 @@ void MapClass::CFELogic(void){
                             VisceroidTreeFrustrationCount++;
                             // 5% chance + 1% per failed try since last spawn
                             // scale odds inversely with growstrength so visceroid spawning stays constant when tib growth is turned up
-                            if (CFE_Patch_FullRange_Random_Pick(0, 99 * growthstrength) < VisceroidTreeFrustrationCount + 4){ 
+                            if (CFE_Patch_FullRange_Random_Pick(0, (100 * growthstrength)-1) < VisceroidTreeFrustrationCount + 4){ 
                                 UnitClass * unit = new UnitClass(UNIT_VICE, HOUSE_JP);
                                 if (unit) {
                                     if (Scan_Place_Object(unit, cell)){
