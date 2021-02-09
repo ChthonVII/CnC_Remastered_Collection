@@ -2443,7 +2443,7 @@ void TechnoClass::AI(void)
 	assert(IsActive);
 
     // Attack Move rework by ChthonVII
-    if (AttackMove /*&& Is_Owned_By_Player()*/ && (What_Am_I() == RTTI_UNIT || What_Am_I() == RTTI_INFANTRY || What_Am_I() == RTTI_AIRCRAFT || What_Am_I() == RTTI_VESSEL)) {
+    if (AttackMove && Strength && (What_Am_I() == RTTI_UNIT || What_Am_I() == RTTI_INFANTRY || What_Am_I() == RTTI_AIRCRAFT || What_Am_I() == RTTI_VESSEL)) {
     
         // special control for boats
         // after shooting for awhile, force a return to moving and don't let them shoot again for awhile
@@ -2996,6 +2996,7 @@ void TechnoClass::Stun(void)
 	Assign_Target(TARGET_NONE);
 	Assign_Destination(TARGET_NONE);
 	Transmit_Message(RADIO_OVER_OUT);
+    ResetAttackMove(); //Chthon CFE Note -- make sure attack-move can't interrupt death animations
 	Detach_All();
 	//Unselect();
 	//When an object is stunned it needs to be deselected from all players, not just the current PlayerPtr.

@@ -1941,7 +1941,7 @@ void TechnoClass::AI(void)
 	DoorClass::AI();
 
     // Attack Move rework by ChthonVII
-    if (AttackMove && (What_Am_I() == RTTI_UNIT || What_Am_I() == RTTI_INFANTRY || What_Am_I() == RTTI_AIRCRAFT)) {
+    if (AttackMove && Strength && (What_Am_I() == RTTI_UNIT || What_Am_I() == RTTI_INFANTRY || What_Am_I() == RTTI_AIRCRAFT)) {
 
         // If something is already targeted, but not in range, try for a closer target
         // But not for aircraft because the result of a constantly retargetting aircraft is disasterous (if comical)
@@ -2304,6 +2304,7 @@ void TechnoClass::Stun(void)
 	Assign_Target(TARGET_NONE);
 	Assign_Destination(TARGET_NONE);
 	Transmit_Message(RADIO_OVER_OUT);
+    ResetAttackMove(); //Chthon CFE Note -- make sure attack-move can't interrupt death animations
 	Detach_All();
 	//Unselect();
 	//When an object is stunned it needs to be deselected from all players, not just the current PlayerPtr.
