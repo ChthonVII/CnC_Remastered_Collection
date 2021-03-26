@@ -723,8 +723,14 @@ void AircraftClass::AI(void)
     if (VeterancyRank == 3 && Altitude == 0 && !IsLanding && !IsTakingOff && Health_Ratio() < 0x0100){
         TechnoClass * tech = Contact_With_Whom();
         if (tech && tech->What_Am_I() == RTTI_BUILDING && *((BuildingClass*)tech) == STRUCT_HELIPAD && ::Distance(Center_Coord(), tech->Docking_Coord()) < 0x0040){
-            int repaircycle = Bound(Fixed_To_Cardinal(TICKS_PER_SECOND, House->Power_Fraction()), 0, TICKS_PER_SECOND);
-            repaircycle = 2*((TICKS_PER_SECOND + (TICKS_PER_SECOND/2)) - repaircycle);
+            //int repaircycle = Bound(Fixed_To_Cardinal(TICKS_PER_SECOND, House->Power_Fraction()), 0, TICKS_PER_SECOND);
+            //repaircycle = 2*((TICKS_PER_SECOND + (TICKS_PER_SECOND/2)) - repaircycle);
+            // Seems this is wrong. The code it's modeled after is #define'd as obsolete
+            // but the power logic that's still in place for the helipads is up to +50% extra time based on power fraction
+            // and the animation cycle for repair bay looks like 14 ticks
+            // so we really want 28 + (0-14 depending on power)
+            int repaircycle = 42 - Bound(Fixed_To_Cardinal(14, House->Power_Fraction()), 0, 14);
+            
             if (Frame % repaircycle == 0){
                 Strength += Class->Repair_Step();
                 if (Strength > Class_Of().MaxStrength){
