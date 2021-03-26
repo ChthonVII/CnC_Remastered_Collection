@@ -92,6 +92,7 @@ struct CFEPatchConfig
 	bool EnableSafeSabotage = false;
     bool EnableSmarterAircraft = false;
     bool EnableSmarterSAMs = false;
+    bool EnableSmarterMammoths = false;
     bool BetterTibGrowth = false;
     bool TSVisceroidSpawn = false;
     bool MeanerVisceroids = false;
@@ -110,7 +111,7 @@ struct CFEPatchConfig
     int  HarvyOptimizeCommunalismWeight = 29;
 	int  TibGrowthScale = 1;
 	int  WallBuildLength = 5;
-    int InverseBuildingPreviewMode = 0; // 0=off; 1= only walls, only in MP, 2 = only walls, 3 = all buildings
+    int InverseBuildingPreviewMode = 0; // 0=off; 1= MP only; 2 = all game modes
     int SmarterSAMAmmo = 2;
     int  SmarterSAMBalanceDelay = 0;
     

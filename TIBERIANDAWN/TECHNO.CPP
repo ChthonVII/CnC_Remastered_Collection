@@ -2254,6 +2254,23 @@ FireErrorType TechnoClass::Can_Fire(TARGET target, int which) const
 		return(FIRE_CANT);
 	}
 
+	// Chthon CFE Note: Make mammoths always use missiles on infantry
+	if (   ActiveCFEPatchConfig.EnableSmarterMammoths &&
+            object &&
+            object->IsActive &&
+            (object->What_Am_I() == RTTI_INFANTRY) &&
+            (What_Am_I() == RTTI_UNIT) &&
+            (*((UnitClass*)this) == UNIT_HTANK) &&
+            (weap == WEAPON_120MM)
+    ){
+        if (In_Range(target, 1, false){
+            return(FIRE_FACING);
+        }
+        else
+            return(FIRE_RANGE);
+    }
+        
+	
 	/*
 	**	Don't allow firing if still rearming.
 	*/
@@ -2469,7 +2486,7 @@ BulletClass * TechnoClass::Fire_At(TARGET target, int which)
  	int firepower = (weapon->Attack > 0) ? ((int)weapon->Attack * FirepowerBias * House->FirepowerBias) : 0;
     
     //Chthon CFE Note: Some rank 3 veteran units do extra damage against certain armor types
-    if (VeterancyRank == 3){
+    if (VeterancyRank == 3 && object && object->Is_Techno()){ // walls don't have armor class, neither does force firing at blank space
         // Minigunners and Humvees get armor-piercing ammo (but only 3/4 as good as real WARHEAD_AP)
         if (   (What_Am_I() == RTTI_INFANTRY && *((InfantryClass*)this) == INFANTRY_E1) ||
                 (What_Am_I() == RTTI_UNIT && *((UnitClass*)this) == UNIT_JEEP)
@@ -2490,6 +2507,9 @@ BulletClass * TechnoClass::Fire_At(TARGET target, int which)
             if (object->Class_Of().Armor == ARMOR_NONE){
                 firepower *= 3.5; // bring damage up as if armor effect were 0.875 instead of 0.25
             }
+            else if (object->Class_Of().Armor == ARMOR_CONCRETE){
+                firepower *= 2; // bring damage up as if armor effect were 1.0 instead of 0.5
+            } 
         }
     }
     
@@ -5195,7 +5215,11 @@ void TechnoClass::GainVeterancyXP(unsigned short int XP){
         
         // defense building bonuses:
         // Guard Tower, Adv. Guard Tower, Obelisk, & SAM Site get +1 range (handled in TechnoClass::Weapon_Range())
-        // Turret becomes a two-shooter
+        // Turret becomes a two-shooter (mostly handled in TechnoClass::Fire_At())
+        else if ( (What_Am_I() == RTTI_BUILDING) && (*((BuildingClass*)this) == STRUCT_TURRET)){
+                IsSecondShot = false; //reset so that next volley will be double
+       }
+        
     }
     // rank up to 2
     else if (VeterancyRank < 2 && VeterancyXP >= 3 * Class_Of().Cost_Of()){
