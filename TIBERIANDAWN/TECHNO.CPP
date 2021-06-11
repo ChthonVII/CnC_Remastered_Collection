@@ -2263,7 +2263,7 @@ FireErrorType TechnoClass::Can_Fire(TARGET target, int which) const
             (*((UnitClass*)this) == UNIT_HTANK) &&
             (weap == WEAPON_120MM)
     ){
-        if (In_Range(target, 1, false){
+        if (In_Range(target, 1, false)){
             return(FIRE_FACING);
         }
         else
@@ -2485,7 +2485,10 @@ BulletClass * TechnoClass::Fire_At(TARGET target, int which)
 	//int firepower = (weapon->Attack > 0) ? ((int)weapon->Attack * House->FirepowerBias) : 0;
  	int firepower = (weapon->Attack > 0) ? ((int)weapon->Attack * FirepowerBias * House->FirepowerBias) : 0;
     
+    /*
     //Chthon CFE Note: Some rank 3 veteran units do extra damage against certain armor types
+    // This has to move to Take_Damage() to avoid doing extra splash damage
+    // That's not a perfect solution either, because projectiles that hit after a veteran unit's death won't get the bonus, but it's less bad
     if (VeterancyRank == 3 && object && object->Is_Techno()){ // walls don't have armor class, neither does force firing at blank space
         // Minigunners and Humvees get armor-piercing ammo (but only 3/4 as good as real WARHEAD_AP)
         if (   (What_Am_I() == RTTI_INFANTRY && *((InfantryClass*)this) == INFANTRY_E1) ||
@@ -2494,10 +2497,9 @@ BulletClass * TechnoClass::Fire_At(TARGET target, int which)
             if (object->Class_Of().Armor == ARMOR_WOOD){
                 firepower *= 1.125; // bring damage up as if armor effect were 0.5625 instead of 0.5
             }
-            /*
-            else if (object->Class_Of().Armor == ARMOR_ALUMINUM){
-                firepower = (firepower * 4)/3; // bring damage up as if armor effect were 0.75 instead of 0.5625
-            }*/
+            //else if (object->Class_Of().Armor == ARMOR_ALUMINUM){
+            //    firepower = (firepower * 4)/3; // bring damage up as if armor effect were 0.75 instead of 0.5625
+            //}
             else if (object->Class_Of().Armor == ARMOR_STEEL){
                 firepower *= 3; // bring damage up as if armor effect were 0.75 instead of 0.25
             }
@@ -2512,6 +2514,7 @@ BulletClass * TechnoClass::Fire_At(TARGET target, int which)
             } 
         }
     }
+    */
     
  	bullet = new BulletClass(weapon->Fires);
 	if (bullet) {
@@ -3224,6 +3227,49 @@ ResultType TechnoClass::Take_Damage(int & damage, int distance, WarheadType warh
 	**	Adjust damage according to house override armor value.
 	*/
 	if (damage > 0) {
+        
+        //Chthon CFE Note: Some rank 3 veteran units do extra damage against certain armor types
+        // Moved from Fire_At() to avoid doing extra splash damage
+        // This is not a perfect solution either, because projectiles that hit after a veteran unit's death won't get the bonus, but it's less bad
+        // this has to go above armor application so the smaller bonuses aren't rounded away
+        if (   source &&
+                source->IsActive &&
+                (source->VeterancyRank == 3)
+        ){
+            int upgradetype = 0;
+            if (    (source->What_Am_I() == RTTI_INFANTRY && *((InfantryClass*)source) == INFANTRY_E1) ||
+                     (source->What_Am_I() == RTTI_UNIT && *((UnitClass*)source) == UNIT_JEEP)
+            ){
+                upgradetype = 1; // SA -> pseudo-AP bullets
+            }
+            else if (source->What_Am_I() == RTTI_UNIT && *((UnitClass*)source) == UNIT_BIKE){
+                upgradetype = 2; // AP -> pseudo-HE missiles
+            }
+            
+            if (Class_Of().Armor == ARMOR_NONE){
+                if (upgradetype == 2){
+                    damage *= 3.5; // bring damage up as if armor effect were 0.875 instead of 0.25
+                }
+            }
+            else if (Class_Of().Armor == ARMOR_WOOD){
+                if (upgradetype == 1){
+                    damage *= 1.125; // bring damage up as if armor effect were 0.5625 instead of 0.5
+                }
+            }
+            else if (Class_Of().Armor == ARMOR_STEEL){
+                if (upgradetype == 1){
+                    damage *= 3; // bring damage up as if armor effect were 0.75 instead of 0.25
+                }
+            }
+            else if (Class_Of().Armor == ARMOR_CONCRETE){
+                 if (upgradetype == 2){
+                    damage *= 2; // bring damage up as if armor effect were 1.0 instead of 0.5
+                }
+            }
+            // could also boost SA vs. ARMOR_ALUMINUM by 4/3 (bring damage up as if armor effect were 0.75 instead of 0.5625), but chose not to b/c that would make upped SA a flat-out better weapon
+        }
+        
+        
         // Chthon CFE Note: Port per-unit armor bias from RA
 		//damage = damage * House->ArmorBias;
         damage = damage * ArmorBias * House->ArmorBias;
@@ -3846,6 +3892,10 @@ void TechnoClass::Kill_Cargo(TechnoClass * source)
 	while (Is_Something_Attached()) {
 		FootClass * foot = Detach_Object();
 		if (foot) {
+            // Chthon CFE Note: Give XP for any passengers killed too
+            if (ActiveCFEPatchConfig.EnableVeterancy && source && source->IsActive && !House->Is_Ally(source)){
+                source->GainVeterancyXP((foot->Strength * foot->Class_Of().Cost_Of())/foot->Class_Of().MaxStrength);
+            }
 			foot->Record_The_Kill(source);
 			delete foot;
 		}
@@ -5115,6 +5165,11 @@ void TechnoClass::GainVeterancyXP(unsigned short int XP){
     }
     // bail if rank is already maxed (avoid possibility of integer overflow on VeterancyXP)
     if (VeterancyRank >= 3){
+        return;
+    }
+    
+    // don't let superweapon buildings gain XP (that would be overpowered)
+    if ((What_Am_I() == RTTI_BUILDING) && ((*((BuildingClass*)this) == STRUCT_EYE) || (*((BuildingClass*)this) == STRUCT_TEMPLE))){
         return;
     }
     

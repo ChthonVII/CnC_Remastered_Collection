@@ -5812,6 +5812,10 @@ void BuildingClass::Detach(TARGET target, bool all)
 	if (target == WhomToRepay) {
 		WhomToRepay = TARGET_NONE;
 	}
+	//Chthon CFE Note: Should also clear out rally point if it was attached to a techno object that died
+	if (target == RallyPoint) {
+		RallyPoint = TARGET_NONE;
+	}
 }
 
 
