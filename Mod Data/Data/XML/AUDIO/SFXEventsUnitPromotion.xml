@@ -36,20 +36,20 @@
         <MaxPitch>100</MaxPitch>
         <MaxPostdelay>0</MaxPostdelay>
         <MaxPredelay>0</MaxPredelay>
-        <MaxVolume>70</MaxVolume>
+        <MaxVolume>60</MaxVolume>
         <MinFBPan2D>50</MinFBPan2D>
         <MinLRPan2D>50</MinLRPan2D>
         <MinPitch>100</MinPitch>
         <MinPostdelay>0</MinPostdelay>
         <MinPredelay>0</MinPredelay>
-        <MinVolume>70</MinVolume>
+        <MinVolume>40</MinVolume>
         <!-- <OverlapTestName>Preset_UR</OverlapTestName> -->
         <VolumeSlider>Volume_Slider_SFX_Unit_Responses</VolumeSlider>
         <PlayCount>1</PlayCount>
         <PlayCountDurationSeconds>0</PlayCountDurationSeconds>
         <CooldownReplaySeconds>0</CooldownReplaySeconds>
         <PlaySequentially>True</PlaySequentially>
-        <Priority>2</Priority>
+        <Priority>4</Priority>
         <Probability>1</Probability>
         <VolumeFallOffDist>1000</VolumeFallOffDist>
         <VolumeSaturationDist>300</VolumeSaturationDist>
@@ -67,7 +67,39 @@
 			<entry> UNITPROMOTED.WAV </entry>
 		</SampleNamesList>
 	</SFXEvent>
+    
+    <SFXEvent Name="RAR_SFX_PROMOTED" Preset="_PRESET_MOD">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> UNITPROMOTED.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
+    
+    <SFXEvent Name="RAC_SFX_PROMOTED" Preset="_PRESET_MOD">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> UNITPROMOTED.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
 
+    <SFXEvent Name="RAR_SFX_WINDGUST" Preset="_PRESET_MD_MOBIUS_2D">
+		<IsPreset> False </IsPreset>
+        <MinVolume>20</MinVolume>
+        <MaxVolume>35</MaxVolume>
+		<SampleNamesList>
+			<entry> WIND_GUST.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
+    
+    <SFXEvent Name="RAC_SFX_WINDGUST" Preset="_PRESET_MD_MOBIUS_2D">
+		<IsPreset> False </IsPreset>
+        <MinVolume>20</MinVolume>
+        <MaxVolume>35</MaxVolume>
+		<SampleNamesList>
+			<entry> WIND_GUST.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
+    
 </SFXEvents>
 
 

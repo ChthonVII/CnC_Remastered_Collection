@@ -243,3 +243,10 @@ char const * fixed::As_ASCII(void) const
 	To_ASCII(buffer, sizeof(buffer));
 	return(buffer);
 }
+
+
+fixed FixedFromRawBits(const unsigned int &input){
+    fixed output;
+    output.Data.Raw = input;
+    return output;
+}

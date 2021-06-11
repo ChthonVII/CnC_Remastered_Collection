@@ -214,7 +214,13 @@ class BuildingClass : public TechnoClass
 		//NOTE: /!\ Stole 2 bytes from the save game padding /!\/
         //Chthon CFE Note: The TARGET type changed to 4 bytes in RA (see DEFINES.H), so you need to steal 4 bytes of padding, not just 2.
 		TARGET RallyPoint;
+        
+        // Chthon CFE Note: Who created a landmine
+        TARGET WhoLaidMe = TARGET_NONE;
 
+        // Chthon CFE Note: Should I be used as the base to draw inverse wall prview markers? 
+        mutable unsigned char ShowInverseWallPreviewMarkers = 0;
+        
 		TARGET Target_For_Rally_Point(const SpeedType speed = SPEED_TRACK) const;
 
 
@@ -308,7 +314,7 @@ class BuildingClass : public TechnoClass
 		virtual void Death_Announcement(TechnoClass const * source=0) const;
 		virtual FireErrorType Can_Fire(TARGET, int which) const;
 		virtual TARGET Greatest_Threat(ThreatType threat) const;
-		virtual ResultType Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source=0, bool forced=false);
+		virtual ResultType Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source=0, bool forced=false, TARGET indirectsource = TARGET_NONE); // Chthon CFE Note: Added indirectsource so minelayers can get XP
 		virtual bool Captured(HouseClass * newowner);
 		void Update_Radar_Spied(void);
 
@@ -372,8 +378,12 @@ class BuildingClass : public TechnoClass
 		/*
 		** Some additional padding in case we need to add data to the class and maintain backwards compatibility for save/load
 		*/
-        //Chthon CFE Note: The TARGET type changed to 4 bytes in RA (see DEFINES.H), so you need to steal 4 bytes of padding, not just 2. (original padding was 32)
-		unsigned char SaveLoadPadding[28];
+        //Chthon CFE Note:
+        // original padding was 32 bytes
+        // Rally Point eats 4  bytes -- The TARGET type changed to 4 bytes in RA (see DEFINES.H), so you need to steal 4 bytes of padding, not just 2. (original padding was 32)
+        // WhoLaidMe eats 4 bytes
+        // Inverse wall preview markers eat 1 byte
+		unsigned char SaveLoadPadding[23];
 
 		static COORDINATE const CenterOffset[BSIZE_COUNT];
 };

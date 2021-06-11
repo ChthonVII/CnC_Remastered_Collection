@@ -296,7 +296,8 @@ class CellClass
 		void Recalc_Attributes(void);
 		int  Reduce_Tiberium(int levels);
 		int  Reduce_Wall(int damage);
-		void Incoming(COORDINATE threat=0, bool forced=false, bool nokidding=false);
+        // Chthon CFE Note: added parameter for scattering only veteran infantry
+		void Incoming(COORDINATE threat=0, bool forced=false, bool nokidding=false, bool veteransonly = false);
 		void Adjust_Threat(HousesType house, int threat_value);
 
 		int operator != (CellClass const &) const {return 0;}

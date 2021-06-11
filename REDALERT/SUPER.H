@@ -59,6 +59,9 @@ class SuperClass {
 		//Needed access to recharge times for tooltips - 2019/08/14 Jason Scott 
 		int Get_Recharge_Time() const { return(RechargeTime); };
 
+        // ChthonCFE Note: Need a way to change the recharge for OpenRA-style supers
+        void Set_Recharge_Time(int newtime) {RechargeTime=newtime; return;};
+        
 	private:
 		bool Recharge(bool player=false);
 

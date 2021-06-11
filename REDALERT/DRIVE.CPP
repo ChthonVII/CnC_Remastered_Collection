@@ -381,7 +381,7 @@ bool DriveClass::Teleport_To(CELL cell)
 	/*
 	**	All cargo gets destroyed.
 	*/
-	if (Rule.IsChronoKill) {
+	if (Rule.IsChronoKill && !(What_Am_I() == RTTI_UNIT && (*((UnitClass*)this) == UNIT_APC) && (VeterancyRank == 3))) {
 		Kill_Cargo(NULL);
 	}
 
@@ -389,6 +389,7 @@ bool DriveClass::Teleport_To(CELL cell)
 	Force_Track(-1, 0);
 	PrimaryFacing.Set_Current(PrimaryFacing.Desired());
 	Transmit_Message(RADIO_OVER_OUT);
+    ResetAttackMove(); // Chthon CFE Note: don't want things driving off to prior destination after porting
 	Assign_Destination(TARGET_NONE);
 	Assign_Target(TARGET_NONE);
 	Assign_Mission(MISSION_NONE);
@@ -978,6 +979,13 @@ bool DriveClass::Start_Of_Move(void)
 								Assign_Destination(TARGET_NONE);
 								return(false);
 							} else {
+                                // Chthon CFE Note: Give up on attack move if blocked by friendly unit sitting in your ultimate destination
+                                // probably not needed anymore
+                                //if (AttackMove && ((What_Am_I() != RTTI_UNIT) || (((UnitClass*)this)->MLattackmovemode == 0)) && RememberedNavCom && (Distance(RememberedNavCom) < Rule.CloseEnoughDistance)){
+                                //    ResetAttackMove(1);
+                                //    Assign_Destination(TARGET_NONE);
+                                //    return(false);
+                                //}
 								cellptr->Incoming(0, true, false);
 //								cellptr->Incoming(0, true, true);
 							}
@@ -1039,6 +1047,13 @@ bool DriveClass::Start_Of_Move(void)
 						Assign_Destination(TARGET_NONE);
 						return(false);
 					} else {
+                        // Chthon CFE Note: Give up on attack move if blocked by friendly unit sitting in your ultimate destination
+                        // probably not needed anymore
+                        //if (AttackMove && ((What_Am_I() != RTTI_UNIT) || (((UnitClass*)this)->MLattackmovemode == 0)) && RememberedNavCom && (Distance(RememberedNavCom) < Rule.CloseEnoughDistance)){
+                        //    ResetAttackMove(1);
+                        //    Assign_Destination(TARGET_NONE);
+                        //    return(false);
+                        //}
 						cellptr->Incoming(0, true, false);
 //						cellptr->Incoming(0, true, true);
 					}
@@ -1063,6 +1078,24 @@ bool DriveClass::Start_Of_Move(void)
 	facediff = PrimaryFacing.Difference(dir);
 	if (facediff) {
 
+        // fix for twitching units, I hope...
+        // if we're near the destination, then
+        // fall out of attack-move instead of rotating towards a blocked cell
+        /*
+        // since this didn't fix twitching (at least on it's own), let's try without it
+        if (
+            AttackMove &&
+            ((What_Am_I() != RTTI_UNIT) || (((UnitClass*)this)->MLattackmovemode == 0)) &&
+            RememberedNavCom &&
+            (Distance(RememberedNavCom) < Rule.CloseEnoughDistance) && (Can_Enter_Cell(Coord_Cell(dest), facing) != MOVE_OK)
+        ){
+            ResetAttackMove(1);
+            Assign_Destination(TARGET_NONE);
+            return(false);
+        }
+        */
+        
+        
 		/*
 		**	Request a change of facing.
 		*/
@@ -1089,6 +1122,12 @@ bool DriveClass::Start_Of_Move(void)
 				if (!IsActive) return(false);//BG
 			}
 
+			// probably not needed anymore
+			//if (AttackMove && (Mission == MISSION_MOVE) && (cando != MOVE_DESTROYABLE) && (cando != MOVE_CLOAK) && ((What_Am_I() != RTTI_UNIT) || (((UnitClass*)this)->MLattackmovemode == 0)) && RememberedNavCom && (Distance(RememberedNavCom) < Rule.CloseEnoughDistance)){
+            //    ResetAttackMove(1);
+            //    Assign_Destination(TARGET_NONE);
+            //}
+			
 			/*
 			**	If a temporary friendly object is blocking the path, then cause it to
 			**	get out of the way.
@@ -1303,8 +1342,17 @@ void DriveClass::AI(void)
 #endif
 		if (MoebiusCountDown == 0) {
 			IsMoebius = false;
+            if (ActiveCFEPatchConfig.EnableSmarterChrono){
+                Sound_Effect(VOC_CHRONO, Coord); // play sound at both ends
+            }
 			Teleport_To(MoebiusCell);
 			MoebiusCell = 0;
+            // Chthon CFE Note: Make a chronotank sound effect and unselect and remove from targeting lists
+            if (ActiveCFEPatchConfig.EnableSmarterChrono){
+                Sound_Effect(VOC_CHRONO, Coord);
+                Unselect_All_Players();
+                Minimal_Detach_This_From_All(As_Target(), true);
+            }
 		}
 #ifdef FIXIT_CSII	//	checked - ajw 9/28/98
 	 }

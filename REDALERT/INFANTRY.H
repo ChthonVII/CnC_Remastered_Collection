@@ -164,7 +164,7 @@ class InfantryClass : public FootClass
 		virtual ActionType What_Action(ObjectClass const * object) const;
 		virtual ActionType What_Action(CELL cell) const;
 		virtual BulletClass * Fire_At(TARGET target, int which);
-		virtual ResultType Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source=0, bool forced=false);
+		virtual ResultType Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source=0, bool forced=false, TARGET indirectsource = TARGET_NONE); // Chthon CFE Note: Added indirectsource so minelayers can get XP
 		virtual FireErrorType Can_Fire(TARGET target, int which) const;
 		virtual COORDINATE Fire_Coord(int which) const;
 		virtual void Assign_Target(TARGET);
@@ -225,6 +225,15 @@ class InfantryClass : public FootClass
 		**	axis.
 		*/
 		static int const HumanShape[32];
+        
+        // Chthon CFE Note: New function
+        // Rank3 veteran dogs can "howl."
+        // The howl causes other dogs in range of the same house to aggro to this dog's target if they don't already have a target.
+        // Range is 6 cells. This is arbitrary and subject to change once I see how well it works in game.
+        void AlphaPuppersHowl();
+        
+        // returns true if within the guard radius of an unfriendly dog
+        bool UnfriendlyDogCheck();
 
 	private:
 

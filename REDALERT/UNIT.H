@@ -116,10 +116,25 @@ class UnitClass :	public DriveClass
 		*/
 		mutable TARGET TiberiumUnloadRefinery;
 
+
+        // Chthon CFE Note: recharge timer for built-in iron curtain for rank3 veteran mammoth tanks
+        unsigned short int PersonalIronCurtainCooldown;
+        // Chthon CFE Note: countdown for rank3 veteran minelayer recharge
+        unsigned short int MinelayerRecharge = 0;
+        // Chthon CFE Note: some stuff for minelayers' special attack-move mode
+        TARGET MLoriginalposition = TARGET_NONE;
+        unsigned char MLattackmovemode = 0;
+        
+       
 		/*
 		** Some additional padding in case we need to add data to the class and maintain backwards compatibility for save/load
 		*/
-		unsigned char SaveLoadPadding[28];
+        // Chthon CFE Note:
+        // Original padding was 28 bytes
+        // 
+        // PersonalIronCurtainCooldown ate 2 bytes
+        // minelayer stuff eats 5 bytes
+		unsigned char SaveLoadPadding[21];
 
 		/*---------------------------------------------------------------------
 		**	Constructors, Destructors, and overloaded operators.
@@ -202,7 +217,7 @@ class UnitClass :	public DriveClass
 		/*
 		**	Combat related.
 		*/
-		virtual ResultType Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source=0, bool forced=false);
+		virtual ResultType Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source=0, bool forced=false, TARGET indirectsource = TARGET_NONE); // Chthon CFE Note: Added indirectsource so minelayers can get XP
 		virtual BulletClass * Fire_At(TARGET target, int which=0);
 
 		/*
@@ -259,6 +274,13 @@ class UnitClass :	public DriveClass
 		static char *INI_Name(void) {return "UNITS";};
 		bool Load(Straw & file);
 		bool Save(Pipe & file) const;
+        
+        // Chthon CFE Note: functions for minelayer attack-move AI
+        bool MinelayerPoopTime();
+        bool MinelayerGoHome();
+        bool MinelayerFindSpot();
+        // for getting things to consistently exit the repair bay instead of twitching stupidly sometimes 
+        bool DoSmarterRunAway();
 };
 
 #endif

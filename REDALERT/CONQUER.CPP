@@ -289,8 +289,11 @@ void Main_Game(int argc, char * argv[])
 #ifdef FIXIT_CSII	//	checked - ajw 9/28/98
 				TimeQuake = PendingTimeQuake;
 				PendingTimeQuake = false;
+                GlobalTimeQuake = PendingGlobalTimeQuake;
+				PendingGlobalTimeQuake = false;
 #else
 				TimeQuake = false;
+                GlobalTimeQuake = false;
 #endif
 				if (Main_Loop()) {
 					break;
@@ -2276,9 +2279,11 @@ Mono_Set_Cursor(0,0);
 	*/
 	Logic.AI();
 	TimeQuake = false;
+    GlobalTimeQuake = false;
 #ifdef FIXIT_CSII	//	checked - ajw 9/28/98
 	if (!PendingTimeQuake) {
 		TimeQuakeCenter = 0;
+        MADTimeQuakeCenterList.Clear();
 	}
 #endif
 

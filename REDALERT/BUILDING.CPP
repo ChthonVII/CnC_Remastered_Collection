@@ -111,10 +111,19 @@
 */
 #include "SidebarGlyphx.h"
 
+#include "cfedebug.h"
+
 enum SAMState {
 	SAM_READY,					// Launcher can be facing any direction tracking targets.
 	SAM_FIRING					// Stationary while missile is being fired.
 };
+
+// Chthon CFE Note -- added so we can draw rally point markers directly in remastered graphics mode
+// RA uses different params for this function
+extern void DLL_Draw_Intercept(int shape_number, int x, int y, int width, int height, int flags, const ObjectClass *object, DirType rotation, long scale, const char *shape_file_name, char override_owner);
+// and need these for inverse placement preview
+extern bool Is_Legacy_Render_Enabled(void);
+extern BuildingTypeClass* GetPlacementType(unsigned int index);
 
 
 /***************************************************************************
@@ -151,6 +160,12 @@ COORDINATE const BuildingClass::CenterOffset[BSIZE_COUNT] = {
  *=============================================================================================*/
 bool BuildingClass::Can_Have_Rally_Point() const
 {
+  
+    // Chthon CFE Note: Added back rally points for repair bays
+    if (ActiveCFEPatchConfig.EnableRallyPoints && ActiveCFEPatchConfig.EnableSmarterRepairBays && (Class->Type == STRUCT_REPAIR)){
+        return true;
+    }
+    
 	switch (Class->ToBuild)
 	{
 		// case RTTI_AIRCRAFTTYPE:
@@ -161,6 +176,7 @@ bool BuildingClass::Can_Have_Rally_Point() const
 
 		default:
 			return false; //(StructType(*this) == STRUCT_REPAIR);
+
 	}
 }
 
@@ -168,6 +184,7 @@ void BuildingClass::Set_Unselected_By_Player(HouseClass* player)
 {
 	TechnoClass::Set_Unselected_By_Player(player);
 
+    
 	if (Can_Have_Rally_Point() && RallyPoint)
 	{
 		Map.Flag_To_Redraw(true);
@@ -628,13 +645,292 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window) const
 		}
 	}
 
-	if (Can_Have_Rally_Point() && Is_Selected_By_Player() && Is_Owned_By_Player() && RallyPoint && Target_Legal(RallyPoint))
+// Chthon CFE Note: fixed to work in LAN multiplayer
+	if (Can_Have_Rally_Point() && Is_Selected_By_Player(House) && RallyPoint && Target_Legal(RallyPoint))
 	{
 		int startX, startY, endX, endY;
 		Map.Coord_To_Pixel(Center_Coord(), startX, startY);
 		Map.Coord_To_Pixel(As_Coord(RallyPoint), endX, endY);
-		CC_Draw_Line(startX, startY, endX, endY, LTGREEN, 1, window);
+        // remastered renderer
+        if (window == WINDOW_VIRTUAL){
+            // compute spacing for dots
+            bool negativeX = (startX > endX);
+            bool negativeY = (startY > endY);
+            int Xdistance = endX - startX;
+            if (negativeX){
+                Xdistance *= -1;
+            }
+            int Ydistance = endY - startY;
+            if (negativeY){
+                Ydistance *= -1;
+            }
+            float diagonaldistance = sqrt( (float)((Xdistance * Xdistance)+(Ydistance * Ydistance)) );
+            int steps = (int)(diagonaldistance / 10.0); // spacing needs to be at least as big as the diagonal of the images used or they may overlap
+            float deltaX = (float)Xdistance / (float) steps;
+            float deltaY = (float)Ydistance / (float) steps;
+            // draw a series of small dots
+            for (int i=0; i<steps; i++){
+                int diffX = (int)((float)i * deltaX);
+                if (negativeX){
+                    diffX *= -1;
+                }
+                int diffY = (int)((float)i * deltaY);
+                if (negativeY){
+                    diffY *= -1;
+                }
+                //DLL_Draw_Intercept(0, startX + diffX, startY + diffY, 4, 4, SHAPE_WIN_REL | SHAPE_CENTER, const_cast<BuildingClass*>(this), "DOTSML", HOUSE_NONE, 0x100);
+                DLL_Draw_Intercept(0, startX + diffX, startY + diffY, 4, 4, SHAPE_WIN_REL | SHAPE_CENTER, this, DIR_N, 0x0100, "DOTSML", HOUSE_NONE);
+            }
+            // draw the big dot at the end
+            if ((Owner() == HOUSE_BAD ) || (Owner() == HOUSE_USSR ) || (Owner() == HOUSE_UKRAINE ) || (House->ActLike == HOUSE_BAD) || (House->ActLike == HOUSE_USSR) || (House->ActLike == HOUSE_UKRAINE)){
+                //DLL_Draw_Intercept(0, endX, endY, 8, 8, SHAPE_WIN_REL | SHAPE_CENTER, const_cast<BuildingClass*>(this), "DOTUSSR", HOUSE_NONE, 0x100);
+                DLL_Draw_Intercept(0, endX, endY, 8, 8, SHAPE_WIN_REL | SHAPE_CENTER, this, DIR_N, 0x0100, "DOTUSSR", HOUSE_NONE);
+            }
+            else {
+                //DLL_Draw_Intercept(0, endX, endY, 8, 8, SHAPE_WIN_REL | SHAPE_CENTER, const_cast<BuildingClass*>(this), "DOTALLY", HOUSE_NONE, 0x100);
+                DLL_Draw_Intercept(0, endX, endY, 8, 8, SHAPE_WIN_REL | SHAPE_CENTER, this, DIR_N, 0x0100, "DOTALLY", HOUSE_NONE);
+            }
+        }
+        // legacy renderer (keep the line since it will be easier to see than the dots at low res)
+        else{
+            CC_Draw_Line(startX, startY, endX, endY, LTGREEN, 1, window);
+        }
 	}
+	
+	// Chthon CFE Note: Use the Construction Yard as the base object for drawing the inverse wall placement markers
+	// reworked because asking it to draw too many shapes could crash the GlyphX client
+	// only draw in remasted mode, since LAN multiplayer is the only mode normal TS-style markers don't work, and legacy render is disabled there
+	if ((ShowInverseWallPreviewMarkers == 2) && (window == WINDOW_VIRTUAL)){
+        const HousesType myhousenumber = Owner();
+        const bool singleplayer = Is_Legacy_Render_Enabled();
+        ObjectTypeClass const * pendingobject = nullptr;
+        if (singleplayer){
+            pendingobject = Map.PendingObject;
+        }
+        else {
+            for (int r=0; r<Session.Players.Count(); r++){
+                if (Session.Players[r]->Player.ID == myhousenumber){
+                    pendingobject = GetPlacementType((unsigned int)r);
+                    break;
+                }
+            }
+        }
+        if (pendingobject && CFE_Patch_Is_Wall(*pendingobject)){
+            const OverlayType mywallOverlay = ((BuildingTypeClass*)(pendingobject))->Overlay_Type();
+            static unsigned char iconlist[MAP_CELL_TOTAL]; //static since it's probably faster to memset 4k of memory than reallocate it every time
+            memset(iconlist, 0, MAP_CELL_TOTAL*sizeof(unsigned char));
+            
+            //const int buildingGap = ((BuildingTypeClass*)(pendingobject))->Adjacent + ActiveCFEPatchConfig.BuildingGapOffset;
+            // ActiveCFEPatchConfig.BuildingGapOffset should already be incorporated into Adjacent by this point
+            const int buildingGap = ((BuildingTypeClass*)(pendingobject))->Adjacent;
+            const int walllength = ActiveCFEPatchConfig.WallBuildLength;
+            
+            bool foundunfriendlywall = false;
+            
+            // loop through all cells looking for friendly walls & builable cells
+            for (int i =0; i<MAP_CELL_TOTAL; i++){
+                CELL basecell = i;
+                // don't bother if the cell's not on the playable section of the map
+                if (!Map.In_Radar(basecell)) {
+                    continue; 
+                }
+
+                // apply markers to walls we own
+                if (Map[basecell].Overlay == mywallOverlay){
+                    if (Map[basecell].Owner == myhousenumber){
+                        int buildabledistances[4] = {0,0,0,0};
+                        int cardinalindex = 0;
+                        // scan out in each direction for buildable cells
+                        for (FacingType dir : FacingCardinals){ //FACING_N, FACING_E, FACING_S, FACING_W
+                            CELL nextcell = basecell;
+                            for (int j = 0; j <walllength; j++){
+                                nextcell = Adjacent_Cell(nextcell, dir);
+                                // stop scanning in this direction if we've gone off the map
+                                if (!Map.In_Radar(nextcell)){
+                                    break;
+                                }
+                                // check if cell is clear
+                                if (Map[nextcell].Is_Clear_To_Build(SPEED_NONE)){
+                                    // increment the buildable distance for this direction
+                                    buildabledistances[cardinalindex]++;
+                                    // mark the cell as buildable
+                                    iconlist[nextcell] = 1;
+                                }
+                                // stop scanning in this direction if we hit an obstruction
+                                else {
+                                    break;
+                                }
+                            }
+                            cardinalindex++;
+                        }
+                        // draw markers
+                        COORDINATE icoord = Cell_Coord(i);
+                        int basewallx;
+                        int basewally;
+                        Map.Coord_To_Pixel(icoord, basewallx, basewally);
+                        // do we need to draw a north/south marker?
+                        if (buildabledistances[0] || buildabledistances[2]){
+                            int adjustedy = basewally;
+                            int longaxis = buildabledistances[0] + buildabledistances[2]; // 1 short since only extends halfway into endpoint cells
+                            // move the center point north
+                            if (buildabledistances[0] > buildabledistances[2]){
+                                adjustedy = adjustedy - (12 * (buildabledistances[0] - buildabledistances[2]));
+                            }
+                            // move the center point south
+                            else {
+                                adjustedy = adjustedy + (12 * (buildabledistances[2] - buildabledistances[0]));
+                            }
+                            //DLL_Draw_Intercept(longaxis - 1, basewallx, adjustedy, 24, 24*longaxis, SHAPE_WIN_REL | SHAPE_CENTER, const_cast<BuildingClass*>(this), "ZWALLV", HOUSE_NONE, 0x100);
+                            DLL_Draw_Intercept(longaxis - 1, basewallx, adjustedy, 24, 24*longaxis, SHAPE_WIN_REL | SHAPE_CENTER, this, DIR_N, 0x0100, "ZWALLV", HOUSE_NONE);
+                        }
+                        // do we need to draw an east/west marker?
+                        if (buildabledistances[1] || buildabledistances[3]){
+                            int adjustedx = basewallx;
+                            int longaxis = buildabledistances[1] + buildabledistances[3]; // 1 short since only extends halfway into endpoint cells
+                            // move the center point east
+                            if (buildabledistances[1] > buildabledistances[3]){
+                                adjustedx = adjustedx + (12 * (buildabledistances[1] - buildabledistances[3]));
+                            }
+                            // move the center point west
+                            else {
+                                adjustedx = adjustedx - (12 * (buildabledistances[3] - buildabledistances[1]));
+                            }
+                            //DLL_Draw_Intercept(longaxis - 1, adjustedx, basewally, 24*longaxis, 24, SHAPE_WIN_REL | SHAPE_CENTER, const_cast<BuildingClass*>(this), "ZWALLH", HOUSE_NONE, 0x100);
+                            DLL_Draw_Intercept(longaxis - 1, adjustedx, basewally, 24*longaxis, 24, SHAPE_WIN_REL | SHAPE_CENTER, this, DIR_N, 0x0100, "ZWALLH", HOUSE_NONE);
+                        }
+                    }
+                    else {
+                        foundunfriendlywall = true;
+                    }
+                }
+                // if this cell wasn't a wall, check if it's buildable anyway
+                else{
+                    BuildingClass* abuilding = (BuildingClass*)Map[basecell].Cell_Find_Object(RTTI_BUILDING);
+                    if (    (abuilding && abuilding->IsActive && abuilding->Owner() == myhousenumber) ||
+                            (     (Map[basecell].Owner == myhousenumber) &&
+                                    (       
+                                            (Map[basecell].Overlay == OVERLAY_NONE) ||
+                                            !(OverlayTypeClass::As_Reference(Map[basecell].Overlay).IsWall)
+                                    )
+                            )    
+                    ) {
+                        // mark the cell as buildable if it's clear
+                        if (Map[basecell].Is_Clear_To_Build(SPEED_NONE)){
+                            iconlist[basecell] = 1;
+                        }
+                        // mark everything within the building gap range as buildable if it's clear
+                        for (int adjY = Cell_Y(basecell) - buildingGap, adjMaxY = Cell_Y(basecell) + buildingGap; adjY <= adjMaxY; adjY++) {
+                            // don't wrap the map or try to left-shift a negative number
+                            if ((adjY < 0) || (adjY >= MAP_CELL_H)){
+                                continue;
+                            }
+                            for (int adjX = Cell_X(basecell) - buildingGap, adjMaxX = Cell_X(basecell) + buildingGap; adjX <= adjMaxX; adjX++) {
+                                // don't wrap the map
+                                if ((adjX < 0) || (adjX >= MAP_CELL_W)){
+                                    continue;
+                                }
+                                const CELL adjCell = XY_Cell(adjX, adjY);
+                                if (Map.In_Radar(adjCell) && Map[adjCell].Is_Clear_To_Build(SPEED_NONE)){
+                                    iconlist[adjCell] = 1;
+                                }
+                            }
+                        }
+                    }
+                }
+            } // end big for loop
+
+            // now we may need to scan again for walls we DON'T own that are in range of buildable cells
+            if (foundunfriendlywall){
+                for (int i =0; i<MAP_CELL_TOTAL; i++){
+                    CELL basecell = i;
+                    // don't bother if the cell's not on the playable section of the map
+                    if (!Map.In_Radar(basecell)) {
+                        continue; 
+                    }
+                    if ( (Map[basecell].Overlay == mywallOverlay) && (Map[basecell].Owner != myhousenumber)){
+                        int buildabledistances[4] = {0,0,0,0};
+                        int cardinalindex = 0;
+                        // scan out in each direct from the wall piece
+                        for (FacingType dir : FacingCardinals){
+                            CELL nextcell = basecell;
+                            bool foundbuildable = false;
+                            // go out up to max range and see if we hit a cell previously marked as buildable
+                            for (int j = 0; j <walllength; j++){
+                                nextcell = Adjacent_Cell(nextcell, dir);
+                                // stop scanning in this direction if we've gone off the map
+                                if (!Map.In_Radar(nextcell)){
+                                    break;
+                                }
+                                // stop if we hit an obstacle
+                                if (!Map[nextcell].Is_Clear_To_Build(SPEED_NONE)){
+                                    break;
+                                }
+                                // increment the buildable distance for this direction (even if we haven't confirmed it's buildable yet)
+                                buildabledistances[cardinalindex]++;
+                                // note if we found a cell previously marked as buildable
+                                // keep going in case further cells are also buildable
+                                if (iconlist[nextcell]){
+                                    foundbuildable = true;
+                                }
+                            }
+                            // if we never found a cell previously marked as buildable, reset the distance to 0
+                            if (!foundbuildable){
+                                buildabledistances[cardinalindex] = 0;
+                            }
+                            cardinalindex++;
+                        }
+                        // draw markers
+                        COORDINATE icoord = Cell_Coord(i);
+                        int basewallx;
+                        int basewally;
+                        Map.Coord_To_Pixel(icoord, basewallx, basewally);
+                        // do we need to draw a north/south marker?
+                        if (buildabledistances[0] || buildabledistances[2]){
+                            int adjustedy = basewally;
+                            int longaxis = buildabledistances[0] + buildabledistances[2]; // 1 short since only extends halfway into endpoint cells
+                            // move the center point north
+                            if (buildabledistances[0] > buildabledistances[2]){
+                                adjustedy = adjustedy - (12 * (buildabledistances[0] - buildabledistances[2]));
+                            }
+                            // move the center point south
+                            else {
+                                adjustedy = adjustedy + (12 * (buildabledistances[2] - buildabledistances[0]));
+                            }
+                            //DLL_Draw_Intercept(longaxis - 1, basewallx, adjustedy, 24, 24*longaxis, SHAPE_WIN_REL | SHAPE_CENTER, const_cast<BuildingClass*>(this), "ZWALLV", HOUSE_NONE, 0x100);
+                            DLL_Draw_Intercept(longaxis - 1, basewallx, adjustedy, 24, 24*longaxis, SHAPE_WIN_REL | SHAPE_CENTER, this, DIR_N, 0x0100, "ZWALLV", HOUSE_NONE);
+                        }
+                        // do we need to draw an east/west marker?
+                        if (buildabledistances[1] || buildabledistances[3]){
+                            int adjustedx = basewallx;
+                            int longaxis = buildabledistances[1] + buildabledistances[3]; // 1 short since only extends halfway into endpoint cells
+                            // move the center point east
+                            if (buildabledistances[1] > buildabledistances[3]){
+                                adjustedx = adjustedx + (12 * (buildabledistances[1] - buildabledistances[3]));
+                            }
+                            // move the center point west
+                            else {
+                                adjustedx = adjustedx - (12 * (buildabledistances[3] - buildabledistances[1]));
+                            }
+                            //DLL_Draw_Intercept(longaxis - 1, adjustedx, basewally, 24*longaxis, 24, SHAPE_WIN_REL | SHAPE_CENTER, const_cast<BuildingClass*>(this), "ZWALLH", HOUSE_NONE, 0x100);
+                            DLL_Draw_Intercept(longaxis - 1, adjustedx, basewally, 24*longaxis, 24, SHAPE_WIN_REL | SHAPE_CENTER, this, DIR_N, 0x0100,  "ZWALLH", HOUSE_NONE);
+                        }
+                        
+                    }
+                }
+            }
+            
+
+        }
+        else {
+            ShowInverseWallPreviewMarkers = 1; // drop down to 1 so we won't draw the markers, but DisplayClass::Update_Placement_Cursor() knows to mark it to redraw one last time on the next tick
+        }
+        
+    }
+    // if we somehow got back to Draw_It() without DisplayClass::Update_Placement_Cursor() clearing this out, just clear it out
+    else if (ShowInverseWallPreviewMarkers == 1){
+        ShowInverseWallPreviewMarkers = 0;
+    }
+    // end of block for using the Construction Yard as the base object for drawing the inverse wall placement markers
 
 	TechnoClass::Draw_It(x, y, window);
 
@@ -1383,7 +1679,7 @@ bool BuildingClass::Unlimbo(COORDINATE coord, DirType dir)
  *   11/22/1994 JLB : Shares base damage handler for techno objects.                           *
  *   07/15/1995 JLB : Power ratio gets adjusted.                                               *
  *=============================================================================================*/
-ResultType BuildingClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, bool forced)
+ResultType BuildingClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, bool forced, TARGET indirectsource)
 {
 	assert(Buildings.ID(this) == ID);
 	assert(IsActive);
@@ -1415,7 +1711,7 @@ ResultType BuildingClass::Take_Damage(int & damage, int distance, WarheadType wa
 		/*
 		**	Perform the low level damage assessment.
 		*/
-		res = TechnoClass::Take_Damage(damage, distance, warhead, source, forced);
+		res = TechnoClass::Take_Damage(damage, distance, warhead, source, forced, indirectsource);
 		switch (res) {
 			case RESULT_DESTROYED:
 
@@ -1443,7 +1739,7 @@ ResultType BuildingClass::Take_Damage(int & damage, int distance, WarheadType wa
 				*/
 				if (tech && tech->IsActive && tech->What_Am_I() == RTTI_AIRCRAFT && ((AircraftClass *)tech)->Class->IsFixedWing && ((AircraftClass *)tech)->In_Which_Layer() == LAYER_GROUND) {
 					int damage = 500;
-					tech->Take_Damage(damage, 0, WARHEAD_AP, source, forced);
+					tech->Take_Damage(damage, 0, WARHEAD_AP, source, forced, indirectsource);
 				}
 
 				Sound_Effect(VOC_KABOOM22, Coord);
@@ -2065,7 +2361,7 @@ void BuildingClass::Assign_Target(TARGET target)
 	}
 
 	if (RallyPoint != target && Can_Have_Rally_Point() && (target == TARGET_NONE || Target_Legal(target))) {
-		RallyPoint = target;
+        RallyPoint = target;
 		Map.Flag_To_Redraw(true);
 		return;
 	}
@@ -2882,8 +3178,10 @@ void BuildingClass::Repair(int control)
 		} else {
 			soundid = VOC_CLICK;
 			if (House->IsPlayerControl) {
-				Clicked_As_Target(PlayerPtr->Class->House); // 2019/09/20 JAS - Added record of who clicked on the object
-			}
+                // Chthon CFE Note: This is wrong in LAN multiplayer. PlayerPtr points to the server, not necessarily the building owner 
+				//Clicked_As_Target(PlayerPtr->Class->House); // 2019/09/20 JAS - Added record of who clicked on the object
+                Clicked_As_Target(Owner());
+            }
 			IsWrenchVisible = true;
 		}
 	} else {
@@ -2947,7 +3245,9 @@ void BuildingClass::Sell_Back(int control)
 			Assign_Mission(MISSION_DECONSTRUCTION);
 			Commence();
 			if (House->IsPlayerControl) {
-				Clicked_As_Target(PlayerPtr->Class->House);
+				// Chthon CFE Note: Might be wrong in LAN multiplayer. Suspect Sell_Back() is called in the context of PlayerPtr pointing at server
+                //Clicked_As_Target(PlayerPtr->Class->House);
+                Clicked_As_Target(Owner());
 			}
 		}
 		if (House->IsPlayerControl) {
@@ -3064,8 +3364,14 @@ ActionType BuildingClass::What_Action(ObjectClass const * object) const
 	if (action == ACTION_ATTACK && (*this == STRUCT_SAM || *this == STRUCT_AAGUN || !In_Range(object, 0))) {
 		action = ACTION_NONE;
 	}
-
-	if (action == ACTION_MOVE && !Can_Have_Rally_Point()) {
+    
+    // Chthon CFE Note: Repair bay cannot be allowed to return ACTION_MOVE over objects
+    // If allowed, it gets into an infinite loop and crashes
+    // This means repair bay rally points can't be set on units, which is different from other buildings, but oh well
+    // This bug tooks *days* to find
+	//if ((action == ACTION_MOVE) && (!Can_Have_Rally_Point() || (*this == STRUCT_REPAIR))) {
+    // let's try just not allowing ourself
+    if ((action == ACTION_MOVE) && (!Can_Have_Rally_Point() || (this == object))) {
 		action = ACTION_NONE;
 	}
 
@@ -3101,7 +3407,6 @@ ActionType BuildingClass::What_Action(CELL cell) const
         action = ACTION_MOVE;
     }
     
-
 	if (action == ACTION_MOVE && !Can_Have_Rally_Point() && (*this != STRUCT_CONST || !Is_MCV_Deploy())) {
 		action = ACTION_NONE;
 	}
@@ -3544,6 +3849,10 @@ bool BuildingClass::Captured(HouseClass * newowner)
 			oldowner->Check_Pertinent_Structures();
 		}
 
+		// Chthon CFE Note -- clear out rally point and inverse placement markers
+		RallyPoint = TARGET_NONE;
+        ShowInverseWallPreviewMarkers = 0;
+		
 		return(true);
 	}
 	return(false);
@@ -3622,7 +3931,15 @@ MoveType BuildingClass::Can_Enter_Cell(CELL cell, FacingType) const
 	assert(IsActive);
 
 	if (Can_Have_Rally_Point() && IsDown && IsLocked) {
-		SpeedType buildSpeed = Fetch_Techno_Type(Class->ToBuild, 0)->Speed; // 0 = Some of this kind
+        // Chthon CFE Note: repair bays don't build anything, so we need to set speed directly
+        // (calling Fetch_Techno_Type(Class->ToBuild, 0)->Speed will result in a crash)
+		SpeedType buildSpeed; 
+		if (*this == STRUCT_REPAIR){
+            buildSpeed = SPEED_TRACK;
+        }
+        else {
+            buildSpeed = Fetch_Techno_Type(Class->ToBuild, 0)->Speed; // 0 = Some of this kind
+        }
 		return Map[cell].Is_Clear_To_Move(buildSpeed, true, true) ? MOVE_OK : MOVE_NO;
 	}
 
@@ -4502,9 +4819,10 @@ int BuildingClass::Mission_Repair(void)
 						*/
 						case RADIO_ALL_DONE:
 							if (!Rally_Unit(static_cast<FootClass&>(*Contact_With_Whom()))) {
-								Transmit_Message(RADIO_RUN_AWAY);
-								Transmit_Message(RADIO_OVER_OUT);
+                                Transmit_Message(RADIO_RUN_AWAY);
+                                //Transmit_Message(RADIO_OVER_OUT);
 							}
+							Transmit_Message(RADIO_OVER_OUT); // Chthon CFE Note: You should over-and-out them either way (otherwise they go back to the repair bay after rallying)
 
 							// MBL 04.27.2020: Make only audible to the correct player
 							// if (IsOwnedByPlayer) Speak(VOX_UNIT_REPAIRED);
@@ -4575,6 +4893,16 @@ int BuildingClass::Mission_Repair(void)
 						int time = Inverse(pfrac) * Rule.ReloadRate * TICKS_PER_MINUTE;
 //						int time = Bound((int)(TICKS_PER_SECOND * Saturate(House->Power_Fraction(), 1)), 0, TICKS_PER_SECOND);
 //						time = (TICKS_PER_SECOND*3) - time;
+                        // Chthon CFE Note: rank 3 veteran helicopters reload twice as fast
+                        if (    (Contact_With_Whom()->VeterancyRank == 3)
+                                && (Contact_With_Whom()->What_Am_I() == RTTI_AIRCRAFT)
+                                && (
+                                    (*((AircraftClass *)Contact_With_Whom()) == AIRCRAFT_LONGBOW) ||
+                                     (*((AircraftClass *)Contact_With_Whom()) == AIRCRAFT_HIND)
+                                )
+                        ){
+                            time = time/2;
+                        }
 						IsReadyToCommence = false;
 						return(time);
 					}
@@ -5195,6 +5523,14 @@ void BuildingClass::Detach(TARGET target, bool all)
 	if (target == AnimToTrack) {
 		AnimToTrack = TARGET_NONE;
 	}
+	//Chthon CFE Note: Should also clear out rally point if it was attached to a techno object that died
+	if (target == RallyPoint) {
+		RallyPoint = TARGET_NONE;
+	}
+	// and also clear out WhoLaidMe if the minelayer is dead
+	if (target == WhoLaidMe) {
+		WhoLaidMe = TARGET_NONE;
+	}
 }
 
 
@@ -5426,7 +5762,7 @@ bool BuildingClass::Can_Player_Move(void) const
 {
 	assert(Buildings.ID(this) == ID);
 	assert(IsActive);
-
+    
 	return Can_Have_Rally_Point() || (*this == STRUCT_CONST && (Mission == MISSION_GUARD) && Special.IsMCVDeploy);
 }
 
@@ -6329,7 +6665,20 @@ bool BuildingClass::Rally_Unit(TechnoClass& unit)
 {
 	if (Can_Have_Rally_Point() && CFE_Patch_Unit_Should_Rally(unit) && Target_Legal(RallyPoint))
 	{
-		//SpeedType speed = from->Is_Techno() ? ((TechnoClass const*)from)->Techno_Type_Class()->Speed : SPEED_TRACK;
+        // Chthon CFE Note: Special case for aircraft leaving repair bay
+        // Don't send them to the rally point; have try to go to a helipad/airstrip
+        if ((*this == STRUCT_REPAIR) && (unit.What_Am_I() == RTTI_AIRCRAFT)){
+            if (((AircraftClass*)&unit)->DoSmarterRunAway()){
+                return true;
+            }
+            // Always return true if a fixed wing plane fails to find an airstrip so we don't kick it out and force it to crash
+            else if (((AircraftClass*)&unit)->Class->IsFixedWing){
+                return true;
+            }
+            return false;
+        }
+        
+        //SpeedType speed = from->Is_Techno() ? ((TechnoClass const*)from)->Techno_Type_Class()->Speed : SPEED_TRACK;
 		const TARGET rallyTarget = Target_For_Rally_Point(unit.Techno_Type_Class()->Speed);
 
 		//Make sure units dont rally to themselves. Only a problem for repair/reload pads

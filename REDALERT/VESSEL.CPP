@@ -67,6 +67,9 @@
 // Chthon CFE Note -- We need this for checking the shift key for attack-move
 extern bool DLL_Export_Get_Input_Key_State(KeyNumType key);
 
+// and need this so we can play the veteran destroyer's sonar ping sound for a specific player only
+extern void On_Sound_Effect(const HouseClass* player_ptr, int sound_effect_index, const char* extension, int variation, COORDINATE coord);
+
 /***********************************************************************************************
  * VesselClass::VesselClass -- Constructor for vessel class objects.                           *
  *                                                                                             *
@@ -593,6 +596,39 @@ void VesselClass::AI(void)
 	assert(Vessels.ID(this) == ID);
 	assert(IsActive);
 
+    // Chthon CFE Note: Rank 3 veteran Destroyers have built-in short range sonar
+    if ((VeterancyRank == 3) && (*this == VESSEL_DD)){
+        if (BuiltInSonarCountdown){
+            BuiltInSonarCountdown--;
+        }
+        else {
+            bool foundone = false;
+            for (int index = 0; index < Vessels.Count(); index++) {
+                VesselClass* sub = Vessels.Ptr(index);
+				if (
+                    ((*sub == VESSEL_SS) || (*sub == VESSEL_MISSILESUB)) &&
+                    !House->Is_Ally(sub) &&
+                    (Lepton_To_Cell(Distance(sub)) <= 10)
+                ){
+						sub->PulseCountDown = 15 * TICKS_PER_SECOND;
+						sub->Do_Uncloak();
+                        foundone = true;
+                }
+            }
+            if (foundone){
+                BuiltInSonarCountdown = 30 * TICKS_PER_SECOND;
+                //Sound_Effect(VOC_SONAR, Coord);
+                if (House->IsHuman) {
+                    On_Sound_Effect(House, (int)VOC_SONAR, "", 1, Coord);
+                }
+            }
+        }
+    }
+    
+    
+    
+    
+    
 	if (Mission == MISSION_NONE && MissionQueue == MISSION_NONE) {
 		Enter_Idle_Mode();
 	}
@@ -942,7 +978,7 @@ void VesselClass::Active_Click_With(ActionType action, CELL cell)
  * HISTORY:                                                                                    *
  *   05/13/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
-ResultType VesselClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, bool forced)
+ResultType VesselClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, bool forced, TARGET indirectsource)
 {
 	assert(Vessels.ID(this) == ID);
 	assert(IsActive);
@@ -953,7 +989,7 @@ ResultType VesselClass::Take_Damage(int & damage, int distance, WarheadType warh
 	**	In order for a this to be damaged, it must either be a unit
 	**	with a crew or a sandworm.
 	*/
-	res = FootClass::Take_Damage(damage, distance, warhead, source, forced);
+	res = FootClass::Take_Damage(damage, distance, warhead, source, forced, indirectsource);
 
 	if (res == RESULT_DESTROYED) {
 		Death_Announcement(source);
@@ -979,13 +1015,31 @@ ResultType VesselClass::Take_Damage(int & damage, int distance, WarheadType warh
 		**	Possibly have the crew member run away.
 		*/
 		Mark(MARK_UP);
+        
+        // Chthon CFE Note: Give XP for any passengers killed too
+        // if indirectsource is set, use that; otherwise use source
+        TechnoClass* XPsource;
+        if (Target_Legal(indirectsource)){
+            XPsource = As_Techno(indirectsource);
+        }
+        else {
+            XPsource = source;
+        }
+        
 		while (Is_Something_Attached()) {
 			FootClass * object = Detach_Object();
 
+            // Chthon CFE note copied (likely moot) safety check from UNIT.CPP
+            if (object == NULL) break;		// How can this happen?
+            
 			/*
 			**	Only infantry can run from a destroyed vehicle. Even then, it is not a sure
 			**	thing.
 			*/
+            if (ActiveCFEPatchConfig.EnableVeterancy && XPsource && XPsource->IsActive && !House->Is_Ally(XPsource)){
+                XPsource->GainVeterancyXP((object->Strength * object->Class_Of().Cost_Of())/object->Class_Of().MaxStrength);
+            }
+            
 			object->Record_The_Kill(source);
 			delete object;
 		}

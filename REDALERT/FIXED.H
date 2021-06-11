@@ -214,7 +214,17 @@ class fixed
 		static const fixed _1_4;
 		static const fixed _3_4;
 		static const fixed _2_3;
+        
+        
+        // Chthon CFE Note: Function for converting to float so they can interact with floats
+        inline friend float FixedToFloat(const fixed &input){return (float)(input.Data.Raw >> 16) + (((float)(input.Data.Raw & 0x0000FFFF))/PRECISION);}
 
+        // also a pseudo constructor for making them out of hex literals
+        // should be faster than constructor from float, and also allows control over the rounding
+        // this seems like a great candidate for inline, but the compiler pitches a fit if it's not forward declared
+        friend fixed FixedFromRawBits(const unsigned int &input);
+
+        
 	private:
 		union {
 			struct {

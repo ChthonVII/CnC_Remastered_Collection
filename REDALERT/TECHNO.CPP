@@ -132,7 +132,7 @@
 
 #include	"function.h"
 
-#include "CFEDEBUG.H"
+//#include "CFEDEBUG.H"
 
 /***************************************************************************
 **	Cloaking control values.
@@ -143,6 +143,11 @@
 // - 6/26/2019 JAS 
 extern bool DLL_Export_Get_Input_Key_State(KeyNumType key);
 
+// Chthon CFE Note -- added so we can draw vetrancy pips directly in remastered graphics mode
+// RA uses different params for this function
+extern void DLL_Draw_Intercept(int shape_number, int x, int y, int width, int height, int flags, const ObjectClass *object, DirType rotation, long scale, const char *shape_file_name, char override_owner);
+// and need this so we can play the veterancy rank up sound for a specific player only
+extern void On_Sound_Effect(const HouseClass* player_ptr, int sound_effect_index, const char* extension, int variation, COORDINATE coord);
 
 /***************************************************************************
 **	These are the pointers to the special shape data that the units may need.
@@ -977,6 +982,40 @@ RadioMessageType TechnoClass::Receive_Message(RadioClass * from, RadioMessageTyp
 			*/
 			if (What_Am_I() == RTTI_UNIT && *((UnitClass *)this) == UNIT_MINELAYER && ((UnitClass *)this)->Ammo < ((UnitClass *)this)->Class->MaxAmmo) {
 				((UnitClass *)this)->Ammo = ((UnitClass *)this)->Class->MaxAmmo;
+                // if re-arming was all the minelayer needed, then send ALL_DONE so the bay will respond with RUN_AWAY
+                //if (ActiveCFEPatchConfig.EnableSmarterRepairBays && (Health_Ratio() >= Rule.ConditionGreen)){
+                    //return(RADIO_ALL_DONE);
+                //}
+                    // that doesn't work -- the repair bay doesn't respond with run away
+                    // so let's just do the running away directly right here
+                if (    ActiveCFEPatchConfig.EnableSmarterRepairBays &&
+                        (Health_Ratio() >= Rule.ConditionGreen) &&
+                        !Target_Legal(((UnitClass *)this)->NavCom) &&
+                        from &&
+                        (from->What_Am_I() == RTTI_BUILDING) &&
+                        (*((BuildingClass*)from) == STRUCT_REPAIR)
+                ){
+                    TARGET rallyto = ((BuildingClass*)from)->RallyPoint;
+                    if (
+                            Target_Legal(rallyto) &&
+                            (As_Target() != rallyto) &&
+                            (::As_Target(Coord_Cell(Coord)) != rallyto)
+                    ){
+                        Assign_Target(TARGET_NONE);
+                        Assign_Destination(rallyto);
+                        Assign_Mission(MISSION_MOVE);
+                    }
+                    // otherwise do the "smarter runaway" logic
+                    else if (!((UnitClass*)this)->DoSmarterRunAway()){
+                        // failing that, just scatter
+                        Scatter(0, true, true); 
+                    }
+                    // hang up on the repair bay
+                    if (In_Radio_Contact() && (Contact_With_Whom() == from)){
+                        Transmit_Message(RADIO_ALL_DONE);
+                        return(RADIO_OVER_OUT);
+                    }
+                }
 				return(RADIO_NEGATIVE);
 			}
 
@@ -1108,6 +1147,9 @@ void TechnoClass::Draw_It(int x, int y, WindowNumberType window) const
 	*/
 	if ((ElectricZapDelay >= 0) && ElectricZapTarget) {
 		Electric_Zap(ElectricZapTarget, ElectricZapWhich, window);
+        if (SecondaryElectricZapTarget){
+            Electric_Zap(SecondaryElectricZapTarget, ElectricZapWhich, window, ElectricZapTarget);
+        }
 	}
 
 	int width, height;
@@ -1130,7 +1172,9 @@ void TechnoClass::Draw_It(int x, int y, WindowNumberType window) const
 	}
 
 	//if (IsSelected) {
-	if (Is_Selected_By_Player() || show_health_bar) {
+	//if (Is_Selected_By_Player() || show_health_bar) {
+	// Chthon CFE Note: Bugfix for y position being off for drawing stuff on infantry for anyone other than the server
+    if (Is_Selected_By_Player(House) || show_health_bar) {
 		GraphicViewPortClass draw_window(	LogicPage->Get_Graphic_Buffer(),
 														WindowList[window][WINDOWX] + LogicPage->Get_XPos(),
 														WindowList[window][WINDOWY] + LogicPage->Get_YPos(),
@@ -1215,6 +1259,71 @@ void TechnoClass::Draw_It(int x, int y, WindowNumberType window) const
 	{
 		Draw_Pips((x-lx)+5, y+ly-3, window);
 	}
+	
+    // Chthon CFE Note -- draw vetrancy pips
+    if (VeterancyRank > 0){
+        int piprank = VeterancyRank - 1;
+        // handle remastered and legacy graphics differently
+        // remastered rendering
+        if (window == WINDOW_VIRTUAL){
+            // only draw pip when selected by its owner
+            // GlyphX can't use PlayerPtr in conditionals here because it always points to the player acting as the server in LAN multiplayer
+            // Instead DLL_Draw_Intercept() has been rigged to hide the pip from everyone but the owner
+            if (Is_Selected_By_Player(House)){
+                // we can invoke DLL_Draw_Intercept() directly
+                // This works if the art asset is in VFX, but it does NOT work for adding frames to UI_PIP,
+                // probably because GlyphX handles pips as a member of the base object rather than an independent shape
+                int vpipx = x + lx - 2 -1; //right edge, minus half its own 1/4.5 scale width, minus 1 so it doesn't clip the selection outline
+                int vpipy = y + ly - 3 - 1; //bottom edge, minus half its own 1/4.5 scale height, minus 1 so it doesn't clip the selection outline
+                
+                // move veterancy pip up if pips/ammo are in the way
+                if (width - (3 * (Class_Of().Max_Pips() + ((Techno_Type_Class()->MaxAmmo > 0) ? Techno_Type_Class()->MaxAmmo : 0))) < 6){
+                    vpipy -= 4;
+                }
+                
+                // move veterancy pips to upper right for medics and mechanics, b/c they've got their other symbols in the way
+                if ((What_Am_I() == RTTI_INFANTRY) && ((*(InfantryClass *)this == INFANTRY_MECHANIC) || (*(InfantryClass *)this == INFANTRY_MEDIC))){
+                    //vpipy = y - ly + 4 + 3 + 1; // top edge, plus health bar, plus half its own 1/4.5 scale height, plus 1 so it doesn't clip the selection outline
+                    vpipy = y - ly + 3 + 2; // top edge, plus half its own 1/4.5 scale height, plus 2 so it doesn't clip the selection outline
+                }
+                
+                // workaround for GlyphX bug where pips appear too low on infantry on PCs other than the server
+                // Think I found the bug: the block for drawing the health bar contains a y-=6
+                // And it's conditioned on Is_Selected_By_Player(), which means "is selected by the server" when no house is passed in the optional parameter
+                // Presumably Petroglyph didn't catch this b/c GlyphX discards all the drawing done here anyway
+                // And you can't use legacy render in LAN games
+                // So let's try fixing it there
+                //if (PlayerPtr != House && What_Am_I() == RTTI_INFANTRY){
+                //    vpipy -= 6;
+                //}
+                
+                // try without SHAPE_BOTTOM since that might be cause of placement bug when server and client have different resolutions
+                //DLL_Draw_Intercept(piprank, vpipx, vpipy, 4, 6, SHAPE_BOTTOM | SHAPE_WIN_REL, this, "ZVTRN", HOUSE_NONE, 0x100);
+                //DLL_Draw_Intercept(piprank, vpipx, vpipy, 4, 6, SHAPE_WIN_REL, this, "ZVTRN", HOUSE_NONE, 0x100);
+                // need const_cast because this is a const function in RA
+                //DLL_Draw_Intercept(piprank, vpipx, vpipy, 4, 6, SHAPE_WIN_REL | SHAPE_CENTER, const_cast<TechnoClass*>(this), "ZVTRN", HOUSE_NONE, 0x100);
+                DLL_Draw_Intercept(piprank, vpipx, vpipy, 4, 6, SHAPE_WIN_REL | SHAPE_CENTER, this, DIR_N, 0x0100, "ZVTRN", HOUSE_NONE);
+            }
+        }
+        // legacy rendering
+        else {
+             // only draw pip when selected by its owner
+             // we can do this here since PlayerPtr always points to the human in single player
+             if (Is_Selected_By_Player(House) && House->Is_Ally(PlayerPtr)){
+                 // use the pips from our custom mix file
+                void const *vpipshapefile = MFCD::Retrieve("ZVTRN.SHP");
+                int vpipx = x + lx - 4 -1; //right edge, minus it's own 1/4.5 scale width, minus 1 so it doesn't clip the selection outline
+                int vpipy = y + ly -6; //bottom edge, then up full height (it appears SHAPE_BOTTOM doens't actually do anything in legacy mode, and that the outline is outside the unit's box in legacy mode)
+                // move veterancy pip up if pips/ammo are in the way
+                if (width - (3 * (Class_Of().Max_Pips() + ((Techno_Type_Class()->MaxAmmo > 0) ? Techno_Type_Class()->MaxAmmo : 0))) < 6){
+                    vpipy -= 5; //not sure why, but needs to be 1 higher not to overlap
+                }
+                CC_Draw_Shape(vpipshapefile, piprank, vpipx, vpipy, window, SHAPE_BOTTOM | SHAPE_WIN_REL, NULL, NULL);
+             }
+        }
+    }
+	
+	
 }
 
 
@@ -1531,9 +1640,19 @@ bool TechnoClass::Evaluate_Object(ThreatType method, int mask, int range, Techno
 	/*
 	**	If the object is cloaked, then it isn't a legal target.
 	*/
-	if (object->Is_Cloaked(this)) {
-		BEnd(BENCH_EVAL_OBJECT);
-		return(false);
+    // Chthon CFE Note: Dogs can smell cloaked infantry
+    // Should only apply to veteran rank 3 Tanya
+    // this is half broken, trying a different way
+	if (object->Is_Cloaked(this)){
+        //if (
+        //    !(  (What_Am_I() == RTTI_INFANTRY) &&
+        //        ((InfantryClass *)this)->Class->IsDog  &&
+        //        (object->What_Am_I() == RTTI_INFANTRY)
+        //    )
+        //){
+            BEnd(BENCH_EVAL_OBJECT);
+            return(false);
+        //}
 	}
 
 	/*
@@ -2441,9 +2560,53 @@ void TechnoClass::Clicked_As_Target(HousesType house, int count) // 2019/09/20 J
 void TechnoClass::AI(void)
 {
 	assert(IsActive);
-
+    
     // Attack Move rework by ChthonVII
-    if (AttackMove && Strength && (What_Am_I() == RTTI_UNIT || What_Am_I() == RTTI_INFANTRY || What_Am_I() == RTTI_AIRCRAFT || What_Am_I() == RTTI_VESSEL)) {
+    // (omit minelayers since they have their own logic in other functions)
+    if (AttackMove && Strength && (
+            ((What_Am_I() == RTTI_UNIT) &&  (*(UnitClass *)this != UNIT_MINELAYER)) ||
+            (What_Am_I() == RTTI_INFANTRY) ||
+            (What_Am_I() == RTTI_AIRCRAFT) ||
+            (What_Am_I() == RTTI_VESSEL)
+            )
+       ) {
+        
+        // special control for chronotanks
+        // if charged, and trying to move, and able to find a clear landing cell near the destination, teleport and drop out of attack-move
+        if (    (What_Am_I() == RTTI_UNIT) &&
+                (*((UnitClass*)this) == UNIT_CHRONOTANK) &&
+                (Mission == MISSION_MOVE) &&
+                !((UnitClass*)this)->MoebiusCountDown &&
+                Target_Legal(RememberedNavCom)
+        ){
+            bool tpok = false;
+            CELL tpdestination = As_Cell(RememberedNavCom);
+            if (Can_Enter_Cell(tpdestination, FACING_NONE) == MOVE_OK){
+                tpok = true;
+            }
+            else {
+                tpdestination = Map.Nearby_Location(tpdestination, Techno_Type_Class()->Speed);
+                if (    Map.In_Radar(tpdestination) &&
+                        (Can_Enter_Cell(tpdestination, FACING_NONE) == MOVE_OK) &&
+                        (Lepton_To_Cell(::Distance(Cell_Coord(As_Cell(RememberedNavCom)), Cell_Coord(tpdestination))) <= 6)
+                ){
+                    tpok = true;
+                }
+            }
+            if (tpok){
+                ((UnitClass*)this)->MoebiusCell = Coord_Cell(Coord); // probably pointless, but house.cpp sets this even on chronotanks (maybe lefover from earlier version in which they'd revert positions too?)
+                Sound_Effect(VOC_CHRONO, Coord); // let's try having sound at both ends?
+                ((UnitClass*)this)->Teleport_To(tpdestination);
+                if (ActiveCFEPatchConfig.EnableSmarterChrono){
+                    Unselect_All_Players_Except_Owner();
+                    Minimal_Detach_This_From_All(As_Target(), true);
+                }
+                ((UnitClass*)this)->MoebiusCountDown = ChronoTankDuration * TICKS_PER_MINUTE;
+                Scen.Do_BW_Fade();
+                Sound_Effect(VOC_CHRONO, Coord);
+                ResetAttackMove();
+            }
+        }
     
         // special control for boats
         // after shooting for awhile, force a return to moving and don't let them shoot again for awhile
@@ -2513,6 +2676,19 @@ void TechnoClass::AI(void)
         }
         // Later, when the target dies, Mission_Attack() will snap us back to MISSION_MOVE
         
+        // backstop in case we somehow got into a different mission
+        if (   (What_Am_I() != RTTI_AIRCRAFT) &&
+                (Mission != MISSION_MOVE) &&
+                (Mission != MISSION_ATTACK) &&
+                (MissionQueue != MISSION_MOVE) &&
+                (MissionQueue != MISSION_ATTACK) &&
+                RememberedNavCom &&
+                Target_Legal(RememberedNavCom) &&
+                (Distance(RememberedNavCom) >= Rule.CloseEnoughDistance)
+        ){
+            AttackMoveEnterMoveMode();
+        }
+        
     } // end of AttackMove stuff
     
 	/*
@@ -2549,10 +2725,77 @@ void TechnoClass::AI(void)
 	**	If this is a vehicle that heals itself (e.g., Mammoth Tank), then it will perform
 	**	the heal logic here.
 	*/
-	if (Techno_Type_Class()->IsSelfHealing && (Frame % (Rule.RepairRate * TICKS_PER_MINUTE)) == 0 && Health_Ratio() <= Rule.ConditionYellow) {
-		Strength++;
-		Mark(MARK_CHANGE);
-	}
+    // Chthon CFE Note -- revised to handle veteran units too.
+    if (Strength && (Techno_Type_Class()->IsSelfHealing ||  (VeterancyRank > 1))){
+        /* // something is wrong here & causing units without normal healing to heal super fast
+           // best guess is that somehow WW's funky fixed class is causing some intermediate value to be stored as a 16-bit int
+           // also, the extra precision on Rule.RepairRate * TICKS_PER_MINUTE probably *should* be rounded away
+           // so let's try a rewrite
+        int healcycle;
+        if (Techno_Type_Class()->IsSelfHealing){
+            healcycle = Rule.RepairRate * TICKS_PER_MINUTE;
+        }
+        else {
+            // scale healing off max health so same *percentage* healed as mammoth tank per unit time
+            healcycle = ((600 * TICKS_PER_MINUTE) * Rule.RepairRate) / Class_Of().MaxStrength;
+        }
+        */
+        int healcycle = Rule.RepairRate * TICKS_PER_MINUTE;
+        if (!Techno_Type_Class()->IsSelfHealing){
+            // scale healing off max health so same *percentage* healed as mammoth tank per unit time (full health in 8400 ticks)
+            healcycle = (healcycle * 600)/(int)Class_Of().MaxStrength;
+        }
+        // rank 3 veteran harvester heals at double speed
+        if (What_Am_I() == RTTI_UNIT && *((UnitClass*)this) == UNIT_HARVESTER && VeterancyRank == 3){
+            healcycle = healcycle / 2;
+        }
+        if (healcycle == 0){
+            healcycle = 1;
+        }
+        // heal if below 50% or
+        // below 100% and rank 2+ and already have vanilla healing or
+        // below 100% and rank 3 and certain unit types (buildings, medics, heavy tank)
+        if (    ((Frame % healcycle) == 0) &&
+                 (
+                    (Health_Ratio() <= Rule.ConditionYellow) ||
+                    (
+                         Techno_Type_Class()->IsSelfHealing &&
+                         (VeterancyRank > 1) &&
+                         (Health_Ratio() < Rule.ConditionGreen)
+                    ) ||
+                    (
+                        (Health_Ratio() < Rule.ConditionGreen) &&
+                        (VeterancyRank == 3) &&
+                        (
+                            (What_Am_I() == RTTI_BUILDING) ||
+                            (
+                                (What_Am_I() == RTTI_INFANTRY) &&
+                                (   (*((InfantryClass*)this) == INFANTRY_MEDIC) ||
+                                    (*((InfantryClass*)this) == INFANTRY_TANYA)
+                                )
+                            ) ||
+                            /*
+                            (
+                                (What_Am_I() == RTTI_UNIT) &&
+                                (*((UnitClass*)this) == UNIT_MTANK)
+                            ) ||
+                            */
+                            (
+                                (What_Am_I() == RTTI_VESSEL) &&
+                                (*((VesselClass*)this) == VESSEL_CA)
+                            )
+                        )
+                    )
+                )
+        ){
+            Strength++;
+            // Just in case Health_Ratio() does something funny...
+            if (Strength > Class_Of().MaxStrength){
+                Strength = Class_Of().MaxStrength;
+            }
+            Mark(MARK_CHANGE);
+        }
+    }
 
 	/*
 	**	Cloaking device processing.
@@ -2611,6 +2854,7 @@ void TechnoClass::AI(void)
 		Map.Flag_To_Redraw(true);
 		if (--ElectricZapDelay < 0) {
 			ElectricZapTarget = 0;
+            SecondaryElectricZapTarget = 0;
 			ElectricZapWhich = 0;
 		}
 	}
@@ -2677,6 +2921,9 @@ void TechnoClass::Cloaking_AI(void)
 						CloakingDevice.Set_Stage(0);	// re-start the stage counter
 						Cloak = UNCLOAKED;
 						CloakDelay = Rule.CloakDelay * TICKS_PER_MINUTE;
+                        if ((VeterancyRank == 3) && (What_Am_I() == RTTI_VESSEL) && (*((VesselClass*)this) == VESSEL_MISSILESUB)){
+                            CloakDelay = (Rule.CloakDelay * TICKS_PER_MINUTE)/2;
+                        }
 						Mark(MARK_CHANGE);
 					}
 					break;
@@ -2813,6 +3060,11 @@ bool TechnoClass::Is_Ready_To_Cloak(void) const
 		return(false);
 	}
 
+	// Chthon CFE Note: Infantry (e.g., rank 3 veteran Tanya) cannot recloak with a dog around
+	if ((What_Am_I() == RTTI_INFANTRY) && ((InfantryClass*)this)->UnfriendlyDogCheck()){
+        return false;
+    }
+	
 	/*
 	**	All tests passed, so this object is allowed to begin cloaking.
 	*/
@@ -3082,7 +3334,12 @@ int TechnoClass::Rearm_Delay(bool second, int which) const
 
 	WeaponTypeClass const * weapon = (which == 0) ? Techno_Type_Class()->PrimaryWeapon : Techno_Type_Class()->SecondaryWeapon;
 	if (second && weapon != NULL) {
-		return(weapon->ROF * House->ROFBias);
+        
+        // Chthon CFE Note: Staying consistent with TD (which lacked room for another float), and this is the only place it's used (aside from some AI suff that probably shouldn't know about veterancy), just compute here
+        float localROFBias = 1.0 / (1.0 + (0.05 * VeterancyRank)); // to multiply the *rate* of fire we need to multiply the *time per shot* by the inverse of the rate we want.
+        
+        // Chthon CFE Note: need to convert WW's fixed point type to float to make it multiply with float.
+		return(weapon->ROF * localROFBias * FixedToFloat(House->ROFBias));
 	}
 	return(3);
 }
@@ -3306,10 +3563,46 @@ BulletClass * TechnoClass::Fire_At(TARGET target, int which)
 	**	created.
 	*/
 	int firepower = weapon->Attack;
+    
 	if (firepower > 0) {
 		firepower = weapon->Attack * FirepowerBias * House->FirepowerBias;
 	}
-
+	// Chthon CFE Note: Fix so firepower bonus also works on medics
+	// WW's fixed type dosn't work with negative numbers, so convert to float first
+    // (minor game changing fix -- now the german medics will heal a bit more than the others)
+    else if (firepower < 0){
+        firepower = weapon->Attack * FixedToFloat(FirepowerBias) * FixedToFloat(House->FirepowerBias);
+    }
+	
+	
+	/*
+	//Chthon CFE Note: Some rank 3 veteran units do extra damage against certain armor types
+    // This has to move to Take_Damage() to avoid doing extra splash damage
+    // That's not a perfect solution either, because projectiles that hit after a veteran unit's death won't get the bonus, but it's less bad
+    if (VeterancyRank == 3 && object && object->Is_Techno()){ // walls don't have armor class, neither does force firing at blank space
+        // Minigunners and Humvees and Yaks get armor-piercing ammo (but only 3/4 as good as real WARHEAD_AP)
+        if (   (What_Am_I() == RTTI_INFANTRY && *((InfantryClass*)this) == INFANTRY_E1) ||
+                (What_Am_I() == RTTI_UNIT && *((UnitClass*)this) == UNIT_JEEP) || 
+                (What_Am_I() == RTTI_AIRCRAFT && *((AircraftClass*)this) == AIRCRAFT_YAK)
+        ){
+            if (object->Class_Of().Armor == ARMOR_WOOD){
+                firepower *= 1.125; // bring damage up as if armor effect were 0.5625 instead of 0.5
+            }
+            else if (object->Class_Of().Armor == ARMOR_STEEL){
+                firepower *= 3; // bring damage up as if armor effect were 0.75 instead of 0.25
+            }
+        }
+        // MIGs get high explosive missiles against infantry 
+        else if (What_Am_I() == RTTI_AIRCRAFT && *((AircraftClass*)this) == AIRCRAFT_MIG){
+            if (object->Class_Of().Armor == ARMOR_NONE){
+                firepower *= 3; // bring damage up as if armor effect were 0.9 instead of 0.3
+            }
+            else if (object->Class_Of().Armor == ARMOR_CONCRETE){
+                firepower *= 2; // bring damage up as if armor effect were 1.0 instead of 0.5
+            } 
+        }
+    }
+    */
 
 	/*
 	**	Give the bullet a boost of speed if the weapon indicates that this is required. Only
@@ -3341,8 +3634,52 @@ BulletClass * TechnoClass::Fire_At(TARGET target, int which)
 		}
 
 		Arm = Rearm_Delay(IsSecondShot, which);
-		if (tclass.Is_Two_Shooter()) {
+        
+        // Chthon CFE Note: light and medium tanks and turrets become two-shooters at rank 3 veterancy
+        bool veterantwoshooter = (
+            (VeterancyRank == 3) &&
+            (
+                (   What_Am_I() == RTTI_UNIT &&
+                    (
+                        (*((UnitClass*)this) == UNIT_LTANK) ||
+                        (*((UnitClass*)this) == UNIT_MTANK2)
+                    )
+                ) ||
+                (   What_Am_I() == RTTI_VESSEL &&
+                    (
+                        (*((VesselClass*)this) == VESSEL_SS) ||
+                        (*((VesselClass*)this) == VESSEL_PT)
+                    )
+                ) ||
+                (   What_Am_I() == RTTI_BUILDING &&
+                    (
+                        (*((BuildingClass*)this) == STRUCT_TURRET) /*||
+                        (*((BuildingClass*)this) == STRUCT_SAM)*/
+                    )
+                )
+            )
+        );
+        
+		if (tclass.Is_Two_Shooter() || veterantwoshooter) {
 			IsSecondShot = (IsSecondShot == false);
+            // quad shot for rank 3 veteran cruisers
+            if (    (VeterancyRank == 3) &&
+                    !IsSecondShot &&
+                    (
+                        ((What_Am_I() == RTTI_VESSEL) && (*((VesselClass*)this) == VESSEL_CA)) ||
+                        (   (What_Am_I() == RTTI_UNIT) && 
+                            ((*((UnitClass*)this) == UNIT_MTANK) || (*((UnitClass*)this) == UNIT_HTANK))
+                        )
+                    )
+                ){
+                if (ReadyQuadShot){
+                    Arm = 6;
+                    ReadyQuadShot = false;
+                }
+                else {
+                    ReadyQuadShot = true;
+                }
+            }
 		}
 
 		/*
@@ -3401,8 +3738,28 @@ BulletClass * TechnoClass::Fire_At(TARGET target, int which)
 
 			TechnoClass * tech = As_Techno(target);
 			if (tech != NULL)  {
-				tech->Clicked_As_Target(PlayerPtr->Class->House, 4); // 2019/09/20 JAS - Added record of who clicked on the object
+				// Chthon CFE Note: This is wrong. B/c PlayerPtr only points to the server, only the server will see this
+                //tech->Clicked_As_Target(PlayerPtr->Class->House, 4); // 2019/09/20 JAS - Added record of who clicked on the object
+                tech->Clicked_As_Target(HOUSE_COUNT, 4); // HOUSE_COUNT means show everyone
 			}
+			
+			// Chthon CFE Note: rank3 veteran zapper units get chain lightning to a second target
+			if (VeterancyRank == 3){
+                SecondaryElectricZapTarget = NULL;
+                TARGET secondarytarget = FindChainLightningTarget(target, which, 0.5);
+                if (Target_Legal(secondarytarget)){
+                    BulletClass * secondarybullet = new BulletClass(weapon->Bullet->Type, secondarytarget, this, firepower, WarheadType(weapon->WarheadPtr->ID), firespeed);
+                    COORDINATE secondary_target_coord = As_Object(secondarytarget)->Target_Coord(); 
+                    DirType secondary_dir = ::Direction(target_coord, secondary_target_coord);
+                    if (secondarybullet->Unlimbo(target_coord, secondary_dir)) {
+                        SecondaryElectricZapTarget = secondary_target_coord;
+                        secondarybullet->AI();
+                    } else {
+                        delete secondarybullet;
+                    }
+                }
+            }
+			
 		}
 
 		/*
@@ -3601,7 +3958,7 @@ ActionType TechnoClass::What_Action(ObjectClass const * object) const
 		if (altdown) {
 			if (House->IsPlayerControl && Can_Player_Move()) {
                 // Attack Move rework by ChthonVII -- Attack-move and crush
-                if (ActiveCFEPatchConfig.EnableAttackMove && Techno_Type_Class()->PrimaryWeapon != NULL && shiftdown){
+                if (ActiveCFEPatchConfig.EnableAttackMove && ((Techno_Type_Class()->PrimaryWeapon != NULL) || ((What_Am_I() == RTTI_UNIT) && (*((UnitClass*)this) == UNIT_MINELAYER))) && shiftdown){
                     return(ACTION_ATTACKMOVE);
                 }
                 else {
@@ -3761,7 +4118,7 @@ ActionType TechnoClass::What_Action(CELL cell) const
 		*/
 		if (shiftdown) {
             // Attack Move rework by ChthonVII -- hijack this for attack-move. This should be the main way attack-move input is picked up.
-            if (ActiveCFEPatchConfig.EnableAttackMove && Techno_Type_Class()->PrimaryWeapon != NULL){
+            if (ActiveCFEPatchConfig.EnableAttackMove && ((Techno_Type_Class()->PrimaryWeapon != NULL) || ((What_Am_I() == RTTI_UNIT) && (*((UnitClass*)this) == UNIT_MINELAYER)))){
                 return(ACTION_ATTACKMOVE);
             }
             else {
@@ -3908,6 +4265,25 @@ int TechnoClass::Weapon_Range(int which) const
 	WeaponTypeClass const * weapon = NULL;
 	TechnoTypeClass const & ttype = *Techno_Type_Class();
 
+    // Chthon CFE Note: Some rank 3 veteran units get range bonus
+    int flatbonus = 0;
+    if ( (VeterancyRank == 3) && 
+        (
+            (( What_Am_I() == RTTI_INFANTRY) && (*((InfantryClass*)this) == INFANTRY_E2)) ||
+            (( What_Am_I() == RTTI_UNIT) && (*((UnitClass*)this) == UNIT_ARTY)) ||
+            (   ( What_Am_I() == RTTI_BUILDING) && (
+                    (*((BuildingClass*)this) == STRUCT_PILLBOX) ||
+                    (*((BuildingClass*)this) == STRUCT_CAMOPILLBOX) ||
+                    (*((BuildingClass*)this) == STRUCT_FLAME_TURRET) ||
+                    (*((BuildingClass*)this) == STRUCT_AAGUN) ||
+                    (*((BuildingClass*)this) == STRUCT_SAM)
+                )
+            )
+        )
+    ){
+        flatbonus = 256; // 256 leptons = 1 cell
+    }
+    
 	switch (which) {
 		case 0:
 			weapon = ttype.PrimaryWeapon;
@@ -3918,7 +4294,8 @@ int TechnoClass::Weapon_Range(int which) const
 			break;
 	}
 	if (weapon != NULL) {
-		return(weapon->Range);
+        // Chthon TODO: investigate if Greece's range bonus needs fixed
+		return(weapon->Range + flatbonus);
 	}
 	return(0);
 }
@@ -4094,7 +4471,7 @@ bool TechnoClass::Captured(HouseClass * newowner)
  * HISTORY:                                                                                    *
  *   06/20/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-ResultType TechnoClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, bool forced)
+ResultType TechnoClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, bool forced, TARGET indirectsource)
 {
 	assert(IsActive);
 
@@ -4105,9 +4482,71 @@ ResultType TechnoClass::Take_Damage(int & damage, int distance, WarheadType warh
 	**	value.
 	*/
 	if (!forced && damage > 0) {
+        
+        //Chthon CFE Note: Some rank 3 veteran units do extra damage against certain armor types
+        // Moved from Fire_At() to avoid doing extra splash damage
+        // This is not a perfect solution either, because projectiles that hit after a veteran unit's death won't get the bonus, but it's less bad
+        // this has to go above armor application so the smaller bonuses aren't rounded away
+        if (   source &&
+                source->IsActive &&
+                (source->VeterancyRank == 3)
+        ){
+            int upgradetype = 0;
+            if (    (source->What_Am_I() == RTTI_INFANTRY && *((InfantryClass*)source) == INFANTRY_E1) ||
+                     (source->What_Am_I() == RTTI_UNIT && *((UnitClass*)source) == UNIT_JEEP) || 
+                     (source->What_Am_I() == RTTI_AIRCRAFT && *((AircraftClass*)source) == AIRCRAFT_YAK)
+            ){
+                upgradetype = 1; // SA -> pseudo-AP bullets
+            }
+            else if (source->What_Am_I() == RTTI_AIRCRAFT && *((AircraftClass*)source) == AIRCRAFT_MIG){
+                upgradetype = 2; // AP -> pseudo-HE missiles
+            }
+            
+            if (Class_Of().Armor == ARMOR_NONE){
+                if (upgradetype == 2){
+                    damage *= 3; // bring damage up as if armor effect were 0.9 instead of 0.3
+                }
+            }
+            else if (Class_Of().Armor == ARMOR_WOOD){
+                if (upgradetype == 1){
+                    damage *= 1.125; // bring damage up as if armor effect were 0.5625 instead of 0.5
+                }
+            }
+            else if (Class_Of().Armor == ARMOR_STEEL){
+                if (upgradetype == 1){
+                    damage *= 3; // bring damage up as if armor effect were 0.75 instead of 0.25
+                }
+            }
+            else if (Class_Of().Armor == ARMOR_CONCRETE){
+                 if (upgradetype == 2){
+                    damage *= 2; // bring damage up as if armor effect were 1.0 instead of 0.5
+                }
+            }
+            // Could also bring up AP vs. ARMOR_ALUMINUM, but that would make upped SA too strong relative to AP
+        }
+        
+        // vanilla armor application 
 		damage = damage * ArmorBias * House->ArmorBias;
+        
+        // Chthon CFE Note: Rank 3 veteran flame guys, chem guys, and flame tanks learned to be careful and so do much reduced damage to allies, unless force firing
+        if (   source &&
+                source->IsActive &&
+                House->Is_Ally(source) &&
+                (source->TarCom != As_Target()) &&
+                (source->VeterancyRank == 3) &&
+                (source->What_Am_I() == RTTI_INFANTRY) &&
+                (*((InfantryClass*)source) == INFANTRY_E4)
+        ){
+            damage = 0.1 * damage;
+            if (damage == 0){
+                damage = 1;
+            }
+        }
+        
 	}
 
+	int oldstrength = Strength; // Chthon CFE Note: save this before it changes 
+	
 	if (IronCurtainCountDown == 0) {
 		result = ObjectClass::Take_Damage(damage, distance, warhead, source, forced);
 	}
@@ -4132,6 +4571,16 @@ ResultType TechnoClass::Take_Damage(int & damage, int distance, WarheadType warh
 				}
 
 				int damage = Techno_Type_Class()->MaxStrength;
+                
+                // Chthon CFE Note: flamethrower death explosions scale down with veterancy rank
+                // Thematically, b/c they're low on fuel
+                // Balance-wise, b/c the point of their special veterancy bonuses is to make them less of a danger to your other troops
+                if ((What_Am_I() == RTTI_INFANTRY) && (*((InfantryClass *)this) == INFANTRY_E4)){
+                    float vetmultiplier = 1.0;
+                    vetmultiplier -= (0.3 * VeterancyRank);
+                    damage = damage * vetmultiplier;
+                }
+                
 				new AnimClass(Combat_Anim(damage, wh, Map[Center_Coord()].Land_Type()), Center_Coord());
 				int radius = damage * Rule.ExplosionSpread;
 //				int radius = damage/2;
@@ -4180,6 +4629,37 @@ ResultType TechnoClass::Take_Damage(int & damage, int distance, WarheadType warh
 		case RESULT_NONE:
 			break;
 	}
+	
+	
+    // Chthon CFE Note -- give XP when damaged by a non-ally, or healed
+    
+    // if indirectsource is set, use that; otherwise use source
+    TechnoClass* XPsource;
+    if (Target_Legal(indirectsource)){
+        XPsource = As_Techno(indirectsource);
+    }
+    else {
+        XPsource = source;
+    }
+    
+    bool gothealed = (Strength > oldstrength);
+	if (ActiveCFEPatchConfig.EnableVeterancy && XPsource && XPsource->IsActive && (gothealed || !House->Is_Ally(XPsource))){
+        int delta = oldstrength - Strength;
+        if (gothealed){
+            delta = Strength - oldstrength;
+        }
+        XPsource->GainVeterancyXP((delta * Class_Of().Cost_Of())/Class_Of().MaxStrength);
+        
+        // gain XP yourself if healed by rank3 mechanic
+        if ((XPsource->What_Am_I() == RTTI_INFANTRY) && (*((InfantryClass *)XPsource) == INFANTRY_MECHANIC) && (XPsource->VeterancyRank == 3)){
+            // This is too good. You can get too many powerful promotions too quickly through repairing self-inflicted damage
+            // Use nerfed version instead
+            //GainVeterancyXP(((delta * Class_Of().Cost_Of())/Class_Of().MaxStrength)*0.5);
+            GainMechanicXPBoost(delta);
+        }
+    }
+	
+	
 	return(result);
 }
 
@@ -4374,7 +4854,11 @@ void TechnoClass::Do_Uncloak(void)
 #ifdef FIXIT_CSII	//	checked - ajw 9/28/98
 		if(What_Am_I() == RTTI_VESSEL) {
 			Sound_Effect(VOC_SUBSHOW, Coord);
-		} else {
+		}
+		else if (What_Am_I() == RTTI_INFANTRY){
+            Sound_Effect(VOC_WIND_GUST, Coord);
+        }
+		else {
 			Sound_Effect(VOC_IRON1, Coord);
 		}
 #else
@@ -4415,7 +4899,11 @@ void TechnoClass::Do_Cloak(void)
 #ifdef FIXIT_CSII	//	checked - ajw 9/28/98
 		if(What_Am_I() == RTTI_VESSEL) {
 			Sound_Effect(VOC_SUBSHOW, Coord);
-		} else {
+        }
+        else if (What_Am_I() == RTTI_INFANTRY){
+            Sound_Effect(VOC_WIND_GUST, Coord);
+        }
+        else {
 			Sound_Effect(VOC_IRON1, Coord);
 		}
 #else
@@ -4883,6 +5371,10 @@ void TechnoClass::Kill_Cargo(TechnoClass * source)
 	while (Is_Something_Attached()) {
 		FootClass * foot = Detach_Object();
 		if (foot != NULL) {
+            // Chthon CFE Note: Give XP for any passengers killed too
+            if (ActiveCFEPatchConfig.EnableVeterancy && source && source->IsActive && !House->Is_Ally(source)){
+                source->GainVeterancyXP((foot->Strength * foot->Class_Of().Cost_Of())/foot->Class_Of().MaxStrength);
+            }
 			foot->Record_The_Kill(source);
 			delete foot;
 		}
@@ -7063,11 +7555,39 @@ unsigned TechnoClass::Spied_By() const
 }
 
 // Attack Move rework by ChthonVII
-void TechnoClass::ResetAttackMove()
+void TechnoClass::ResetAttackMove(int minelayercommand)
 {
-	RememberedNavCom = TARGET_NONE; //0
+	if ((What_Am_I() == RTTI_UNIT) && (*((UnitClass*)this) == UNIT_MINELAYER)){
+        // only process the special minelayer commands if we're in attack-move mode to start with
+        // minelayercommand: 0=just exit attack-move; 1=don't exit attack-move, poop instead; 2=exit attack-move and go home
+        if (AttackMove){
+            // switch to mine pooping mode
+            if (minelayercommand == 1){
+                // set a flag if we've more or less reached our original destination (otherwise got got blocked and gave up, so just go home)
+                if (Target_Legal(RememberedNavCom) && (Distance(RememberedNavCom) < 2*Rule.CloseEnoughDistance)){
+                    ((UnitClass*)this)->MLattackmovemode = 1;
+                }
+                if (Ammo && ((UnitClass*)this)->MLattackmovemode){
+                    ((UnitClass*)this)->MinelayerPoopTime();
+                }
+                else {
+                    ((UnitClass*)this)->MinelayerGoHome();
+                }
+                return;
+            }
+            // just go home
+            else if (minelayercommand == 2){
+                ((UnitClass*)this)->MinelayerGoHome(); // MinelayerGoHome() will call ResetAttackMove again with special command 0
+                return;
+            }
+        }
+        ((UnitClass*)this)->MLoriginalposition = TARGET_NONE;
+        ((UnitClass*)this)->MLattackmovemode = 0;
+    }
+    RememberedNavCom = TARGET_NONE; //0
 	AttackMove = 0;
     AttackMoveBoatClock = 0;
+    return;
 }
 
 void TechnoClass::AttackMoveEnterMoveMode(){
@@ -7079,23 +7599,464 @@ void TechnoClass::AttackMoveEnterMoveMode(){
         return;
     }
     
-    if (What_Am_I() == RTTI_INFANTRY){
-        ((FootClass*)this)->Stop_Driver(); // Butch had this for infantry only, it seems to be causing problems for other unit types
+    //if (What_Am_I() == RTTI_INFANTRY){
+    //    ((FootClass*)this)->Stop_Driver(); // Butch had this for infantry only, it seems to be causing problems for other unit types
+    //}
+    Assign_Target(TARGET_NONE);
+    if (Is_Foot()) {
+        ((FootClass *)this)->Clear_Navigation_List();
     }
     Assign_Destination(RememberedNavCom);
     Assign_Mission(MISSION_MOVE); //Set_Mission() is bad because it makes Commence() not work, and then we end up with units in impossible mission/status combinations
-    Commence();
+    //Commence();
 }
 
 void TechnoClass::AttackMoveEnterAttackMode(){
     Assign_Destination(TARGET_NONE);
-    if (What_Am_I() == RTTI_INFANTRY){
-        ((FootClass*)this)->Stop_Driver(); // Butch had this for infantry only, it seems to be causing problems for other unit types
+    if (Is_Foot()) {
+        ((FootClass *)this)->Clear_Navigation_List();
     }
+    //if (What_Am_I() == RTTI_INFANTRY){
+    //    ((FootClass*)this)->Stop_Driver(); // Butch had this for infantry only, it seems to be causing problems for other unit types
+    //}
     //((FootClass*)this)->Approach_Target(); // MissionAttack() will do this
     Assign_Mission(MISSION_ATTACK); //Set_Mission() is bad because it makes Commence() not work, and then we end up with units in impossible mission/status combinations
-    Commence();
+    //Commence();
     if (What_Am_I() == RTTI_VESSEL){
         AttackMoveBoatClock = 180;
     }
+}
+
+
+void TechnoClass::GainVeterancyXP(unsigned short int XP){
+    // bail if veterancy disabled
+    if (!ActiveCFEPatchConfig.EnableVeterancy){
+        return;
+    }
+    // bail if rank is already maxed (avoid possibility of integer overflow on VeterancyXP)
+    if (VeterancyRank >= 3){
+        return;
+    }
+    // bail if this is a missile silo (super nukes would be a bit insane)
+    if ((What_Am_I() == RTTI_BUILDING) && (*((BuildingClass*)this) == STRUCT_MSLO)){
+        return;
+    }    
+    
+    // Since they're pretty extreme experiences, let's give 50% more XP during chronoshift or iron curtain
+    if (IronCurtainCountDown || (
+            ((What_Am_I() == RTTI_UNIT) || (What_Am_I() == RTTI_VESSEL)) &&
+            ((DriveClass *)this)->IsMoebius
+        )
+    ){
+        XP *= 1.5;
+    }
+    
+    // gain XP
+    VeterancyXP += XP;
+    int oldrank = VeterancyRank;
+    
+    
+    /* Notes:
+        1. It looks like RA handles speed from the INI file as floor((read_value*256)/100)
+        2. Speed is always an integral, decimal part gets truncated after read from INI and then again after biases are applied.
+        3. Per-unit biases that already exist in vanilla RA -- firepower, armor, speed -- use WW's wonky fixed point type
+        4. To precompute WW's fixed point type, take (numerator*65536)/denominator as a 32-bit unsigned int
+            But hex literals are treated as ints, so we need a pseduo constructor function to use them as the fixed point type.
+            Which is ugly but probably still probably faster than the real constructors, and allows us to control the rounding
+    */
+    const fixed five_percent = FixedFromRawBits(0x00000CCD);
+    const fixed ten_percent = FixedFromRawBits(0x0000199A);
+    const fixed twenty_percent = FixedFromRawBits(0x00003333);
+    const fixed thirty_percent = FixedFromRawBits(0x00004CCD);
+    
+    // rank up to 3
+    //if (VeterancyRank < 3 && VeterancyXP >= Class_Of().Cost_Of()){ // just for now jump straight to rank 3 for testing
+    if (VeterancyRank < 3 && VeterancyXP >= 6 * Class_Of().Cost_Of()){
+        VeterancyRank = 3;
+        
+        // special bonuses for reaching rank 3:
+        
+        
+        
+        // infantry bonuses
+        if (What_Am_I() == RTTI_INFANTRY){
+            
+            /*
+                INFANTRY_DOG // leader of the pack -- aggro other nearby dogs to its target if they don't have a target already (handled in InfantryClass::AlphaPuppersHowl())
+                INFANTRY_E1 // gunner -- Minigunner gets armor-piercing ammo (handled in TechnoClass::Take_Damage())
+                INFANTRY_E2 // grenade -- Grenadier gets +1 range (handled in TechnoClass::Weapon_Range())
+                INFANTRY_E3 // bazooka -- better move speed, handled here
+                INFANTRY_E4 // flamethrower
+                    // flamethrowers do 90% reduced friendly-fire damage to allies, unless deliberately targetting the ally (handled in  TechnoClass::TakeDamage())
+                    // flamethrowers do 30% reduced explosion damage per rank (handled in InfantryClass::Take_Damage())
+                INFANTRY_RENOVATOR // engineer -- no bonus
+                INFANTRY_SPY -- no bonus
+                INFANTRY_THIEF -- no bonus
+                INFANTRY_TANYA --gains stealth (handled here) & self healing goes to 100% hp (handled in TechnoClass::AI())
+                    (rationale for healing to 100% is being untargetable by medics during stealth)
+                INFANTRY_MEDIC -- heal thyself! heals itself if damaged, and idle, and no other target to heal (handled in InfantryClass:AI()). Also self-healing goes to 100% hp (handled in TechnoClass::AI())
+                INFANTRY_GENERAL //Stavros/Volkov -- no bonus
+                INFANTRY_SHOCK // Shock trooper -- chain lightning (handled in TechnoClass:Fire_At(), Draw_It(), FindChainLightningTarget(), and AI()
+                INFANTRY_MECHANIC -- gives XP to healed vehicle. (handled in TechnoClass::GainMechanicXPBoost(), hopefully in a way that limits the potential for converting self-inflicted damage into XP)
+             */
+            
+            // Rocket infantry gets better move speed (should match rank 3 grenadier)
+            if (*((InfantryClass*)this) == INFANTRY_E3){
+                // grenadier ini speed is 5, which is (12.8=)12 after conversion
+                // bazooka ini speed is 3, which is (7.68=)7 after conversion
+                // base speed basis with rank 3 bonus is 1.3
+                // so bonus should be ~0.93
+                //((FootClass*)this)->SpeedBias += fixed(0.93);
+                ((FootClass*)this)->SpeedBias += FixedFromRawBits(0x0000EDB7);
+            }
+            
+            // Tanya gains stealth
+            else if (*((InfantryClass*)this) == INFANTRY_TANYA){
+                IsCloakable = true;
+            }
+            
+        }
+        // ground vehicle bonuses
+        else if (What_Am_I() == RTTI_UNIT){
+            
+            /*
+                UNIT_V2_LAUNCHER -- reload time reduced by 1/3 (handled in UnitClass::Reload_AI())
+                UNIT_LTANK // light tank -- two shooter (mostly handled in TechnoClass::Fire_At()) (maybe change to something else if this proves too overpowered)
+                UNIT_MTANK // heavy tank -- qaud shooter (mostly handled in TechnoClass::Fire_At())
+                    cooler than old bonus. old bonus was: better move speed (handled here) and self healing up to 100% (handled in TechnoClass::AI())
+                UNIT_MTANK2 // medium tank -- two shooter (mostly handled in TechnoClass::Fire_At())
+                UNIT_HTANK // mammoth tank -- quad shooter (mostly handled in TechnoClass::Fire_At()) & built-in iron curtain (handled in UnitClass:Take_Damage() and AI())
+                UNIT_MRJ // radar jammer -- no bonus
+                UNIT_MGG // gap generator -- no bonus
+                UNIT_ARTY // +1 range (handled in TechnoClass::Weapon_Range())
+                UNIT_HARVESTER // doubled damage reduction (60%!) and doubled regen (handled in TechnoClass::AI())
+                UNIT_MCV // no bonus
+                UNIT_JEEP // gets armor-piercing ammo (handled in TechnoClass::Fire_At())
+                UNIT_APC //  no kill passengers when chonoshifted (handled in DriveClass:Teleport_To())
+                UNIT_MINELAYER // regenerates ammo (handled in UnitClass::AI)
+                UNIT_CHRONOTANK // damage reduction (handled here)
+                UNIT_TESLATANK // chain lightning (handled in TechnoClass:Fire_At(), Draw_It(), FindChainLightningTarget(), and AI()
+                UNIT_MAD -- no bonus
+                UNIT_DEMOTRUCK -- no bonus
+                UNIT_PHASE // on-board medic (handled in UnitClass::AI())
+            */
+            
+            // Heavy Tank gets move speed boost to match medium tank
+            // INI speed for medium tank is 8, which converts to (20.48=)20
+            // INI speed for heavy tank is 7, which converts to (17.92=)17
+            // Base speed bonus is 1.3 at rank 3
+            // So bonus needs to be ~22.9% (round up LSB to avoid rounding errors later since 26.0 has no fractional part)
+            // This is lame. Quad-shooter feels cooler
+            /*
+            if (*((UnitClass*)this) == UNIT_MTANK){
+                //((FootClass*)this)->SpeedBias += fixed(0.229);
+                ((FootClass*)this)->SpeedBias += FixedFromRawBits(0x00003ABB);
+            }
+            */
+            if ((*((UnitClass*)this) == UNIT_MTANK) || (*((UnitClass*)this) == UNIT_HTANK)){
+                ReadyQuadShot = true; // prepare to fire quad shot on next volley
+            }
+            
+            // Light and Medium Tank become two-shooters (mostly handled in TechnoClass::Fire_At())
+            else if ((*((UnitClass*)this) == UNIT_LTANK) || (*((UnitClass*)this) == UNIT_MTANK2)){
+                IsSecondShot = false; //reset so that next volley will be double
+            }
+            
+            // Chronotank gets more damage reduction
+            else if (*((UnitClass*)this) == UNIT_CHRONOTANK){
+                //ArmorBias -= fixed(0.2); // -20%
+                ArmorBias -= twenty_percent; // -20%
+                // don't reduce damage by more than 90% (might matter in RA with crates and stuff)
+                //if (ArmorBias < fixed(0.1)){
+                //    ArmorBias = fixed(0.1); // 10%
+                //}
+                if (ArmorBias < ten_percent){
+                    ArmorBias = ten_percent; // 10%
+                }
+            }
+            
+            // harvesters get doubled damage reduction (60%!) and doubled regen (handled in TechnoClass::AI())
+            else if (*((UnitClass*)this) == UNIT_HARVESTER){
+                //ArmorBias -= fixed(0.3); //-30%
+                ArmorBias -= thirty_percent; //-30%
+                // don't reduce damage by more than 90% (might matter in RA with crates and stuff)
+                //if (ArmorBias < fixed(0.1)){
+                //    ArmorBias = fixed(0.1); // 10%
+                //}
+                if (ArmorBias < ten_percent){
+                    ArmorBias = ten_percent; // 10%
+                }
+            }
+            
+        }
+        // aircraft bonuses:
+        //else if (What_Am_I() == RTTI_AIRCRAFT){
+                /*
+                AIRCRAFT_MIG -- repairs for free on airstrip & fires explosive missiles against unarmored targets
+                AIRCRAFT_YAK -- repairs for free on airstrip & gets AP bullets
+                AIRCRAFT_LONGBOW -- repairs for free on helipad and reloads twice as fast
+                AIRCRAFT_HIND -- repairs for free on helipad and reloads twice as fast
+                
+                reload twice as fast handled in BuildingClass::Mission_Repair()
+                repair for free on helipad (half the rate of reapir bay) handled in AircraftClass::AI()
+                warhead modifications handled in TechnoClass::Take_Damage()
+                */
+        //}
+
+        // boat bonuses
+        else if (What_Am_I() == RTTI_VESSEL){
+            /*
+            VESSEL_SS // normal sub -- becomes two shooter (mostly handled in TechnoClass::Fire_At())
+            VESSEL_DD // destroyer -- built-in short-range sonar (handled in VesselClass:AI())
+            VESSEL_CA // cruiser -- becomes quad-shooter (mostly handled in TechnoClass::Fire_At()) and self-healing goes to 100% hp (handled in TechnoClass::AI())
+            VESSEL_TRANSPORT -- no bonus
+            VESSEL_PT // gunboat -- becomes two shooter (mostly handled in TechnoClass::Fire_At())
+            VESSEL_MISSILESUB -- faster submerge (handled in TechnoClass::Cloaking_AI())
+            */
+            
+            if ((*((VesselClass*)this) == VESSEL_SS) || (*((VesselClass*)this) == VESSEL_PT)){
+                IsSecondShot = false; //reset so that next volley will be double
+            }
+            
+            if (*((VesselClass*)this) == VESSEL_CA){
+                ReadyQuadShot = true; // prepare to fire quad shot on next volley
+            }
+        }
+        
+        // defense building bonuses:
+        else if (What_Am_I() == RTTI_BUILDING){
+            /*
+            STRUCT_PILLBOX -- +1 range (handled in TechnoClass::Weapon_Range())
+            STRUCT_CAMOPILLBOX -- +1 range (handled in TechnoClass::Weapon_Range())
+            STRUCT_TESLA -- chain lightning (handled in TechnoClass:Fire_At(), Draw_It(), FindChainLightningTarget(), and AI()
+            STRUCT_TURRET -- becomes two shooter (mostly handled in TechnoClass::Fire_At())
+            STRUCT_AAGUN - +1 range (handled in TechnoClass::Weapon_Range())
+            STRUCT_FLAME_TURRET +1 range (handled in TechnoClass::Weapon_Range())
+            STRUCT_SAM -- +1 range (handled in TechnoClass::Weapon_Range()) (originally wanted to make this a 2-shooter for variety vs AA gun, but rate of fire is already so fast it would be quite overpowered)
+            */
+            if ((*((BuildingClass*)this) == STRUCT_TURRET) /*|| (*((BuildingClass*)this) == STRUCT_SAM)*/){
+                IsSecondShot = false; //reset so that next volley will be double
+            }
+       }
+       
+    }
+    // rank up to 2
+    else if (VeterancyRank < 2 && VeterancyXP >= 3 * Class_Of().Cost_Of()){
+        VeterancyRank = 2;
+    }
+    // rank up to 1
+    else if (VeterancyRank < 1 && VeterancyXP >= Class_Of().Cost_Of()){
+        VeterancyRank = 1;
+    }
+    
+    // do stuff if rank increased
+    if (VeterancyRank != oldrank){
+        int delta = VeterancyRank - oldrank;
+        for (int i=0; i<delta; i++){
+            //FirepowerBias += fixed(0.05); // +5%
+            FirepowerBias += five_percent; // +5%
+            //ArmorBias -= fixed(0.1); // -10%
+            ArmorBias -= ten_percent; // -10%
+            // don't reduce damage by more than 90% (might matter in RA with crates and stuff)
+            //if (ArmorBias < fixed(0.1)){
+            //        ArmorBias = fixed(0.1); // 10%
+            //}
+            if (ArmorBias < ten_percent){
+                ArmorBias = ten_percent; // 10%
+            }
+            
+            if (What_Am_I() == RTTI_INFANTRY || What_Am_I() == RTTI_UNIT || What_Am_I() == RTTI_AIRCRAFT || What_Am_I() == RTTI_VESSEL){
+                //((FootClass*)this)->SpeedBias += fixed(0.1); // + 10%
+                ((FootClass*)this)->SpeedBias += ten_percent; // + 10%
+            }
+            // ROFBias is handled in TechnoClass::Rearm_Delay() using VeterancyRank
+            // Regen beginning at rank 2 is handled in TechnoClass::AI()
+        }
+        
+        // play a sound for the owner only
+        // let's try calling the API function directly so we can set the house pointer correctly
+        // also, the XML for the sound needs to indicate it should only play for one player -- IsUnitResponseVO works, and I'm guessing IsGUI and IsHUDVO would too.
+        // Need to filter out CPU houses or the PC acting as the server gets their sounds -- really bad for single player
+        if (House->IsHuman) {
+            On_Sound_Effect(House, (int)VOC_PROMOTED, "", 1, Coord);
+        }
+        
+        // flash for the owner only
+        Clicked_As_Target(Owner(), 18); // roughly matches the duration of the audible part of the SFX 
+        
+        // show the pip immediately if presently selected by its owner
+        if (Is_Selected_By_Player(House)) {
+			Mark(MARK_CHANGE);
+		}
+		
+    }
+    
+    return;
+}
+
+/* Find a target for chain lightning to bounce to. (Used by rank3 veteran tesla units)
+ * Significant copy/pasta from Target_Something_Nearby(), Greatest_Threat(), Evaluate_Cell(), and Evaluate_Object()
+ * primarytarget is the original target from which the chain lightning will bounce
+ * which is which weapon to fire (primary or secondary)
+ * rangescalar is an adjustment to weapon range (the idea being that effectively doubling range is probably too strong)
+ */
+
+TARGET TechnoClass::FindChainLightningTarget(const TARGET primarytarget, const int which, const float rangescalar){
+
+    ObjectClass* primaryobject = As_Object(primarytarget);
+    COORDINATE primary_target_coord;
+    if (primaryobject != NULL) {
+		primary_target_coord = primaryobject->Target_Coord();
+	} else {
+		primary_target_coord = As_Coord(primarytarget);
+	}
+
+    int bestval = 0;
+    ObjectClass const * bestobject = NULL;
+
+    // unit types we might want to shoot  (include aircraft since they might be landed and Cell_Occupier will only give things on ground)
+    const int mask = (1 << RTTI_BUILDING) | (1 << RTTI_INFANTRY) | (1 << RTTI_UNIT) | (1 << RTTI_VESSEL) | (1 << RTTI_AIRCRAFT);
+
+    // scale weapon range by the given scalar (the assumption here is that chain lightning would probably be really unbalanced if it doubled range)
+    // then convert to cell range for scan
+    const int range = Weapon_Range(which) * rangescalar;
+    int cellrange = (range/ ICON_LEPTON_W);
+    if (cellrange == 0){
+        cellrange = 1;
+    }
+
+    const CELL cell = Coord_Cell(primary_target_coord);
+    const int cellx = Cell_X(cell);
+    const int celly = Cell_Y(cell);
+    int scanx;
+    int scany;
+
+    // scan a box of cells around the primary_target_coord
+    for (int i=(-1*cellrange); i<=cellrange; i++){
+        scanx = cellx + i;
+        
+        // skip if out of bounds
+        if (scanx <0 ){
+            continue;
+        }
+        if (scanx > MAP_CELL_W){
+            continue;
+        }
+
+        for (int j=(-1*cellrange); j<=cellrange; j++){
+            scany = celly + j;
+            
+            // skip if out of bounds
+            if (scany < 0){
+                continue;
+            }
+            if (scany > MAP_CELL_H){
+                continue;
+            }
+            
+            CELL newcell = XY_Cell(scanx, scany);
+            
+            // skip if off playable map
+            if (!Map.In_Radar(newcell)){
+                continue;
+            }
+
+            CellClass* cellptr = &Map[newcell];
+
+            // check if we can shoot at something in this cell
+            TechnoClass const * tentative = (TechnoClass const *)cellptr->Cell_Occupier();
+            while (tentative != NULL) {
+                // steal applicable legality/scoring logic from Evaluate_Object()
+                if (
+                    (tentative != this) &&                       // don't target yourself
+                    (tentative != primaryobject) &&       // don't retarget the first target
+                    tentative->IsActive &&
+                    !tentative->IsInLimbo &&
+                    tentative->Is_Techno() &&
+                    !House->Is_Ally(tentative) && 
+                    !tentative->Is_Cloaked(this) &&
+                    !MissionControl[tentative->Mission].IsNoThreat &&
+                    (((1 << tentative->What_Am_I()) & mask) != 0) &&       // acceptable unit type
+                    tentative->Techno_Type_Class()->IsLegalTarget &&      // unit type is one that can be targeted
+                    !((tentative->What_Am_I() == RTTI_INFANTRY) && (*((InfantryClass*)tentative) == INFANTRY_SPY)) &&
+                    (primaryobject->Distance(tentative) <= range)
+                ) {
+                    int tentativevalue = tentative->Value(); // + tentative->Crew.Kills; // Crew.Kills appears to be part of an unimplemented veterancy system! 
+                    // Do we want to increase target priority for veterancy (both here and generally)?
+                    // I'm thinking not because it makes no sense to hide the veterancy pips from other players, but then "show" them via targeting priority 
+                    if (House->Enemy != HOUSE_NONE && House->Enemy == tentative->House->Class->House) {
+                        tentativevalue += 500;
+                        tentativevalue *= 3;
+                    }
+                    if (House->Which_Zone(tentative) != ZONE_NONE) {
+                        tentativevalue *= Rule.NervousBias;
+                    }
+                    if (tentativevalue) {
+                        // fall off with distance
+                        tentativevalue = (tentativevalue * 32000) / ((Distance(tentative)/ICON_LEPTON_W)+1);
+                        tentativevalue = max(tentativevalue, 1);
+                        // randomize a bit because this is chain lightning
+                        tentativevalue = (tentativevalue * Random_Pick(512, 1536)) / 1024;
+                        tentativevalue = max(tentativevalue, 1);
+                    }
+                    if (tentativevalue > bestval){
+                        bestval = tentativevalue;
+                        bestobject = tentative;
+                    }
+                }
+                // there might be more than 1 infantry in a cell. If so, check the next one
+                tentative = (TechnoClass const *)(ObjectClass *)tentative->Next;
+            } // end while tentative is not null
+        } // end for j
+    } // end for i
+
+    // return the best target, if we found one
+    if (bestobject){
+        return bestobject->As_Target();
+    }
+    // otherwise
+    return TARGET_NONE;
+}
+
+// XP boost when rank3 veteran mechanic heals a unit
+// Nerfed to make it harder/slower to attain powerful promotions through self-inflicted damage
+// XP boost is the smaller of 1/4 of the XP the mechanic would have gained, or
+// 1/2 the distance to the next level up, rounded down -- if rank 0, or 1/4 if rank1, or 1/6 if rank 2
+// This should prevent the mechanic from being able to level up a unit all on his own, and slow down his ability to get them right up to the edge.
+void TechnoClass::GainMechanicXPBoost(const int delta){
+  
+    // bail if veterancy disabled
+    if (!ActiveCFEPatchConfig.EnableVeterancy){
+        return;
+    }
+    // bail if rank is already maxed (avoid possibility of integer overflow on VeterancyXP)
+    if (VeterancyRank >= 3){
+        return;
+    }
+    
+    int basicboost = ((delta * Class_Of().Cost_Of())/Class_Of().MaxStrength)*0.25;
+    
+    // sometimes give a pitty XP point to compsenate for rounding to zero
+    if ((basicboost < 1) && (Random_Pick(0,3) == 0)){
+        basicboost = 1;
+    }
+    
+    int limit = 0; 
+    if (VeterancyRank == 0){
+        limit = (Class_Of().Cost_Of() - VeterancyXP) / 2;
+    }
+    else if (VeterancyRank == 1){
+        limit = ((Class_Of().Cost_Of() * 3) - VeterancyXP) / 4;
+    }
+    else if (VeterancyRank == 2){
+        limit = ((Class_Of().Cost_Of() * 6) - VeterancyXP) / 6;
+    }
+
+    if (basicboost > limit){
+        basicboost = limit;
+    }
+    
+    GainVeterancyXP(basicboost);
+    
+    return;
 }

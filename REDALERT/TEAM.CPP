@@ -2890,8 +2890,13 @@ int TeamClass::TMission_Invulnerable(void)
 {
 	FootClass * foot = Member;
 	while (foot != NULL) {
-		foot->IronCurtainCountDown = Rule.IronCurtainDuration * TICKS_PER_MINUTE;
-		foot->Mark(MARK_CHANGE);
+        if (ActiveCFEPatchConfig.EnableOpenRASupers){
+            foot->IronCurtainCountDown = 20 * TICKS_PER_SECOND;
+        }
+        else {
+            foot->IronCurtainCountDown = Rule.IronCurtainDuration * TICKS_PER_MINUTE;
+        }
+        foot->Mark(MARK_CHANGE);
 		foot = foot->Member;
 	}
 	IsNextMission = true;

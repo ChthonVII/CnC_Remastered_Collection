@@ -51,6 +51,7 @@
 
 #include	"function.h"
 
+#include "cfedebug.h"
 
 /***********************************************************************************************
  * BulletClass::BulletClass -- Bullet constructor.                                             *
@@ -680,6 +681,16 @@ void BulletClass::Detach(TARGET target, bool all)
 }
 
 
+// Chthon CFE Note: version that detaches only the incoming bullets
+// for use with chronoshift
+void BulletClass::MinimalDetach(TARGET target)
+{
+	if (target == TarCom) {
+		TarCom = TARGET_NONE;
+	}
+}
+
+
 /***********************************************************************************************
  * BulletClass::Unlimbo -- Transitions a bullet object into the game render/logic system.      *
  *                                                                                             *
@@ -744,7 +755,6 @@ bool BulletClass::Unlimbo(COORDINATE coord, DirType dir)
 				int scatterdist = (::Distance(coord, tcoord)/16)-0x0040;
 				scatterdist = min(scatterdist, Rule.HomingScatter);
 				scatterdist = max(scatterdist, 0);
-
 				dir = (DirType)((dir + (Random_Pick(0, 10)-5)) & 0x00FF);
 				tcoord = Coord_Scatter(tcoord, Random_Pick(0, scatterdist));
 			} else {

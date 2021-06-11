@@ -81,6 +81,7 @@
 #include	"function.h"
 #include <algorithm>
 
+#include "CFEDEBUG.H"
 
 /***********************************************************************************************
  * FootClass::FootClass -- Default constructor for foot class objects.                         *
@@ -494,8 +495,27 @@ int FootClass::Mission_Move(void)
 
 	if (!Target_Legal(NavCom) && !IsDriving && MissionQueue == MISSION_NONE) {
         // Attack Move rework by ChthonVII -- Destination reached, snap out of attack mode
-		ResetAttackMove();
-		Enter_Idle_Mode();
+        // Let's be a little more careful and hopefully avoid units falling out of attack move early
+        if (AttackMove){
+            // fall out of attack move if we forgot our destination, we arrived (or got close), or don't have a path
+            if (    !Target_Legal(RememberedNavCom) ||
+                    (Distance(RememberedNavCom) < Rule.CloseEnoughDistance) ||
+                    !Find_Path_AStar(nullptr, Coord_Cell(Coord), As_Cell(RememberedNavCom), 1, MOVE_MOVING_BLOCK, -1)
+            ){
+                ResetAttackMove(1);
+                if (!AttackMove){ // if we're a minelayer that stayed in attackmove, then don't go idle!
+                    Enter_Idle_Mode();
+                }
+            }
+            // otherwise go back to moving
+            else {
+                AttackMoveEnterMoveMode();
+            }
+        }
+        else {
+            Enter_Idle_Mode();
+        }
+		
 		return(1);
 	}
 //	if (!Target_Legal(TarCom) && !House->IsPlayerControl && !House->IsHuman) {
@@ -610,7 +630,7 @@ int FootClass::Mission_Guard(void)
 	}
 
 	if (!Target_Something_Nearby(THREAT_RANGE)) {
-		Random_Animate();
+        Random_Animate();
 	}
 
 	int dtime = MissionControl[Mission].Normal_Delay();
@@ -1139,11 +1159,11 @@ bool FootClass::Unlimbo(COORDINATE coord, DirType dir)
  * HISTORY:                                                                                    *
  *   12/30/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
-ResultType FootClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, bool forced)
+ResultType FootClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, bool forced, TARGET indirectsource)
 {
 	assert(IsActive);
 
-	ResultType result = TechnoClass::Take_Damage(damage, distance, warhead, source, forced);
+	ResultType result = TechnoClass::Take_Damage(damage, distance, warhead, source, forced, indirectsource);
 
 	if (result != RESULT_NONE && Team) {
 

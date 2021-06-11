@@ -288,6 +288,10 @@ class DLLExportClass {
 		static void Decode_Pointers(void);
 
 		static bool Get_Game_Over() { return GameOver; }
+		
+		// Chthon CFE Note: workaround for not being able to extern a static variable
+        // also need a wrapper outside the class
+        static BuildingTypeClass* GetPlacementType(unsigned int index) { return PlacementType[index]; }
 
 	private:
 		static void Calculate_Single_Player_Score(EventCallbackStruct&);
@@ -402,6 +406,12 @@ int GetRandSeed()
 	return abs( static_cast<int>(microseconds_since_epoch.time_since_epoch().count()) );
 }
 
+
+// Chthon CFE Note: workaround for not being able to extern a static variable
+// wrapper outside the class
+BuildingTypeClass* GetPlacementType(unsigned int index) {
+    return DLLExportClass::GetPlacementType(index);
+}
 
 
 void Play_Movie_GlyphX(const char * movie_name, ThemeType theme, bool immediate = false)
@@ -1697,8 +1707,11 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
 #ifdef FIXIT_CSII	//	checked - ajw 9/28/98
 	TimeQuake = PendingTimeQuake;
 	PendingTimeQuake = false;
+    GlobalTimeQuake = PendingGlobalTimeQuake;
+	PendingGlobalTimeQuake = false;
 #else
 	TimeQuake = false;
+    GlobalTimeQuake = false;
 #endif
 			
 	/*
@@ -1773,9 +1786,11 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
 	FirstUpdate = false;
 
 	TimeQuake = false;
+    GlobalTimeQuake = false;
 #ifdef FIXIT_CSII	//	checked - ajw 9/28/98
 	if (!PendingTimeQuake) {
 		TimeQuakeCenter = 0;
+        MADTimeQuakeCenterList.Clear();
 	}
 #endif
 
@@ -2377,6 +2392,11 @@ void DLLExportClass::On_Display_Briefing_Text()
 	EventCallbackStruct new_event;
 	new_event.EventType = CALLBACK_EVENT_BRIEFING_SCREEN;
 	EventCallback(new_event);
+}
+
+// Chthon CFE Note: We need a class-free wrapper so we can extern this
+void On_Sound_Effect(const HouseClass* player_ptr, int sound_effect_index, const char* extension, int variation, COORDINATE coord){
+    DLLExportClass::On_Sound_Effect(player_ptr, sound_effect_index, extension, variation, coord);
 }
 
 /**************************************************************************************************
@@ -3679,6 +3699,20 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number, int x, int y, int widt
 		memset(new_object.ActionWithSelected, DAT_NONE, sizeof(new_object.ActionWithSelected));
 	}
 
+    // Chthon CFE Note: Special fix to make sure veterancy pips only show for owner in multiplayer
+    if ((shape_file_name != NULL) && object && object->Is_Techno() && 
+        (   (strcmp(shape_file_name, "ZVTRN") == 0) ||
+            (strcmp(shape_file_name, "DOTSML") == 0) ||
+            (strcmp(shape_file_name, "DOTALLY") == 0) ||
+            (strcmp(shape_file_name, "DOTUSSR") == 0) ||
+            (strcmp(shape_file_name, "ZWALLH") == 0) ||
+            (strcmp(shape_file_name, "ZWALLV") == 0)
+        )
+    ){
+        // seems like VisibleFlags uses the same type of mask as HouseClass.Allies -- left shift 1 by the house number
+        new_object.VisibleFlags = ((unsigned int)1 << (unsigned int)(((TechnoClass*)object)->House->Class->House)); 
+    }
+	
 	CurrentDrawCount++;
 }
 
@@ -5025,7 +5059,7 @@ void DLLExportClass::Calculate_Placement_Distances(BuildingTypeClass* placement_
 		map_cell_height++;
 	}
 
-	if (map_cell_height < MAP_MAX_CELL_WIDTH) {
+	if (map_cell_height < MAP_MAX_CELL_HEIGHT) { //Chthon bugfix!
 		map_cell_height++;
 	}
 
@@ -5041,19 +5075,34 @@ void DLLExportClass::Calculate_Placement_Distances(BuildingTypeClass* placement_
 		for (int x = 0; x < map_cell_width; x++) {
 			CELL cell = (CELL)map_cell_x + x + ((map_cell_y + y) << _map_width_shift_bits);
 			BuildingClass* base = (BuildingClass*)Map[cell].Cell_Find_Object(RTTI_BUILDING);
-			if ((base && base->House->Class->House == PlayerPtr->Class->House && base->Class->IsBase) ||
+			// Chthon CFE Note: check for active to avoid potential crash
+            if ((base && base->IsActive && (base->House->Class->House == PlayerPtr->Class->House) && base->Class->IsBase) ||
 				((placement_type->IsWall || ((Map[cell].Smudge != SMUDGE_NONE) && SmudgeTypeClass::As_Reference(Map[cell].Smudge).IsBib)) &&
 					Map[cell].Owner == PlayerPtr->Class->House)) {
 				placement_distance[cell] = 0U;
 				CELL startcell = cell;
+                // Chthon CFE Note: Need to check for map-wrapping!
+                // Adjacent_Cell() will happily wrap the map unless you go below 0 or above MAP_CELL_TOTAL
+                // (This isn't super efficient. TD's code might be faster.)
+                int minX = max(0, Cell_X(cell) - (placement_type->Adjacent + 1));
+                int minY = max(0, Cell_Y(cell) - (placement_type->Adjacent + 1));
+                int maxX = min(MAP_MAX_CELL_WIDTH -1, Cell_X(cell) + (placement_type->Adjacent + 1));
+                int maxY = min(MAP_MAX_CELL_HEIGHT -1, Cell_Y(cell) + (placement_type->Adjacent + 1));
 				for (unsigned char distance = 1U; distance <= (placement_type->Adjacent + 1U); distance++) {
-					startcell = Adjacent_Cell(startcell, FACING_NW);
+                    startcell = Adjacent_Cell(startcell, FACING_NW);
 					CELL scancell = startcell;
 					for (int i = 0; i < ARRAY_SIZE(_scan_facings); i++) {
 						CELL nextcell = scancell;
 						for (unsigned char scan = 0U; scan <= (distance * 2U); scan++) {
 							scancell = nextcell;
-							if (Map.In_Radar(scancell)) {
+                            int scanX = Cell_X(scancell);
+                            int scanY = Cell_Y(scancell);
+							if ( Map.In_Radar(scancell) &&
+                                  (scanX >= minX) &&
+                                  (scanX <= maxX) &&
+                                  (scanY >= minY) &&
+                                  (scanY <= maxY)
+                               ) {
 								placement_distance[scancell] = min(placement_distance[scancell], distance);
 							}
 							nextcell = Adjacent_Cell(scancell, _scan_facings[i]);
@@ -5181,6 +5230,23 @@ bool DLLExportClass::Passes_Proximity_Check(CELL cell_in, BuildingTypeClass *pla
 			return true;
 		}
 	}
+	
+	// stop here if this isn't a wall
+    if (!placement_type->IsWall){
+        return false;
+    }
+    
+    // Chthon CFE Note -- make additional check for friendly wall out to max wall length for TS-style wall building
+    const OverlayType wallOverlay = placement_type->Overlay_Type();
+    // Using PlayerPtr here only works in LAN multiplayer because this function is only ever called in the context of Get_Placement_State() and that starts with a call to Set_Player_Context() -- don't use this function elsewhere!
+    const HousesType myowner = PlayerPtr->Class->House;
+    for (FacingType dir : FacingCardinals){
+        const int scandist = Map.Scan_For_Overlay(cell_in, dir, wallOverlay, ActiveCFEPatchConfig.WallBuildLength, true, myowner);
+        if (scandist >= 0){
+            return true;
+        }
+    }
+	
 
 	return false;
 }

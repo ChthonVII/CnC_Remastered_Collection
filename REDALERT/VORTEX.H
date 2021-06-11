@@ -96,6 +96,10 @@ class ChronalVortexClass {
 		*/
 		bool Is_Active(void) {return (Active);};
 
+        // Chthon CFE Note: extra functions regarding hidden vortex
+        bool Is_Hidden(void) {return (Hidden);};
+        bool Is_Active_And_Not_Hidden(void) {return (Active & !Hidden);};
+        
 		/*
 		** Makes the vortex attack the specified target. Target must be in range of the vortex.
 		*/
@@ -145,8 +149,10 @@ class ChronalVortexClass {
 		void Zap_Target(void);
 		void Movement(void);
 		void Hide(void);
-		void Show(void);
-
+    public:
+		void Show(void); //Chthon CFE Note: Made public
+    private:
+        
 		/*
 		** Position of the top left of the vortex
 		*/

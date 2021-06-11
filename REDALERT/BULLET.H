@@ -110,6 +110,11 @@ class BulletClass :	public ObjectClass,
 		virtual void Code_Pointers(void);
 		virtual void Decode_Pointers(void);
 
+        // Chthon CFE Note: version that detaches only the incoming bullets
+        // for use with chronoshift
+        void MinimalDetach(TARGET target);
+        
+        
 		/*
 		**	If this bullet is forced to be inaccurate because of some outside means. A tank
 		**	firing while moving is a good example.

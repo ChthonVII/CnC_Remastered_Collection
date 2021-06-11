@@ -135,6 +135,8 @@
 
 //#include "WolDebug.h"
 
+//#include "CFEDEBUG.H"
+
 /*
 ** New sidebar for GlyphX multiplayer. ST - 8/7/2019 10:10AM
 */
@@ -663,6 +665,13 @@ HouseClass::HouseClass(HousesType house) :
 	new (&SuperWeapon[SPC_IRON_CURTAIN]) SuperClass(TICKS_PER_MINUTE * Rule.IronCurtainTime, true, VOX_IRON_CHARGING, VOX_IRON_READY, VOX_NOT_READY, VOX_INSUFFICIENT_POWER);
 	new (&SuperWeapon[SPC_GPS]) SuperClass(TICKS_PER_MINUTE * Rule.GPSTime, true, VOX_NONE, VOX_NONE, VOX_NOT_READY, VOX_INSUFFICIENT_POWER);
 
+    // Chthon CFE Note: Change the recharges on Chronosphere and Iron Curtain if OpenRA-style supers are enabled
+    // Not really sure if mod is initialized before houses are constructed. If not, will have to move this...
+    if (ActiveCFEPatchConfig.EnableOpenRASupers){
+        SuperWeapon[SPC_CHRONOSPHERE].Set_Recharge_Time(2 * TICKS_PER_MINUTE);
+        SuperWeapon[SPC_IRON_CURTAIN].Set_Recharge_Time(2 * TICKS_PER_MINUTE);
+    }
+    
 	memset(UnitsKilled, '\0', sizeof(UnitsKilled));
 	memset(BuildingsKilled, '\0', sizeof(BuildingsKilled));
 	memset(BQuantity, '\0', sizeof(BQuantity));
@@ -2866,13 +2875,107 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
 						case RTTI_BUILDING:
 						case RTTI_VESSEL:
 						case RTTI_AIRCRAFT:
-							tech->IronCurtainCountDown = Rule.IronCurtainDuration * TICKS_PER_MINUTE;
+                            // Chthon CFE Note: Shorter duration on OpenRA-style supers
+                            if(ActiveCFEPatchConfig.EnableOpenRASupers){
+                                tech->IronCurtainCountDown = 20 * TICKS_PER_SECOND;
+                            }
+                            else {
+                                tech->IronCurtainCountDown = Rule.IronCurtainDuration * TICKS_PER_MINUTE;
+                            }
 #ifdef FIXIT_CSII	//	checked - ajw 9/28/98
 							if (tech->What_Am_I() == RTTI_UNIT && *(UnitClass *)tech == UNIT_DEMOTRUCK) {
 								tech->IronCurtainCountDown = Rule.IronCurtainDuration * TICKS_PER_SECOND;
 							}
 #endif
 							tech->Mark(MARK_CHANGE);
+                            // Chthon CFE Note: OpenRA-style supers hit up to 4 adjacent units
+                            if(ActiveCFEPatchConfig.EnableOpenRASupers){
+                                int extraunits = 0;
+                                // first scan the cardinal directions
+                                for (FacingType dir : FacingCardinals){ //FACING_N, FACING_E, FACING_S, FACING_W
+                                    if (extraunits >= 4){
+                                        break;
+                                    }
+                                    CELL newcell = Adjacent_Cell(cell, dir);
+                                    if (!Map.In_Radar(newcell)){
+                                        continue;
+                                    }
+                                    CellClass* cellptr = &Map[newcell];
+                                    TechnoClass* someunit = (TechnoClass*)cellptr->Cell_Occupier();
+                                    while (someunit != NULL) {
+                                        if (extraunits >= 4){
+                                            break;
+                                        }
+                                        if (   someunit &&
+                                                someunit->IsActive &&
+                                                Is_Ally(someunit) &&
+                                                (
+                                                    (someunit->What_Am_I() == RTTI_UNIT) ||
+                                                    (someunit->What_Am_I() == RTTI_BUILDING) ||
+                                                    (someunit->What_Am_I() == RTTI_VESSEL) ||
+                                                    (someunit->What_Am_I() == RTTI_AIRCRAFT)
+                                                ) &&
+                                                (someunit->IronCurtainCountDown != 20 * TICKS_PER_SECOND)
+                                        ){
+                                            someunit->IronCurtainCountDown = 20 * TICKS_PER_SECOND;
+                                            if (someunit->What_Am_I() == RTTI_UNIT && *(UnitClass *)someunit == UNIT_DEMOTRUCK) {
+                                                someunit->IronCurtainCountDown = Rule.IronCurtainDuration * TICKS_PER_SECOND;
+                                            }
+                                            someunit->Mark(MARK_CHANGE);
+                                            extraunits++;
+                                        }
+                                        someunit =(TechnoClass*)(ObjectClass*)someunit->Next;
+                                    }
+                                }
+                                // now scan the diagonals if we don't have 4 extra units yet
+                                if (extraunits < 4){
+                                    FacingType  FacingDiagonals[4]{ FACING_NE, FACING_SE, FACING_SW, FACING_NW };
+                                    // randomize the search start so it's not biased to NE
+                                    const int shufflecount = Random_Pick(0,3);
+                                    for (int i=0; i<shufflecount; i++){
+                                        FacingType tempface = FacingDiagonals[0];
+                                        FacingDiagonals[0] = FacingDiagonals[1];
+                                        FacingDiagonals[1] = FacingDiagonals[2];
+                                        FacingDiagonals[2] = FacingDiagonals[3];
+                                        FacingDiagonals[3] = tempface;
+                                    }
+                                    for (FacingType dir : FacingDiagonals){
+                                        if (extraunits >= 4){
+                                            break;
+                                        }
+                                        CELL newcell = Adjacent_Cell(cell, dir);
+                                        if (!Map.In_Radar(newcell)){
+                                            continue;
+                                        }
+                                        CellClass* cellptr = &Map[newcell];
+                                        TechnoClass* someunit = (TechnoClass*)cellptr->Cell_Occupier();
+                                        while (someunit != NULL) {
+                                            if (extraunits >= 4){
+                                                break;
+                                            }
+                                            if (   someunit &&
+                                                    someunit->IsActive &&
+                                                    Is_Ally(someunit) &&
+                                                    (
+                                                        (someunit->What_Am_I() == RTTI_UNIT) ||
+                                                        (someunit->What_Am_I() == RTTI_BUILDING) ||
+                                                        (someunit->What_Am_I() == RTTI_VESSEL) ||
+                                                        (someunit->What_Am_I() == RTTI_AIRCRAFT)
+                                                    ) &&
+                                                    (someunit->IronCurtainCountDown != 20 * TICKS_PER_SECOND)
+                                            ){
+                                                someunit->IronCurtainCountDown = 20 * TICKS_PER_SECOND;
+                                                if (someunit->What_Am_I() == RTTI_UNIT && *(UnitClass *)someunit == UNIT_DEMOTRUCK) {
+                                                    someunit->IronCurtainCountDown = Rule.IronCurtainDuration * TICKS_PER_SECOND;
+                                                }
+                                                someunit->Mark(MARK_CHANGE);
+                                                extraunits++;
+                                            }
+                                            someunit =(TechnoClass*)(ObjectClass*)someunit->Next;
+                                        }
+                                    }
+                                }
+                            } //end of OpenRA-style supers
 							Sound_Effect(VOC_IRON1, tech->Center_Coord());
 							if (this == PlayerPtr) {
 								Map.IsTargettingMode = SPC_NONE;
@@ -2961,29 +3064,165 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
 						oldcell = drive->MoebiusCell;
 						drive->Teleport_To(cell);
 						drive->IsMoebius = true;
+                        if (ActiveCFEPatchConfig.EnableSmarterChrono){
+                            drive->Unselect_All_Players_Except_Owner();
+                            Minimal_Detach_This_From_All(drive->As_Target(), true);
+                        }
 #ifdef FIXIT_CSII	//	checked - ajw 9/28/98
 	if(tech->What_Am_I() == RTTI_UNIT && *(UnitClass *)tech == UNIT_CHRONOTANK) {
 		drive->IsMoebius = false;
 	}
-	drive->MoebiusCountDown = Rule.ChronoDuration * TICKS_PER_MINUTE;
+	// Chthon CFE Note: Shorter duration on OpenRA-style supers
+	if(ActiveCFEPatchConfig.EnableOpenRASupers){
+        drive->MoebiusCountDown = 20 * TICKS_PER_SECOND;
+    }
+	else {
+        drive->MoebiusCountDown = Rule.ChronoDuration * TICKS_PER_MINUTE;
+    }
 	if (tech->What_Am_I() == RTTI_UNIT && *(UnitClass *)tech == UNIT_CHRONOTANK) {
 		drive->MoebiusCountDown = ChronoTankDuration * TICKS_PER_MINUTE;
 	}
 #else
 						drive->MoebiusCountDown = Rule.ChronoDuration * TICKS_PER_MINUTE;
 #endif
+
+                        // Chthon CFE Note: OpenRA-style supers hit up to 4 adjacent units
+                        // only do this if NOT a chronotank
+                        if(    ActiveCFEPatchConfig.EnableOpenRASupers && 
+                                tech &&
+                                tech->IsActive &&
+                                (   (tech->What_Am_I() != RTTI_UNIT) ||
+                                    (*(UnitClass *)tech != UNIT_CHRONOTANK)
+                                )
+                        ){
+                            int extraunits = 0;
+                            // first scan the cardinal directions
+                            for (FacingType dir : FacingCardinals){ //FACING_N, FACING_E, FACING_S, FACING_W
+                                if (extraunits >= 4){
+                                    break;
+                                }
+                                CELL newfromcell = Adjacent_Cell(oldcell, dir);
+                                if (!Map.In_Radar(newfromcell)){
+                                    continue;
+                                }
+                                CELL newtocell = Adjacent_Cell(cell, dir);
+                                if (!Map.In_Radar(newtocell)){
+                                    continue;
+                                }
+                                CellClass* cellptr = &Map[newfromcell];
+                                TechnoClass* someunit = (TechnoClass*)cellptr->Cell_Occupier();
+                                while (someunit != NULL) {
+                                    if (extraunits >= 4){
+                                        break;
+                                    }
+                                    if (   someunit &&
+                                            someunit->IsActive &&
+                                            Is_Ally(someunit) &&
+                                            (
+                                                (   (someunit->What_Am_I() == RTTI_UNIT) &&
+                                                    (*(UnitClass*)someunit != UNIT_CHRONOTANK) && 
+                                                    (*(UnitClass*)someunit != UNIT_DEMOTRUCK)
+                                                ) ||
+                                                (   (someunit->What_Am_I() == RTTI_VESSEL) &&
+                                                    (*(VesselClass*)someunit != VESSEL_TRANSPORT) &&
+                                                    (*(VesselClass*)someunit != VESSEL_CARRIER) 
+                                                )
+                                            ) &&
+                                            (someunit->Can_Enter_Cell(newtocell, FACING_NONE) == MOVE_OK)
+                                    ){
+                                        ((DriveClass *)someunit)->MoebiusCell = newfromcell;
+                                        ((DriveClass *)someunit)->Teleport_To(newtocell);
+                                        ((DriveClass *)someunit)->IsMoebius = true;
+                                        ((DriveClass *)someunit)->MoebiusCountDown = 20 * TICKS_PER_SECOND;
+                                        if (ActiveCFEPatchConfig.EnableSmarterChrono){
+                                            ((DriveClass *)someunit)->Unselect_All_Players_Except_Owner();
+                                            Minimal_Detach_This_From_All(((DriveClass *)someunit)->As_Target(), true);
+                                        }
+                                        extraunits++;
+                                    }
+                                    someunit =(TechnoClass*)(ObjectClass*)someunit->Next;
+                                }
+                            }
+                            // now scan the diagonals if we don't have 4 extra units yet
+                            if (extraunits < 4){
+                                FacingType  FacingDiagonals[4]{ FACING_NE, FACING_SE, FACING_SW, FACING_NW };
+                                // randomize the search start so it's not biased to NE
+                                const int shufflecount = Random_Pick(0,3);
+                                for (int i=0; i<shufflecount; i++){
+                                    FacingType tempface = FacingDiagonals[0];
+                                    FacingDiagonals[0] = FacingDiagonals[1];
+                                    FacingDiagonals[1] = FacingDiagonals[2];
+                                    FacingDiagonals[2] = FacingDiagonals[3];
+                                    FacingDiagonals[3] = tempface;
+                                }
+                                for (FacingType dir : FacingDiagonals){
+                                    if (extraunits >= 4){
+                                        break;
+                                    }
+                                    CELL newfromcell = Adjacent_Cell(oldcell, dir);
+                                    if (!Map.In_Radar(newfromcell)){
+                                        continue;
+                                    }
+                                    CELL newtocell = Adjacent_Cell(cell, dir);
+                                    if (!Map.In_Radar(newtocell)){
+                                        continue;
+                                    }
+                                    CellClass* cellptr = &Map[newfromcell];
+                                    TechnoClass* someunit = (TechnoClass*)cellptr->Cell_Occupier();
+                                    while (someunit != NULL) {
+                                        if (extraunits >= 4){
+                                            break;
+                                        }
+                                        if (   someunit &&
+                                                someunit->IsActive &&
+                                                Is_Ally(someunit) &&
+                                                (
+                                                    (   (someunit->What_Am_I() == RTTI_UNIT) &&
+                                                        (*(UnitClass*)someunit != UNIT_CHRONOTANK) && 
+                                                        (*(UnitClass*)someunit != UNIT_DEMOTRUCK)
+                                                    ) ||
+                                                    (   (someunit->What_Am_I() == RTTI_VESSEL) &&
+                                                        (*(VesselClass*)someunit != VESSEL_TRANSPORT) &&
+                                                        (*(VesselClass*)someunit != VESSEL_CARRIER) 
+                                                    )
+                                                ) &&
+                                                (someunit->Can_Enter_Cell(newtocell, FACING_NONE) == MOVE_OK)
+                                        ){
+                                            ((DriveClass *)someunit)->MoebiusCell = newfromcell;
+                                            ((DriveClass *)someunit)->Teleport_To(newtocell);
+                                            ((DriveClass *)someunit)->IsMoebius = true;
+                                            ((DriveClass *)someunit)->MoebiusCountDown = 20 * TICKS_PER_SECOND;
+                                            if (ActiveCFEPatchConfig.EnableSmarterChrono){
+                                                ((DriveClass *)someunit)->Unselect_All_Players_Except_Owner();
+                                                Minimal_Detach_This_From_All(((DriveClass *)someunit)->As_Target(), true);
+                                            }
+                                            extraunits++;
+                                        }
+                                        someunit =(TechnoClass*)(ObjectClass*)someunit->Next;
+                                    }
+                                }
+                            }
+                        } //end of OpenRA-style supers
+    
+                        
 						Scen.Do_BW_Fade();
 						Sound_Effect(VOC_CHRONO, drive->Coord);
+                        if (ActiveCFEPatchConfig.EnableSmarterChrono){
+                            Sound_Effect(VOC_CHRONO, Cell_Coord(oldcell)); // play sound at both ends
+                        }
 
 						/*
 						**	Set active animation on Chronospheres.
 						*/
-						for (int index = 0; index < Buildings.Count(); ++index) {
-							BuildingClass* building = Buildings.Ptr(index);
-							if (building != nullptr && building->IsActive && building->Owner() == Class->House && *building == STRUCT_CHRONOSPHERE) {
-								building->Begin_Mode(BSTATE_ACTIVE);
-							}
-						}
+                        // Chthon CFE Note: Changed so chronosphere doesn't animate if a chronotank shifted itself
+						if(!ActiveCFEPatchConfig.EnableSmarterChrono || (tech && tech->IsActive && (tech->What_Am_I() != RTTI_UNIT || *(UnitClass *)tech != UNIT_CHRONOTANK))) {
+                            for (int index = 0; index < Buildings.Count(); ++index) {
+                                BuildingClass* building = Buildings.Ptr(index);
+                                if (building != nullptr && building->IsActive && building->Owner() == Class->House && *building == STRUCT_CHRONOSPHERE) {
+                                    building->Begin_Mode(BSTATE_ACTIVE);
+                                }
+                            }
+                        }
 					}
 				}
 				UnitToTeleport = TARGET_NONE;
@@ -3001,12 +3240,75 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
 				fired = true;
 				what = "CHRONO2";
 
+                // Chthon CFE Note: Consolidate all the chrono disaster odds stuff here
+                bool dovortex = false;
+                bool dotimequake = false;
+                // multiply by 100k instead of 100 to get more decimal places
+                // later we will random pick from 100k
+                int vortexbasechance = Rule.VortexChance * 100000;
+                int quakebasechance = Rule.QuakeChance * 100000;
+                // only 1000 for this one since it's not a fraction to begin with
+                int disasterbasechance = ActiveCFEPatchConfig.SharedChronoDisasterOdds * 1000;
+                // scale down odds if recharges are shorter due to OpenRA-style supers
+                if (ActiveCFEPatchConfig.EnableOpenRASupers){
+                    vortexbasechance = (vortexbasechance * 2) / (1 * Rule.ChronoTime);
+                    quakebasechance = (quakebasechance * 2 ) / (1 * Rule.ChronoTime);
+                    disasterbasechance = (disasterbasechance * 2) / (1 * Rule.ChronoTime);
+                }
+//                 // scale odds for cumulative timeline damage
+                if (ActiveCFEPatchConfig.EnableCumulativeTimelineDamage){
+                    Map.timelinedamage++;
+                    disasterbasechance = (disasterbasechance * (Map.timelinedamage +  Map.permanenttimelinedamage) ) / 10;
+                    vortexbasechance = (vortexbasechance * (Map.timelinedamage +  Map.permanenttimelinedamage) ) / 10;  
+                    quakebasechance = (quakebasechance * (Map.timelinedamage +  Map.permanenttimelinedamage) ) / 10;  
+                }
+                if (tech && tech->IsActive && ((tech->What_Am_I() != RTTI_UNIT) || (*(UnitClass *)tech != UNIT_CHRONOTANK))){
+                    // shared odds
+                    if (ActiveCFEPatchConfig.EnableTimeQuakeFix && ActiveCFEPatchConfig.EnableSharedChronoDisasterOdds){
+                        bool dodisaster = false;
+                        if (CFE_Patch_FullRange_Random_Pick(0,99999) < disasterbasechance){
+                            dodisaster = true;
+                        }
+                        // pick a disaster
+                        if (dodisaster){
+                            if (Random_Pick(1, (100 * Rule.VortexChance) + (100 * Rule.QuakeChance)) <= (100 * Rule.VortexChance)){
+                                dovortex = true;
+                            }
+                            else {
+                                dotimequake = true;
+                            }
+                        }
+                    }
+                    // not shared odds
+                    else{
+                        if (CFE_Patch_FullRange_Random_Pick(0,99999) < vortexbasechance){
+                            dovortex = true;
+                        }
+                        if (ActiveCFEPatchConfig.EnableTimeQuakeFix && CFE_Patch_FullRange_Random_Pick(0,99999) < quakebasechance){
+                            dotimequake = true;
+                        }
+                    }
+                }
+                
 				/*
 				** Now set a percentage chance that a time quake will occur.
 				*/
-				if (!TimeQuake) {
-					TimeQuake = Percent_Chance(Rule.QuakeChance * 100);
-				}
+                // Chthon CFE Note: This code got broken when PendingTimeQuake got added for Aftermath
+                // since TimeQuake is always set equal to PendingTimeQuake before use
+                // and the only place PendingTimeQuake gets set is i nthe code for MAD tanks
+				//if (!TimeQuake) {
+				//	TimeQuake = Percent_Chance(Rule.QuakeChance * 100);
+				//}
+				// Don't do a timequake if disaster odds are shared and there's already a visible vortex.
+				if (dotimequake){
+                    if  (!(ChronalVortex.Is_Active_And_Not_Hidden() && ActiveCFEPatchConfig.EnableSharedChronoDisasterOdds)){
+                        PendingGlobalTimeQuake = true;
+                        if (ActiveCFEPatchConfig.EnableCumulativeTimelineDamage){
+                            Map.timelinedamage = 0;
+                            Map.permanenttimelinedamage++;
+                        }
+                    }
+                }
 
 				/*
 				** Now set a percentage chance that a chronal vortex will appear. It
@@ -3015,20 +3317,39 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
 				*/
 #ifdef FIXIT_CSII	//	checked - ajw 9/28/98
 // Don't allow a vortex if the teleportation was due to a chrono tank.
-	if(tech && tech->IsActive && (tech->What_Am_I() != RTTI_UNIT || *(UnitClass *)tech != UNIT_CHRONOTANK))
+// Chthon CFE note: added bracket to fix very confusing/misleading code
+	if(tech && tech->IsActive && (tech->What_Am_I() != RTTI_UNIT || *(UnitClass *)tech != UNIT_CHRONOTANK)){
 #endif
-				if (!ChronalVortex.Is_Active() && Percent_Chance(Rule.VortexChance * 100)) {
-					int x = Random_Pick(0, Map.MapCellWidth-1);
-					int y = Random_Pick(0, Map.MapCellHeight-1);
-					ChronalVortex.Appear(Cell_Coord(XY_Cell(Map.MapCellX + x, Map.MapCellY + y)));
 
-//					if (Percent_Chance(50)) {
-//						ChronalVortex.Appear(Cell_Coord(oldcell));
-//					} else {
-//						ChronalVortex.Appear(Cell_Coord(cell));
-//					}
+				//if (!ChronalVortex.Is_Active() && Percent_Chance(Rule.VortexChance * 100)) {
+				if (dovortex){
+                    if (!ChronalVortex.Is_Active()){
+                        int x = Random_Pick(0, Map.MapCellWidth-1);
+                        int y = Random_Pick(0, Map.MapCellHeight-1);
+                        ChronalVortex.Appear(Cell_Coord(XY_Cell(Map.MapCellX + x, Map.MapCellY + y)));
+
+    //					if (Percent_Chance(50)) {
+    //						ChronalVortex.Appear(Cell_Coord(oldcell));
+    //					} else {
+    //						ChronalVortex.Appear(Cell_Coord(cell));
+    //					}
+                        if (ActiveCFEPatchConfig.EnableCumulativeTimelineDamage){
+                            Map.timelinedamage = 0;
+                            Map.permanenttimelinedamage++;
+                        }
+                    }
+                    // wake up a hidden vortex if any of our mod stuff that scales odds is active
+                    else if (ChronalVortex.Is_Hidden() && (ActiveCFEPatchConfig.SharedChronoDisasterOdds || ActiveCFEPatchConfig.EnableOpenRASupers || ActiveCFEPatchConfig.EnableCumulativeTimelineDamage)){
+                        ChronalVortex.Show();
+                        if (ActiveCFEPatchConfig.EnableCumulativeTimelineDamage){
+                            Map.timelinedamage = 0;
+                            Map.permanenttimelinedamage++;
+                        }
+                    }
 				}
-
+#ifdef FIXIT_CSII	// Chthon CFE note: added bracket to fix very confusing/misleading code	
+    }
+#endif
 				break;
 			}
 	}
@@ -4456,6 +4777,10 @@ void HouseClass::Sell_Wall(CELL cell)
 					//FluffyQuack 14/06/2020: Always allow refunds if walls have full cost 
 					if (!IsHuman || ActiveCFEPatchConfig.WallBuildLength <= 1 || ActiveCFEPatchConfig.WallsAlwaysHaveFullCost)
 						Refund_Money(btype->Cost_Of() / 2);
+                    // Chthon CFE Note -- it makes more sense for walls to refund at the minimum value that assumes you bought a full-length piece
+                    else{
+                        Refund_Money(btype->Cost_Of() / (2 * ActiveCFEPatchConfig.WallBuildLength));
+                    }
 
 					Map[cell].Overlay = OVERLAY_NONE;
 					Map[cell].OverlayData = 0;

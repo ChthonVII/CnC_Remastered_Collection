@@ -308,7 +308,7 @@ class FootClass :	public TechnoClass
 		**	Combat related.
 		*/
 		virtual void Stun(void);
-		virtual ResultType Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source=0, bool forced=false);
+		virtual ResultType Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source=0, bool forced=false, TARGET indirectsource = TARGET_NONE); // Chthon CFE Note: Added indirectsource so minelayers can get XP
 		virtual void Death_Announcement(TechnoClass const * source=0) const;
 
 		/*
@@ -365,9 +365,11 @@ class FootClass :	public TechnoClass
 
 		// Chthon CFE Note: make  public so harvester optimizations and queue jumping can use it
 		int Find_Path_AStar(PathType* const resultPath, const CELL source, CELL dest, const int maxLen, const MoveType threshhold, const int threat) const;
-		
-	private:
+        
+        // Chthon CFE Note: make this public too
 		int Passable_Cell(CELL cell, FacingType face, int threat, MoveType threshhold) const;
+        
+	private:
 		PathType * Find_Path(CELL dest, FacingType *final_moves, int maxlen, MoveType threshhold);
 		//int Find_Path_AStar(PathType* const resultPath, const CELL source, CELL dest, const int maxLen, const MoveType threshhold, const int threat) const;
 		CELL Find_Passable_Position_Near(const CELL target, const int maxRadius, const MoveType threshhold, const int threat) const;

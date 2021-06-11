@@ -105,8 +105,16 @@ struct CFEPatchConfig
 	bool EnableTanyaGuard = false;
 	bool EnableSafeSabotage = false;
     bool EnableSmarterAircraft = false;
+    bool EnableSmarterRepairBays = false;
     bool BetterOreGrowth = false;
     bool EnableInaccuracyBugfix = false;
+    bool EnableVeterancy = false;
+    bool EnableOpenRASupers = false;
+    bool EnableSmarterChrono = false;
+    bool EnableTimeQuakeFix = false;
+    bool EnableSharedChronoDisasterOdds = false;
+    bool EnableCumulativeTimelineDamage = false;
+    bool EnableLongGapFix = false;
 
 	int  HarvyQueueJumpCutoff = 4;
 	int  HarvyOptimizeUnloadWaitWeight = 6;
@@ -119,8 +127,10 @@ struct CFEPatchConfig
     int  HarvyOptimizeCommunalismWeight = 13;
 	int  OreGrowthScale = 1;
 	int  WallBuildLength = 5;
+    int InverseBuildingPreviewMode = 0; // 0=off; 1= MP only; 2 = all game modes
 	int  BuildingGapOffset = 0;
 	int  OreCapacityOffset = 0;
+    int SharedChronoDisasterOdds = 20;
 };
 
 extern CFEPatchConfig ActiveCFEPatchConfig;
@@ -230,6 +240,7 @@ extern MFCD *						GeneralMix;
 extern MFCD *						ScoreMix;
 extern MFCD *						MainMix;
 extern MFCD *						ConquerMix;
+extern MFCD *						RAModMix; // Chthon CFE Note: Apparently RA handles mix files differently. Hope this works...
 extern ThemeClass 				Theme;
 extern SpecialClass 				Special;
 
@@ -311,6 +322,12 @@ extern fixed EngineerDamage;			// Amount of damage an engineer does
 extern fixed EngineerCaptureLevel;	// Building damage level before engineer can capture
 #endif
 #endif
+
+// Chthon CFE Note: Extra varaible for fixing timequake bugs
+extern bool GlobalTimeQuake;
+extern bool PendingGlobalTimeQuake;
+extern DynamicVectorClass<TARGET> MADTimeQuakeCenterList;
+
 
 /*
 **	Loaded data file pointers.

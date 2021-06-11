@@ -1687,7 +1687,7 @@ RadioMessageType ObjectClass::Receive_Message(RadioClass *, RadioMessageType mes
  *   12/27/1994 JLB : Trigger event processing for attacked or destroyed.                      *
  *   01/01/1995 JLB : Reduces damage greatly depending on range.                               *
  *=============================================================================================*/
-ResultType ObjectClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, bool forced)
+ResultType ObjectClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, bool forced, TARGET indirectsource)
 {
 	assert(this != 0);
 	assert(IsActive);
@@ -1730,8 +1730,12 @@ ResultType ObjectClass::Take_Damage(int & damage, int distance, WarheadType warh
 #else
 			if (What_Am_I() == RTTI_INFANTRY) {
 #endif
-				Clicked_As_Target(PlayerPtr->Class->House, 7); // 2019/09/20 JAS - Added record of who clicked on the object
-				Strength -= damage;
+				// Chthon CFE Note: this is wrong. PlayerPtr will always point to the server in LAN multiplayer, so only server will see flashes 
+                // Clicked_As_Target(PlayerPtr->Class->House, 7); // 2019/09/20 JAS - Added record of who clicked on the object
+				//Clicked_As_Target(Owner(), 7);
+                // on second thought, since the local player can see the flash for CPU players, this should be shown to everyone
+                Clicked_As_Target(HOUSE_COUNT, 7); //HOUSE_COUNT means show everyone
+                Strength -= damage;
 				if (Strength > maxstrength) {
 					Strength = maxstrength;
 				}

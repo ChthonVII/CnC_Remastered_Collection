@@ -58,8 +58,16 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
 	GetSetting(ActiveCFEPatchConfig.EnableTanyaGuard		, "FEATURES", "TANYA_GUARD");
 	GetSetting(ActiveCFEPatchConfig.EnableSafeSabotage      , "FEATURES", "SAFE_SABOTAGE");
     GetSetting(ActiveCFEPatchConfig.EnableSmarterAircraft      , "FEATURES", "SMARTER_AIRCRAFT");
+    GetSetting(ActiveCFEPatchConfig.EnableSmarterRepairBays     , "FEATURES", "SMARTER_REPAIRBAY");
     GetSetting(ActiveCFEPatchConfig.BetterOreGrowth      , "FEATURES", "BETTER_ORE_GROWTH");
     GetSetting(ActiveCFEPatchConfig.EnableInaccuracyBugfix      , "FEATURES", "INACCURACY_BUGFIX");
+    GetSetting(ActiveCFEPatchConfig.EnableVeterancy      , "FEATURES", "VETERANCY");
+    GetSetting(ActiveCFEPatchConfig.EnableOpenRASupers      , "FEATURES", "OPENRA_SUPERS");
+    GetSetting(ActiveCFEPatchConfig.EnableSmarterChrono      , "FEATURES", "SMARTER_CHRONO");
+    GetSetting(ActiveCFEPatchConfig.EnableTimeQuakeFix      , "FEATURES", "TIMEQUAKE_FIX");
+    GetSetting(ActiveCFEPatchConfig.EnableSharedChronoDisasterOdds      , "FEATURES", "USE_SHARED_CHRONO_ODDS");
+    GetSetting(ActiveCFEPatchConfig.EnableCumulativeTimelineDamage      , "FEATURES", "CUMULATIVE_TIMELINE_DAMAGE");
+    GetSetting(ActiveCFEPatchConfig.EnableLongGapFix      , "FEATURES", "LONG_BGAP_BUGFIX");
 
 	//Settings
 	GetSetting(ActiveCFEPatchConfig.HarvyQueueJumpCutoff	, "SETTINGS", "QUEUE_JUMP_CUTOFF");
@@ -74,9 +82,14 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
 	GetSetting(ActiveCFEPatchConfig.BuildingGapOffset		, "SETTINGS", "BUILDING_GAP_OFFSET");
 	GetSetting(ActiveCFEPatchConfig.OreCapacityOffset		, "SETTINGS", "ORE_CAPACITY_OFFSET");
 	GetSetting(ActiveCFEPatchConfig.WallsAlwaysHaveFullCost	, "SETTINGS", "WALLS_HAVE_FULL_COST");
+    GetSetting(ActiveCFEPatchConfig.InverseBuildingPreviewMode           , "SETTINGS", "INVERSE_PREVIEW_MODE");
+    GetSetting(ActiveCFEPatchConfig.SharedChronoDisasterOdds           , "SETTINGS", "SHARED_CHRONO_ODDS");
 
 	//Clamp Wall Length between 1 (build at all) and 10 (buffer limits)
 	ActiveCFEPatchConfig.WallBuildLength = (std::max)(1, (std::min)(ActiveCFEPatchConfig.WallBuildLength, 10));
+    
+    // Clamp inverse preview mode to legal values (0-2)
+    ActiveCFEPatchConfig.InverseBuildingPreviewMode = (std::max)(0, (std::min)(ActiveCFEPatchConfig.InverseBuildingPreviewMode, 2));
     
     // If A-Star isn't enabled, distance constants will be compared against leptons rather than cells, so convert here
     if (!ActiveCFEPatchConfig.EnableASPathing){
@@ -93,9 +106,26 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
         ActiveCFEPatchConfig.HarvyOptimizeCommunalismDenominator = 1;
     }
     
+      //growth can't be negative
+    if (ActiveCFEPatchConfig.OreGrowthScale < 0){
+        ActiveCFEPatchConfig.OreGrowthScale = 0;
+    }
+    
     // Compute complex weights here so they only have to be computed once
     ActiveCFEPatchConfig.HarvyOptimizeThrashingWeight = (ActiveCFEPatchConfig.HarvyOptimizeUnloadWaitWeight * ActiveCFEPatchConfig.HarvyOptimizeThrashingNumerator) / ActiveCFEPatchConfig.HarvyOptimizeThrashingDenominator;
     ActiveCFEPatchConfig.HarvyOptimizeCommunalismWeight = (ActiveCFEPatchConfig.HarvyOptimizeUnloadWaitWeight * ActiveCFEPatchConfig.HarvyOptimizeCommunalismNumerator) / ActiveCFEPatchConfig.HarvyOptimizeCommunalismDenominator;
+    
+    // can't share chrono disaster odds if timequakes disabled
+    if (!ActiveCFEPatchConfig.EnableTimeQuakeFix){
+        ActiveCFEPatchConfig.SharedChronoDisasterOdds = false;
+    }
+    // odds can't be less than 0.
+    // greater than 100% is allowed if user wants to counteract odds scaling
+    if (ActiveCFEPatchConfig.SharedChronoDisasterOdds < 0){
+        ActiveCFEPatchConfig.SharedChronoDisasterOdds = 0;
+    }
+    
+    
 }
 
 bool Create_CFE_Patch_Directory(const char* path)

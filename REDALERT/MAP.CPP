@@ -2310,11 +2310,16 @@ void MapClass::Shroud_The_Map(void)
  * WARNINGS:  none                                                                             *
  *                                                                                             *
  * HISTORY:                                                                                    *
- * 12/06/2020 cfehunter: created                                                               *
+ * 12/06/2020 cfehunter: created
+ *  Chthon modifed to add option to search for only walls belonging to a given house
  *=============================================================================================*/
-int MapClass::Scan_For_Overlay(const CELL origin, const FacingType dir, const OverlayType overlay, const int maxLength) const
+int MapClass::Scan_For_Overlay(const CELL origin, const FacingType dir, const OverlayType overlay, const int maxLength, const bool limittohouse, const HousesType whichhouse) const
 {
-	if (In_Radar(origin))
+    if (limittohouse && whichhouse == HOUSE_NONE){
+        return -1;
+    }
+    
+    if (In_Radar(origin))
 	{
 		CELL current = origin;
 		for (int i = 0; i < maxLength; ++i)
@@ -2325,8 +2330,15 @@ int MapClass::Scan_For_Overlay(const CELL origin, const FacingType dir, const Ov
 				const CellClass& mapCell = Map[current];
 
 				//Found a match
-				if (mapCell.Overlay == overlay)
-					return i;
+				if (mapCell.Overlay == overlay){
+                    if (!limittohouse || (whichhouse == mapCell.Owner)){
+                        return i;
+                    }
+                    // we hit a wall, but it belongs to someone else
+                    else {
+                        break;
+                    }
+                }
 				//Blocked by an object
 				else if (!Map[current].Is_Clear_To_Build(SPEED_NONE))
 					break;

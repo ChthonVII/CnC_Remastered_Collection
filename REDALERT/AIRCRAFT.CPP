@@ -887,6 +887,45 @@ void AircraftClass::AI(void)
 	assert(Aircraft.ID(this) == ID);
 	assert(IsActive);
 
+    
+    // Chthon CFE Note: rank 3 veteran helicopters repair for free while docked (at half the rate as repair bay)
+    // RA uses Height instead of Altitude
+    if (    (VeterancyRank == 3) &&
+            ((*this == AIRCRAFT_LONGBOW) || (*this == AIRCRAFT_HIND) || (*this == AIRCRAFT_MIG) || (*this == AIRCRAFT_YAK)) && 
+            (Height == 0) &&
+            !IsLanding &&
+            !IsTakingOff &&
+            (Health_Ratio() < Rule.ConditionGreen) // in RA Health_Ratio is fixed, not unsigned, so it can't be compared against hex literals
+       ){
+        TechnoClass * tech = Contact_With_Whom();
+        if (   tech &&
+                (tech->What_Am_I() == RTTI_BUILDING) &&
+                (   
+                    (
+                        (*((BuildingClass*)tech) == STRUCT_HELIPAD) && 
+                        ((*this == AIRCRAFT_LONGBOW) || (*this == AIRCRAFT_HIND))
+                    ) ||
+                    (
+                        (*((BuildingClass*)tech) == STRUCT_AIRSTRIP) && 
+                        ((*this == AIRCRAFT_MIG) || (*this == AIRCRAFT_YAK))
+                    )
+                ) &&
+                (::Distance(Center_Coord(), tech->Docking_Coord()) < 0x0040)
+           ){
+            // RA uses different low power logic
+            fixed pfrac = Saturate(House->Power_Fraction(), 1);
+            if (pfrac < fixed::_1_2) pfrac = fixed::_1_2;
+			int repaircycle = Inverse(pfrac) * 28; // repair pad has a 14-tick animation, so 28 ticks is half as fast
+            if (Frame % repaircycle == 0){
+                Strength += Class->Repair_Step();
+                if (Strength > Class_Of().MaxStrength){
+                    Strength = Class_Of().MaxStrength;
+                }
+            }
+        }
+    }
+    
+    
 	/*
 	**	A Mission change can always occur if the aircraft is landed or flying.
 	*/
@@ -968,6 +1007,32 @@ void AircraftClass::AI(void)
 	if (Edge_Of_World_AI()) {
 		return;
 	}
+	
+	// Chthon CFE Note: Nuclear hack to get things to leave the repair bay no matter what
+	/*
+    // don't do this -- prevents the player from ever being able to sell units
+	BuildingClass* beneathme = Map[Coord].Cell_Building(); // ?! not sure how Coord can be a valid index into Map, but Map[Coord] crops up all over in WW's code, so I assume it's correct
+	if (
+            ActiveCFEPatchConfig.EnableSmarterRepairBays &&
+            (Height == 0) &&
+            (beneathme != NULL) &&
+            (*beneathme == STRUCT_REPAIR) &&
+            (Health_Ratio() >= Rule.ConditionGreen) &&
+            !Target_Legal(NavCom)
+    ){
+        // unlike ground vehicles, don't go to the rally point
+        // do the "smarter runaway" logic
+        if (!DoSmarterRunAway() && !Class->IsFixedWing){
+            // failing that, just scatter (unless you're a fixed-wing plane)
+            Scatter(0, true, true); 
+        }
+        // hang up on the repair bay
+        if (In_Radio_Contact() && (Contact_With_Whom() == beneathme)){
+            Transmit_Message(RADIO_OVER_OUT);
+        }
+    }
+    */
+	
 }
 
 
@@ -1599,7 +1664,7 @@ BulletClass * AircraftClass::Fire_At(TARGET target, int which)
  * HISTORY:                                                                                    *
  *   05/26/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-ResultType AircraftClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, bool forced)
+ResultType AircraftClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, bool forced, TARGET indirectsource)
 {
 	assert(Aircraft.ID(this) == ID);
 	assert(IsActive);
@@ -1616,7 +1681,7 @@ ResultType AircraftClass::Take_Damage(int & damage, int distance, WarheadType wa
 	/*
 	**	Apply the damage to the aircraft.
 	*/
-	res = FootClass::Take_Damage(damage, distance, warhead, source, forced);
+	res = FootClass::Take_Damage(damage, distance, warhead, source, forced, indirectsource);
 
 	/*
 	**	Special action is performed if the aircraft is killed -- the cargo is destroyed
@@ -4513,4 +4578,43 @@ unsigned AircraftClass::Spied_By() const
 	}
 
 	return spiedby;
+}
+
+
+// Chthon CFE Note: logic for exiting repair bay
+bool AircraftClass::DoSmarterRunAway(){
+
+    // go to a helipad/airfield if one is open
+    BuildingClass * building = NULL;
+    building = Find_Docking_Bay(Class->Building, false);
+    if (Transmit_Message(RADIO_HELLO, building) != RADIO_ROGER) {
+        building = NULL;
+    }
+    if (building != NULL) {
+        Assign_Destination(building->As_Target());
+        Assign_Target(TARGET_NONE);
+		Assign_Mission(MISSION_ENTER);
+        //Commence();
+        return true;
+    }
+    
+    // if we're a helicopter, then we can at least land next to a helipad if they're all full
+    if (!Class->IsFixedWing){
+        TARGET goodenough = Good_LZ();
+        if (Target_Legal(goodenough) && (goodenough != ::As_Target(Coord_Cell(Coord)))){
+            Assign_Destination(goodenough);
+            Assign_Target(TARGET_NONE);
+            Assign_Mission(MISSION_MOVE);
+            //Commence();
+        }
+        // if Good_LZ() gave us back our current location, or failed altogether, just scatter
+        else{
+            Scatter(0, true);
+        }
+        return true;
+    }
+    
+    // if we're fixed wing and don't have an open airfield, we need to stay put, since we'll crash when we have nowhere to land
+    return false;
+    
 }

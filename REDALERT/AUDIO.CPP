@@ -284,6 +284,13 @@ struct SoundEffectNameStruct {
 	{"BEACON", 		10,	IN_NOVAR},	// VOC_BEACON			Beacon sound.
 
 #endif
+    
+    //Chthon CFE Note: add a sound for veterancy promotions
+    {"PROMOTED", 		10,	IN_NOVAR },
+    
+    //Chthon CFE Note: add a sound for infantry stealth
+    {"WINDGUST", 		10,	IN_NOVAR },
+    
 };
 
 

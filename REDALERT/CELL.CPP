@@ -1984,7 +1984,8 @@ int CellClass::Clear_Icon(void) const
  *   01/10/1995 JLB : Created.                                                                 *
  *   08/02/1996 JLB : Added the "nokidding" parameter.                                         *
  *=============================================================================================*/
-void CellClass::Incoming(COORDINATE threat, bool forced, bool nokidding)
+// Chthon CFE Note: altered function to (1) make veteran infantry scatter automatically, and (2) add a mode for making ONLY veteran infantry scatter
+void CellClass::Incoming(COORDINATE threat, bool forced, bool nokidding, bool veteransonly)
 {
 	assert((unsigned)Cell_Number() <= MAP_CELL_TOTAL);
 
@@ -1993,11 +1994,18 @@ void CellClass::Incoming(COORDINATE threat, bool forced, bool nokidding)
 	object = Cell_Occupier();
 	while (object != NULL) {
 
+        bool imavet = ((object->What_Am_I() == RTTI_INFANTRY) && ((TechnoClass *)object)->VeterancyRank > 0);
+        
 		/*
 		**	Special check to make sure that friendly units never scatter.
 		*/
-		if (nokidding || Rule.IsScatter || (object->Is_Techno() && ((TechnoClass *)object)->House->IQ >= Rule.IQScatter)) {
-			object->Scatter(threat, forced, nokidding);
+		if ((nokidding || Rule.IsScatter || (object->Is_Techno() && ((TechnoClass *)object)->House->IQ >= Rule.IQScatter) || imavet) && (!veteransonly || imavet)) {
+            if (object->What_Am_I() == RTTI_INFANTRY) {
+                object->Scatter(threat, forced, (nokidding || imavet));
+            }
+            else {
+                object->Scatter(threat, forced, nokidding);
+            }
 		}
 		object = object->Next;
 	}
@@ -2414,6 +2422,12 @@ bool CellClass::Goodie_Check(FootClass * object)
 		switch (powerup) {
 			case CRATE_TIMEQUAKE:
 				TimeQuake = true;
+                // Chthon CFE Note: If timequakes are fixed, make sthis do something
+                if (ActiveCFEPatchConfig.EnableTimeQuakeFix){
+                    Scen.Do_BW_Fade();
+                    Sound_Effect(VOC_CHRONO, Cell_Coord());
+                    PendingGlobalTimeQuake = true;
+                }
 				break;
 
 			/*

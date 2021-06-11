@@ -322,7 +322,7 @@ void InfantryClass::operator delete(void * ptr)
  *   11/22/1994 JLB : Shares base damage handler for techno objects.                           *
  *   03/31/1995 JLB : Revenge factor.                                                          *
  *=============================================================================================*/
-ResultType InfantryClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, bool forced)
+ResultType InfantryClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, bool forced, TARGET indirectsource)
 {
 	assert(Infantry.ID(this) == ID);
 	assert(IsActive);
@@ -349,7 +349,7 @@ ResultType InfantryClass::Take_Damage(int & damage, int distance, WarheadType wa
 			damage = 0;
 		}
 	}
-	res = FootClass::Take_Damage(damage, distance, warhead, source, forced);
+	res = FootClass::Take_Damage(damage, distance, warhead, source, forced, indirectsource);
 
 	/*
 	** hack for dog: if you're hit by a dog, and you're the target, your
@@ -908,8 +908,10 @@ void InfantryClass::Per_Cell_Process(PCPType why)
 			if (building != NULL && building->As_Target() == NavCom) {
 				if (!building->IronCurtainCountDown && building->Mission != MISSION_DECONSTRUCTION) {
 					building->IsGoingToBlow = true;
-					building->Clicked_As_Target(PlayerPtr->Class->House, (Rule.C4Delay * TICKS_PER_MINUTE) / 2); // 2019/09/20 JAS - Added record of who clicked on the object
-					building->Clicked_As_Target(building->Owner(), (Rule.C4Delay * TICKS_PER_MINUTE) / 2);
+					// Chthon CFE Note: this is wrong! in LAN multiplayer shows flash for the server, not necessarily the bomber
+                    //building->Clicked_As_Target(PlayerPtr->Class->House, (Rule.C4Delay * TICKS_PER_MINUTE) / 2); // 2019/09/20 JAS - Added record of who clicked on the object
+					building->Clicked_As_Target(Owner(), (Rule.C4Delay * TICKS_PER_MINUTE) / 2);
+                    building->Clicked_As_Target(building->Owner(), (Rule.C4Delay * TICKS_PER_MINUTE) / 2);
 					building->CountDown = Rule.C4Delay * TICKS_PER_MINUTE;
 					building->WhomToRepay = As_Target();
 				}
@@ -992,6 +994,11 @@ void InfantryClass::Per_Cell_Process(PCPType why)
 			*/
 			COORDINATE blcoord = bldng->Center_Coord();
 			new AnimClass(Combat_Anim(Rule.APMineDamage, WARHEAD_HE, cellptr->Land_Type()), blcoord);
+             // Chthon CFE Note: pass the mine's WhoLaidMe so the minelayer can gain XP
+            TARGET whosetusupthebomb = bldng->WhoLaidMe;
+            // Chthon CFE Note: landmine inherited its veterancy from the minelayer that laid it
+            // do 10% bonus per rank b/c rate of fire bonus is meaningless in this case
+            float vbonus = 1.0 + (0.1 * bldng->VeterancyRank);
 			delete bldng;
 			int damage;
 			for (int index = 0; index < Infantry.Count(); index++) {
@@ -999,8 +1006,9 @@ void InfantryClass::Per_Cell_Process(PCPType why)
 				if (obj != NULL && !obj->IsInLimbo) {
 					int dist = ::Distance(obj->Coord, blcoord);
 					if (dist <= 0xC0) {
-						damage = Rule.APMineDamage;
-						obj->Take_Damage(damage, 0, WARHEAD_HE);
+						damage = Rule.APMineDamage * vbonus;
+						//obj->Take_Damage(damage, 0, WARHEAD_HE);
+                        obj->Take_Damage(damage, 0, WARHEAD_HE, NULL, false, whosetusupthebomb);
 					}
 				}
 			}
@@ -1209,6 +1217,14 @@ void InfantryClass::Assign_Target(TARGET target)
 		if (::As_Object(target) && ::As_Object(target)->What_Am_I() != RTTI_INFANTRY) {
 			target = TARGET_NONE;
 		}
+		// Chthon CFE Note: If a dog was assigned a cloaked infantry as a target, shimmer the infantry
+		// should only apply to rank 3 veteran Tanya
+		// doesn't work. Or rather, the uncloak works, but the dog doesn't move to attack
+		// goign to try doing this all from tanya's side instead
+		//else if (::As_Object(target) && (::As_Object(target)->What_Am_I() == RTTI_INFANTRY) && As_Techno(target)->Is_Cloaked(this)){
+            //As_Techno(target)->Do_Shimmer();
+        //}
+        
 	}
 	FootClass::Assign_Target(target);
 
@@ -1222,6 +1238,12 @@ void InfantryClass::Assign_Target(TARGET target)
 			Assign_Destination(target);
 		}
 	}
+	
+	// Chthon CFE Note: Rank3 veteran dogs use "alpha howl" when aggroing
+	if (Class->IsDog && (VeterancyRank == 3) && Target_Legal(TarCom)){
+        AlphaPuppersHowl();
+    }
+	
 }
 
 
@@ -1324,6 +1346,59 @@ void InfantryClass::AI(void)
 	**	Perform movement operations at this time.
 	*/
 	Movement_AI();
+    
+    // Chthon CFE Note: We may be dead at this point and still doing a death animation
+    // or we have have finished the death animation and Doing_AI() deleted this unit
+    // we need to check for both cases to make sure we're still alive
+    // (not sure how WW got away with putting Movement_AI() after Doing_AI()...
+    if (IsActive && Strength){
+    
+        // Chthon CFE Note: Extremely ugly hack to get rank 3 veteran medics to heal themselves
+        // Just using Fire_At() is buggy since there's no animation and the healing missile doesn't hit
+        // So let's fake the firing logic entirely
+        if (   (*this == INFANTRY_MEDIC) &&
+                (VeterancyRank == 3) &&
+                !IsDriving &&
+                (
+                    (Doing == DO_NOTHING) ||
+                    MasterDoControls[Doing].Interrupt
+                ) &&
+                (Health_Ratio() < Rule.ConditionGreen) &&
+                (   (Mission == MISSION_GUARD) || (Mission == MISSION_GUARD_AREA) ) &&
+                !Target_Legal(TarCom) &&
+                !Arm &&
+                !IsFiring
+        ){
+            if (IsProne) {
+                Do_Action(DO_FIRE_PRONE);
+            } else {
+                Do_Action(DO_FIRE_WEAPON);
+            }
+            Mark(MARK_OVERLAP_UP);
+            IsFiring = true; // I *think* this should get cleared in Firing_AI() on the next clock tick
+            Mark(MARK_OVERLAP_DOWN);
+            WeaponTypeClass const * weapon = Techno_Type_Class()->PrimaryWeapon;
+            int firepower = weapon->Attack * FixedToFloat(FirepowerBias) * FixedToFloat(House->FirepowerBias);
+            // skip the whole missile business and just heal directly
+            Strength -= firepower; // subract b/c firepower is negative
+            if (Strength > Class_Of().MaxStrength){
+                Strength = Class_Of().MaxStrength;
+            }
+            Arm = Rearm_Delay(IsSecondShot, 0);
+            Sound_Effect(weapon->Sound, Coord);
+            Clicked_As_Target(HOUSE_COUNT, 7); // HOUSE_COUNT means everyone can see it
+            Mark(MARK_CHANGE);
+        }
+        
+        // dogs can smell cloaked infantry (rank 3 veteran Tanya)
+        // well, actually, we'll uncloack for them
+        if (IsCloakable && ((Cloak == CLOAKED) || (Cloak == CLOAKING)) && UnfriendlyDogCheck()){
+            Do_Uncloak();
+        }
+        
+    } // end if IsActive && Strength
+    
+    
 }
 
 
@@ -1468,7 +1543,9 @@ MoveType InfantryClass::Can_Enter_Cell(CELL cell, FacingType ) const
 						**	This depends on whether the unit is currently moving or not.
 						*/
 						case RTTI_UNIT:
-							if (((UnitClass *)obj)->IsDriving || Target_Legal(((UnitClass *)obj)->NavCom)) {
+							// Chthon CFE Note: consider other units in attack-move mode to be moving for purposes of blocking
+                            // actually, no...
+                            if (((UnitClass *)obj)->IsDriving || Target_Legal(((UnitClass *)obj)->NavCom) /*|| Target_Legal(((UnitClass *)obj)->RememberedNavCom)*/) {
 								if (retval < MOVE_MOVING_BLOCK) retval = MOVE_MOVING_BLOCK;
 							} else {
 								if (retval < MOVE_TEMP) retval = MOVE_TEMP;
@@ -1846,10 +1923,22 @@ void InfantryClass::Enter_Idle_Mode(bool )
 			}
 		}
 	}
-    if (order == MISSION_GUARD) {
+    if ((order == MISSION_GUARD) && AttackMove) {
 		// Attack Move rework by ChthonVII --  As Infantry does GUARD at the end, the Mission_Move method where usually the reset starts is never called
 		// therefore this hack
-		ResetAttackMove();
+        // Let's be a little more careful and hopefully avoid units falling out of attack move early
+        // fall out of attack move if we forgot our destination, we arrived (or got close), or don't have a path
+        if (    !Target_Legal(RememberedNavCom) ||
+                (Distance(RememberedNavCom) < Rule.CloseEnoughDistance) ||
+                !Find_Path_AStar(nullptr, Coord_Cell(Coord), As_Cell(RememberedNavCom), 1, MOVE_MOVING_BLOCK, -1)
+        ){
+            ResetAttackMove();
+        }
+        // otherwise go back to moving
+        else {
+            AttackMoveEnterMoveMode();
+            return;
+        }
 	}
 	Assign_Mission(order);
 }
@@ -2965,7 +3054,8 @@ ActionType InfantryClass::What_Action(ObjectClass const * object) const
 	if (Combat_Damage() < 0 && House->IsPlayerControl) {
 		if (House->Is_Ally(object)) {
 #ifdef FIXIT_CSII	//	checked - ajw 9/28/98
-			if( (object->What_Am_I() == RTTI_INFANTRY && object != this && *this == INFANTRY_MEDIC) ||
+            // Chthon CFE Note: Allow rank3 veteran medics to self target -- bah, reverting since it's buggy
+			if( (object->What_Am_I() == RTTI_INFANTRY && (object != this) && *this == INFANTRY_MEDIC) ||
 			    (*this == INFANTRY_MECHANIC && (object->What_Am_I() == RTTI_UNIT || object->What_Am_I() == RTTI_AIRCRAFT) ) ) {
 
 					if (object->Health_Ratio() < Rule.ConditionGreen) {
@@ -3846,6 +3936,19 @@ void InfantryClass::Firing_AI(void)
 				** If it's a dog, get rid of him (he'll be re-created when he hits)
 				*/
 				if (Class->IsDog) {
+                    // Chthon CFE Note: Give the target (e.g. rank 3 veteran Tanya) a cloak delay so it can't recloak while the dog is in flight
+                    ObjectClass* targ= As_Object(TarCom);
+                    if (    targ &&
+                            targ->IsActive &&
+                            (targ->What_Am_I() == RTTI_INFANTRY) &&
+                            ((InfantryClass*)targ)->IsCloakable &&
+                            (((InfantryClass*)targ)->Cloak != CLOAKED) &&
+                            (((InfantryClass*)targ)->Cloak != CLOAKING) &&
+                            (((InfantryClass*)targ)->CloakDelay < 2*TICKS_PER_SECOND)
+                       ){
+                        ((InfantryClass*)targ)->CloakDelay = 2*TICKS_PER_SECOND;
+                    }
+                    
 					WasSelected = IsSelected;
 					ScenarioInit++;
 					Limbo();
@@ -4123,17 +4226,35 @@ void InfantryClass::Movement_AI(void)
 				COORDINATE acoord = Adjacent_Cell(Coord, Path[0]);
 				CELL acell = Coord_Cell(acoord);
 
-				if (Can_Enter_Cell(acell) != MOVE_OK) {
-
+                MoveType cando = Can_Enter_Cell(acell);
+				//if (Can_Enter_Cell(acell) != MOVE_OK) {
+                if (cando != MOVE_OK) {
+                
 					if ((Mission == MISSION_MOVE || Mission == MISSION_ENTER) && !IsTethered /*&& House->IsHuman*/ && Distance(NavCom) < Rule.CloseEnoughDistance) {
 						Assign_Destination(TARGET_NONE);
-					} else {
+					}
+					/*
+					else if (
+                        AttackMove &&
+                        ((Mission == MISSION_MOVE) || (Mission == MISSION_ENTER)) &&
+                        !IsTethered &&
+                        (cando != MOVE_DESTROYABLE) &&
+                        (cando != MOVE_CLOAK) &&
+                        RememberedNavCom &&
+                        (Distance(RememberedNavCom) < Rule.CloseEnoughDistance)
+                    ){
+                        ResetAttackMove();
+                        Assign_Destination(TARGET_NONE);
+                    }
+                    */
+					else {
 
 						/*
 						** If blocked by a moving block then just exit start of move and
 						** try again next tick.
 						*/
-						if (Can_Enter_Cell(acell) == MOVE_DESTROYABLE) {
+						//if (Can_Enter_Cell(acell) == MOVE_DESTROYABLE) {
+                        if (cando == MOVE_DESTROYABLE) {
 							if (Map[acell].Cell_Object()) {
 								if (!House->Is_Ally(Map[acell].Cell_Object())) {
 									Override_Mission(MISSION_ATTACK, Map[acell].Cell_Object()->As_Target(), TARGET_NONE);
@@ -4168,6 +4289,10 @@ void InfantryClass::Movement_AI(void)
 							*/
 							if (Target_Legal(TarCom)) {
 								Do_Action(DO_CRAWL);
+                                // Chthon CFE Note: Rank3 veteran dogs use "alpha howl" periodically while chasing
+                                if ((VeterancyRank == 3) && (Frame % (3*TICKS_PER_SECOND) == 0)){
+                                    AlphaPuppersHowl();
+                                }
 							} else {
 								Do_Action(DO_WALK);
 							}
@@ -4375,4 +4500,47 @@ bool InfantryClass::Paradrop(COORDINATE coord)
 		return(true);
 	}
 	return(false);
+}
+
+
+// Chthon CFE Note: New function
+// Rank3 veteran dogs can "howl."
+// The howl causes other dogs in range of the same house to aggro to this dog's target if they don't already have a target.
+// Range is 6 cells. This is arbitrary and subject to change once I see how well it works in game.
+// Too small. Let's try 10.
+void InfantryClass::AlphaPuppersHowl(){
+    
+    // bail if this doggo doesn't have a valid target to share
+    if (!Target_Legal(TarCom)){
+        return;
+    }
+    
+    for (int i = 0; i < Infantry.Count(); i++) {
+        InfantryClass* iptr = Infantry.Ptr(i);
+        if (iptr && iptr->IsActive && !iptr->IsInLimbo && iptr->Class->IsDog && (House == iptr->House) && (Distance(iptr) <= (10*CELL_LEPTON_W))){
+            if (!Target_Legal(iptr->TarCom)){
+                iptr->Assign_Destination(TARGET_NONE);
+                iptr->Stop_Driver();
+                iptr->Assign_Target(TarCom);
+                iptr->Assign_Mission(MISSION_ATTACK);
+                iptr->Commence();
+            }
+        }
+        
+    }
+    return;
+}
+
+
+// returns true if within the guard radius of an unfriendly dog
+bool InfantryClass::UnfriendlyDogCheck(){
+    for (int i = 0; i < Infantry.Count(); i++) {
+        InfantryClass* iptr = Infantry.Ptr(i);
+        if (iptr && iptr->IsActive && !iptr->IsInLimbo && iptr->Class->IsDog && !House->Is_Ally(iptr) && (Distance(iptr) <= iptr->Techno_Type_Class()->ThreatRange)){
+            return true;
+        }
+        
+    }
+    return false;
+    
 }

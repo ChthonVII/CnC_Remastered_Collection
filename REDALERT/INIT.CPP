@@ -3228,6 +3228,8 @@ static void Init_Secondary_Mixfiles(void)
 	ConquerMix = new MFCD("CONQUER.MIX", &FastKey);			// Cached.
 //	new MFCD("TRANSIT.MIX", &FastKey);
 
+    RAModMix = new MFCD("MOD_RA.MIX", &FastKey);  // Chthon CFE Note: Read our mod_ra.mix file so we can add assets for classic mode
+    
 	if (GeneralMix == NULL) GeneralMix = new MFCD("GENERAL.MIX", &FastKey);			// Never cached.
 
 	if (CCFileClass("MOVIES1.MIX").Is_Available()) {
@@ -3562,6 +3564,7 @@ static void Init_Bulk_Data(void)
 	**	Cache the main game data. This operation can take a very long time.
 	*/
 	MFCD::Cache("CONQUER.MIX");
+    MFCD::Cache("MOD_RA.MIX"); // Chthon CFE Note: Cache our mod assets too
 	if (SampleType != 0 && !Debug_Quiet) {
 		MFCD::Cache("SOUNDS.MIX");
 		MFCD::Cache("RUSSIAN.MIX");

@@ -103,7 +103,8 @@ class MapClass: public GScreenClass
 		*/
 		int Validate(void);
 
-		int Scan_For_Overlay(const CELL origin, const FacingType dir, const OverlayType overlay, const int maxLength) const;
+        // Chthon CFE Note -- changed this to enable searching for only walls that belong to a given house
+        int Scan_For_Overlay(const CELL origin, const FacingType dir, const OverlayType overlay, const int maxLength, const bool limittohouse = false, const HousesType whichhouse = HOUSE_NONE) const;
 
 		/*
 		**	This is the dimensions and position of the sub section of the global map.
@@ -176,10 +177,18 @@ class MapClass: public GScreenClass
 
 		enum MapEnum {SCAN_AMOUNT=MAP_CELL_TOTAL};
 
+    // Chthon CFE Note: new variable to track cumulative timeline damage from chronoshifts
+    public:
+        int timelinedamage = 0;
+        int permanenttimelinedamage = 0;
+        
+        
 		/*
 		** Some additional padding in case we need to add data to the class and maintain backwards compatibility for save/load
 		*/
-		unsigned char SaveLoadPadding[1024];
+        // Chthon CFE Note: original padding was 1024
+        // timelinedamage ate 8 bytes
+		unsigned char SaveLoadPadding[1016];
 
 };
 

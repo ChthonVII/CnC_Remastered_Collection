@@ -142,7 +142,7 @@ class AircraftClass : public FootClass, public FlyClass
 		/*
 		**	Combat related.
 		*/
-		virtual ResultType Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, bool forced=false);
+		virtual ResultType Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, bool forced=false, TARGET indirectsource = TARGET_NONE); // Chthon CFE Note: Added indirectsource so minelayers can get XP
 		virtual BulletClass * Fire_At(TARGET target, int which);
 
 		/*
@@ -174,6 +174,9 @@ class AircraftClass : public FootClass, public FlyClass
 		bool Save(Pipe & file) const;
 
 		virtual unsigned Spied_By() const;
+        
+        // Chthon CFE Note: logic for exiting repair bay
+        bool DoSmarterRunAway();
 
 	public:
 

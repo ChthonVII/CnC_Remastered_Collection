@@ -3341,6 +3341,10 @@ typedef enum VocType : short {
 	VOC_BEACON,
 
 #endif
+    
+    VOC_PROMOTED, //Chthon CFE Note: add a sound for veterancy promotions
+    VOC_WIND_GUST, //Chthon CFE Note: add a sound for infantry stealth (mechanical sound sounds weird)
+    
 	VOC_COUNT,
 	VOC_FIRST=0
 } VocType;

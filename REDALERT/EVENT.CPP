@@ -755,11 +755,20 @@ void EventClass::Execute(void)
                         techno->Assign_Mission(MISSION_MOVE);
                         techno->AttackMove = 1;
                         techno->RememberedNavCom = Data.MegaMission.Destination.As_TARGET();
+                        if ((techno->What_Am_I() == RTTI_UNIT) && (*((UnitClass*)techno) == UNIT_MINELAYER)){
+                            ((UnitClass*)techno)->MLoriginalposition = ::As_Target(Coord_Cell(techno->Coord));
+                            ((UnitClass*)techno)->MLattackmovemode = 0;
+                            // ignore the order if no ammo and can't regen it yet
+                            if (!techno->Ammo && (techno->VeterancyRank < 3)){
+                                techno->ResetAttackMove(0);
+                                ((UnitClass*)techno)->MinelayerGoHome();
+                            }
+                        }
                     }
                     // if we assigned any other mission, terminate attack-move
                     else {
                         techno->Assign_Mission(Data.MegaMission.Mission);
-                        techno->ResetAttackMove();
+                        techno->ResetAttackMove(0);
                     }
                 }
                 // original code
@@ -848,7 +857,7 @@ void EventClass::Execute(void)
 			techno = Data.Target.Whom.As_Techno();
 			// Attack Move rework by ChthonVII -- exit attack-move because we got a new order
             if (techno && ActiveCFEPatchConfig.EnableAttackMove){
-                techno->ResetAttackMove();
+                techno->ResetAttackMove(2);
             }
             if (techno != NULL && techno->IsActive && !techno->IsInLimbo && !techno->IsTethered && techno->What_Am_I() != RTTI_BUILDING) {
 				techno->Transmit_Message(RADIO_OVER_OUT);

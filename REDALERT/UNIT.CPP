@@ -99,7 +99,7 @@
 
 #include	"function.h"
 #include "COORDA.h"
-//#include "CFEDEBUG.H"
+#include "CFEDEBUG.H"
 
 extern void Logic_Switch_Player_Context(ObjectClass *object);
 extern void Logic_Switch_Player_Context(HouseClass *object);
@@ -497,6 +497,57 @@ void UnitClass::AI(void)
 	*/
 	Reload_AI();
 
+    // Chthon CFE Note:
+    // Rank 3 veteran phase transports have an onboard medic to heal passengers
+    // adjusted for RA to use rule from INI file. Default should be 1hp per 14 ticks, which is pretty fast for infantry
+	if ((*this == UNIT_PHASE) && (VeterancyRank == 3) && ((Frame % (Rule.RepairRate * TICKS_PER_MINUTE)) == 0)){
+        ObjectClass const * object = Attached_Object();
+		for (int pindex = 0; pindex < Class_Of().Max_Pips(); pindex++) {
+			if (object) {
+				if (object->What_Am_I() == RTTI_INFANTRY) {
+                    // in RA Health_Ratio is fixed, not unsigned, so it can't be compared against hex literals
+					if (((InfantryClass *)object)->Health_Ratio() < Rule.ConditionGreen) {
+                        ((InfantryClass *)object)->Strength++;
+                    }
+				}
+				object = object->Next;
+			}
+        }
+    }
+    // Rank 3 veteran Mammoth Tanks recharge their built-in iron curtains
+    if (PersonalIronCurtainCooldown){
+        PersonalIronCurtainCooldown--;
+    }
+    // Rank 3 veteran minelayers regenerate ammo slowly
+    if ((*this == UNIT_MINELAYER) && (VeterancyRank == 3) && (Ammo < Class->MaxAmmo)){
+        MinelayerRecharge++;
+        if (MinelayerRecharge >= (20 * TICKS_PER_SECOND)){
+            Ammo++;
+            MinelayerRecharge = 0;
+        }
+    }
+    // Backstop in case minelayer gets stuck during attack-move
+    if (
+        AttackMove &&
+        (*this == UNIT_MINELAYER) &&
+        !IsDriving &&
+        !IsRotating &&
+        (Mission != MISSION_MOVE) &&
+        (Mission != MISSION_UNLOAD) &&
+        (MissionQueue != MISSION_MOVE) &&
+        (MissionQueue != MISSION_UNLOAD)
+    ){
+        if (Target_Legal(RememberedNavCom) && (Distance(RememberedNavCom) < 2*Rule.CloseEnoughDistance)){
+            MLattackmovemode = 1;
+        }
+        if (Ammo && MLattackmovemode){
+            MinelayerPoopTime();
+        }
+        else {
+            MinelayerGoHome();
+        }
+    }
+    
 	/*
 	**	Transporters require special logic handled here since there isn't a MISSION_WAIT_FOR_PASSENGERS
 	**	mission that they can follow. Passenger loading is merely a part of their normal operation.
@@ -533,6 +584,45 @@ void UnitClass::AI(void)
 	if (Class->IsGapper && !IsDriving && (Frame % TICKS_PER_SECOND) == 0) {
 		Shroud_Regen();
 	}
+	
+	// Chthon CFE Note: Nuclear hack to get things to leave the repair bay no matter what
+	/*
+    // can't do this b/c it makes it impossible to sell vehicles
+    // do need to do soemthign similar for rearmed minelayer though
+	BuildingClass* beneathme = Map[Coord].Cell_Building(); // ?! not sure how Coord can be a valid index into Map, but Map[Coord] crops up all over in WW's code, so I assume it's correct
+	if (
+            ActiveCFEPatchConfig.EnableSmarterRepairBays &&
+            (beneathme != NULL) &&
+            (*beneathme == STRUCT_REPAIR) &&
+            (Health_Ratio() >= Rule.ConditionGreen) &&
+            (
+                (*this != UNIT_MINELAYER) ||
+                (Ammo >= Class->MaxAmmo)
+            ) &&
+            !Target_Legal(NavCom)
+    ){
+        // go to the repair bay's rally point, if it has one
+        if (
+                Target_Legal(beneathme->RallyPoint) &&
+                (As_Target() != beneathme->RallyPoint) &&
+                (::As_Target(Coord_Cell(Coord)) != beneathme->RallyPoint)
+        ){
+            Assign_Target(TARGET_NONE);
+            Assign_Destination(beneathme->RallyPoint);
+            Assign_Mission(MISSION_MOVE);
+        }
+        // otherwise do the "smarter runaway" logic
+        else if (!DoSmarterRunAway()){
+            // failing that, just scatter
+            Scatter(0, true, true); 
+        }
+        // hang up on the repair bay
+        if (In_Radio_Contact() && (Contact_With_Whom() == beneathme)){
+            Transmit_Message(RADIO_OVER_OUT);
+        }
+    }
+    */
+	
 }
 
 
@@ -664,7 +754,14 @@ void UnitClass::Reload_AI(void)
 			if (Reload == 0) {
 				Ammo++;
 				if (Ammo < Class->MaxAmmo) {
-					Reload = TICKS_PER_SECOND*30;
+					// Chthon CFE Note: veteran SSM should reload faster too, or RoF bonus is kinda pointless, then rank 3 should get even faster reload
+                    float localROFBias = 1.0 / (1.0 + (0.05 * VeterancyRank)); // to multiply the *rate* of fire we need to multiply the *time per shot* by the inverse of the rate we want.
+                    if (VeterancyRank == 3){
+                        Reload = (TICKS_PER_SECOND*20)*localROFBias;
+                    }
+                    else {
+                        Reload = (TICKS_PER_SECOND*30)*localROFBias;
+                    }
 				}
 				Mark(MARK_CHANGE);
 			}
@@ -942,6 +1039,14 @@ RadioMessageType UnitClass::Receive_Message(RadioClass * from, RadioMessageType 
 					return(RADIO_ROGER);
 				}
 			}
+			else if (ActiveCFEPatchConfig.EnableSmarterRepairBays && In_Radio_Contact()){
+                TechnoClass * contact = Contact_With_Whom();
+				if (contact->What_Am_I() == RTTI_BUILDING && *((BuildingClass*)contact) == STRUCT_REPAIR) {
+                    if (DoSmarterRunAway()){
+                        return(RADIO_ROGER);
+                    }
+                }
+            }
 			return(DriveClass::Receive_Message(from, message, param));
 
 		/*
@@ -1056,7 +1161,7 @@ bool UnitClass::Unlimbo(COORDINATE coord, DirType dir)
  *   06/30/1995 JLB : Lasers do maximum damage against gunboat.                                *
  *   08/16/1995 JLB : Harvester crushing doesn't occur on early missions.                      *
  *=============================================================================================*/
-ResultType UnitClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, bool forced)
+ResultType UnitClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, bool forced, TARGET indirectsource)
 {
 	assert(Units.ID(this) == ID);
 	assert(IsActive);
@@ -1070,11 +1175,20 @@ ResultType UnitClass::Take_Damage(int & damage, int distance, WarheadType warhea
 	//bool select = (IsSelected && House->IsPlayerControl);
 	bool select = (Is_Selected_By_Player() );//&& House->IsPlayerControl);
 
+	// Chthon CFE NOTE: Rank 3 veteran Mammoth Tanks have a built-in iron curtain that activates upon taking damage for 20 sec once every 2 min
+	if((*this == UNIT_HTANK) && (VeterancyRank == 3) && (IronCurtainCountDown == 0) && (PersonalIronCurtainCooldown == 0)){
+        IronCurtainCountDown = 20 * TICKS_PER_SECOND;
+        PersonalIronCurtainCooldown = 2 * TICKS_PER_MINUTE;
+        Mark(MARK_CHANGE);
+        Sound_Effect(VOC_IRON1, Center_Coord());
+    }
+	
+	
 	/*
 	**	In order for a this to be damaged, it must either be a unit
 	**	with a crew or a sandworm.
 	*/
-	res = DriveClass::Take_Damage(damage, distance, warhead, source, forced);
+	res = DriveClass::Take_Damage(damage, distance, warhead, source, forced, indirectsource);
 
 	if (res == RESULT_DESTROYED) {
 		Death_Announcement(source);
@@ -1144,6 +1258,17 @@ ResultType UnitClass::Take_Damage(int & damage, int distance, WarheadType warhea
 				}
 			}
 		} else {
+            
+            // Chthon CFE Note: Give XP for any passengers killed too
+            // if indirectsource is set, use that; otherwise use source
+            TechnoClass* XPsource;
+            if (Target_Legal(indirectsource)){
+                XPsource = As_Techno(indirectsource);
+            }
+            else {
+                XPsource = source;
+            }
+            
 			while (Is_Something_Attached()) {
 				FootClass * object = Detach_Object();
 
@@ -1158,6 +1283,9 @@ ResultType UnitClass::Take_Damage(int & damage, int distance, WarheadType warhea
 					object->Scatter(0, true);
 					if (select) object->Select();
 				} else {
+                    if (ActiveCFEPatchConfig.EnableVeterancy && XPsource && XPsource->IsActive && !House->Is_Ally(XPsource)){
+                        XPsource->GainVeterancyXP((object->Strength * object->Class_Of().Cost_Of())/object->Class_Of().MaxStrength);
+                    }
 					object->Record_The_Kill(source);
 					delete object;
 				}
@@ -1779,14 +1907,14 @@ void UnitClass::Per_Cell_Process(PCPType why)
 			**	it scatter again.
 			*/
 			if	(Map[Coord].Cell_Building() != NULL && !Target_Legal(NavCom)) {
-				Scatter(0, true, true);
+				Scatter(0, true, true);  // Chthon CFE Note: Is this part of the repair bay problems?
 			} else {
 				TechnoClass * contact = Contact_With_Whom();
 				if (Transmit_Message(RADIO_UNLOADED) == RADIO_RUN_AWAY) {
 					if (*this == UNIT_HARVESTER && contact && contact->What_Am_I() == RTTI_BUILDING && *((BuildingClass*)contact) != STRUCT_REPAIR) {
 						Assign_Mission(MISSION_HARVEST);
 					} else if (!Target_Legal(NavCom)) {
-						Scatter(0, true);
+						Scatter(0, true); // Chthon CFE Note: Is this part of the repair bay problems?
 					} else {
 
 						/*
@@ -1924,12 +2052,18 @@ void UnitClass::Per_Cell_Process(PCPType why)
 				/*
 				** Vehicles blow up both mines, but they only take significant damage from AV mines.
 				*/
+                // Chthon CFE Note: landmine inherited its veterancy from the minelayer that laid it
+                // do 10% bonus per rank b/c rate of fire bonus is meaningless in this case
+                float vbonus = 1.0 + (0.1 * bldng->VeterancyRank);
 				if (*bldng == STRUCT_AVMINE) {
-					int damage = Rule.AVMineDamage;
-					Take_Damage(damage, 0, WARHEAD_HE);
+					int damage = Rule.AVMineDamage * vbonus;
+                    // Chthon CFE Note: pass the mine's WhoLaidMe so the minelayer can gain XP
+                    //Take_Damage(damage, 0, WARHEAD_HE);
+					Take_Damage(damage, 0, WARHEAD_HE, NULL, false, bldng->WhoLaidMe);
 				} else {
-					int damage = 10;
-					Take_Damage(damage, 0, WARHEAD_HE);
+					int damage = 10 * vbonus;
+					//Take_Damage(damage, 0, WARHEAD_HE);
+                    Take_Damage(damage, 0, WARHEAD_HE, NULL, false, bldng->WhoLaidMe);
 				}
 				delete bldng;
 				if (!IsActive) {
@@ -2741,7 +2875,13 @@ int UnitClass::Mission_Unload(void)
 						Status = MANEUVERING;
 						return(1);
 					} else {
-						Assign_Mission(MISSION_GUARD);
+                        if (AttackMove){
+                            MinelayerGoHome();
+                            return 1;
+                        }
+                        else {
+                            Assign_Mission(MISSION_GUARD);
+                        }
 					}
 					break;
 
@@ -2778,6 +2918,13 @@ int UnitClass::Mission_Unload(void)
 									ScenarioInit = false;
 									building->Revealed(House);
 									Ammo--;
+                                    // Chthon CFE Note: Set WhoLaidMe on the landmine so the minelayer can get XP later
+                                    // Note: It's critically important to unset this in BuildingClass::Detach() if the minelayer is killed,
+                                    // since the same TARGET value could later point to a different unit
+                                    // (The game's memory management for units is a giant pile of "use after free" and this can't be fixed without changing thousands of line of code.)
+                                    building->WhoLaidMe = As_Target();
+                                    // also copy the veterancy rank so the mine can do increased damage
+                                    building->VeterancyRank = VeterancyRank;
 								}
 								ScenarioInit = false;
 							}
@@ -2799,7 +2946,18 @@ int UnitClass::Mission_Unload(void)
 						APC_Close_Door();
 					}
 					if (Is_Door_Closed()) {
-						Assign_Mission(MISSION_GUARD);
+						if (AttackMove){
+                            if (Ammo){
+                                MinelayerFindSpot();
+                            }
+                            else {
+                                MinelayerGoHome();
+                            }
+                            return 1;
+                        }
+                        else {
+                            Assign_Mission(MISSION_GUARD);
+                        }
 					}
 					break;
 			}
@@ -2858,6 +3016,12 @@ int UnitClass::Mission_Unload(void)
 			if (Fetch_Stage() < 7) {
 				return(1);
 			}
+			
+			// Chthon CFE Note: If there's a timequake from last frame being processed this frame, then wait another frame
+			// otherwise this unit's quake will process this frame instead of next, and only damage things reached later in the big Logic loop. 
+			if (TimeQuake){
+                return 1;
+            }
 
 			IsDumping = false;
 
@@ -2865,7 +3029,10 @@ int UnitClass::Mission_Unload(void)
 
 			Strength = 1;			// assure destruction
 			PendingTimeQuake = true;		// trigger a time quake
-			TimeQuakeCenter = ::As_Target(Center_Coord());
+			// Chthon CFE Note: Fixed to use a vector in case multiple MAD tanks detonate on the same frame (original code would only deal damage centered around one of them)
+			MADTimeQuakeCenterList.Add(::As_Target(Center_Coord()));
+			// this should be not used anywhere anymore, but let's leave it set so things will maybe sort of work if merged with another mod that relies on it
+            TimeQuakeCenter = ::As_Target(Center_Coord());
 			break;
 
 		case UNIT_CHRONOTANK:
@@ -3357,16 +3524,32 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType ) const
 			**	Always allow entry if trying to move on a cell with
 			**	authorization from the occupier.
 			*/
+            // Chthon CFE Note: Aha! This is wrong because there may be another unit in the cell (e.g., a unit leaving the repair bay) and we're not checking for it.
+            // *This* is why we get doubled up units sometimes on repair bays
+            /*
 			if (obj == Contact_With_Whom() && (IsTethered || (obj->What_Am_I() ==  RTTI_BUILDING && *((BuildingClass *)obj) == STRUCT_REPAIR))) {
 				return(MOVE_OK);
 			}
-
+			*/
+            if (obj == Contact_With_Whom()){
+                // order matters, since you can tether to the repair bay
+                if ((obj->What_Am_I() ==  RTTI_BUILDING) && (*((BuildingClass *)obj) == STRUCT_REPAIR)){
+                    // correct answer is to just continue with retval as is (probably MOVE_OK) and see if the next iteration finds someone else in the cell
+                    obj = obj->Next;
+                    continue;
+                }
+                if (IsTethered){
+                    return(MOVE_OK);
+                }
+            }
+			
+			                
 			/*
 			**	Special check to allow entry into the sea transport this vehicle
 			**	is trying to enter.
 			*/
 			if (Mission == MISSION_ENTER && obj->As_Target() == NavCom && IsTethered) {
-				return(MOVE_OK);
+                return(MOVE_OK);
 			}
 
 			/*
@@ -3377,8 +3560,10 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType ) const
 				return(MOVE_NO);
 			}
 
+			// Chthon CFE Note: consider other units in attack-move mode to be moving for purposes of blocking
+			// actually no
 			bool is_moving = obj->Is_Foot() &&
-						(Target_Legal(((FootClass *)obj)->NavCom) || ((FootClass *)obj)->PrimaryFacing.Is_Rotating() || ((FootClass *)obj)->IsDriving);
+						(Target_Legal(((FootClass *)obj)->NavCom) || ((FootClass *)obj)->PrimaryFacing.Is_Rotating() || ((FootClass *)obj)->IsDriving /*|| Target_Legal(((FootClass *)obj)->RememberedNavCom)*/);
 //						(((FootClass *)obj)->PrimaryFacing.Is_Rotating() || ((FootClass *)obj)->IsDriving);
 //						(((FootClass *)obj)->IsRotating || ((FootClass *)obj)->IsDriving);
 //						(Target_Legal(((FootClass *)obj)->NavCom) || ((FootClass *)obj)->IsDriving);
@@ -3692,13 +3877,23 @@ ActionType UnitClass::What_Action(ObjectClass const * object) const
 	if (is_player_controlled && object->What_Am_I() == RTTI_BUILDING && ((UnitClass *)this)->Transmit_Message(RADIO_CAN_LOAD, (TechnoClass*)object) == RADIO_ROGER) {
 		action = ACTION_ENTER;
 	}
+	
+	// Chthon CFE Note: allow queuing to repair bay even if it's occupied
+	if (   ActiveCFEPatchConfig.EnableSmarterRepairBays &&
+            is_player_controlled &&
+            (object->What_Am_I() == RTTI_BUILDING) &&
+            (*((BuildingClass*)object) == STRUCT_REPAIR)
+    ) {
+		action = ACTION_ENTER;
+	}
+	
 
 	/*
 	**	Special return to friendly repair factory action.
 	*/
 	if (is_player_controlled && action == ACTION_SELECT && object->What_Am_I() == RTTI_BUILDING) {
 		BuildingClass * building = (BuildingClass *)object;
-		if (building->Class->Type == STRUCT_REPAIR && ((UnitClass *)this)->Transmit_Message(RADIO_CAN_LOAD, building) == RADIO_ROGER && !building->In_Radio_Contact() && !building->Is_Something_Attached()) {
+        if (building->Class->Type == STRUCT_REPAIR && ((UnitClass *)this)->Transmit_Message(RADIO_CAN_LOAD, building) == RADIO_ROGER && !building->In_Radio_Contact() && !building->Is_Something_Attached()) {
 			action = ACTION_MOVE;
 		}
 	}
@@ -3742,7 +3937,7 @@ ActionType UnitClass::What_Action(ObjectClass const * object) const
 	if (action == ACTION_NONE) action = ACTION_NOMOVE;
 
     // Attack Move rework by ChthonVII -- we need this here so that we can attack-move to cells that the UnitClass-level makes movable (e.g., landmines) 
-    if (ActiveCFEPatchConfig.EnableAttackMove && action == ACTION_MOVE && Is_Owned_By_Player() && Techno_Type_Class()->PrimaryWeapon != NULL && DLL_Export_Get_Input_Key_State(KN_LSHIFT)){
+    if (ActiveCFEPatchConfig.EnableAttackMove && action == ACTION_MOVE && Is_Owned_By_Player() && ((Techno_Type_Class()->PrimaryWeapon != NULL) || (*this == UNIT_MINELAYER)) && DLL_Export_Get_Input_Key_State(KN_LSHIFT)){
         action = ACTION_ATTACKMOVE;
     }
     
@@ -4875,6 +5070,7 @@ void UnitClass::Overrun_Square(CELL cell, bool threaten)
 				/*
 				**	Scattering is controlled by the game difficulty level.
 				*/
+                // Chthon CFE Note: It sure looks like Incoming gets called no matter what in RA (so that comment about diffiuclty level is wrong...), so we don't the special vets-only call like we did in TD.
 				cellptr->Incoming(0, true);
 			}
 		} else {
@@ -4899,6 +5095,11 @@ void UnitClass::Overrun_Square(CELL cell, bool threaten)
 						ObjectClass * next = object->Next;
 						crushed = true;
 
+                        // Chthon CFE Note -- get XP for squishing a non-ally
+                        if (ActiveCFEPatchConfig.EnableVeterancy && object->IsActive && object->What_Am_I() == RTTI_INFANTRY){
+                            GainVeterancyXP((object->Strength * object->Class_Of().Cost_Of()) / object->Class_Of().MaxStrength);
+                        }
+                        
 						/*
 						** Record credit for the kill(s)
 						*/
@@ -5653,4 +5854,310 @@ void  UnitClass::ReconsiderRefinery(void){
             //CFE_Debug_Printf("Harvster %i Reconsidered!", this);
         }
         return;
+}
+
+// this function is part of the minelayer's attack-move logic
+// attempt to poop a mine
+// if there's already a mine there, find a new spot
+// if you have no ammo, go home instead
+bool  UnitClass::MinelayerPoopTime(){
+    // go home if no ammo
+    if (!Ammo){
+        MinelayerGoHome();
+        return false;
+    }
+    // go find another spot if there's already a building here (should be impossible...)
+    BuildingClass* bldng = Map[Coord_Cell(Coord)].Cell_Building();
+    if (bldng){
+        MinelayerFindSpot();
+        return true;
+    }
+    // otherwise poop a mine
+    Assign_Mission(MISSION_UNLOAD);
+    //Commence();
+    return true;
+}
+
+// this function is part of the minelayer's attack-move logic
+// go to the nearest repair pad if you can
+// failing that, go back to your saved starting position
+// failing that, just stay put
+// in any event, drop out of attack-move mode
+bool UnitClass::MinelayerGoHome(){
+    
+    bool returnvalue = false;
+    
+    // go to the closet repair pad if you can
+    if (House->ActiveBScan & STRUCTF_REPAIR){
+        BuildingClass* closestpad = NULL;
+        int bestscore = 0;
+        for (int i = 0; i < Buildings.Count(); ++i) {
+            BuildingClass* pad = Buildings.Ptr(i);
+            if ((pad != NULL) &&
+                pad->IsActive &&
+                !pad->IsInLimbo &&
+                (pad->House == House) &&
+                (pad->Mission != MISSION_DECONSTRUCTION) &&
+                (*pad == STRUCT_REPAIR) &&
+                (Map[pad->Center_Coord()].Zones[Techno_Type_Class()->MZone] == Map[Center_Coord()].Zones[Techno_Type_Class()->MZone])
+            ){
+                    int astar_result = Find_Path_AStar(nullptr, Coord_Cell(Coord), Coord_Cell(pad->Center_Coord()), 1, MOVE_NO, -1);
+                    // A-Star may return zero when you're already right next to the pad, or because there's no path at all
+                    // In the former case, fall back to crow-flies distance
+                    // In the latter case, skip it
+                    if (!astar_result){
+                        int crowflies_result = Lepton_To_Cell(Distance(pad));
+                        if (crowflies_result <= 6){
+                           astar_result = crowflies_result;
+                        }
+                    }
+                    if (astar_result && (!bestscore || (astar_result < bestscore))){
+                            bestscore = astar_result;
+                            closestpad = pad;
+                    }
+            }
+        }
+        if (closestpad){
+            // based on what's happening in Assign_Destination(), I think this is how you say "go to this repair bay"
+            //Assign_Destination(closestpad->As_Target());
+            //Assign_Mission(MISSION_MOVE);
+            Assign_Mission(MISSION_ENTER);
+            Assign_Destination(closestpad->As_Target());
+            //Commence();
+            returnvalue = true;
+        }
+    }
+    // failing that, go back to the original position if you can
+    else if (Target_Legal(MLoriginalposition)){
+        Assign_Destination(MLoriginalposition);
+        Assign_Mission(MISSION_MOVE);
+        //Commence();
+        returnvalue = true;
+    }
+    // failing that, go idle where you are
+    else {
+        Assign_Mission(MISSION_GUARD);
+        //Commence();
+    }
+    
+    // in any event, exit attack-move, since we're now done with it
+    ResetAttackMove(0);
+    
+    return returnvalue;
+    
+}
+
+// this function is part of the minelayer's attack-move logic
+// scan a 5x5 square around the minelayer
+// pick a enterable, reachable cell at random, favoring the closer ones
+// if you have no ammo, go home instead
+bool UnitClass::MinelayerFindSpot(){
+    
+    // go home if no ammo
+    if (!Ammo){
+        MinelayerGoHome();
+        return false;
+    }
+    
+    const CELL cell = Coord_Cell(Coord);
+    const int cellx = Cell_X(cell);
+    const int celly = Cell_Y(cell);
+    int scanx;
+    int scany;
+    int bestscore = 0;
+    CELL bestcell = 0;
+
+    // scan a box of cells around the primary_target_coord
+    for (int i=-2; i<=2; i++){
+        scanx = cellx + i;
+        
+        // skip if out of bounds
+        if (scanx <0 ){
+            continue;
+        }
+        if (scanx > MAP_CELL_W){
+            continue;
+        }
+
+        for (int j=-2; j<=2; j++){
+            scany = celly + j;
+            
+            // skip if out of bounds
+            if (scany < 0){
+                continue;
+            }
+            if (scany > MAP_CELL_H){
+                continue;
+            }
+            
+            CELL newcell = XY_Cell(scanx, scany);
+            
+            // skip if off playable map
+            if (!Map.In_Radar(newcell)){
+                continue;
+            }
+            
+            // skip the cell we're in
+            if (cell == newcell){
+                continue;
+            }
+            
+            // check that we can enter the cell and that we'd be allowed to drop a mine there (copied from the deploy/no-deploy cursor logic)
+            // (This actually allows minelayers to cheat a little bit b/c they won't pick a cell with an enemy mine. Oh well.)
+            MoveType move = Can_Enter_Cell(newcell, FACING_NONE);;
+            if (   (move <= MOVE_MOVING_BLOCK) &&
+                    !Map[newcell].Cell_Building() &&
+                    !(  (Map[newcell].Smudge != SMUDGE_NONE) &&         
+                        SmudgeTypeClass::As_Reference(Map[newcell].Smudge).IsBib
+                    )
+               ){
+                int score = Find_Path_AStar(nullptr, cell, newcell, 1, MOVE_MOVING_BLOCK, -1);
+                if (score){
+                    // pick a random cell, favoring closer ones.
+                    score = 1000 - (10 * score) + Random_Pick(0, 10);
+                }
+                if (score > bestscore){
+                    bestscore = score;
+                    bestcell = newcell;
+                }
+            }
+        }
+    }
+
+    // if we found a suitable cell, go there
+    if (bestscore){
+        Assign_Destination(::As_Target(bestcell));
+        Assign_Mission(MISSION_MOVE);
+        //Commence();
+        return true;
+    }
+    
+    // if we didn't find a suitable cell, give up and go home
+    MinelayerGoHome();
+    return false;
+}
+
+// better logic for exiting repair bay
+// similar to the never-called function Exit_Repair()
+bool UnitClass::DoSmarterRunAway(){
+    
+    // we should have already attempted to send the unit to the repair bay's rally point before this function was called
+    // otherwise, we'd do that here
+    
+    // bail if already going somewhere
+    if (Target_Legal(NavCom) && (Mission == MISSION_MOVE)){
+        return true;
+    }
+    
+    // bail if we are not on top of the pad already
+    BuildingClass* beneathme = Map[Coord].Cell_Building();
+    if (!beneathme || (*beneathme != STRUCT_REPAIR)){
+        return false;
+    }
+  
+    const CELL mycell = Coord_Cell(Coord);
+    int bestscore = 0;
+    CELL bestcell = NULL;
+    FacingType bestdirection = FACING_NONE;
+    
+    // see if any of the cells adjacent to the pad are suitable
+    //CellClass* blockedcells[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+    //unsigned int blockageindex = 0;
+    for (FacingType face = FACING_N; face < FACING_COUNT; face++) {
+        CELL newcell = Adjacent_Cell(mycell, face);
+        if (!Map.In_Radar(newcell)){
+            continue;
+        }
+        // since pad is a + shape, need to go an extra cell in the cardinal directions
+        if (((int)face) % 2 == 0){
+            newcell = Adjacent_Cell(newcell, face);
+            if (!Map.In_Radar(newcell)){
+                continue;
+            }
+        }
+        int score = 0;
+        MoveType move = Can_Enter_Cell(newcell, FACING_NONE);
+        // prefer empty cells to cells we have to ask occupiers to scatter
+        if (move == MOVE_OK){
+            score += 104;
+        }
+        else if (move == MOVE_MOVING_BLOCK){
+            score += 100;
+        }
+        else if (move == MOVE_TEMP){
+            score += 10;
+            // remember the blockage
+            //CellClass* cellptr = &Map[newcell];
+            //TechnoClass* blockage = cellptr->Cell_Techno();
+            //if (blockage && blockage->IsActive && House->Is_Ally(blockage)) {
+            //    blockedcells[blockageindex] = cellptr;
+            //}
+        }
+        if (score){
+            // prefer cells that take less rotation to point towards
+            int myface = Dir_Facing(PrimaryFacing.Current());
+            int dista = (((int)face - myface) + 8) % 8;
+            int distb = ((myface - (int)face) + 8) % 8;
+            if (dista < distb){
+                score = score + 4 - dista;
+            }
+            else {
+                score = score + 4 - distb;
+            }
+            
+            if (score > bestscore){
+                bestscore = score;
+                bestcell = newcell;
+                bestdirection = face;
+            }
+        }
+        //CFE_Debug_Printf("Unit %i is leaving pad at %i. Dir is %i. Newcell is %i. Score is %i.", this, mycell, face, newcell, score);
+        //blockageindex++;
+    }
+    
+    // if we found a suitable cell, go there
+    if (bestscore){
+        Assign_Destination(::As_Target(bestcell));
+        Assign_Mission(MISSION_MOVE);
+        //Commence();
+        // if the cell wasn't clear, ask the cell occupiers to scatter
+        // (movement logic won't do this for us b/c we are "close enough")
+        if (bestscore < 100){
+            CellClass* cellptr = &Map[bestcell];
+            TechnoClass* blockage = cellptr->Cell_Techno();
+            if (blockage && blockage->IsActive && House->Is_Ally(blockage)) {
+                cellptr->Incoming(Coord, true, true);
+                //CFE_Debug_Printf("Unit %i called incoming on cell %i", this, bestcell);
+            }
+            // also scatter beyond the target cell too
+            // hopefully this will clear a 2-deep block in two tries
+            for (FacingType face = FACING_N; face < FACING_COUNT; face++) {
+                if ((face == bestdirection) || (face == bestdirection + (FacingType)1) || (face == bestdirection - (FacingType)1)){
+                    CELL newcell = Adjacent_Cell(bestcell, face);
+                    if (!Map.In_Radar(newcell)){
+                        continue;
+                    }
+                    cellptr = &Map[newcell];
+                    blockage = cellptr->Cell_Techno();
+                    if (blockage && blockage->IsActive && House->Is_Ally(blockage)) {
+                        cellptr->Incoming(Coord, true, true);
+                        //CFE_Debug_Printf("Unit %i called incoming on cell %i", this, bestcell);
+                    }
+                }
+            }
+            
+            // instead let's try scattering everything
+            //for (int i = 0; i<8; i++){
+            //    if (blockedcells[i]){
+            //        blockedcells[i]->Incoming(Coord, true, true);
+            //        CFE_Debug_Printf("Called incoming on cell %i", blockedcells[i]);
+            //    }
+            //}
+        }
+        return true;
+    }
+    
+    // if we didn't find a suitable cell, return false
+    // this should cause Receive_Message() to punt us up to FootClass::Receive_Message(), which will call Scatter()... for all the good that's likely to do...
+    return false;
 }

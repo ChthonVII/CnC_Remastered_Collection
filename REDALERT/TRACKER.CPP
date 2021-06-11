@@ -126,6 +126,36 @@ void Detach_This_From_All(TARGET target, bool all)
 }
 
 
+// Chthon CFE Note: minimal version for use with chronoshift
+// only reflects the fact that the unit is no longer where it was,
+// so anyone targetting it should lose their target
+// and any bullets flying at it should miss
+void Minimal_Detach_This_From_All(TARGET target, bool all)
+{
+	int index;
+	if (Target_Legal(target)) {
 
+		for (index = 0; index < Units.Count(); index++) {
+			Units.Ptr(index)->Detach(target, all);
+		}
+		for (index = 0; index < Vessels.Count(); index++) {
+			Vessels.Ptr(index)->Detach(target, all);
+		}
+		for (index = 0; index < Aircraft.Count(); index++) {
+			Aircraft.Ptr(index)->Detach(target, all);
+		}
+		for (index = 0; index < Buildings.Count(); index++) {
+			Buildings.Ptr(index)->Detach(target, all);
+		}
+		for (index = 0; index < Bullets.Count(); index++) {
+			Bullets.Ptr(index)->MinimalDetach(target);
+		}
+		for (index = 0; index < Infantry.Count(); index++) {
+			Infantry.Ptr(index)->Detach(target, all);
+		}
+
+		ChronalVortex.Detach(target);
+	}
+}
 
 

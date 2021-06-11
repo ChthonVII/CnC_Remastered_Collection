@@ -14,9 +14,59 @@ bool CFE_Patch_Can_Have_Rally_Point(const ObjectClass& object)
 
 bool CFE_Patch_Should_Extend_Walls()
 {
-	//#CFE TODO: This isn't multiplayer safe
+	//#CFE TODO: This isn't multiplayer safe  // Chthon CFE Note -- actually it is MP safe.
 	return ActiveCFEPatchConfig.WallBuildLength > 1 && !DLL_Export_Get_Input_Key_State(KN_LCTRL);
 }
+
+
+bool CFE_Patch_Is_Cell_Friendly_To_House(const HousesType house, const CELL cell, const bool isawall)
+{
+	
+	if (   (Map[cell].Owner == house) &&
+            (   isawall ||
+                (   (Map[cell].Smudge != SMUDGE_NONE) &&
+                    SmudgeTypeClass::As_Reference(Map[cell].Smudge).IsBib
+                )
+            )
+    ){
+        return true;
+    }
+
+	if (const BuildingClass* const base = Map[cell].Cell_Building()) {
+        // Chthon CFE Note: check for active, potential crash bug if we don't
+		if (base->IsActive && (base->House->Class->House == house) && base->Class->IsBase) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool CFE_Patch_Is_Cell_In_Radius_To_Friendly_House(const HousesType house, const CELL cell, const int radius, const bool isawall)
+{
+	if (Map.In_Radar(cell))
+	{
+		const int cellX = Cell_X(cell);
+		const int cellY = Cell_Y(cell);
+		for (int y = cellY - radius, yEnd = cellY + radius; y <= yEnd; ++y) {
+            // Chthon CFE Note -- don't wrap the map or call XY_Cell on a negative number (left shift on negative number is undefined)
+            if ( (y < 0) || (y >= MAP_CELL_H) ){
+                continue;
+            }
+			for (int x = cellX - radius, xEnd = cellX + radius; x <= xEnd; ++x) {
+                // Chthon CFE Note -- again, don't wrap the map
+                if ( (x < 0) || (x >= MAP_CELL_W) ){
+                    continue;
+                }
+				const CELL nextCell = XY_Cell(x, y);
+
+				if (Map.In_Radar(nextCell) && CFE_Patch_Is_Cell_Friendly_To_House(house, nextCell, isawall))
+					return true;
+			}
+		}
+	}
+	return false;
+}
+
 
 bool CFE_Patch_Unit_Should_Rally(const TechnoClass& object)
 {
