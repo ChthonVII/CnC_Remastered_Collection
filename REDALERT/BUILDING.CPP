@@ -3365,12 +3365,9 @@ ActionType BuildingClass::What_Action(ObjectClass const * object) const
 		action = ACTION_NONE;
 	}
     
-    // Chthon CFE Note: Repair bay cannot be allowed to return ACTION_MOVE over objects
+    // Chthon CFE Note: Repair bay cannot be allowed to return ACTION_MOVE over itself
     // If allowed, it gets into an infinite loop and crashes
-    // This means repair bay rally points can't be set on units, which is different from other buildings, but oh well
     // This bug tooks *days* to find
-	//if ((action == ACTION_MOVE) && (!Can_Have_Rally_Point() || (*this == STRUCT_REPAIR))) {
-    // let's try just not allowing ourself
     if ((action == ACTION_MOVE) && (!Can_Have_Rally_Point() || (this == object))) {
 		action = ACTION_NONE;
 	}

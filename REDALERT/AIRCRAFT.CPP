@@ -1008,30 +1008,6 @@ void AircraftClass::AI(void)
 		return;
 	}
 	
-	// Chthon CFE Note: Nuclear hack to get things to leave the repair bay no matter what
-	/*
-    // don't do this -- prevents the player from ever being able to sell units
-	BuildingClass* beneathme = Map[Coord].Cell_Building(); // ?! not sure how Coord can be a valid index into Map, but Map[Coord] crops up all over in WW's code, so I assume it's correct
-	if (
-            ActiveCFEPatchConfig.EnableSmarterRepairBays &&
-            (Height == 0) &&
-            (beneathme != NULL) &&
-            (*beneathme == STRUCT_REPAIR) &&
-            (Health_Ratio() >= Rule.ConditionGreen) &&
-            !Target_Legal(NavCom)
-    ){
-        // unlike ground vehicles, don't go to the rally point
-        // do the "smarter runaway" logic
-        if (!DoSmarterRunAway() && !Class->IsFixedWing){
-            // failing that, just scatter (unless you're a fixed-wing plane)
-            Scatter(0, true, true); 
-        }
-        // hang up on the repair bay
-        if (In_Radio_Contact() && (Contact_With_Whom() == beneathme)){
-            Transmit_Message(RADIO_OVER_OUT);
-        }
-    }
-    */
 	
 }
 
@@ -4605,7 +4581,6 @@ bool AircraftClass::DoSmarterRunAway(){
             Assign_Destination(goodenough);
             Assign_Target(TARGET_NONE);
             Assign_Mission(MISSION_MOVE);
-            //Commence();
         }
         // if Good_LZ() gave us back our current location, or failed altogether, just scatter
         else{

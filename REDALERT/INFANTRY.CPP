@@ -1217,14 +1217,6 @@ void InfantryClass::Assign_Target(TARGET target)
 		if (::As_Object(target) && ::As_Object(target)->What_Am_I() != RTTI_INFANTRY) {
 			target = TARGET_NONE;
 		}
-		// Chthon CFE Note: If a dog was assigned a cloaked infantry as a target, shimmer the infantry
-		// should only apply to rank 3 veteran Tanya
-		// doesn't work. Or rather, the uncloak works, but the dog doesn't move to attack
-		// goign to try doing this all from tanya's side instead
-		//else if (::As_Object(target) && (::As_Object(target)->What_Am_I() == RTTI_INFANTRY) && As_Techno(target)->Is_Cloaked(this)){
-            //As_Techno(target)->Do_Shimmer();
-        //}
-        
 	}
 	FootClass::Assign_Target(target);
 
@@ -3054,7 +3046,6 @@ ActionType InfantryClass::What_Action(ObjectClass const * object) const
 	if (Combat_Damage() < 0 && House->IsPlayerControl) {
 		if (House->Is_Ally(object)) {
 #ifdef FIXIT_CSII	//	checked - ajw 9/28/98
-            // Chthon CFE Note: Allow rank3 veteran medics to self target -- bah, reverting since it's buggy
 			if( (object->What_Am_I() == RTTI_INFANTRY && (object != this) && *this == INFANTRY_MEDIC) ||
 			    (*this == INFANTRY_MECHANIC && (object->What_Am_I() == RTTI_UNIT || object->What_Am_I() == RTTI_AIRCRAFT) ) ) {
 
@@ -4233,7 +4224,7 @@ void InfantryClass::Movement_AI(void)
 					if ((Mission == MISSION_MOVE || Mission == MISSION_ENTER) && !IsTethered /*&& House->IsHuman*/ && Distance(NavCom) < Rule.CloseEnoughDistance) {
 						Assign_Destination(TARGET_NONE);
 					}
-					/*
+					/* // this turned out to be unnecessary
 					else if (
                         AttackMove &&
                         ((Mission == MISSION_MOVE) || (Mission == MISSION_ENTER)) &&

@@ -585,44 +585,6 @@ void UnitClass::AI(void)
 		Shroud_Regen();
 	}
 	
-	// Chthon CFE Note: Nuclear hack to get things to leave the repair bay no matter what
-	/*
-    // can't do this b/c it makes it impossible to sell vehicles
-    // do need to do soemthign similar for rearmed minelayer though
-	BuildingClass* beneathme = Map[Coord].Cell_Building(); // ?! not sure how Coord can be a valid index into Map, but Map[Coord] crops up all over in WW's code, so I assume it's correct
-	if (
-            ActiveCFEPatchConfig.EnableSmarterRepairBays &&
-            (beneathme != NULL) &&
-            (*beneathme == STRUCT_REPAIR) &&
-            (Health_Ratio() >= Rule.ConditionGreen) &&
-            (
-                (*this != UNIT_MINELAYER) ||
-                (Ammo >= Class->MaxAmmo)
-            ) &&
-            !Target_Legal(NavCom)
-    ){
-        // go to the repair bay's rally point, if it has one
-        if (
-                Target_Legal(beneathme->RallyPoint) &&
-                (As_Target() != beneathme->RallyPoint) &&
-                (::As_Target(Coord_Cell(Coord)) != beneathme->RallyPoint)
-        ){
-            Assign_Target(TARGET_NONE);
-            Assign_Destination(beneathme->RallyPoint);
-            Assign_Mission(MISSION_MOVE);
-        }
-        // otherwise do the "smarter runaway" logic
-        else if (!DoSmarterRunAway()){
-            // failing that, just scatter
-            Scatter(0, true, true); 
-        }
-        // hang up on the repair bay
-        if (In_Radio_Contact() && (Contact_With_Whom() == beneathme)){
-            Transmit_Message(RADIO_OVER_OUT);
-        }
-    }
-    */
-	
 }
 
 
@@ -1907,14 +1869,14 @@ void UnitClass::Per_Cell_Process(PCPType why)
 			**	it scatter again.
 			*/
 			if	(Map[Coord].Cell_Building() != NULL && !Target_Legal(NavCom)) {
-				Scatter(0, true, true);  // Chthon CFE Note: Is this part of the repair bay problems?
+				Scatter(0, true, true);
 			} else {
 				TechnoClass * contact = Contact_With_Whom();
 				if (Transmit_Message(RADIO_UNLOADED) == RADIO_RUN_AWAY) {
 					if (*this == UNIT_HARVESTER && contact && contact->What_Am_I() == RTTI_BUILDING && *((BuildingClass*)contact) != STRUCT_REPAIR) {
 						Assign_Mission(MISSION_HARVEST);
 					} else if (!Target_Legal(NavCom)) {
-						Scatter(0, true); // Chthon CFE Note: Is this part of the repair bay problems?
+						Scatter(0, true);
 					} else {
 
 						/*

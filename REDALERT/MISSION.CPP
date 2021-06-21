@@ -385,7 +385,6 @@ void MissionClass::Assign_Mission(MissionType order)
 	if (order != MISSION_NONE && Mission != order)  {
 		MissionQueue = order;
 	}
-	
 }
 
 

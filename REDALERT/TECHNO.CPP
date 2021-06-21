@@ -1640,19 +1640,9 @@ bool TechnoClass::Evaluate_Object(ThreatType method, int mask, int range, Techno
 	/*
 	**	If the object is cloaked, then it isn't a legal target.
 	*/
-    // Chthon CFE Note: Dogs can smell cloaked infantry
-    // Should only apply to veteran rank 3 Tanya
-    // this is half broken, trying a different way
 	if (object->Is_Cloaked(this)){
-        //if (
-        //    !(  (What_Am_I() == RTTI_INFANTRY) &&
-        //        ((InfantryClass *)this)->Class->IsDog  &&
-        //        (object->What_Am_I() == RTTI_INFANTRY)
-        //    )
-        //){
-            BEnd(BENCH_EVAL_OBJECT);
-            return(false);
-        //}
+        BEnd(BENCH_EVAL_OBJECT);
+        return(false);
 	}
 
 	/*
@@ -4295,6 +4285,7 @@ int TechnoClass::Weapon_Range(int which) const
 	}
 	if (weapon != NULL) {
         // Chthon TODO: investigate if Greece's range bonus needs fixed
+        // Tested in game and it's working. But I cannot for the life of me find it anywhere in the code. Somehow lives in GlyphX client?
 		return(weapon->Range + flatbonus);
 	}
 	return(0);
