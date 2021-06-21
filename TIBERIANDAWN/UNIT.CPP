@@ -826,6 +826,14 @@ RadioMessageType UnitClass::Receive_Message(RadioClass * from, RadioMessageType 
 					return(RADIO_ROGER);
 				}
 			}
+			else if (ActiveCFEPatchConfig.EnableSmarterRepairBays && In_Radio_Contact()){
+                TechnoClass * contact = Contact_With_Whom();
+				if (contact->What_Am_I() == RTTI_BUILDING && *((BuildingClass*)contact) == STRUCT_REPAIR) {
+                    if (DoSmarterRunAway()){
+                        return(RADIO_ROGER);
+                    }
+                }
+            }
 			return(DriveClass::Receive_Message(from, message, param));
 
 		/*
@@ -963,7 +971,7 @@ bool UnitClass::Unlimbo(COORDINATE coord, DirType dir)
  *   06/30/1995 JLB : Lasers do maximum damage against gunboat.                                *
  *   08/16/1995 JLB : Harvester crushing doesn't occur on early missions.                      *
  *=============================================================================================*/
-ResultType UnitClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source)
+ResultType UnitClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, ArmorPenType specialarmorpen)
 {
 	Validate();
 	ResultType res = RESULT_NONE;
@@ -1004,7 +1012,7 @@ ResultType UnitClass::Take_Damage(int & damage, int distance, WarheadType warhea
         }
     }
     
-	res = TarComClass::Take_Damage(damage, distance, warhead, source);
+	res = TarComClass::Take_Damage(damage, distance, warhead, source, specialarmorpen);
 
 	if (res == RESULT_DESTROYED) {
 		Death_Announcement(source);
@@ -3703,6 +3711,7 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType ) const
 	** for how they affect movement.
 	*/
 	bool crushable = false;
+    bool repairbaysaysok = false; // Chthon CFE Note: Different from RA. We need to remember that repair bay was OK and bail early after checking other objects
 	ObjectClass *obj = cellptr->Cell_Occupier();
 	while (obj) {
 
@@ -3712,9 +3721,25 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType ) const
 			**	Always allow entry if trying to move on a cell with
 			**	authorization from the occupier.
 			*/
+			// Chthon CFE Note: Aha! This is wrong because there may be another unit in the cell (e.g., a unit leaving the repair bay) and we're not checking for it.
+            // *This* is why we get doubled up units sometimes on repair bays
+            /*
 			if (obj == Contact_With_Whom() && (IsTethered || (obj->What_Am_I() ==  RTTI_BUILDING && *((BuildingClass *)obj) == STRUCT_REPAIR))) {
 				return(MOVE_OK);
 			}
+			*/
+            if (obj == Contact_With_Whom()){
+                // order matters, since you can tether to the repair bay
+                if ((obj->What_Am_I() ==  RTTI_BUILDING) && (*((BuildingClass *)obj) == STRUCT_REPAIR)){
+                    // correct answer is to just continue with retval as is (probably MOVE_OK) and see if the next iteration finds someone else in the cell
+                    repairbaysaysok = true;
+                    obj = obj->Next;
+                    continue;
+                }
+                if (IsTethered){
+                    return(MOVE_OK);
+                }
+            }
 
 			bool is_moving = (obj->What_Am_I() == RTTI_INFANTRY || obj->What_Am_I() == RTTI_UNIT) && Target_Legal(((FootClass *)obj)->NavCom);
 
@@ -3802,6 +3827,13 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType ) const
 		if (cellptr->Flag.Occupy.Vehicle) {
 			retval = MOVE_MOVING_BLOCK;
 		} else {
+            
+            // Chthon CFE Note: need to bail now if repair bay is only thing on cell.
+            // Following code will stop non-crushers from driving in
+            if (repairbaysaysok && (retval == MOVE_OK)){
+                return(MOVE_OK);
+            }
+            
 			if (cellptr->InfType != HOUSE_NONE && House->Is_Ally(cellptr->InfType)) {
 				retval = MOVE_MOVING_BLOCK;
 			} else {
@@ -4244,6 +4276,16 @@ ActionType UnitClass::What_Action(ObjectClass * object) const
 	**	Special return to friendly refinery action.
 	*/
 	if (Is_Owned_By_Player() && House->Class->House == object->Owner() && object->What_Am_I() == RTTI_BUILDING && ((UnitClass *)this)->Transmit_Message(RADIO_CAN_LOAD, (TechnoClass*)object) == RADIO_ROGER) {
+		action = ACTION_ENTER;
+	}
+	
+	// Chthon CFE Note: allow queuing to repair bay even if it's occupied
+	if (   ActiveCFEPatchConfig.EnableSmarterRepairBays &&
+            Is_Owned_By_Player() &&
+            House->Class->House == object->Owner() &&
+            (object->What_Am_I() == RTTI_BUILDING) &&
+            (*((BuildingClass*)object) == STRUCT_REPAIR)
+    ) {
 		action = ACTION_ENTER;
 	}
 
@@ -4990,4 +5032,130 @@ void  UnitClass::ReconsiderRefinery(void){
             //CFE_Debug_Printf("Reconsidered!");
         }
         return;
+}
+
+
+// better logic for exiting repair bay
+// similar to the never-called function Exit_Repair()
+bool UnitClass::DoSmarterRunAway(){
+    
+    // we should have already attempted to send the unit to the repair bay's rally point before this function was called
+    // otherwise, we'd do that here
+    
+    // bail if already going somewhere
+    if (Target_Legal(NavCom) && (Mission == MISSION_MOVE)){
+        return true;
+    }
+    
+    // bail if we are not on top of the pad already
+    BuildingClass* beneathme = Map[Coord_Cell(Center_Coord())].Cell_Building();
+    if (!beneathme || (*beneathme != STRUCT_REPAIR)){
+        return false;
+    }
+  
+    const CELL mycell = Coord_Cell(Coord);
+    int bestscore = 0;
+    CELL bestcell = NULL;
+    FacingType bestdirection = FACING_NONE;
+    
+    // see if any of the cells adjacent to the pad are suitable
+    //CellClass* blockedcells[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+    //unsigned int blockageindex = 0;
+    for (FacingType face = FACING_N; face < FACING_COUNT; face++) {
+        CELL newcell = Adjacent_Cell(mycell, face);
+        if (!Map.In_Radar(newcell)){
+            continue;
+        }
+        // since pad is a + shape, need to go an extra cell in the cardinal directions
+        if (((int)face) % 2 == 0){
+            newcell = Adjacent_Cell(newcell, face);
+            if (!Map.In_Radar(newcell)){
+                continue;
+            }
+        }
+        int score = 0;
+        MoveType move = Can_Enter_Cell(newcell, FACING_NONE);
+        // prefer empty cells to cells we have to ask occupiers to scatter
+        if (move == MOVE_OK){
+            score += 104;
+        }
+        else if (move == MOVE_MOVING_BLOCK){
+            score += 100;
+        }
+        else if (move == MOVE_TEMP){
+            score += 10;
+            // remember the blockage
+            //CellClass* cellptr = &Map[newcell];
+            //TechnoClass* blockage = cellptr->Cell_Techno();
+            //if (blockage && blockage->IsActive && House->Is_Ally(blockage)) {
+            //    blockedcells[blockageindex] = cellptr;
+            //}
+        }
+        if (score){
+            // prefer cells that take less rotation to point towards
+            int myface = Dir_Facing(PrimaryFacing.Current());
+            int dista = (((int)face - myface) + 8) % 8;
+            int distb = ((myface - (int)face) + 8) % 8;
+            if (dista < distb){
+                score = score + 4 - dista;
+            }
+            else {
+                score = score + 4 - distb;
+            }
+            
+            if (score > bestscore){
+                bestscore = score;
+                bestcell = newcell;
+                bestdirection = face;
+            }
+        }
+        //CFE_Debug_Printf("Unit %i is leaving pad at %i. Dir is %i. Newcell is %i. Score is %i.", this, mycell, face, newcell, score);
+        //blockageindex++;
+    }
+    
+    // if we found a suitable cell, go there
+    if (bestscore){
+        Assign_Destination(::As_Target(bestcell));
+        Assign_Mission(MISSION_MOVE);
+        //Commence();
+        // if the cell wasn't clear, ask the cell occupiers to scatter
+        // (movement logic won't do this for us b/c we are "close enough")
+        if (bestscore < 100){
+            CellClass* cellptr = &Map[bestcell];
+            TechnoClass* blockage = cellptr->Cell_Techno();
+            if (blockage && blockage->IsActive && House->Is_Ally(blockage)) {
+                cellptr->Incoming(Coord, true, true);
+                //CFE_Debug_Printf("Unit %i called incoming on cell %i", this, bestcell);
+            }
+            // also scatter beyond the target cell too
+            // hopefully this will clear a 2-deep block in two tries
+            for (FacingType face = FACING_N; face < FACING_COUNT; face++) {
+                if ((face == bestdirection) || (face == bestdirection + (FacingType)1) || (face == bestdirection - (FacingType)1)){
+                    CELL newcell = Adjacent_Cell(bestcell, face);
+                    if (!Map.In_Radar(newcell)){
+                        continue;
+                    }
+                    cellptr = &Map[newcell];
+                    blockage = cellptr->Cell_Techno();
+                    if (blockage && blockage->IsActive && House->Is_Ally(blockage)) {
+                        cellptr->Incoming(Coord, true, true);
+                        //CFE_Debug_Printf("Unit %i called incoming on cell %i", this, bestcell);
+                    }
+                }
+            }
+            
+            // instead let's try scattering everything
+            //for (int i = 0; i<8; i++){
+            //    if (blockedcells[i]){
+            //        blockedcells[i]->Incoming(Coord, true, true);
+            //        CFE_Debug_Printf("Called incoming on cell %i", blockedcells[i]);
+            //    }
+            //}
+        }
+        return true;
+    }
+    
+    // if we didn't find a suitable cell, return false
+    // this should cause Receive_Message() to punt us up to FootClass::Receive_Message(), which will call Scatter()... for all the good that's likely to do...
+    return false;
 }

@@ -699,13 +699,15 @@ bool HouseClass::Can_Build(TechnoTypeClass const * type, HousesType house) const
 	/*
 	**	Nod cannot build a helipad in the normal game.
 	*/
-	if (house == HOUSE_BAD &&
-		type->What_Am_I() == RTTI_BUILDINGTYPE &&
-		((BuildingTypeClass const *)type)->Type == STRUCT_HELIPAD) {
+	if ((house == HOUSE_BAD) &&
+		(type->What_Am_I() == RTTI_BUILDINGTYPE) &&
+		(((BuildingTypeClass const *)type)->Type == STRUCT_HELIPAD) &&
+        !ActiveCFEPatchConfig.MPUnitsInSP // Chthon CFE Note: allow helipads in SP if enabled via mod
+    ) {
 
 		return(false);
 	}
-
+	
 	/*
 	**	GDI can build the sandbag wall only from scenario #9 onwards.
 	*/

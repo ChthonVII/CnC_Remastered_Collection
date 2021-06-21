@@ -406,7 +406,19 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass * from, RadioMessageT
 							{
 								Transmit_Message(RADIO_RUN_AWAY);
 							}
+							if (In_Radio_Contact()){
+                                Contact_With_Whom()->ArchiveTarget = TARGET_NONE;
+                                Contact_With_Whom()->Assign_Target(TARGET_NONE);
+                            }
+							Transmit_Message(RADIO_UNTETHER); // let's try this?
 							Transmit_Message(RADIO_OVER_OUT);
+                            // Chthon CFE Note: So lights are sometimes not turning off or not turning back on when changing queued units.
+                            // Think maaaaaybe it's a race condition where sometimes the bay is properly changing state on its own and sometimes the unit is calling up and causing a bump here and skipping the state change.
+                            if (Mission == MISSION_REPAIR){
+                                IsReadyToCommence = false;
+                                Begin_Mode(BSTATE_IDLE);
+                                Status = 1; //IDLE;
+                            }
 							return(RADIO_ROGER);
 						}
 					}
@@ -533,6 +545,20 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass * from, RadioMessageT
 				if (!Rally_Unit(static_cast<FootClass&>(*from)))
 					return RADIO_RUN_AWAY;
 			}
+			// Chthon CFE Note: Maybe this will fix the second guy in a repair queue returning to the bay and then leaving again
+			if (*this == STRUCT_REPAIR){
+                if (from->Is_Techno()){
+                    ((TechnoClass*)from)->ArchiveTarget = TARGET_NONE;
+                    ((TechnoClass*)from)->Assign_Target(TARGET_NONE);
+                }
+                Transmit_Message(RADIO_UNTETHER, from); // let's try this?
+                Transmit_Message(RADIO_OVER_OUT, from);
+                if (Mission == MISSION_REPAIR){
+                    IsReadyToCommence = false;
+                    Begin_Mode(BSTATE_IDLE);
+                    Status = 1; //IDLE;
+                }
+            }
 
 			return(RADIO_ROGER);
 	}
@@ -1926,7 +1952,7 @@ bool BuildingClass::Unlimbo(COORDINATE coord, DirType dir)
  *   11/22/1994 JLB : Shares base damage handler for techno objects.                           *
  *   07/15/1995 JLB : Power ratio gets adjusted.                                               *
  *=============================================================================================*/
-ResultType BuildingClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source)
+ResultType BuildingClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, ArmorPenType specialarmorpen)
 {
 	Validate();
 	ResultType res = RESULT_NONE;
@@ -1957,7 +1983,7 @@ ResultType BuildingClass::Take_Damage(int & damage, int distance, WarheadType wa
 		/*
 		**	Perform the low level damage assessment.
 		*/
-		res = TechnoClass::Take_Damage(damage, distance, warhead, source);
+		res = TechnoClass::Take_Damage(damage, distance, warhead, source, specialarmorpen);
 
 		switch (res) {
 			case RESULT_DESTROYED:
@@ -2011,22 +2037,25 @@ ResultType BuildingClass::Take_Damage(int & damage, int distance, WarheadType wa
 				**	remembering of this fact. The finale uses this information to
 				**	play the correct movie.
 				*/
-				if (*this == STRUCT_TEMPLE && warhead == WARHEAD_PB) {
-					TempleIoned = true;
+                // Chthon CFE Note: Bugfix! Don't set TempleIoned=false when a non-temple building is destroyed
+				if (*this == STRUCT_TEMPLE){
+                    if (warhead == WARHEAD_PB) {
+                        TempleIoned = true;
 
-					/*
-					** Maybe trigger an achivement if the structure is owned by an AI house in campaign mode. ST - 11/14/2019 1:53PM
-					*/
-					if (GameToPlay == GAME_NORMAL && !House->IsHuman && source && source->House && source->House->IsHuman) {
-						TechnoTypeClass const *object_type = Techno_Type_Class();
-						if (object_type) {
-							On_Achievement_Event(source->House, "ION_DESTROYS_TEMPLE", object_type->IniName);
-						}			
-					}
+                        /*
+                        ** Maybe trigger an achivement if the structure is owned by an AI house in campaign mode. ST - 11/14/2019 1:53PM
+                        */
+                        if (GameToPlay == GAME_NORMAL && !House->IsHuman && source && source->House && source->House->IsHuman) {
+                            TechnoTypeClass const *object_type = Techno_Type_Class();
+                            if (object_type) {
+                                On_Achievement_Event(source->House, "ION_DESTROYS_TEMPLE", object_type->IniName);
+                            }			
+                        }
 
-				} else {
-					TempleIoned = false;
-				}
+                    } else {
+                        TempleIoned = false;
+                    }
+                }
 				
 				if (House) {
 					House->Check_Pertinent_Structures();
@@ -3478,7 +3507,9 @@ void BuildingClass::Repair(int control)
 			sound = VOC_SCOLD;
 		} else {
 			sound = VOC_BUTTON;
-			Clicked_As_Target(PlayerPtr->Class->House); // 2019/09/20 JAS - Added record of who clicked on the object
+			// Chthon CFE Note: This is wrong in LAN multiplayer. PlayerPtr points to the server, not necessarily the building owner 
+            //Clicked_As_Target(PlayerPtr->Class->House); // 2019/09/20 JAS - Added record of who clicked on the object
+            Clicked_As_Target(Owner());
 			IsWrenchVisible = true;
 		}
 	} else {
@@ -3540,7 +3571,9 @@ void BuildingClass::Sell_Back(int control)
 			//Changed for multiplayer ST - 3/13/2019 5:31PM
 			if (Is_Owned_By_Player()) {
 			//if (IsOwnedByPlayer) {
-				Clicked_As_Target(PlayerPtr->Class->House); // 2019/09/20 JAS - Added record of who clicked on the object
+                // Chthon CFE Note: Might be wrong in LAN multiplayer. Suspect Sell_Back() is called in the context of PlayerPtr pointing at server
+				//Clicked_As_Target(PlayerPtr->Class->House); // 2019/09/20 JAS - Added record of who clicked on the object
+                Clicked_As_Target(Owner());
 			}
 		}
 		//Changed for multiplayer ST - 3/13/2019 5:31PM
@@ -5231,14 +5264,38 @@ int BuildingClass::Mission_Repair(void)
 				if (IsReadyToCommence && Transmit_Message(RADIO_NEED_TO_MOVE) == RADIO_ROGER) {
 					IsReadyToCommence = false;
 					long param = Health_Ratio();
-					if (Transmit_Message(RADIO_REPAIR, param) != RADIO_ROGER) {
+                    // Chthon CFE Note: Changed this so that possible answers are "repairing 1 step" (RADIO_ROGER), "done repairing" (RADIO_REPAIR), and "no cash" (anything else)
+					//if (Transmit_Message(RADIO_REPAIR, param) != RADIO_ROGER) {
+                    RadioMessageType repaireereply = Transmit_Message(RADIO_REPAIR, param);
+                    if (repaireereply == RADIO_REPAIR){
+                        
+                        // Chthon CFE Note: Boot units when they're done repairing
+                        if (ActiveCFEPatchConfig.EnableSmarterRepairBays){
+                            if (!Rally_Unit(*Contact_With_Whom()))
+                            {
+                                Transmit_Message(RADIO_RUN_AWAY);
+                            }
+                            if (In_Radio_Contact()){
+                                Contact_With_Whom()->ArchiveTarget = TARGET_NONE;
+                                Contact_With_Whom()->Assign_Target(TARGET_NONE);
+                            }
+                            Transmit_Message(RADIO_UNTETHER); // let's try this?
+                            Transmit_Message(RADIO_OVER_OUT);
+                        }
+
+						Begin_Mode(BSTATE_IDLE);
+						Status = IDLE;
+                    }
+                    else if (repaireereply != RADIO_ROGER){
 #ifdef OBSOLETE
 						if (House->Available_Money() < 10) {
 							Transmit_Message(RADIO_RUN_AWAY);
 						}
 #endif
+
 						Begin_Mode(BSTATE_IDLE);
 						Status = IDLE;
+                        
 #ifdef OBSOLETE
 					} else {
 						int time = Bound(Fixed_To_Cardinal(TICKS_PER_SECOND, House->Power_Fraction()), 0, TICKS_PER_SECOND);
@@ -6153,6 +6210,16 @@ bool BuildingClass::Rally_Unit(TechnoClass& unit)
 {
 	if (Can_Have_Rally_Point() && CFE_Patch_Unit_Should_Rally(unit) && Target_Legal(RallyPoint))
 	{
+        
+        // Chthon CFE Note: Special case for aircraft leaving repair bay
+        // Don't send them to the rally point; have try to go to a helipad
+        if ((*this == STRUCT_REPAIR) && (unit.What_Am_I() == RTTI_AIRCRAFT)){
+            if (((AircraftClass*)&unit)->DoSmarterRunAway()){
+                return true;
+            }
+            return false;
+        }
+        
 		const TARGET rallyTarget = Target_For_Rally_Point();
 
 		//Make sure units dont rally to themselves. Only a problem for repair/reload pads

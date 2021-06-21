@@ -2317,6 +2317,7 @@ typedef enum VocType : char{
 	VOC_BEACON,			// Beacon sound.
 
     VOC_PROMOTED, //Chthon CFE Note: add a sound for veterancy promotions
+    VOC_WIND_GUST, //Chthon CFE Note: add a sound for infantry stealth (mechanical sound sounds weird)
     
 #ifdef PETROGLYPH_EXAMPLE_MOD
 	VOC_NUKE_LOB,		// Modded unit firing sound
@@ -2977,6 +2978,12 @@ typedef enum StrategyType : unsigned char {
 #endif //USE_RA_AI
 
 
+// Chthon CFE: Added some defines for per-type armor penetration (used by some rank 3 veteran unit bonuses)
+typedef enum ArmorPenType : unsigned char {
+    ARMORPEN_NONE,
+    ARMORPEN_PSEUDO_AP, // SA that does slightly more damage vs wood and a lot more vs steel 
+    ARMORPEN_PSEUDO_HE // AP that does more damage vs no-armor and concrete
+} ArmorPenType;
 
 #pragma warning (pop)
 

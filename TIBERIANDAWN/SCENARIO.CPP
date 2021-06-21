@@ -817,4 +817,93 @@ void Fixup_Scenario(void)
 		((BuildingTypeClass&)BuildingTypeClass::As_Reference(STRUCT_WEAP)).MaxStrength = 400;
 		((UnitTypeClass&)UnitTypeClass::As_Reference(UNIT_APC)).Pre &= ~STRUCTF_REPAIR;
 	}
+	
+	// Chthon CFE Note: Balance mods.
+	if ((GameToPlay != GAME_NORMAL) || ActiveCFEPatchConfig.ApplyMPBalanceToSP){
+        
+        if (ActiveCFEPatchConfig.OverrideAPCReqs){
+            ((UnitTypeClass&)UnitTypeClass::As_Reference(UNIT_APC)).Pre &= ~STRUCTF_REPAIR;
+        }
+        
+        if (ActiveCFEPatchConfig.OverrideWarFactoryHP){
+            ((BuildingTypeClass&)BuildingTypeClass::As_Reference(STRUCT_WEAP)).MaxStrength = ActiveCFEPatchConfig.OverrideWarFactoryHP_Value;
+        }
+        
+        if (ActiveCFEPatchConfig.OverrideStealthTankCost){
+            ((UnitTypeClass&)UnitTypeClass::As_Reference(UNIT_STANK)).Cost = ActiveCFEPatchConfig.OverrideStealthTankCost_Value;
+        }
+        
+        if (ActiveCFEPatchConfig.OverrideArtyTurn){
+            ((UnitTypeClass&)UnitTypeClass::As_Reference(UNIT_ARTY)).ROT = ActiveCFEPatchConfig.OverrideArtyTurn_Value;
+        }
+        
+        if (ActiveCFEPatchConfig.OverrideMLRSReqs){
+            ((UnitTypeClass&)UnitTypeClass::As_Reference(UNIT_MLRS)).Pre |= STRUCTF_RADAR;
+            ((UnitTypeClass&)UnitTypeClass::As_Reference(UNIT_MLRS)).Pre &= ~STRUCTF_EYE;
+        }
+        
+        if (ActiveCFEPatchConfig.OverrideMLRSHP){
+            ((UnitTypeClass&)UnitTypeClass::As_Reference(UNIT_MLRS)).MaxStrength = ActiveCFEPatchConfig.OverrideMLRSHP_Value;
+        }
+        
+        if (ActiveCFEPatchConfig.OverrideMLRSGDIOnly){
+            ((UnitTypeClass&)UnitTypeClass::As_Reference(UNIT_MLRS)).Ownable &= ~HOUSEF_BAD;
+        }
+        
+        if (ActiveCFEPatchConfig.OverrideMCVSight){
+            ((UnitTypeClass&)UnitTypeClass::As_Reference(UNIT_MCV)).SightRange = ActiveCFEPatchConfig.OverrideMCVSight_Value;
+            ((BuildingTypeClass&)BuildingTypeClass::As_Reference(STRUCT_CONST)).SightRange = ActiveCFEPatchConfig.OverrideConYardSight_Value;
+        }
+        
+        if (ActiveCFEPatchConfig.OverrideRocketGuyHP){
+            ((InfantryTypeClass&)InfantryTypeClass::As_Reference(INFANTRY_E3)).MaxStrength = ActiveCFEPatchConfig.OverrideRocketGuyHP_Value;
+        }
+        
+        if (ActiveCFEPatchConfig.OverrideRocketGuyCost){
+            ((InfantryTypeClass&)InfantryTypeClass::As_Reference(INFANTRY_E3)).Cost = ActiveCFEPatchConfig.OverrideRocketGuyCost_Value;
+        }
+        
+        if (ActiveCFEPatchConfig.OverrideChemGuyBuff){
+            // changed prereq to refinery to make chem guy rush more plausible 
+            //((BuildingTypeClass&)BuildingTypeClass::As_Reference(STRUCT_BIO_LAB)).Pre |= STRUCTF_RADAR;
+            ((BuildingTypeClass&)BuildingTypeClass::As_Reference(STRUCT_BIO_LAB)).Pre |= STRUCTF_REFINERY;
+            ((BuildingTypeClass&)BuildingTypeClass::As_Reference(STRUCT_BIO_LAB)).Pre &= ~STRUCTF_HOSPITAL;
+            ((BuildingTypeClass&)BuildingTypeClass::As_Reference(STRUCT_BIO_LAB)).Level = 7;
+            ((BuildingTypeClass&)BuildingTypeClass::As_Reference(STRUCT_BIO_LAB)).IsCaptureable = true;
+            ((BuildingTypeClass&)BuildingTypeClass::As_Reference(STRUCT_BIO_LAB)).Reward = 65;
+            
+            ((InfantryTypeClass&)InfantryTypeClass::As_Reference(INFANTRY_E5)).Pre |= STRUCTF_BIO_LAB;
+            ((InfantryTypeClass&)InfantryTypeClass::As_Reference(INFANTRY_E5)).Pre &= ~STRUCTF_EYE;
+        }
+        // todo: chem guy, bio lab, bio lab cameo, bio lab cameo in mix file
+        //
+        
+    } // end of balance mods
+    
+    // Chthon CFE Note: Make MP units available in SP
+    if ((GameToPlay == GAME_NORMAL) && ActiveCFEPatchConfig.MPUnitsInSP){
+        
+        // helipads (and apaches) allows in misson 10+ via HouseClass::Can_Build()
+        
+        // chem warrior and maybe bio lab in mission 11+
+        ((InfantryTypeClass&)InfantryTypeClass::As_Reference(INFANTRY_E5)).Scenario = 11;
+        if (ActiveCFEPatchConfig.OverrideChemGuyBuff){
+            ((BuildingTypeClass&)BuildingTypeClass::As_Reference(STRUCT_BIO_LAB)).Scenario = 11;
+        }
+        
+        // chinooks and commando in final missions
+        if (PlayerPtr->ActLike == HOUSE_GOOD){
+            ((AircraftTypeClass&)AircraftTypeClass::As_Reference(AIRCRAFT_TRANSPORT)).Scenario = 15;
+            ((InfantryTypeClass&)InfantryTypeClass::As_Reference(INFANTRY_RAMBO)).Scenario = 15;
+        }
+        else {
+            ((AircraftTypeClass&)AircraftTypeClass::As_Reference(AIRCRAFT_TRANSPORT)).Scenario = 13;
+            ((InfantryTypeClass&)InfantryTypeClass::As_Reference(INFANTRY_RAMBO)).Scenario = 13;
+        }
+        
+        // SSM from mission 13+
+        ((UnitTypeClass&)UnitTypeClass::As_Reference(UNIT_MSAM)).Scenario = 13;
+        
+    }
+	
 }

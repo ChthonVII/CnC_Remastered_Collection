@@ -1634,7 +1634,7 @@ BulletClass * AircraftClass::Fire_At(TARGET target, int which)
  * HISTORY:                                                                                    *
  *   05/26/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-ResultType AircraftClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source)
+ResultType AircraftClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, ArmorPenType specialarmorpen)
 {
 	Validate();
 	ResultType res = RESULT_NONE;
@@ -1650,7 +1650,7 @@ ResultType AircraftClass::Take_Damage(int & damage, int distance, WarheadType wa
 	**	In order for a this to be damaged, it must either be a unit
 	**	with a crew or a sandworm.
 	*/
-	res = FootClass::Take_Damage(damage, distance, warhead, source);
+	res = FootClass::Take_Damage(damage, distance, warhead, source, specialarmorpen);
 
 	switch (res) {
 		case RESULT_DESTROYED:
@@ -3656,4 +3656,41 @@ void AircraftClass::Response_Select(void)
 void AircraftClass::Set_Reinforcement_Delay(long delay)
 {
 	ReinforcementStart = Frame + delay;
+}
+
+
+// Chthon CFE Note: logic for exiting repair bay
+bool AircraftClass::DoSmarterRunAway(){
+
+    // not a helicopter, shouldn't be in repair bay
+    if ((*this != AIRCRAFT_ORCA) &&  (*this != AIRCRAFT_HELICOPTER)){
+        return false;
+    }
+    
+    // go to a helipad if one is open
+    BuildingClass * building = NULL;
+    building = Find_Docking_Bay(STRUCT_HELIPAD, false);
+    if (Transmit_Message(RADIO_HELLO, building) != RADIO_ROGER) {
+        building = NULL;
+    }
+    if (building != NULL) {
+        Assign_Destination(building->As_Target());
+        Assign_Target(TARGET_NONE);
+		Assign_Mission(MISSION_ENTER);
+        //Commence();
+        return true;
+    }
+    
+    // if we're a helicopter, then we can at least land next to a helipad if they're all full
+    TARGET goodenough = Good_LZ();
+    if (Target_Legal(goodenough) && (goodenough != ::As_Target(Coord_Cell(Coord)))){
+        Assign_Destination(goodenough);
+        Assign_Target(TARGET_NONE);
+        Assign_Mission(MISSION_MOVE);
+    }
+    // if Good_LZ() gave us back our current location, or failed altogether, just scatter
+    else{
+        Scatter(0, true);
+    }
+    return true;
 }

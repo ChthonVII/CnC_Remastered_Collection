@@ -387,7 +387,7 @@ void InfantryClass::operator delete(void *ptr)
  *   11/22/1994 JLB : Shares base damage handler for techno objects.                           *
  *   03/31/1995 JLB : Revenge factor.                                                          *
  *=============================================================================================*/
-ResultType InfantryClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source)
+ResultType InfantryClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, ArmorPenType specialarmorpen)
 {
 	Validate();
 	ResultType res = RESULT_NONE;
@@ -406,7 +406,7 @@ ResultType InfantryClass::Take_Damage(int & damage, int distance, WarheadType wa
 //Mono_Printf("Infantry Take_Damage(%d, %d, %d, %p)\r", damage, distance, warhead, source);
 //Get_Key();
 
-	res = FootClass::Take_Damage(damage, distance, warhead, source);
+	res = FootClass::Take_Damage(damage, distance, warhead, source, specialarmorpen);
 
 	/*
 	**	Flame thrower guys take more damage because of the exposed pilot light
@@ -475,6 +475,10 @@ ResultType InfantryClass::Take_Damage(int & damage, int distance, WarheadType wa
 		// This works because the infantry isn't deleted until the end of their death animation, so we can access DeathByTiberium later
 		if (ActiveCFEPatchConfig.MeanerVisceroids && source && source->What_Am_I() == RTTI_UNIT && *((UnitClass*)source) == UNIT_VICE){
             DeathByTiberium = 2;
+        }
+        // similarly, buffed chem soldiers can do similar
+        if (ActiveCFEPatchConfig.OverrideChemGuyBuff && source && source->What_Am_I() == RTTI_INFANTRY && *((InfantryClass*)source) == INFANTRY_E5){
+            DeathByTiberium = 3 + source->VeterancyRank;
         }
 		
 		/*
@@ -737,7 +741,9 @@ void InfantryClass::Per_Cell_Process(bool center)
 			int temp = Special.IsScatter;
 
 			building->IsGoingToBlow = true;
-			building->Clicked_As_Target(PlayerPtr->Class->House, 20); // 2019/09/20 JAS - Added record of who clicked on the object
+            // Chthon CFE Note: this is wrong! in LAN multiplayer shows flash for the server, not necessarily the bomber
+			//building->Clicked_As_Target(PlayerPtr->Class->House, 20); // 2019/09/20 JAS - Added record of who clicked on the object
+            building->Clicked_As_Target(Owner(), 20);
 			building->Clicked_As_Target(building->Owner(), 20);
 			building->CountDown.Set(20);
 			building->WhomToRepay = As_Target();
@@ -1951,10 +1957,22 @@ void InfantryClass::Enter_Idle_Mode(bool )
 			}
 		}
 	}
-	if (order == MISSION_GUARD) {
+	if ((order == MISSION_GUARD) && AttackMove) {
 		// Attack Move rework by ChthonVII --  As Infantry does GUARD at the end, the Mission_Move method where usually the reset starts is never called
 		// therefore this hack
-		ResetAttackMove();
+		// Let's be a little more careful and hopefully avoid units falling out of attack move early
+        // fall out of attack move if we forgot our destination, we arrived (or got close), or don't have a path
+        if (    !Target_Legal(RememberedNavCom) ||
+                (Distance(RememberedNavCom) <= 3*CELL_LEPTON_W) ||
+                !Find_Path_AStar(nullptr, Coord_Cell(Coord), As_Cell(RememberedNavCom), 1, MOVE_MOVING_BLOCK, -1)
+        ){
+            ResetAttackMove();
+        }
+        // otherwise go back to moving
+        else {
+            AttackMoveEnterMoveMode();
+            return;
+        }
 	}
 	Assign_Mission(order);
 }

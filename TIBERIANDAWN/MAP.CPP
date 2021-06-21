@@ -1810,7 +1810,7 @@ void MapClass::CFELogic(void){
                     }
                     // if that failed too, now we are truly SOL and just fail to spread/grow anything
                     // just for shits and giggles, let's maybe spawn a visceroid if it was a tree that failed to spread
-                    else {
+                    else if (ActiveCFEPatchConfig.TreeVisceroidSpawn && (GameToPlay != GAME_NORMAL) && Special.IsVisceroids) {
                         TerrainClass * thisterrain = thiscell->Cell_Terrain();
                         if (thisterrain && thisterrain->Class->IsTiberiumSpawn){
                             VisceroidTreeFrustrationCount++;
@@ -1873,7 +1873,21 @@ bool MapClass::ProcessTiberiumDeath(CELL where, unsigned char how){
             }
         }
     }
-    // maybe later add chem soldier spray?? need to think about balance implications...
+    // killed by chem soldier
+    else if ((how >= 3) && (how <= 6)){
+        if (Random_Pick(0, 99) < 10 + (5 * (how - 3))){
+            UnitClass * unit = new UnitClass(UNIT_VICE, HOUSE_JP);
+            if (unit) {
+                if (Scan_Place_Object(unit, where)){
+                    Sound_Effect(VOC_SQUISH2, unit->Coord); // make a squishy sound
+                    return true;
+                }
+                else {
+                    delete unit;
+                }
+            }
+        }
+    }
     
     return false;
 }

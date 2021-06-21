@@ -874,6 +874,10 @@ RadioMessageType TechnoClass::Receive_Message(RadioClass * from, RadioMessageTyp
 					return(RADIO_ROGER);
 				}
 			}
+			else if (ActiveCFEPatchConfig.EnableSmarterRepairBays){
+                // echo back RADIO_REPAIR if full HP, so "no cash" and "I'm done" can be distinguished
+                return(RADIO_REPAIR);
+            }
 			break;
 
 		default:
@@ -1057,7 +1061,9 @@ void TechnoClass::Draw_It(int x, int y, WindowNumberType window)
 		}
 	}
 
-	if (Is_Selected_By_Player() || show_health_bar) {
+	// Chthon CFE Note: Bugfix for y position being off for drawing stuff on infantry for anyone other than the server
+	//if (Is_Selected_By_Player() || show_health_bar) {
+    if (Is_Selected_By_Player(House) || show_health_bar) {
 		GraphicViewPortClass draw_window(	LogicPage->Get_Graphic_Buffer(),
 														(WindowList[window][WINDOWX] << 3) + LogicPage->Get_XPos(),
 														WindowList[window][WINDOWY] + LogicPage->Get_YPos(),
@@ -1159,14 +1165,6 @@ void TechnoClass::Draw_It(int x, int y, WindowNumberType window)
                     vpipy -= 4;
                 }
                 
-                // workaround for GlyphX bug where pips appear too low on infantry on PCs other than the server
-                if (PlayerPtr != House && What_Am_I() == RTTI_INFANTRY){
-                    vpipy -= 6;
-                }
-                
-                // try without SHAPE_BOTTOM since that might be cause of placement bug when server and client have different resolutions
-                //DLL_Draw_Intercept(piprank, vpipx, vpipy, 4, 6, SHAPE_BOTTOM | SHAPE_WIN_REL, this, "ZVTRN", HOUSE_NONE, 0x100);
-                //DLL_Draw_Intercept(piprank, vpipx, vpipy, 4, 6, SHAPE_WIN_REL, this, "ZVTRN", HOUSE_NONE, 0x100);
                 DLL_Draw_Intercept(piprank, vpipx, vpipy, 4, 6, SHAPE_WIN_REL | SHAPE_CENTER, this, "ZVTRN", HOUSE_NONE, 0x100);
             }
         }
@@ -1963,6 +1961,19 @@ void TechnoClass::AI(void)
         }
         // Later, when the target dies, Mission_Attack() will snap us back to MISSION_MOVE
 
+        // backstop in case we somehow got into a different mission
+        if (   (What_Am_I() != RTTI_AIRCRAFT) &&
+                (Mission != MISSION_MOVE) &&
+                (Mission != MISSION_ATTACK) &&
+                (MissionQueue != MISSION_MOVE) &&
+                (MissionQueue != MISSION_ATTACK) &&
+                RememberedNavCom &&
+                Target_Legal(RememberedNavCom) &&
+                (Distance(RememberedNavCom) > 3*CELL_LEPTON_W)
+        ){
+            AttackMoveEnterMoveMode();
+        }
+        
     } // end of AttackMove stuff
     
     // Chthon CFE Note: Do healing for veteran units
@@ -2528,6 +2539,20 @@ BulletClass * TechnoClass::Fire_At(TARGET target, int which)
 		if (Special.IsDefenderAdvantage && What_Am_I() != RTTI_BUILDING && ((FootClass const *)this)->IsDriving) {
 			bullet->IsInaccurate = true;
 		}
+		
+		// Chthon CFE Note: Some rank 3 veteran units do extra damage against certain armor types
+		// finally doing this the *right* way by making it a property of the bullet
+		if (VeterancyRank == 3){
+            if (   ((What_Am_I() == RTTI_INFANTRY) && (*((InfantryClass*)this) == INFANTRY_E1)) ||
+                    ((What_Am_I() == RTTI_UNIT) && (*((UnitClass*)this) == UNIT_JEEP))
+            ){
+                bullet->SpecialArmorPen = ARMORPEN_PSEUDO_AP;
+            }
+            else if ((What_Am_I() == RTTI_UNIT) && (*((UnitClass*)this) == UNIT_BIKE)){
+                bullet->SpecialArmorPen = ARMORPEN_PSEUDO_HE;
+            }
+        }
+		
 
 		if (bullet->Unlimbo(fire_coord, dir)) {
 //Mono_Printf("Units[0]=%p.\n", Units.Raw_Ptr(0));
@@ -2553,6 +2578,19 @@ BulletClass * TechnoClass::Fire_At(TARGET target, int which)
         
 		if (tclass.IsTwoShooter || veterantwoshooter) {
 			IsSecondShot = (IsSecondShot == false);
+            if (    (VeterancyRank == 3) &&
+                    !IsSecondShot &&
+                    (What_Am_I() == RTTI_UNIT) && 
+                    (*((UnitClass*)this) == UNIT_HTANK)
+            ){
+                if (ReadyQuadShot){
+                    Arm = 6;
+                    ReadyQuadShot = false;
+                }
+                else {
+                    ReadyQuadShot = true;
+                }
+            }
 		}
 
 		/*
@@ -3221,7 +3259,7 @@ bool TechnoClass::Captured(HouseClass * newowner)
  * HISTORY:                                                                                    *
  *   06/20/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-ResultType TechnoClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source)
+ResultType TechnoClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, ArmorPenType specialarmorpen)
 {
 	/*
 	**	Adjust damage according to house override armor value.
@@ -3232,6 +3270,7 @@ ResultType TechnoClass::Take_Damage(int & damage, int distance, WarheadType warh
         // Moved from Fire_At() to avoid doing extra splash damage
         // This is not a perfect solution either, because projectiles that hit after a veteran unit's death won't get the bonus, but it's less bad
         // this has to go above armor application so the smaller bonuses aren't rounded away
+        /*
         if (   source &&
                 source->IsActive &&
                 (source->VeterancyRank == 3)
@@ -3268,7 +3307,33 @@ ResultType TechnoClass::Take_Damage(int & damage, int distance, WarheadType warh
             }
             // could also boost SA vs. ARMOR_ALUMINUM by 4/3 (bring damage up as if armor effect were 0.75 instead of 0.5625), but chose not to b/c that would make upped SA a flat-out better weapon
         }
+        */
         
+        //Chthon CFE Note: Some rank 3 veteran units do extra damage against certain armor types
+        // finally doing this the *right way* and passing it in as a parameter that rode on the bullet
+        // avoid both the issue with checking armor class on things for which it's not defined (walls) if we do this in Fire_At()
+        // and the issue with armor pen not applying if the source dies before the bullet hits if we do it all here
+        if (Class_Of().Armor == ARMOR_NONE){
+            if (specialarmorpen == ARMORPEN_PSEUDO_HE){
+                damage *= 3.5; // bring damage up as if armor effect were 0.875 instead of 0.25
+            }
+        }
+        else if (Class_Of().Armor == ARMOR_WOOD){
+            if (specialarmorpen == ARMORPEN_PSEUDO_AP){
+                damage *= 1.125; // bring damage up as if armor effect were 0.5625 instead of 0.5
+            }
+        }
+        else if (Class_Of().Armor == ARMOR_STEEL){
+            if (specialarmorpen == ARMORPEN_PSEUDO_AP){
+                damage *= 3; // bring damage up as if armor effect were 0.75 instead of 0.25
+            }
+        }
+        else if (Class_Of().Armor == ARMOR_CONCRETE){
+                if (specialarmorpen == ARMORPEN_PSEUDO_HE){
+                damage *= 2; // bring damage up as if armor effect were 1.0 instead of 0.5
+            }
+        }
+        // could also boost SA vs. ARMOR_ALUMINUM by 4/3 (bring damage up as if armor effect were 0.75 instead of 0.5625), but chose not to b/c that would make upped SA a flat-out better weapon
         
         // Chthon CFE Note: Port per-unit armor bias from RA
 		//damage = damage * House->ArmorBias;
@@ -3286,11 +3351,38 @@ ResultType TechnoClass::Take_Damage(int & damage, int distance, WarheadType warh
                 damage = 1;
             }
         }
+        
+        // Chthon CFE Note: If chem soldier buffs is on, chem soldiers and visceroids are almost immune to chem spray
+        if (   ActiveCFEPatchConfig.OverrideChemGuyBuff &&
+                (   (   (What_Am_I() == RTTI_INFANTRY) &&
+                        (*((InfantryClass*)this) == INFANTRY_E5)
+                    ) ||
+                    (   (What_Am_I() == RTTI_UNIT) &&
+                        (*((UnitClass*)this) == UNIT_VICE)
+                    )
+                ) &&
+                source &&
+                source->IsActive &&
+                (   (   (source->What_Am_I() == RTTI_INFANTRY) &&
+                        (*((InfantryClass*)source) == INFANTRY_E5)
+                    ) ||
+                    (   (source->What_Am_I() == RTTI_UNIT) &&
+                        (*((UnitClass*)source) == UNIT_VICE)
+                    )
+                )
+        ){
+            damage = 0.1 * damage;
+            if (damage == 0){
+                damage = 1;
+            }
+        }
+        
 	}
-
+	
 	int oldstrength = Strength; // Chthon CFE Note: save this before it changes 
 	
-	ResultType result = ObjectClass::Take_Damage(damage, distance, warhead, source);
+	ResultType result = ObjectClass::Take_Damage(damage, distance, warhead, source, ARMORPEN_NONE);
+    // ARMORPEN_NONE because we already handled specialarmorpen here, so don't pass it on
 
 	switch (result) {
 		case RESULT_DESTROYED:
@@ -3582,7 +3674,12 @@ CELL TechnoClass::Nearby_Location(TechnoClass const * ) const
 void TechnoClass::Do_Uncloak(void)
 {
 	if (IsCloakable && (Cloak == CLOAKED || Cloak == CLOAKING)) {
-		Sound_Effect(VOC_CLOAK, Coord);
+		if (What_Am_I() == RTTI_INFANTRY){
+            Sound_Effect(VOC_WIND_GUST, Coord);
+        }
+		else {
+            Sound_Effect(VOC_CLOAK, Coord);
+        }
 		Cloak = UNCLOAKING;
 		CloakingDevice.Set_Stage(0);
 		CloakingDevice.Set_Rate(1);
@@ -3607,7 +3704,12 @@ void TechnoClass::Do_Uncloak(void)
 void TechnoClass::Do_Cloak(void)
 {
 	if (IsCloakable && (Cloak == UNCLOAKED || Cloak == UNCLOAKING)) {
-		Sound_Effect(VOC_CLOAK, Coord);
+		if (What_Am_I() == RTTI_INFANTRY){
+            Sound_Effect(VOC_WIND_GUST, Coord);
+        }
+		else {
+            Sound_Effect(VOC_CLOAK, Coord);
+        }
 		Detach_All(false);
 		Cloak = CLOAKING;
 		CloakingDevice.Set_Stage(0);
@@ -5138,22 +5240,22 @@ void TechnoClass::AttackMoveEnterMoveMode(){
         return;
     }
 
-    if (What_Am_I() == RTTI_INFANTRY){
-        ((FootClass*)this)->Stop_Driver(); // Butch had this for infantry only, it seems to be causing problems for other unit types
-    }
+    //if (What_Am_I() == RTTI_INFANTRY){
+    //    ((FootClass*)this)->Stop_Driver(); // Butch had this for infantry only, it seems to be causing problems for other unit types
+    //}
     Assign_Destination(RememberedNavCom);
     Assign_Mission(MISSION_MOVE); //Set_Mission() is bad because it makes Commence() not work, and then we end up with units in impossible mission/status combinations
-    Commence();
+    //Commence();
 }
 
 void TechnoClass::AttackMoveEnterAttackMode(){
     Assign_Destination(TARGET_NONE);
-    if (What_Am_I() == RTTI_INFANTRY){
-        ((FootClass*)this)->Stop_Driver(); // Butch had this for infantry only, it seems to be causing problems for other unit types
-    }
+    //if (What_Am_I() == RTTI_INFANTRY){
+    //    ((FootClass*)this)->Stop_Driver(); // Butch had this for infantry only, it seems to be causing problems for other unit types
+    //}
     //((FootClass*)this)->Approach_Target(); // MissionAttack() will do this
     Assign_Mission(MISSION_ATTACK); //Set_Mission() is bad because it makes Commence() not work, and then we end up with units in impossible mission/status combinations
-    Commence();
+    //Commence();
 }
 
 
@@ -5211,8 +5313,10 @@ void TechnoClass::GainVeterancyXP(unsigned short int XP){
         else if (What_Am_I() == RTTI_UNIT){
             
             // Mammoth tank gets speed boost (should match rank 3 medium tank)
+            // This was lame. Changed to quad shooter instead
             if (*((UnitClass*)this) == UNIT_HTANK){
-                ((FootClass*)this)->SpeedBias += 0.62f;
+                //((FootClass*)this)->SpeedBias += 0.62f;
+                ReadyQuadShot = true; // prepare to fire quad shot on next volley
             }
             
             // Light and Medium Tank become two-shooters (mostly handled in TechnoClass::Fire_At())

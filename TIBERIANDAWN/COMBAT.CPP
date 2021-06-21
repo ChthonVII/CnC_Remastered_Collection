@@ -126,7 +126,7 @@ int Modify_Damage(int damage, WarheadType warhead, ArmorType armor, int distance
  *   06/20/1994 JLB : Uses object pointers to distribute damage.                               *
  *   06/20/1994 JLB : Source is a pointer.                                                     *
  *=============================================================================================*/
-void Explosion_Damage(COORDINATE coord, unsigned strength, TechnoClass * source, WarheadType warhead)
+void Explosion_Damage(COORDINATE coord, unsigned strength, TechnoClass * source, WarheadType warhead, ArmorPenType specialarmorpen)
 {
 	CELL				cell;			// Cell number under explosion.
 	ObjectClass *	object;			// Working object pointer.
@@ -212,7 +212,7 @@ void Explosion_Damage(COORDINATE coord, unsigned strength, TechnoClass * source,
 			**	Apply the damage to the object.
 			*/
 			if (damage) {
-				object->Take_Damage(damage, distance, warhead, source);
+				object->Take_Damage(damage, distance, warhead, source, specialarmorpen);
 			}
 		}
 	}
@@ -221,13 +221,19 @@ void Explosion_Damage(COORDINATE coord, unsigned strength, TechnoClass * source,
 	**	If there is a wall present at this location, it may be destroyed. Check to
 	**	make sure that the warhead is of the kind that can destroy walls.
 	*/
+    
+    // Chthon CFE Note: increase damage for pseudo HE
+    if (specialarmorpen == ARMORPEN_PSEUDO_HE){
+        strength *= 2;
+    }
+    
 	cellptr = &Map[cell];
 	cellptr->Reduce_Tiberium(strength / 10);
 	if (cellptr->Overlay != OVERLAY_NONE) {
 		OverlayTypeClass const * optr = &OverlayTypeClass::As_Reference(cellptr->Overlay);
 
 		if (optr->IsWall) {
-			if (whead->IsWallDestroyer || (whead->IsWoodDestroyer && optr->IsWooden)) {
+			if (whead->IsWallDestroyer || (whead->IsWoodDestroyer && optr->IsWooden) || (specialarmorpen == ARMORPEN_PSEUDO_HE)) {
 				Map[cell].Reduce_Wall(strength);
 			}
 		}

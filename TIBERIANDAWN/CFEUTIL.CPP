@@ -72,8 +72,10 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
 	GetSetting(ActiveCFEPatchConfig.EnableSafeSabotage        , "FEATURES", "SAFE_SABOTAGE");
     GetSetting(ActiveCFEPatchConfig.EnableSmarterAircraft      , "FEATURES", "SMARTER_AIRCRAFT");
     GetSetting(ActiveCFEPatchConfig.EnableSmarterSAMs      , "FEATURES", "SMARTER_SAMS");
+    GetSetting(ActiveCFEPatchConfig.EnableSmarterRepairBays , "FEATURES", "SMARTER_REPAIRBAY");
     GetSetting(ActiveCFEPatchConfig.EnableSmarterMammoths      , "FEATURES", "SMARTER_MAMMOTHS");
     GetSetting(ActiveCFEPatchConfig.BetterTibGrowth      , "FEATURES", "BETTER_TIB_GROWTH");
+    GetSetting(ActiveCFEPatchConfig.TreeVisceroidSpawn      , "FEATURES", "TREE_VISCEROID_SPAWN");
     GetSetting(ActiveCFEPatchConfig.TSVisceroidSpawn      , "FEATURES", "TS_VISCEROID_SPAWN");
     GetSetting(ActiveCFEPatchConfig.MeanerVisceroids      , "FEATURES", "MEANER_VISCEROIDS");
     GetSetting(ActiveCFEPatchConfig.EnableVeterancy      , "FEATURES", "VETERANCY");
@@ -94,6 +96,29 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     GetSetting(ActiveCFEPatchConfig.InverseBuildingPreviewMode           , "SETTINGS", "INVERSE_PREVIEW_MODE");
     GetSetting(ActiveCFEPatchConfig.SmarterSAMAmmo   , "SETTINGS", "SMARTER_SAM_AMMO");
     GetSetting(ActiveCFEPatchConfig.SmarterSAMBalanceDelay   , "SETTINGS", "SMARTER_SAM_BALANCE_DELAY");
+    
+    //Balance
+    GetSetting(ActiveCFEPatchConfig.OverrideAPCReqs         , "BALANCE", "DO_OVERRIDE_APC_NOREQ");
+    GetSetting(ActiveCFEPatchConfig.OverrideWarFactoryHP         , "BALANCE", "DO_OVERRIDE_WFACTORY_HP");
+    GetSetting(ActiveCFEPatchConfig.OverrideWarFactoryHP_Value         , "BALANCE", "WFACTORY_HP_OVERRIDE");
+    GetSetting(ActiveCFEPatchConfig.OverrideStealthTankCost         , "BALANCE", "DO_OVERRIDE_STEALTHTANK_COST");
+    GetSetting(ActiveCFEPatchConfig.OverrideStealthTankCost_Value         , "BALANCE", "STEALTHTANK_COST_OVERRIDE");
+    GetSetting(ActiveCFEPatchConfig.OverrideArtyTurn         , "BALANCE", "DO_OVERRIDE_ARTY_TURN");
+    GetSetting(ActiveCFEPatchConfig.OverrideArtyTurn_Value         , "BALANCE", "ARTY_TURN_OVERRIDE");
+    GetSetting(ActiveCFEPatchConfig.OverrideMLRSReqs         , "BALANCE", "DO_MLRS_REQ_RADAR");
+    GetSetting(ActiveCFEPatchConfig.OverrideMLRSHP         , "BALANCE", "DO_OVERRIDE_MLRS_HP");
+    GetSetting(ActiveCFEPatchConfig.OverrideMLRSHP_Value         , "BALANCE", "MLRS_HP_OVERRIDE");
+    GetSetting(ActiveCFEPatchConfig.OverrideMLRSGDIOnly         , "BALANCE", "DO_MLRS_GDI_ONLY");
+    GetSetting(ActiveCFEPatchConfig.OverrideMCVSight         , "BALANCE", "DO_OVERRIDE_MCV_SIGHT");
+    GetSetting(ActiveCFEPatchConfig.OverrideMCVSight_Value         , "BALANCE", "MCV_SIGHT_OVERRIDE");
+    GetSetting(ActiveCFEPatchConfig.OverrideConYardSight_Value         , "BALANCE", "CONYARD_SIGHT_OVERRIDE");
+    GetSetting(ActiveCFEPatchConfig.OverrideChemGuyBuff         , "BALANCE", "DO_CHEM_GUY_BUFF");
+    GetSetting(ActiveCFEPatchConfig.OverrideRocketGuyHP         , "BALANCE", "DO_OVERRIDE_ROCKEYGUY_HP");
+    GetSetting(ActiveCFEPatchConfig.OverrideRocketGuyHP_Value         , "BALANCE", "ROCKEYGUY_HP_OVERRIDE");
+    GetSetting(ActiveCFEPatchConfig.OverrideRocketGuyCost         , "BALANCE", "DO_OVERRIDE_ROCKEYGUY_COST");
+    GetSetting(ActiveCFEPatchConfig.OverrideRocketGuyCost_Value         , "BALANCE", "ROCKEYGUY_COST_OVERRIDE");
+    GetSetting(ActiveCFEPatchConfig.ApplyMPBalanceToSP         , "BALANCE", "APPLY_BALANCE_TO_SINGLE_PLAYER");
+    GetSetting(ActiveCFEPatchConfig.MPUnitsInSP         , "BALANCE", "MULTIPLAYER_UNITS_IN_SINGLE_PLAYER");
     
     // Multiplayer
     // This works if you use first 11 chars of SteamID for your name.

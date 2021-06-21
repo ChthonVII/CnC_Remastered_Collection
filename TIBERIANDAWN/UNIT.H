@@ -136,7 +136,7 @@ class UnitClass :	public TarComClass
 		**	Combat related.
 		*/
 		virtual COORDINATE Target_Coord(void) const;
-		virtual ResultType Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source=0);
+		virtual ResultType Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source=0, ArmorPenType specialarmorpen = ARMORPEN_NONE);
 		virtual TARGET As_Target(void) const;
 		virtual void Stun(void);
 
@@ -218,6 +218,11 @@ class UnitClass :	public TarComClass
 		** This contains the value of the Virtual Function Table Pointer
 		*/
 		static void * VTable;
+        
+public:
+        // Chthon CFE Note: for getting things to consistently exit the repair bay instead of twitching stupidly sometimes 
+        bool DoSmarterRunAway();
+    
 };
 
 #endif

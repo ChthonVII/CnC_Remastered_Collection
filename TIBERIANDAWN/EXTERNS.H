@@ -92,12 +92,29 @@ struct CFEPatchConfig
 	bool EnableSafeSabotage = false;
     bool EnableSmarterAircraft = false;
     bool EnableSmarterSAMs = false;
+    bool EnableSmarterRepairBays = false;
     bool EnableSmarterMammoths = false;
     bool BetterTibGrowth = false;
+    bool TreeVisceroidSpawn = false;
     bool TSVisceroidSpawn = false;
     bool MeanerVisceroids = false;
     bool EnableVeterancy = false;
     bool AllowSandbagging = true;
+    
+    bool OverrideAPCReqs = false;
+    bool OverrideWarFactoryHP = false;
+    bool OverrideStealthTankCost = false;
+    bool OverrideArtyTurn = false;
+    bool OverrideMLRSReqs = false;
+    bool OverrideMLRSHP = false;
+    bool OverrideMLRSGDIOnly = false;
+    bool OverrideMCVSight = false;
+    bool OverrideChemGuyBuff = false;
+    bool OverrideRocketGuyHP = false;
+    bool OverrideRocketGuyCost = false;
+    bool ApplyMPBalanceToSP = false;
+    bool MPUnitsInSP = false;
+    
 	int  InfantryTiberiumAversion = 0;
     int  BuildingGap = 2;
 	int  HarvyQueueJumpCutoff = 4;
@@ -115,6 +132,16 @@ struct CFEPatchConfig
     int SmarterSAMAmmo = 2;
     int  SmarterSAMBalanceDelay = 0;
     
+    int OverrideWarFactoryHP_Value = 520;
+    int OverrideStealthTankCost_Value = 700;
+    int OverrideArtyTurn_Value = 4;
+    int OverrideMLRSHP_Value = 120;
+    int OverrideMCVSight_Value = 4;
+    int OverrideConYardSight_Value = 6;
+    int OverrideRocketGuyHP_Value = 35;
+    int OverrideRocketGuyCost_Value = 250;
+    
+
     // fixup for LAN multiplayer
     // doesn't work -- rendering is always controlled by the server's DLL
     //char RealMPlayerName[MPLAYER_NAME_MAX] = "";

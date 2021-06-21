@@ -554,8 +554,24 @@ int FootClass::Mission_Move(void)
 {
 	if (!Target_Legal(NavCom) && !IsDriving && MissionQueue == MISSION_NONE) {
          // Attack Move rework by ChthonVII -- Destination reached, snap out of attack mode
-		ResetAttackMove();
-		Enter_Idle_Mode();
+		// Let's be a little more careful and hopefully avoid units falling out of attack move early
+        if (AttackMove){
+            // fall out of attack move if we forgot our destination, we arrived (or got close), or don't have a path
+            if (    !Target_Legal(RememberedNavCom) ||
+                    (Distance(RememberedNavCom) <= 3*CELL_LEPTON_W) ||
+                    !Find_Path_AStar(nullptr, Coord_Cell(Coord), As_Cell(RememberedNavCom), 1, MOVE_MOVING_BLOCK, -1)
+            ){
+                ResetAttackMove();
+                Enter_Idle_Mode();
+            }
+            // otherwise go back to moving
+            else {
+                AttackMoveEnterMoveMode();
+            }
+        }
+        else {
+            Enter_Idle_Mode();
+        }
 	}
 	if (!Target_Legal(TarCom) && !House->IsHuman) {
 		Target_Something_Nearby(THREAT_RANGE);
@@ -1158,9 +1174,9 @@ bool FootClass::Limbo(void)
  * HISTORY:                                                                                    *
  *   12/30/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
-ResultType FootClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source)
+ResultType FootClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, ArmorPenType specialarmorpen)
 {
-	ResultType result = TechnoClass::Take_Damage(damage, distance, warhead, source);
+	ResultType result = TechnoClass::Take_Damage(damage, distance, warhead, source, specialarmorpen);
 
 	if (result != RESULT_NONE && Team) {
 

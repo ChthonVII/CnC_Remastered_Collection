@@ -137,7 +137,7 @@ class AircraftClass : public FootClass, public FlyClass
 		**	Combat related.
 		*/
 //		virtual bool Target_Something_Nearby(ThreatType threat=THREAT_NORMAL);
-		virtual ResultType Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source);
+		virtual ResultType Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, ArmorPenType specialarmorpen = ARMORPEN_NONE);
 		virtual BulletClass * Fire_At(TARGET target, int which);
 		virtual TARGET As_Target(void) const;
 
@@ -172,6 +172,9 @@ class AircraftClass : public FootClass, public FlyClass
 		**	Dee-buggin' support.
 		*/
 		int Validate(void) const;
+        
+        // Chthon CFE Note: logic for exiting repair bay
+        bool DoSmarterRunAway();
 
 	public:
 
