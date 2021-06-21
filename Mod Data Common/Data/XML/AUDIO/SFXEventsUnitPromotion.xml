@@ -100,6 +100,24 @@
 		</SampleNamesList>
 	</SFXEvent>
     
+    <SFXEvent Name="TDR_SFX_WINDGUST" Preset="_PRESET_MD_MOBIUS_2D">
+		<IsPreset> False </IsPreset>
+        <MinVolume>20</MinVolume>
+        <MaxVolume>35</MaxVolume>
+		<SampleNamesList>
+			<entry> WIND_GUST.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
+    
+    <SFXEvent Name="TDC_SFX_WINDGUST" Preset="_PRESET_MD_MOBIUS_2D">
+		<IsPreset> False </IsPreset>
+        <MinVolume>20</MinVolume>
+        <MaxVolume>35</MaxVolume>
+		<SampleNamesList>
+			<entry> WIND_GUST.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
+    
 </SFXEvents>
 
 
