@@ -2580,10 +2580,13 @@ BulletClass * TechnoClass::Fire_At(TARGET target, int which)
         
 		if (tclass.IsTwoShooter || veterantwoshooter) {
 			IsSecondShot = (IsSecondShot == false);
+            // Mammoth Tanks and Adv. Guard Towers become quad-shooter at rank 3 veterancy
             if (    (VeterancyRank == 3) &&
                     !IsSecondShot &&
-                    (What_Am_I() == RTTI_UNIT) && 
-                    (*((UnitClass*)this) == UNIT_HTANK)
+                    (
+                        (   (What_Am_I() == RTTI_UNIT) && (*((UnitClass*)this) == UNIT_HTANK)  ) ||
+                        (   (What_Am_I() == RTTI_BUILDING) && (*((BuildingClass*)this) == STRUCT_ATOWER)    )
+                    )
             ){
                 if (ReadyQuadShot){
                     Arm = 6;
@@ -3082,9 +3085,9 @@ int TechnoClass::Weapon_Range(int which) const
             (( What_Am_I() == RTTI_UNIT) && (*((UnitClass*)this) == UNIT_ARTY)) ||
             (   ( What_Am_I() == RTTI_BUILDING) && (
                     (*((BuildingClass*)this) == STRUCT_GTOWER) ||
-                    (*((BuildingClass*)this) == STRUCT_ATOWER) ||
-                    (*((BuildingClass*)this) == STRUCT_OBELISK) ||
-                    (*((BuildingClass*)this) == STRUCT_SAM) 
+                    //(*((BuildingClass*)this) == STRUCT_ATOWER) ||
+                    (*((BuildingClass*)this) == STRUCT_OBELISK) //||
+                    //(*((BuildingClass*)this) == STRUCT_SAM) 
                 )
             )
         )
@@ -5376,9 +5379,15 @@ void TechnoClass::GainVeterancyXP(unsigned short int XP){
         
         // defense building bonuses:
         // Guard Tower, Adv. Guard Tower, Obelisk, & SAM Site get +1 range (handled in TechnoClass::Weapon_Range())
+        // this is kinda uninspiriing, so changed SAM and Adv. GTower to quad shooters
         // Turret becomes a two-shooter (mostly handled in TechnoClass::Fire_At())
-        else if ( (What_Am_I() == RTTI_BUILDING) && (*((BuildingClass*)this) == STRUCT_TURRET)){
+        else if (What_Am_I() == RTTI_BUILDING){
+            if  (*((BuildingClass*)this) == STRUCT_TURRET){
                 IsSecondShot = false; //reset so that next volley will be double
+            }
+            else if (*((BuildingClass*)this) == STRUCT_ATOWER){
+                ReadyQuadShot = true; // prepare to fire quad shot on next volley
+            }
        }
         
     }

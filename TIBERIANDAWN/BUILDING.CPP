@@ -4824,7 +4824,14 @@ int BuildingClass::Mission_Attack(void)
                 // Chthon CFE Note: Smarter SAM behavior inspired by screamingchicken
                 if (ActiveCFEPatchConfig.EnableSmarterSAMs){
                     SAMAmmo = ActiveCFEPatchConfig.SmarterSAMAmmo;
+                    // veteran rank 3 SAMs become quad shooters
+                    if (VeterancyRank == 3){
+                        SAMAmmo *= 2;
+                    }
                     SAMLoweringDelay = 0;
+                }
+                else if (VeterancyRank == 3){
+                    SAMAmmo = 4;
                 }
 				if (Target_Legal(TarCom)) {
 					Set_Rate(2);
@@ -4869,7 +4876,7 @@ int BuildingClass::Mission_Attack(void)
 						} else {
 							Status = SAM_FIRING;
                             //Chthon CFE Note: Smarter SAM behavior inspired by screamingchicken
-                            if (ActiveCFEPatchConfig.EnableSmarterSAMs){
+                            if (ActiveCFEPatchConfig.EnableSmarterSAMs || (VeterancyRank == 3)){
                                 // jump to the long-delay SAM_FIRING2 if number of shots left is odd
                                 if (SAMAmmo % 2 == 1){
                                     Status = SAM_FIRING2;
@@ -4900,7 +4907,7 @@ int BuildingClass::Mission_Attack(void)
 								Fire_At(TarCom, 0);
 								Status = SAM_READY2;
                                  // Chthon CFE Note: Smarter SAM behavior inspired by screamingchicken
-                                if (ActiveCFEPatchConfig.EnableSmarterSAMs){
+                                if (ActiveCFEPatchConfig.EnableSmarterSAMs || (VeterancyRank == 3)){
                                     SAMAmmo--;
                                     if (!SAMAmmo){
                                         Status = SAM_LOCKING;
@@ -4926,7 +4933,7 @@ int BuildingClass::Mission_Attack(void)
 						} else {
 							Status = SAM_FIRING2;
                             //Chthon CFE Note: Smarter SAM behavior inspired by screamingchicken
-                            if (ActiveCFEPatchConfig.EnableSmarterSAMs){
+                            if (ActiveCFEPatchConfig.EnableSmarterSAMs || (VeterancyRank == 3)){
                                 // jump to the short-delay SAM_FIRING if number of shots left is even
                                 if (SAMAmmo % 2 == 0){
                                     Status = SAM_FIRING;
@@ -4956,7 +4963,7 @@ int BuildingClass::Mission_Attack(void)
                                 float localROFBias = 1.0 / (1.0 + (0.05 * VeterancyRank)); // Chthon CFE Note: need to convert ROF multiplier into delay reduction
                                 int adjusteddelay;
                                 // Chthon CFE Note: Smarter SAM behavior inspired by screamingchicken
-                                if (ActiveCFEPatchConfig.EnableSmarterSAMs){
+                                if (ActiveCFEPatchConfig.EnableSmarterSAMs || (VeterancyRank == 3)){
                                     SAMAmmo--;
                                     if (SAMAmmo){
                                         Status = SAM_READY; // loop back to SAM ready if we still have ammo
@@ -4970,7 +4977,23 @@ int BuildingClass::Mission_Attack(void)
                                         // That leaves us back at SAM_READY (although arbitrary-shot is still probably at an advantage since it probably has less far to rotate to get on target than 2-shot which has to come from N)
                                         // But... waiting 8.5 sec between volleys feels reaaaaaaally slow.
                                         // So feel free to use something lower at the expense of changing game balance.
-                                        adjusteddelay = ((TICKS_PER_SECOND*3) + ActiveCFEPatchConfig.SmarterSAMBalanceDelay) * localROFBias;
+                                        
+                                        // minimal delay for quad shots
+                                        if (VeterancyRank == 3){
+                                            int shotsfired = 4;
+                                            if (ActiveCFEPatchConfig.EnableSmarterSAMs){
+                                                shotsfired = 2* ActiveCFEPatchConfig.SmarterSAMAmmo;
+                                            }
+                                            shotsfired = shotsfired - SAMAmmo;
+                                            if (shotsfired % 4 != 0){
+                                                return 3;
+                                            }
+                                        }
+                                        int adjustment = 0;
+                                        if (ActiveCFEPatchConfig.EnableSmarterSAMs){
+                                            adjustment = ActiveCFEPatchConfig.SmarterSAMBalanceDelay;
+                                        }
+                                        adjusteddelay = ((TICKS_PER_SECOND*3) + adjustment) * localROFBias;
                                         if (adjusteddelay < 1){
                                             adjusteddelay = 1;
                                         }
