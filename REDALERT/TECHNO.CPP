@@ -3807,6 +3807,18 @@ BulletClass * TechnoClass::Fire_At(TARGET target, int which)
 
 #else
 
+        // Chthon CFE Note: Bugfix for monster tank mission as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/pull/575/commits/055014e3b7dcfb3db29f935eea7b43fd1c94e0cd#
+        // If a projectile was fired from a unit that is hidden in the darkness,
+        //reveal that unit and a little area around it.
+        if (   (Session.Type == GAME_NORMAL) &&
+                (
+                    (!IsOwnedByPlayer && !IsDiscoveredByPlayer) ||
+                    (!Map[Center_Coord()].IsMapped && (What_Am_I() != RTTI_AIRCRAFT || !IsOwnedByPlayer))
+                )
+           ) {
+                Map.Sight_From(Coord_Cell(Center_Coord()), 2, PlayerPtr, false);
+        }
+
 		/*
 		** For client/server multiplayer, we need to reveal for any human player that is the target. ST - 3/13/2019 5:43PM
 		*/
