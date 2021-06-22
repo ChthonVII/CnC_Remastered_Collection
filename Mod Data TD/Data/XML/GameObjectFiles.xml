@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Game_Object_Files>
+
+	<!-- **************************************************** -->
+	<!-- ******					MISC Objects					 ***** -->
+	<!-- **************************************************** -->
+	<File>Objects\Misc\Factions.xml</File>
+	<File>Objects\Misc\FactionRandom.xml</File>
+	<File>Objects\Misc\FactionReplay.xml</File>
+	<File>Objects\Misc\Players.xml</File>
+	<File>Objects\Misc\External_Objects.xml</File>
+	<File>Objects\Avatars\Avatar_Base.xml</File>
+	<File>Objects\Avatars\Avatar_AI.xml</File>
+	<File>Objects\Avatars\Avatar_Default.xml</File>
+
+	<!-- **************************************************** -->
+	<!-- ******				CNC: PLAYER UNITS             ****** -->
+	<!-- **************************************************** -->
+	<File>Objects\Units\CNCBuildables.xml</File>
+	<File>Objects\Units\RABuildables.xml</File>
+	<File>Objects\Units\BuildableCategories.xml</File>
+	
+
+	<!-- Mod Unit -->
+	<File>Objects\Units\ModBuildables.xml</File>
+
+
+
+</Game_Object_Files>

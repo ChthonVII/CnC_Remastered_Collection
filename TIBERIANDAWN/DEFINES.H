@@ -35,7 +35,7 @@
 #define DEFINES_H
 
 
-//#define PETROGLYPH_EXAMPLE_MOD
+#define PETROGLYPH_EXAMPLE_MOD
 
 /**********************************************************************
 **	If defined, then the advanced balancing features will be enabled

@@ -905,5 +905,11 @@ void Fixup_Scenario(void)
         ((UnitTypeClass&)UnitTypeClass::As_Reference(UNIT_MSAM)).Scenario = 13;
         
     }
+    
+    // disable nuke tank if not specifically allowed
+    if (!ActiveCFEPatchConfig.EnableNukeTank){
+        ((UnitTypeClass&)UnitTypeClass::As_Reference(UNIT_NUKE_TANK)).Level = 99;
+        ((UnitTypeClass&)UnitTypeClass::As_Reference(UNIT_NUKE_TANK)).Scenario = 99;
+    }
 	
 }

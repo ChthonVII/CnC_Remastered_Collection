@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ObjectTypeList>
+
+	<ObjectTypeClass Name="TD_NTNK" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_NUKE_TANK</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_DESC_NUKE_TANK</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TD_Nuke_Tank</BuildIcon>
+			<RequiredTypes>
+				<entry>TD_PYLE</entry>
+			</RequiredTypes>
+			<CategoryTypesWeakAgainst>
+				<entry>Category_Tanks</entry>
+			</CategoryTypesWeakAgainst>
+			<CategoryTypesStrongAgainst>
+				<entry>Category_Infantry</entry>
+			</CategoryTypesStrongAgainst>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	
+	
+	
+	
+</ObjectTypeList>

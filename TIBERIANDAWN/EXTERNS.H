@@ -100,6 +100,7 @@ struct CFEPatchConfig
     bool MeanerVisceroids = false;
     bool EnableVeterancy = false;
     bool AllowSandbagging = true;
+    bool EnableNukeTank = false;
     
     bool OverrideAPCReqs = false;
     bool OverrideWarFactoryHP = false;

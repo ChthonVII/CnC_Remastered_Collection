@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+
+<SFXEvents>
+
+	<SFXEvent Name="TDR_SFX_NUKE_LOB" Preset="_PRESET_MD_MOBIUS_2D">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> TDR_SFX_NukeTank_Firing.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
+
+</SFXEvents>
+
+
+
+
+
+

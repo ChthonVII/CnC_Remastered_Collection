@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+
+<ModGameCommands>
+
+	<CNCModGameCommandManager>
+
+		<CNCModGameCommands>
+
+            
+            <Command Name="NTNK">
+				<GameCommand>GAME_COMMAND_TD_MOD_CUSTOM_BUILD1</GameCommand>
+			</Command>
+            
+            <Command Name="BIO">
+				<GameCommand>GAME_COMMAND_TD_MOD_CUSTOM_BUILD2</GameCommand>
+			</Command>
+            
+			
+
+		</CNCModGameCommands>
+
+	</CNCModGameCommandManager>
+
+</ModGameCommands>
