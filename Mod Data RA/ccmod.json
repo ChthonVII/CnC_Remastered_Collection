@@ -3,7 +3,7 @@
     "description": "Compendium of QoL patches from cfehunter, originally ported by Root-Core, updated for current official patch and new features by ChthonVII",
     "author": "ChthonVII",
     "load_order": 1,
-    "version_low": 6,
+    "version_low": 7,
     "version_high": 1,
     "game_type": "RA"
   }
