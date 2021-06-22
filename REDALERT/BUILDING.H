@@ -314,7 +314,7 @@ class BuildingClass : public TechnoClass
 		virtual void Death_Announcement(TechnoClass const * source=0) const;
 		virtual FireErrorType Can_Fire(TARGET, int which) const;
 		virtual TARGET Greatest_Threat(ThreatType threat) const;
-		virtual ResultType Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source=0, bool forced=false, TARGET indirectsource = TARGET_NONE); // Chthon CFE Note: Added indirectsource so minelayers can get XP
+		virtual ResultType Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source=0, bool forced=false, TARGET indirectsource = TARGET_NONE, ArmorPenType specialarmorpen = ARMORPEN_NONE); // Chthon CFE Note: Added indirectsource so minelayers can get XP
 		virtual bool Captured(HouseClass * newowner);
 		void Update_Radar_Spied(void);
 

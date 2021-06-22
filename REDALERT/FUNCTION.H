@@ -494,7 +494,7 @@ int harderr_handler(unsigned, unsigned, unsigned __far *);
 **	COMBAT.CPP
 */
 int Modify_Damage(int damage, WarheadType warhead, ArmorType armor, int distance);
-void Explosion_Damage(COORDINATE coord, int strength, TechnoClass * source, WarheadType warhead);
+void Explosion_Damage(COORDINATE coord, int strength, TechnoClass * source, WarheadType warhead, ArmorPenType specialarmorpen = ARMORPEN_NONE);
 AnimType Combat_Anim(int damage, WarheadType warhead, LandType land);
 void Wide_Area_Damage(COORDINATE coord, LEPTON radius, int damage, TechnoClass * source, WarheadType warhead);
 

@@ -3613,6 +3613,24 @@ BulletClass * TechnoClass::Fire_At(TARGET target, int which)
 		if (Is_Foot() && ((FootClass const *)this)->IsDriving) {
 			bullet->IsInaccurate = true;
 		}
+		
+		// Chthon CFE Note: Some rank 3 veteran units do extra damage against certain armor types
+		// finally doing this the *right* way by making it a property of the bullet
+		if (VeterancyRank == 3){
+             // Minigunners and Humvees and Yaks get armor-piercing ammo (but only 3/4 as good as real WARHEAD_AP)
+            if (   (What_Am_I() == RTTI_INFANTRY && *((InfantryClass*)this) == INFANTRY_E1) ||
+                    (What_Am_I() == RTTI_UNIT && *((UnitClass*)this) == UNIT_JEEP) || 
+                    (What_Am_I() == RTTI_AIRCRAFT && *((AircraftClass*)this) == AIRCRAFT_YAK)
+            ){
+                bullet->SpecialArmorPen = ARMORPEN_PSEUDO_AP;
+            }
+            // MIGs get high explosive missiles against infantry & concrete (walls/bridges)
+            else if (What_Am_I() == RTTI_AIRCRAFT && *((AircraftClass*)this) == AIRCRAFT_MIG){
+                bullet->SpecialArmorPen = ARMORPEN_PSEUDO_HE;
+            }
+        }
+		
+		
 
 		if (bullet->Unlimbo(fire_coord, dir)) {
 		} else {
@@ -4462,7 +4480,7 @@ bool TechnoClass::Captured(HouseClass * newowner)
  * HISTORY:                                                                                    *
  *   06/20/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-ResultType TechnoClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, bool forced, TARGET indirectsource)
+ResultType TechnoClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, bool forced, TARGET indirectsource, ArmorPenType specialarmorpen)
 {
 	assert(IsActive);
 
@@ -4478,6 +4496,7 @@ ResultType TechnoClass::Take_Damage(int & damage, int distance, WarheadType warh
         // Moved from Fire_At() to avoid doing extra splash damage
         // This is not a perfect solution either, because projectiles that hit after a veteran unit's death won't get the bonus, but it's less bad
         // this has to go above armor application so the smaller bonuses aren't rounded away
+        /*
         if (   source &&
                 source->IsActive &&
                 (source->VeterancyRank == 3)
@@ -4515,6 +4534,33 @@ ResultType TechnoClass::Take_Damage(int & damage, int distance, WarheadType warh
             }
             // Could also bring up AP vs. ARMOR_ALUMINUM, but that would make upped SA too strong relative to AP
         }
+        */
+        
+        //Chthon CFE Note: Some rank 3 veteran units do extra damage against certain armor types
+        // finally doing this the *right way* and passing it in as a parameter that rode on the bullet
+        // avoid both the issue with checking armor class on things for which it's not defined (walls) if we do this in Fire_At()
+        // and the issue with armor pen not applying if the source dies before the bullet hits if we do it all here
+        if (Class_Of().Armor == ARMOR_NONE){
+            if (specialarmorpen == ARMORPEN_PSEUDO_HE){
+                damage *= 3; // bring damage up as if armor effect were 0.9 instead of 0.3
+            }
+        }
+        else if (Class_Of().Armor == ARMOR_WOOD){
+            if (specialarmorpen == ARMORPEN_PSEUDO_AP){
+                damage *= 1.125; // bring damage up as if armor effect were 0.5625 instead of 0.5
+            }
+        }
+        else if (Class_Of().Armor == ARMOR_STEEL){
+            if (specialarmorpen == ARMORPEN_PSEUDO_AP){
+                damage *= 3; // bring damage up as if armor effect were 0.75 instead of 0.25
+            }
+        }
+        else if (Class_Of().Armor == ARMOR_CONCRETE){
+                if (specialarmorpen == ARMORPEN_PSEUDO_HE){
+                damage *= 2; // bring damage up as if armor effect were 1.0 instead of 0.5
+            }
+        }
+        // Could also bring up AP vs. ARMOR_ALUMINUM, but that would make upped SA too strong relative to AP
         
         // vanilla armor application 
 		damage = damage * ArmorBias * House->ArmorBias;
@@ -4539,7 +4585,9 @@ ResultType TechnoClass::Take_Damage(int & damage, int distance, WarheadType warh
 	int oldstrength = Strength; // Chthon CFE Note: save this before it changes 
 	
 	if (IronCurtainCountDown == 0) {
-		result = ObjectClass::Take_Damage(damage, distance, warhead, source, forced);
+		result = ObjectClass::Take_Damage(damage, distance, warhead, source, forced, NULL, ARMORPEN_NONE);
+        // NULL for indirectsource b/c that was handled here (and non-techno things can't give XP)
+        // ARMORPEN_NONE because we already handled specialarmorpen here, so don't pass it on
 	}
 
 	switch (result) {

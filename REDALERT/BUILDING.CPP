@@ -1679,7 +1679,7 @@ bool BuildingClass::Unlimbo(COORDINATE coord, DirType dir)
  *   11/22/1994 JLB : Shares base damage handler for techno objects.                           *
  *   07/15/1995 JLB : Power ratio gets adjusted.                                               *
  *=============================================================================================*/
-ResultType BuildingClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, bool forced, TARGET indirectsource)
+ResultType BuildingClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, bool forced, TARGET indirectsource, ArmorPenType specialarmorpen)
 {
 	assert(Buildings.ID(this) == ID);
 	assert(IsActive);
@@ -1711,7 +1711,7 @@ ResultType BuildingClass::Take_Damage(int & damage, int distance, WarheadType wa
 		/*
 		**	Perform the low level damage assessment.
 		*/
-		res = TechnoClass::Take_Damage(damage, distance, warhead, source, forced, indirectsource);
+		res = TechnoClass::Take_Damage(damage, distance, warhead, source, forced, indirectsource, specialarmorpen);
 		switch (res) {
 			case RESULT_DESTROYED:
 

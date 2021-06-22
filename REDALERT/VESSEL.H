@@ -109,7 +109,7 @@ class VesselClass : public DriveClass
 		virtual void Assign_Destination(TARGET target);
 		virtual int Pip_Count(void) const;
 
-		virtual ResultType Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source=0, bool forced=false, TARGET indirectsource = TARGET_NONE); // Chthon CFE Note: Added indirectsource so minelayers can get XP
+		virtual ResultType Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source=0, bool forced=false, TARGET indirectsource = TARGET_NONE, ArmorPenType specialarmorpen = ARMORPEN_NONE); // Chthon CFE Note: Added indirectsource so minelayers can get XP
 		virtual FireErrorType Can_Fire(TARGET target, int which) const;
 
 		virtual void Enter_Idle_Mode(bool initial=false);

@@ -146,10 +146,17 @@ class BulletClass :	public ObjectClass,
 		*/
 		WarheadType Warhead;
 
+    // Chthon CFE Note: Added member to store special per-type armor penetration (used by some rank 3 veteran unit bonuses)
+    public:
+        ArmorPenType SpecialArmorPen = ARMORPEN_NONE;
+    private:
+        
 		/*
 		** Some additional padding in case we need to add data to the class and maintain backwards compatibility for save/load
 		*/
-		unsigned char SaveLoadPadding[32];
+        // Chthon CFE Note: original padding was 32 bytes
+        // SpecialArmorPen ate 1 byte
+		unsigned char SaveLoadPadding[31];
 };
 
 #endif

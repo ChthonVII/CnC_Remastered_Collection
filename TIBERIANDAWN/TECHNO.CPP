@@ -2543,11 +2543,13 @@ BulletClass * TechnoClass::Fire_At(TARGET target, int which)
 		// Chthon CFE Note: Some rank 3 veteran units do extra damage against certain armor types
 		// finally doing this the *right* way by making it a property of the bullet
 		if (VeterancyRank == 3){
+            // Minigunners and Humvees get armor-piercing ammo (but only 3/4 as good as real WARHEAD_AP)
             if (   ((What_Am_I() == RTTI_INFANTRY) && (*((InfantryClass*)this) == INFANTRY_E1)) ||
                     ((What_Am_I() == RTTI_UNIT) && (*((UnitClass*)this) == UNIT_JEEP))
             ){
                 bullet->SpecialArmorPen = ARMORPEN_PSEUDO_AP;
             }
+             // Attack Cycles get high explosive missiles against infantry & concrete (walls)
             else if ((What_Am_I() == RTTI_UNIT) && (*((UnitClass*)this) == UNIT_BIKE)){
                 bullet->SpecialArmorPen = ARMORPEN_PSEUDO_HE;
             }

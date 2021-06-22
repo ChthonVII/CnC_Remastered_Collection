@@ -1159,11 +1159,11 @@ bool FootClass::Unlimbo(COORDINATE coord, DirType dir)
  * HISTORY:                                                                                    *
  *   12/30/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
-ResultType FootClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, bool forced, TARGET indirectsource)
+ResultType FootClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, bool forced, TARGET indirectsource, ArmorPenType specialarmorpen)
 {
 	assert(IsActive);
 
-	ResultType result = TechnoClass::Take_Damage(damage, distance, warhead, source, forced, indirectsource);
+	ResultType result = TechnoClass::Take_Damage(damage, distance, warhead, source, forced, indirectsource, specialarmorpen);
 
 	if (result != RESULT_NONE && Team) {
 

@@ -1024,7 +1024,8 @@ void BulletClass::Bullet_Explodes(bool forced)
 	**	Non-aircraft targets apply damage to the ground.
 	*/
 	if (!Is_Target_Aircraft(TarCom) || As_Aircraft(TarCom)->In_Which_Layer() == LAYER_GROUND) {
-		Explosion_Damage(Coord, Strength, Payback, Warhead);
+		Explosion_Damage(Coord, Strength, Payback, Warhead, SpecialArmorPen);
+        // Chthon CFE Note: pass on special armor pen
 		if (!IsActive) return;
 
 	} else {
@@ -1037,7 +1038,8 @@ void BulletClass::Bullet_Explodes(bool forced)
 			AircraftClass * object = As_Aircraft(TarCom);
 
 			int str = Strength;
-			if (object) object->Take_Damage(str, 0, Warhead, Payback);
+			if (object) object->Take_Damage(str, 0, Warhead, Payback, false, NULL, SpecialArmorPen);
+            // Chthon CFE Note: pass on special armor pen
 		}
 	}
 

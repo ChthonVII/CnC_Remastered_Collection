@@ -1123,7 +1123,7 @@ bool UnitClass::Unlimbo(COORDINATE coord, DirType dir)
  *   06/30/1995 JLB : Lasers do maximum damage against gunboat.                                *
  *   08/16/1995 JLB : Harvester crushing doesn't occur on early missions.                      *
  *=============================================================================================*/
-ResultType UnitClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, bool forced, TARGET indirectsource)
+ResultType UnitClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, bool forced, TARGET indirectsource, ArmorPenType specialarmorpen)
 {
 	assert(Units.ID(this) == ID);
 	assert(IsActive);
@@ -1150,7 +1150,7 @@ ResultType UnitClass::Take_Damage(int & damage, int distance, WarheadType warhea
 	**	In order for a this to be damaged, it must either be a unit
 	**	with a crew or a sandworm.
 	*/
-	res = DriveClass::Take_Damage(damage, distance, warhead, source, forced, indirectsource);
+	res = DriveClass::Take_Damage(damage, distance, warhead, source, forced, indirectsource, specialarmorpen);
 
 	if (res == RESULT_DESTROYED) {
 		Death_Announcement(source);

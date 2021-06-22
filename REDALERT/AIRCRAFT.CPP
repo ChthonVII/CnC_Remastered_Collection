@@ -1640,7 +1640,7 @@ BulletClass * AircraftClass::Fire_At(TARGET target, int which)
  * HISTORY:                                                                                    *
  *   05/26/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-ResultType AircraftClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, bool forced, TARGET indirectsource)
+ResultType AircraftClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, bool forced, TARGET indirectsource, ArmorPenType specialarmorpen)
 {
 	assert(Aircraft.ID(this) == ID);
 	assert(IsActive);
@@ -1657,7 +1657,7 @@ ResultType AircraftClass::Take_Damage(int & damage, int distance, WarheadType wa
 	/*
 	**	Apply the damage to the aircraft.
 	*/
-	res = FootClass::Take_Damage(damage, distance, warhead, source, forced, indirectsource);
+	res = FootClass::Take_Damage(damage, distance, warhead, source, forced, indirectsource, specialarmorpen);
 
 	/*
 	**	Special action is performed if the aircraft is killed -- the cargo is destroyed

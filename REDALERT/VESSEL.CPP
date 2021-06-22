@@ -978,7 +978,7 @@ void VesselClass::Active_Click_With(ActionType action, CELL cell)
  * HISTORY:                                                                                    *
  *   05/13/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
-ResultType VesselClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, bool forced, TARGET indirectsource)
+ResultType VesselClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, bool forced, TARGET indirectsource, ArmorPenType specialarmorpen)
 {
 	assert(Vessels.ID(this) == ID);
 	assert(IsActive);
@@ -989,7 +989,7 @@ ResultType VesselClass::Take_Damage(int & damage, int distance, WarheadType warh
 	**	In order for a this to be damaged, it must either be a unit
 	**	with a crew or a sandworm.
 	*/
-	res = FootClass::Take_Damage(damage, distance, warhead, source, forced, indirectsource);
+	res = FootClass::Take_Damage(damage, distance, warhead, source, forced, indirectsource, specialarmorpen);
 
 	if (res == RESULT_DESTROYED) {
 		Death_Announcement(source);

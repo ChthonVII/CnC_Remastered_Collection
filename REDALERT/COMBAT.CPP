@@ -156,7 +156,7 @@ int Modify_Damage(int damage, WarheadType warhead, ArmorType armor, int distance
  *   06/20/1994 JLB : Source is a pointer.                                                     *
  *   06/18/1996 JLB : Strength could be negative for healing effects.                          *
  *=============================================================================================*/
-void Explosion_Damage(COORDINATE coord, int strength, TechnoClass * source, WarheadType warhead)
+void Explosion_Damage(COORDINATE coord, int strength, TechnoClass * source, WarheadType warhead, ArmorPenType specialarmorpen)
 {
 	CELL				cell;			// Cell number under explosion.
 	ObjectClass *	object;			// Working object pointer.
@@ -229,7 +229,7 @@ void Explosion_Damage(COORDINATE coord, int strength, TechnoClass * source, Warh
 			}
 			if (object->IsDown && !object->IsInLimbo && distance < range) {
 				int damage = strength;
-				object->Take_Damage(damage, distance, warhead, source);
+				object->Take_Damage(damage, distance, warhead, source, specialarmorpen);
 			}
 		}
 	}
@@ -238,6 +238,12 @@ void Explosion_Damage(COORDINATE coord, int strength, TechnoClass * source, Warh
 	**	If there is a wall present at this location, it may be destroyed. Check to
 	**	make sure that the warhead is of the kind that can destroy walls.
 	*/
+    
+     // Chthon CFE Note: increase damage for pseudo HE
+    if (specialarmorpen == ARMORPEN_PSEUDO_HE){
+        strength *= 2;
+    }
+    
 	cellptr = &Map[cell];
 	if (cellptr->Overlay != OVERLAY_NONE) {
 		OverlayTypeClass const * optr = &OverlayTypeClass::As_Reference(cellptr->Overlay);
@@ -246,7 +252,7 @@ void Explosion_Damage(COORDINATE coord, int strength, TechnoClass * source, Warh
 			cellptr->Reduce_Tiberium(strength / 10);
 		}
 		if (optr->IsWall) {
-			if (whead->IsWallDestroyer || (whead->IsWoodDestroyer && optr->IsWooden)) {
+			if (whead->IsWallDestroyer || (whead->IsWoodDestroyer && optr->IsWooden) || (specialarmorpen == ARMORPEN_PSEUDO_HE)) {
 				Map[cell].Reduce_Wall(strength);
 			}
 		}
@@ -262,7 +268,7 @@ void Explosion_Damage(COORDINATE coord, int strength, TechnoClass * source, Warh
 		 cellptr->TType == TEMPLATE_BRIDGE_2A || cellptr->TType == TEMPLATE_BRIDGE_2B ||
 		 cellptr->TType == TEMPLATE_BRIDGE_3A || cellptr->TType == TEMPLATE_BRIDGE_3B ) {
 
-		if (((warhead == WARHEAD_AP || warhead == WARHEAD_HE) && Random_Pick(1, Rule.BridgeStrength) < strength)) {
+		if (((warhead == WARHEAD_AP || warhead == WARHEAD_HE || (specialarmorpen == ARMORPEN_PSEUDO_HE)) && Random_Pick(1, Rule.BridgeStrength) < strength)) {
 			Map.Destroy_Bridge_At(cell);
 		}
 	}

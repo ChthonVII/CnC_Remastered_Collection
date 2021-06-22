@@ -322,7 +322,7 @@ void InfantryClass::operator delete(void * ptr)
  *   11/22/1994 JLB : Shares base damage handler for techno objects.                           *
  *   03/31/1995 JLB : Revenge factor.                                                          *
  *=============================================================================================*/
-ResultType InfantryClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, bool forced, TARGET indirectsource)
+ResultType InfantryClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, bool forced, TARGET indirectsource, ArmorPenType specialarmorpen)
 {
 	assert(Infantry.ID(this) == ID);
 	assert(IsActive);
@@ -349,7 +349,7 @@ ResultType InfantryClass::Take_Damage(int & damage, int distance, WarheadType wa
 			damage = 0;
 		}
 	}
-	res = FootClass::Take_Damage(damage, distance, warhead, source, forced, indirectsource);
+	res = FootClass::Take_Damage(damage, distance, warhead, source, forced, indirectsource, specialarmorpen);
 
 	/*
 	** hack for dog: if you're hit by a dog, and you're the target, your

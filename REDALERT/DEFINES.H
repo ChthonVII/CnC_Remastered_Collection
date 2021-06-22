@@ -3646,4 +3646,11 @@ typedef struct {
 // Maximum number of teams
 #define MAX_TEAMS						10
 
+// Chthon CFE: Added some defines for per-type armor penetration (used by some rank 3 veteran unit bonuses)
+typedef enum ArmorPenType : unsigned char {
+    ARMORPEN_NONE,
+    ARMORPEN_PSEUDO_AP, // SA that does slightly more damage vs wood and a lot more vs steel 
+    ARMORPEN_PSEUDO_HE // AP that does more damage vs no-armor and concrete
+} ArmorPenType;
+
 #endif
