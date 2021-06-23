@@ -1005,7 +1005,8 @@ CELL DisplayClass::Set_Cursor_Pos(CELL pos)
 	** This checks to see if NO animation or drawing is to occur and, if so,
 	**	exits.
 	*/
-	if (pos == ZoneCell) return(pos);
+     // Chthon CFE Note: bugfix magic build exploit, as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/pull/422
+	//if (pos == ZoneCell) return(pos);
 
 	prevpos = ZoneCell;
 
@@ -3376,9 +3377,10 @@ int DisplayClass::TacticalClass::Selection_At_Mouse(unsigned flags, KeyNumType &
 		/*
 		** Cause any displayed cursor to move along with the mouse cursor.
 		*/
-		if (cell != Map.ZoneCell) {
+        // Chthon CFE Note: bugfix magic build exploit, as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/pull/422
+		//if (cell != Map.ZoneCell) {
 			Map.Set_Cursor_Pos(cell);
-		}
+		//}
 
 		ObjectClass* object = nullptr;
 
