@@ -4145,7 +4145,9 @@ void Handle_Team(int team, int action)
 					** offsets, and they'll be formationed.
 					*/
 #if(1)
-					obj->XFormOffset = obj->YFormOffset = (int)0x80000000;
+					// Chthon CFE Note: use as constant as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/commit/b9dd91283bd6e43f85c047a36a49dc2e007f01a1
+					//obj->XFormOffset = obj->YFormOffset = (int)0x80000000;
+					obj->XFormOffset = obj->YFormOffset = INVALID_FORMATION;
 #else
 #if(1)
 // Old always-north formation stuff
@@ -4170,7 +4172,9 @@ void Handle_Team(int team, int action)
 					if (obj->Is_Selected_By_Player()) obj->Group = team;
 					if (obj->Group == team  && obj->Is_Selected_By_Player()) {
 #if(1)
-						obj->XFormOffset = obj->YFormOffset = (int)0x80000000;
+						// Chthon CFE Note: use as constant as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/commit/b9dd91283bd6e43f85c047a36a49dc2e007f01a1
+                        //obj->XFormOffset = obj->YFormOffset = (int)0x80000000;
+                        obj->XFormOffset = obj->YFormOffset = INVALID_FORMATION;
 #else
 #if(1)
 // Old always-north formation stuff

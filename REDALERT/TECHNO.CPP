@@ -6587,7 +6587,9 @@ void TechnoClass::Draw_Pips(int x, int y, WindowNumberType window) const
 		** If this unit is part of a formation, draw an 'F' after the group
 		** number.
 		*/
-		if ( ((FootClass *)this)->XFormOffset != 0x80000000UL) {
+        // Chthon CFE Note: use as constant as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/commit/b9dd91283bd6e43f85c047a36a49dc2e007f01a1
+		//if ( ((FootClass *)this)->XFormOffset != 0x80000000UL) {
+		if ( ((FootClass *)this)->XFormOffset != INVALID_FORMATION) {
 			CC_Draw_Shape(Class_Of().PipShapes, PIP_LETTERF, x+8, y+yval, window, SHAPE_CENTER|SHAPE_WIN_REL);
 		}
 	}

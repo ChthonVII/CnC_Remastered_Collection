@@ -2495,8 +2495,11 @@ int TeamClass::TMission_Formation(void)
 		case FORMATION_NONE:
 			while (member != NULL) {
 				member->Group = 0xFF;
-				member->XFormOffset = 0x80000000;
-				member->YFormOffset = 0x80000000;
+                // Chthon CFE Note: use as constant as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/commit/b9dd91283bd6e43f85c047a36a49dc2e007f01a1
+				//member->XFormOffset = 0x80000000;
+				//member->YFormOffset = 0x80000000;
+                member->XFormOffset = INVALID_FORMATION;
+				member->YFormOffset = INVALID_FORMATION;
 				member->IsFormationMove = false;
 				member = member->Member;
 			}

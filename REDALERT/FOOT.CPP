@@ -115,8 +115,11 @@ FootClass::FootClass(RTTIType rtti, int id, HousesType house) :
 	IsMovingOntoBridge(false),
 	Speed(0),
 	SpeedBias(1),
-	XFormOffset(0x80000000),
-	YFormOffset(0x80000000),
+	// Chthon CFE Note: use as constant as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/commit/b9dd91283bd6e43f85c047a36a49dc2e007f01a1
+	//XFormOffset(0x80000000),
+	//YFormOffset(0x80000000),
+	XFormOffset(INVALID_FORMATION),
+	YFormOffset(INVALID_FORMATION),
 	NavCom(TARGET_NONE),
 	SuspendedNavCom(TARGET_NONE),
 	Team(0),

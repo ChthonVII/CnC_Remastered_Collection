@@ -2522,6 +2522,8 @@ typedef enum FormationType : unsigned char {
 	FORMATION_FIRST=0
 } FormationType;
 
+// Chthon CFE Note: use as constant as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/commit/b9dd91283bd6e43f85c047a36a49dc2e007f01a1
+#define INVALID_FORMATION 0x80000000
 
 /****************************************************************************
 **	Selected units have a special selected unit box around them. These are the
