@@ -439,6 +439,11 @@ char const * ListClass::Get_Item(int index) const
  *=============================================================================================*/
 char const * ListClass::Current_Item(void)
 {
+    
+    if (SelectedIndex >= List.Count()) {
+        return nullptr;
+    }
+    
 	return(List[SelectedIndex]);
 }
 
