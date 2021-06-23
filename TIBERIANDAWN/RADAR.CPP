@@ -809,7 +809,9 @@ void RadarClass::Plot_Radar_Pixel(CELL cell)
 		if (color == TBLACK) {
 			if (ZoomFactor > 1) {
 				void const *ptr;
-				long offset;
+				// Chthon CFE Note: Must be explicitly 32-bit type, as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/pull/538
+                //long offset;
+                int32_t offset;
 				int icon;
 
 				if (cellptr->TType != TEMPLATE_NONE) {
