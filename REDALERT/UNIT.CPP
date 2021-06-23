@@ -479,7 +479,8 @@ void UnitClass::AI(void)
 	/*
 	**	Scatter units off buildings in guard modes.
 	*/
-	if (!IsTethered && !IsFiring && !IsDriving && !IsRotating && (Mission == MISSION_GUARD || Mission == MISSION_GUARD_AREA) && MissionQueue == MISSION_NONE && Map[Coord].Cell_Building() != NULL) {
+    // Chthon CFE Note: bugfix missing IsActive check, as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/pull/430
+	if (IsActive && !IsTethered && !IsFiring && !IsDriving && !IsRotating && (Mission == MISSION_GUARD || Mission == MISSION_GUARD_AREA) && MissionQueue == MISSION_NONE && Map[Coord].Cell_Building() != NULL) {
 		Scatter(0, true, true);
 	}
 
