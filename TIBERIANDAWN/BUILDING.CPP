@@ -4986,7 +4986,7 @@ int BuildingClass::Mission_Attack(void)
                                             }
                                             shotsfired = shotsfired - SAMAmmo;
                                             if (shotsfired % 4 != 0){
-                                                return 3;
+                                                return 2;
                                             }
                                         }
                                         int adjustment = 0;
