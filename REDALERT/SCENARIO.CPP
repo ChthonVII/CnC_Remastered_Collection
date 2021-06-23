@@ -765,6 +765,10 @@ void Post_Load_Game(int load_multi)
 void Clear_Scenario(void)
 {
 // TCTCTC -- possibly just use in-place new of scenario object?
+    
+    // Chthon CFE Note: stop chronal vortex so active state isn't inherited by next game, as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/commit/acda5f67587b9053b7d49f122cef571304bc3b3a
+    // Probably not applicable to Remaster (suspect dll memory is entirely freed between games), but better safe than sorry 
+    ChronalVortex.Stop();
 
 	Scen.MissionTimer = 0;
 	Scen.MissionTimer.Stop();
