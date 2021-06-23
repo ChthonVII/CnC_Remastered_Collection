@@ -245,7 +245,8 @@ void SoundControlsClass::Process(void)
 			int length = Theme.Track_Length(index);
 			char const * fullname = Theme.Full_Name(index);
 
-			void * ptr = new char [sizeof(100)];
+            // Chthon CFE Note: bugfix as per https://github.com/electronicarts/CnC_Remastered_Collection/pull/81
+			void * ptr = new char [100];
 			if (ptr) {
 				sprintf((char *)ptr, "%cTrack %d\t%d:%02d\t%s", index, listbox.Count()+1, length / 60, length % 60, fullname);
 				listbox.Add_Item((char const *)ptr);

@@ -5594,7 +5594,8 @@ void Shake_The_Screen(int shakes, HousesType house)
  *=============================================================================================*/
 void List_Copy(short const * source, int len, short * dest)
 {
-	if (dest == NULL || dest == NULL) {
+	// Chthon CFE Note: bugfix as per https://github.com/electronicarts/CnC_Remastered_Collection/pull/81
+    if (source == NULL || dest == NULL) {
 		return;
 	}
 
