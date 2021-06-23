@@ -396,7 +396,9 @@ void TeamTypeClass::Fill_In(char * name, char *entry)
 		p1 = strtok(NULL,",:");
 		p2 = strtok(NULL,",:");
 		mission.Mission = Mission_From_Name(p1);
-		mission.Argument = atoi(p2);
+		// Chthon CFE Note: avoid passing null to atoi() (undefined behavior) if mission ini file declares bigger MissionCount than actual list of missions, as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/pull/529
+        //mission.Argument = atoi(p2);
+        mission.Argument = p2 ? atoi(p2) : 0;
 		MissionList[i] = mission;
 	}
 
