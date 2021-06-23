@@ -1437,7 +1437,8 @@ static int sortfunc(void const * ptr1, void const * ptr2)
  *=============================================================================================*/
 bool SidebarClass::StripClass::Add(RTTIType type, int id, bool via_capture)
 {
-	if (BuildableCount <= MAX_BUILDABLES) {
+	// Chthon CFE Note: bugfix as per https://github.com/electronicarts/CnC_Remastered_Collection/issues/105
+    if (BuildableCount < MAX_BUILDABLES) {
 		for (int index = 0; index < BuildableCount; index++) {
 			if (Buildables[index].BuildableType == type && Buildables[index].BuildableID == id) {
 				return(false);
