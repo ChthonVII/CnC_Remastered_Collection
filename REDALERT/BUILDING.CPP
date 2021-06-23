@@ -2770,10 +2770,29 @@ void BuildingClass::Update_Buildables(void)
 			case RTTI_AIRCRAFTTYPE:
 				for (a = AIRCRAFT_FIRST; a < AIRCRAFT_COUNT; a++) {
 					if (PlayerPtr->Can_Build(&AircraftTypeClass::As_Reference((AircraftType)a), ActLike)) {
+                        // Chthon CFE Note: bugfix infinite "new construction options announcement" as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/pull/421 
 						if (Session.Type == GAME_GLYPHX_MULTIPLAYER) {
-							Sidebar_Glyphx_Add(RTTI_AIRCRAFTTYPE, a, House, buildable_via_capture);
+							//Sidebar_Glyphx_Add(RTTI_AIRCRAFTTYPE, a, House, buildable_via_capture);
+                            if (AircraftTypeClass::As_Reference((AircraftType)a).IsFixedWing) {
+                                if (*this == STRUCT_AIRSTRIP) {
+                                    Sidebar_Glyphx_Add(RTTI_AIRCRAFTTYPE, a, House, buildable_via_capture);
+                                }
+                            } else {
+                                if (*this == STRUCT_HELIPAD) {
+                                    Sidebar_Glyphx_Add(RTTI_AIRCRAFTTYPE, a, House, buildable_via_capture);
+                                }
+                            }
 						} else {
-							Map.Add(RTTI_AIRCRAFTTYPE, a, buildable_via_capture);
+							//Map.Add(RTTI_AIRCRAFTTYPE, a, buildable_via_capture);
+                            if (AircraftTypeClass::As_Reference((AircraftType)a).IsFixedWing) {
+                                if (*this == STRUCT_AIRSTRIP) {
+                                    Map.Add(RTTI_AIRCRAFTTYPE, a);
+                                }
+                            } else {
+                                if (*this == STRUCT_HELIPAD) {
+                                    Map.Add(RTTI_AIRCRAFTTYPE, a);
+                                }
+                            }
 						}
 					}
 				}
