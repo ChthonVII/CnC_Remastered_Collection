@@ -1461,7 +1461,9 @@ void InfantryClass::AI(void)
 			Mark(MARK_UP);
 			if (Distance(Head_To_Coord()) < 0x0010) {
 
-				memcpy(&Path[0], &Path[1], sizeof(Path)-sizeof(Path[0]));
+                // Chthon CFE Note: replace memcopy with memmove when source and destination may overlap, as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/pull/608
+				//memcpy(&Path[0], &Path[1], sizeof(Path)-sizeof(Path[0]));
+                memmove(&Path[0], &Path[1], sizeof(Path)-sizeof(Path[0]));
 				Path[(sizeof(Path)/sizeof(Path[0]))-1] = FACING_NONE;
 				Coord = Head_To_Coord();
 				Stop_Driver();

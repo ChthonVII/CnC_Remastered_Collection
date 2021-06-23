@@ -719,7 +719,9 @@ bool DriveClass::While_Moving(void)
 								Per_Cell_Process(true);
 								if (Start_Driver(c)) {
 									Set_Speed(oldspeed);
-									memcpy(&Path[0], &Path[1], CONQUER_PATH_MAX-1);
+                                    // Chthon CFE Note: replace memcopy with memmove when source and destination may overlap, as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/pull/608
+									//memcpy(&Path[0], &Path[1], CONQUER_PATH_MAX-1);
+									memmove(&Path[0], &Path[1], CONQUER_PATH_MAX-1);
 									Path[CONQUER_PATH_MAX-1] = FACING_NONE;
 								} else {
 									Path[0] = FACING_NONE;
@@ -1267,12 +1269,16 @@ bool DriveClass::Start_Of_Move(void)
 							return(true);
 						}
 					} else {
-						memcpy(&Path[0], &Path[2], CONQUER_PATH_MAX-2);
+                        // Chthon CFE Note: replace memcopy with memmove when source and destination may overlap, as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/pull/608
+						//memcpy(&Path[0], &Path[2], CONQUER_PATH_MAX-2);
+                        memmove(&Path[0], &Path[2], CONQUER_PATH_MAX-2);
 						Path[CONQUER_PATH_MAX-2] = FACING_NONE;
 						IsPlanningToLook = true;
 					}
 				} else {
-					memcpy(&Path[0], &Path[1], CONQUER_PATH_MAX-1);
+                    // Chthon CFE Note: replace memcopy with memmove when source and destination may overlap, as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/pull/608
+					//memcpy(&Path[0], &Path[1], CONQUER_PATH_MAX-1);
+                    memmove(&Path[0], &Path[1], CONQUER_PATH_MAX-1);
 				}
 				Path[CONQUER_PATH_MAX-1] = FACING_NONE;
 			}
