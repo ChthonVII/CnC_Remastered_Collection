@@ -1130,7 +1130,8 @@ ResultType UnitClass::Take_Damage(int & damage, int distance, WarheadType warhea
 		/*
 		**	When the mobile head quarters blows up, the entire side blows up.
 		*/
-		if (*this == UNIT_MHQ) {
+        // Chthon CFE Note: fixed to only take effect for no bases capture the flag mode, as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/commit/b44a5372fe911ddc02058a2acc7389c0dae8ec3a
+		if (*this == UNIT_MHQ && !MPlayerBases && Special.IsCaptureTheFlag) {
 			House->Flag_To_Die();
 		}
 
