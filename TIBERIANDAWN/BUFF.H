@@ -78,7 +78,9 @@ class Buffer {
 		/*
 		**	Pointer to the buffer memory.
 		*/
-		void * BufferPtr;
+        // Chthon CFE Note: use char* because void* leads to undefined behavior, as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/pull/606
+		//void * BufferPtr;
+        char* BufferPtr;
 
 		/*
 		**	The size of the buffer memory.
