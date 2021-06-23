@@ -44,6 +44,8 @@ class MapClass: public GScreenClass
 
 		MapClass(void) {};
 		MapClass(NoInitClass const & x) : GScreenClass(x), Array(x) {};
+        // Chthon CFE Note: needs destructor and it should be virtual, as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/commit/9210c42e5eaca6cd1bd321451fa6c95e925b3887
+        virtual ~MapClass(){}
 
 		/*
 		** Initialization

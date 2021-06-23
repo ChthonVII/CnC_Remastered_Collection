@@ -42,6 +42,8 @@ class RadarClass: public DisplayClass
 	public:
 		RadarClass(void);
 		RadarClass(NoInitClass const & x) : DisplayClass(x) {};
+        // Chthon CFE Note: needs destructor and it should be virtual, as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/commit/9210c42e5eaca6cd1bd321451fa6c95e925b3887
+        virtual ~RadarClass(){}
 
 		/*
 		**	The dimensions and coordinates of the radar map.

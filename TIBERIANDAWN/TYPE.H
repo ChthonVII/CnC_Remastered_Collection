@@ -251,6 +251,8 @@ class AbstractTypeClass
 
 		AbstractTypeClass(void) {};
 		AbstractTypeClass(int name, char const * ini);
+        // Chthon CFE Note: needs destructor and it should be virtual, as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/commit/9210c42e5eaca6cd1bd321451fa6c95e925b3887
+        virtual ~AbstractTypeClass(){}
 		virtual RTTIType  What_Am_I(void) const;
 
 		virtual COORDINATE  Coord_Fixup(COORDINATE coord) const;
@@ -362,6 +364,9 @@ class ObjectTypeClass : public AbstractTypeClass
 								char const *name,
 								ArmorType armor,
 								unsigned short strength);
+        
+        // Chthon CFE Note: needs destructor and it should be virtual, as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/commit/9210c42e5eaca6cd1bd321451fa6c95e925b3887
+        virtual ~ObjectTypeClass(){}
 
 		static void One_Time(void);
 
@@ -563,6 +568,9 @@ class TechnoTypeClass : public ObjectTypeClass
 				WeaponType primary,
 				WeaponType secondary,
 				ArmorType armor);
+        
+        // Chthon CFE Note: needs destructor and it should be virtual, as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/commit/9210c42e5eaca6cd1bd321451fa6c95e925b3887
+        virtual ~TechnoTypeClass(){}
 
 		virtual int  Raw_Cost(void) const;
 		virtual int  Max_Passengers(void) const;

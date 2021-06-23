@@ -44,6 +44,8 @@ class GScreenClass
 
 		GScreenClass(void);
 		GScreenClass(NoInitClass const &) {};
+        // Chthon CFE Note: needs destructor and it should be virtual, as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/commit/9210c42e5eaca6cd1bd321451fa6c95e925b3887
+        virtual ~GScreenClass(){}
 
 		/*
 		** Initialization

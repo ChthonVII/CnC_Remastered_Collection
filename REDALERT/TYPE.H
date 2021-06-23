@@ -76,7 +76,8 @@ class AbstractTypeClass
 
 		AbstractTypeClass(RTTIType rtti, int id, int name, char const * ini);
 		AbstractTypeClass(NoInitClass const & ) {};
-		~AbstractTypeClass(void) {};
+        // Chthon CFE Note: destructor should be virtual, as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/commit/9210c42e5eaca6cd1bd321451fa6c95e925b3887
+		virtual ~AbstractTypeClass(void) {};
 
 		RTTIType What_Am_I(void) const {return(RTTI);};
 		TARGET As_Target(void) const {return(Build_Target(RTTI, ID));};
@@ -283,6 +284,10 @@ class ObjectTypeClass : public AbstractTypeClass
 								int fullname,
 								char const * name
 								);
+        
+         // Chthon CFE Note: needs destructor and it should be virtual, as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/commit/9210c42e5eaca6cd1bd321451fa6c95e925b3887
+        // actually NOT in that commit, but the parallel destructor was added to TD
+        virtual ~ObjectTypeClass(){}
 
 		static void One_Time(void);
 
@@ -563,6 +568,10 @@ class TechnoTypeClass : public ObjectTypeClass
 				SpeedType speed,
 				int horizontaloffset=0
 				);
+        
+        // Chthon CFE Note: needs destructor and it should be virtual, as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/commit/9210c42e5eaca6cd1bd321451fa6c95e925b3887
+        // actually NOT in that commit, but the parallel destructor was added to TD
+        virtual ~TechnoTypeClass(){}
 
 		bool Is_Two_Shooter(void) const;
 		int Legal_Placement(CELL pos) const;

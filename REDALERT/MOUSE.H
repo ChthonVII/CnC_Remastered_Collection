@@ -43,6 +43,8 @@ class MouseClass: public ScrollClass
 	public:
 		MouseClass(void);
 		MouseClass(NoInitClass const & x) : ScrollClass(x) {};
+        // Chthon CFE Note: needs destructor and it should be virtual, as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/commit/9210c42e5eaca6cd1bd321451fa6c95e925b3887
+        virtual ~MouseClass(){}
 
 		/*
 		** Initialization

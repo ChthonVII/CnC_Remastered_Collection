@@ -65,7 +65,8 @@ class GenericList;
 class GenericNode {
 	public:
 		GenericNode(void) : NextNode(0), PrevNode(0) {}
-		~GenericNode(void) {Unlink();}
+		// Chthon CFE Note: destructor should be virtual, as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/commit/9210c42e5eaca6cd1bd321451fa6c95e925b3887
+		virtual ~GenericNode(void) {Unlink();}
 		GenericNode(GenericNode & node) {node.Link(this);}
 		GenericNode & operator = (GenericNode & node) {
 			if (&node != this) {
@@ -118,6 +119,8 @@ class GenericList {
 		GenericList(void) {
 			FirstNode.Link(&LastNode);
 		}
+		// Chthon CFE Note: needs destructor and it should be virtual, as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/commit/9210c42e5eaca6cd1bd321451fa6c95e925b3887
+		virtual ~GenericList(){}
 
 		GenericNode * First(void) const {return(FirstNode.Next());}
 		GenericNode * Last(void) const {return(LastNode.Prev());}
