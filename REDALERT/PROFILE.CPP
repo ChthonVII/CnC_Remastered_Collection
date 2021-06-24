@@ -644,8 +644,11 @@ bool WWWritePrivateProfileString(char const * section, char const * entry, char 
 		/*
 		**	Erase the entry by strcpy'ing the entire INI file over this entry
 		*/
+        // Chthon CFE Note: bugfix, use memmove not strcpy when source & dest may overlap, as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/commit/1fa07ff48451132a902efc0286a9de72e012ba53
 		if (eol) {
-			strcpy((char*)offset, offset + eol + 1);
+			//strcpy((char*)offset, offset + eol + 1);
+            int len = strlen(offset + eol + 1);
+            memmove((char*)offset, offset + eol + 1, len + 1); // include null in move
 		}
 	} else {
 
