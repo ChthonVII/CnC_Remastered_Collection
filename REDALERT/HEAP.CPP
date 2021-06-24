@@ -315,7 +315,9 @@ void FixedHeapClass::Clear(void)
 	**	Free the old buffer (if present).
 	*/
 	if (Buffer && IsAllocated) {
-		delete[] Buffer;
+        // Chthon CFE Note: don't call delete on a void*, as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/commit/edef9dd18e3f110eb2eb1f05e78fa8ee11a6b613
+		//delete[] Buffer;
+        delete[] static_cast<char*>(Buffer);
 	}
 	Buffer = 0;
 	IsAllocated = false;
