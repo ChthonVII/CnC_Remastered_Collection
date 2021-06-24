@@ -1445,6 +1445,7 @@ int RadarClass::TacticalClass::Action(unsigned flags, KeyNumType & key)
 					case ACTION_CAPTURE:
 					case ACTION_SABOTAGE:
                     case ACTION_ATTACKMOVE: // Attack Move rework by ChthonVII 
+                    case ACTION_HARVEST: // Chthon CFE Note: bugfix, allow harvest via radar map, as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/commit/fe8b6cb0b3c25a0bb422ab0f5fbfdca517812415
 						break;
 
 					default:
