@@ -30,7 +30,10 @@
 
 extern "C" void __cdecl Mem_Copy(void const *source, void *dest, unsigned long bytes_to_copy)
 {
-	memcpy(dest, source, bytes_to_copy);
+    // Chthon CFE Note: bugfix, don't call memcpy when dest == source, as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/commit/2337807b09848ed63e36ea8341cead3210308684
+	if (dest != source) {
+        memcpy(dest, source, bytes_to_copy);
+    }
 }			  
 
 
