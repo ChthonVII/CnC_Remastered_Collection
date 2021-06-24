@@ -251,7 +251,10 @@ char * WWGetPrivateProfileString(char const * section, char const * entry, char 
 		retbuffer[0] = '\0';
 		if (retlen > 1 || retlen == 0) retbuffer[1] = '\0';
 		if (def) {
-			strncpy(retbuffer, def, retlen);
+            // Chthon CFE Note: avoid calling strncpy when source equals destination, as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/commit/57c5d1a14738c8d3216b1bfc425c2bfa4f2c8f2c
+			if (retbuffer != def) {
+                strncpy(retbuffer, def, retlen);
+            }
 		}
 		retbuffer[retlen-1] = '\0';
 		orig_retbuf = retbuffer;
