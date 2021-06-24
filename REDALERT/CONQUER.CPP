@@ -5599,13 +5599,16 @@ void Shake_The_Screen(int shakes, HousesType house)
 void List_Copy(short const * source, int len, short * dest)
 {
 	// Chthon CFE Note: bugfix as per https://github.com/electronicarts/CnC_Remastered_Collection/pull/81
-    if (source == NULL || dest == NULL) {
+    // also bugfix as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/commit/624e391b655d3fde73c253a2368a9cc9c518cbca
+    if (len < 1 || source == NULL || dest == NULL) {
 		return;
 	}
 
 	while (len > 0) {
 		*dest = *source;
-		if (*dest == REFRESH_EOL) break;
+        // bugfix as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/commit/624e391b655d3fde73c253a2368a9cc9c518cbca
+		//if (*dest == REFRESH_EOL) break;
+        if (*dest == REFRESH_EOL) return;
 		dest++;
 		source++;
 		len--;
