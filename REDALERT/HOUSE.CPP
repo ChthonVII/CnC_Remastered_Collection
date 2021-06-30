@@ -2914,9 +2914,21 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
                                                     (someunit->What_Am_I() == RTTI_VESSEL) ||
                                                     (someunit->What_Am_I() == RTTI_AIRCRAFT)
                                                 ) &&
-                                                (someunit->IronCurtainCountDown != 20 * TICKS_PER_SECOND)
+                                                !(
+                                                    ActiveCFEPatchConfig.EnableQuickSupers &&
+                                                    (someunit->IronCurtainCountDown == 20 * TICKS_PER_SECOND)
+                                                ) &&
+                                                ! (
+                                                    !ActiveCFEPatchConfig.EnableQuickSupers &&
+                                                    (someunit->IronCurtainCountDown == Rule.IronCurtainDuration * TICKS_PER_SECOND)
+                                                )
                                         ){
-                                            someunit->IronCurtainCountDown = 20 * TICKS_PER_SECOND;
+                                            if(ActiveCFEPatchConfig.EnableQuickSupers){
+                                                someunit->IronCurtainCountDown = 20 * TICKS_PER_SECOND;
+                                            }
+                                            else {
+                                                someunit->IronCurtainCountDown = Rule.IronCurtainDuration * TICKS_PER_MINUTE;
+                                            }
                                             if (someunit->What_Am_I() == RTTI_UNIT && *(UnitClass *)someunit == UNIT_DEMOTRUCK) {
                                                 someunit->IronCurtainCountDown = Rule.IronCurtainDuration * TICKS_PER_SECOND;
                                             }
@@ -2961,9 +2973,21 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
                                                         (someunit->What_Am_I() == RTTI_VESSEL) ||
                                                         (someunit->What_Am_I() == RTTI_AIRCRAFT)
                                                     ) &&
-                                                    (someunit->IronCurtainCountDown != 20 * TICKS_PER_SECOND)
+                                                    !(
+                                                        ActiveCFEPatchConfig.EnableQuickSupers &&
+                                                        (someunit->IronCurtainCountDown == 20 * TICKS_PER_SECOND)
+                                                    ) &&
+                                                    ! (
+                                                        !ActiveCFEPatchConfig.EnableQuickSupers &&
+                                                        (someunit->IronCurtainCountDown == Rule.IronCurtainDuration * TICKS_PER_SECOND)
+                                                    )
                                             ){
-                                                someunit->IronCurtainCountDown = 20 * TICKS_PER_SECOND;
+                                                if(ActiveCFEPatchConfig.EnableQuickSupers){
+                                                    someunit->IronCurtainCountDown = 20 * TICKS_PER_SECOND;
+                                                }
+                                                else {
+                                                    someunit->IronCurtainCountDown = Rule.IronCurtainDuration * TICKS_PER_MINUTE;
+                                                }
                                                 if (someunit->What_Am_I() == RTTI_UNIT && *(UnitClass *)someunit == UNIT_DEMOTRUCK) {
                                                     someunit->IronCurtainCountDown = Rule.IronCurtainDuration * TICKS_PER_SECOND;
                                                 }
@@ -3132,7 +3156,12 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
                                         ((DriveClass *)someunit)->MoebiusCell = newfromcell;
                                         ((DriveClass *)someunit)->Teleport_To(newtocell);
                                         ((DriveClass *)someunit)->IsMoebius = true;
-                                        ((DriveClass *)someunit)->MoebiusCountDown = 20 * TICKS_PER_SECOND;
+                                        if(ActiveCFEPatchConfig.EnableQuickSupers){
+                                            ((DriveClass *)someunit)->MoebiusCountDown = 20 * TICKS_PER_SECOND;
+                                        }
+                                        else {
+                                            ((DriveClass *)someunit)->MoebiusCountDown = Rule.ChronoDuration * TICKS_PER_MINUTE;;
+                                        }
                                         if (ActiveCFEPatchConfig.EnableSmarterChrono){
                                             ((DriveClass *)someunit)->Unselect_All_Players_Except_Owner();
                                             Minimal_Detach_This_From_All(((DriveClass *)someunit)->As_Target(), true);
@@ -3190,7 +3219,12 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
                                             ((DriveClass *)someunit)->MoebiusCell = newfromcell;
                                             ((DriveClass *)someunit)->Teleport_To(newtocell);
                                             ((DriveClass *)someunit)->IsMoebius = true;
-                                            ((DriveClass *)someunit)->MoebiusCountDown = 20 * TICKS_PER_SECOND;
+                                            if(ActiveCFEPatchConfig.EnableQuickSupers){
+                                                ((DriveClass *)someunit)->MoebiusCountDown = 20 * TICKS_PER_SECOND;
+                                            }
+                                            else {
+                                                ((DriveClass *)someunit)->MoebiusCountDown = Rule.ChronoDuration * TICKS_PER_MINUTE;;
+                                            }
                                             if (ActiveCFEPatchConfig.EnableSmarterChrono){
                                                 ((DriveClass *)someunit)->Unselect_All_Players_Except_Owner();
                                                 Minimal_Detach_This_From_All(((DriveClass *)someunit)->As_Target(), true);
