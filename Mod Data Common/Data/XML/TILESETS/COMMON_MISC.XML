@@ -209,6 +209,28 @@
 					<PostFX>AL_POSTFX_TYPE_ENGINE_HEAT_DISTORTION</PostFX>
 				</Value>
 			</Tile>
+			<Tile>
+				<Key>
+					<Name>VORTEX</Name>
+					<Shape>0</Shape>
+				</Key>
+				<Value>
+					<AnimationData>
+						<FPS>8</FPS>
+					</AnimationData>
+					<Frames>
+						<Frame>vortex-0000-0000.tga</Frame>
+						<Frame>vortex-0000-0001.tga</Frame>
+						<Frame>vortex-0000-0002.tga</Frame>
+						<Frame>vortex-0000-0003.tga</Frame>
+						<Frame>vortex-0000-0004.tga</Frame>
+						<Frame>vortex-0000-0005.tga</Frame>
+						<Frame>vortex-0000-0006.tga</Frame>
+						<Frame>vortex-0000-0007.tga</Frame>
+					</Frames>
+					<PostFX>AL_POSTFX_TYPE_ENGINE_HEAT_DISTORTION</PostFX>
+				</Value>
+			</Tile>
 		</Tiles>
 	</TilesetTypeClass>
 </Tilesets>
