@@ -666,8 +666,7 @@ HouseClass::HouseClass(HousesType house) :
 	new (&SuperWeapon[SPC_GPS]) SuperClass(TICKS_PER_MINUTE * Rule.GPSTime, true, VOX_NONE, VOX_NONE, VOX_NOT_READY, VOX_INSUFFICIENT_POWER);
 
     // Chthon CFE Note: Change the recharges on Chronosphere and Iron Curtain if OpenRA-style supers are enabled
-    // Not really sure if mod is initialized before houses are constructed. If not, will have to move this...
-    if (ActiveCFEPatchConfig.EnableOpenRASupers){
+    if (ActiveCFEPatchConfig.EnableQuickSupers){
         SuperWeapon[SPC_CHRONOSPHERE].Set_Recharge_Time(2 * TICKS_PER_MINUTE);
         SuperWeapon[SPC_IRON_CURTAIN].Set_Recharge_Time(2 * TICKS_PER_MINUTE);
     }
@@ -2876,7 +2875,7 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
 						case RTTI_VESSEL:
 						case RTTI_AIRCRAFT:
                             // Chthon CFE Note: Shorter duration on OpenRA-style supers
-                            if(ActiveCFEPatchConfig.EnableOpenRASupers){
+                            if(ActiveCFEPatchConfig.EnableQuickSupers){
                                 tech->IronCurtainCountDown = 20 * TICKS_PER_SECOND;
                             }
                             else {
@@ -2889,7 +2888,7 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
 #endif
 							tech->Mark(MARK_CHANGE);
                             // Chthon CFE Note: OpenRA-style supers hit up to 4 adjacent units
-                            if(ActiveCFEPatchConfig.EnableOpenRASupers){
+                            if(ActiveCFEPatchConfig.EnableWideSupers){
                                 int extraunits = 0;
                                 // first scan the cardinal directions
                                 for (FacingType dir : FacingCardinals){ //FACING_N, FACING_E, FACING_S, FACING_W
@@ -3073,7 +3072,7 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
 		drive->IsMoebius = false;
 	}
 	// Chthon CFE Note: Shorter duration on OpenRA-style supers
-	if(ActiveCFEPatchConfig.EnableOpenRASupers){
+	if(ActiveCFEPatchConfig.EnableQuickSupers){
         drive->MoebiusCountDown = 20 * TICKS_PER_SECOND;
     }
 	else {
@@ -3088,7 +3087,7 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
 
                         // Chthon CFE Note: OpenRA-style supers hit up to 4 adjacent units
                         // only do this if NOT a chronotank
-                        if(    ActiveCFEPatchConfig.EnableOpenRASupers && 
+                        if(    ActiveCFEPatchConfig.EnableWideSupers && 
                                 tech &&
                                 tech->IsActive &&
                                 (   (tech->What_Am_I() != RTTI_UNIT) ||
@@ -3250,7 +3249,7 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
                 // only 1000 for this one since it's not a fraction to begin with
                 int disasterbasechance = ActiveCFEPatchConfig.SharedChronoDisasterOdds * 1000;
                 // scale down odds if recharges are shorter due to OpenRA-style supers
-                if (ActiveCFEPatchConfig.EnableOpenRASupers){
+                if (ActiveCFEPatchConfig.EnableQuickSupers){
                     vortexbasechance = (vortexbasechance * 2) / (1 * Rule.ChronoTime);
                     quakebasechance = (quakebasechance * 2 ) / (1 * Rule.ChronoTime);
                     disasterbasechance = (disasterbasechance * 2) / (1 * Rule.ChronoTime);
@@ -3339,7 +3338,7 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
                         }
                     }
                     // wake up a hidden vortex if any of our mod stuff that scales odds is active
-                    else if (ChronalVortex.Is_Hidden() && (ActiveCFEPatchConfig.SharedChronoDisasterOdds || ActiveCFEPatchConfig.EnableOpenRASupers || ActiveCFEPatchConfig.EnableCumulativeTimelineDamage)){
+                    else if (ChronalVortex.Is_Hidden() && (ActiveCFEPatchConfig.SharedChronoDisasterOdds || ActiveCFEPatchConfig.EnableQuickSupers || ActiveCFEPatchConfig.EnableCumulativeTimelineDamage)){
                         ChronalVortex.Show();
                         if (ActiveCFEPatchConfig.EnableCumulativeTimelineDamage){
                             Map.timelinedamage = 0;

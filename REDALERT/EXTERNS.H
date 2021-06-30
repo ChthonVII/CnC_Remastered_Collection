@@ -109,7 +109,8 @@ struct CFEPatchConfig
     bool BetterOreGrowth = false;
     bool EnableInaccuracyBugfix = false;
     bool EnableVeterancy = false;
-    bool EnableOpenRASupers = false;
+    bool EnableWideSupers = false;
+    bool EnableQuickSupers = false;
     bool EnableSmarterChrono = false;
     bool EnableTimeQuakeFix = false;
     bool EnableSharedChronoDisasterOdds = false;

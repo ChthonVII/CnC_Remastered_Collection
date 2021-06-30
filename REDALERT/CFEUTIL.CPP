@@ -62,7 +62,8 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     GetSetting(ActiveCFEPatchConfig.BetterOreGrowth      , "FEATURES", "BETTER_ORE_GROWTH");
     GetSetting(ActiveCFEPatchConfig.EnableInaccuracyBugfix      , "FEATURES", "INACCURACY_BUGFIX");
     GetSetting(ActiveCFEPatchConfig.EnableVeterancy      , "FEATURES", "VETERANCY");
-    GetSetting(ActiveCFEPatchConfig.EnableOpenRASupers      , "FEATURES", "OPENRA_SUPERS");
+    GetSetting(ActiveCFEPatchConfig.EnableWideSupers      , "FEATURES", "OPENRA_WIDE_SUPERS");
+    GetSetting(ActiveCFEPatchConfig.EnableQuickSupers      , "FEATURES", "OPENRA_QUICK_SUPERS");
     GetSetting(ActiveCFEPatchConfig.EnableSmarterChrono      , "FEATURES", "SMARTER_CHRONO");
     GetSetting(ActiveCFEPatchConfig.EnableTimeQuakeFix      , "FEATURES", "TIMEQUAKE_FIX");
     GetSetting(ActiveCFEPatchConfig.EnableSharedChronoDisasterOdds      , "FEATURES", "USE_SHARED_CHRONO_ODDS");
