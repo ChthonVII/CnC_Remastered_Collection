@@ -2563,7 +2563,8 @@ void TechnoClass::AI(void)
         
         // special control for chronotanks
         // if charged, and trying to move, and able to find a clear landing cell near the destination, teleport and drop out of attack-move
-        if (    (What_Am_I() == RTTI_UNIT) &&
+        if (   ActiveCFEPatchConfig.EnableChronoTankAttackMove && 
+                (What_Am_I() == RTTI_UNIT) &&
                 (*((UnitClass*)this) == UNIT_CHRONOTANK) &&
                 (Mission == MISSION_MOVE) &&
                 !((UnitClass*)this)->MoebiusCountDown &&

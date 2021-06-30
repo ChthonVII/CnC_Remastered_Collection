@@ -55,6 +55,7 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     GetSetting(ActiveCFEPatchConfig.EnableHarvyOptimize      , "FEATURES", "HARVY_OPTIMIZE");
 	GetSetting(ActiveCFEPatchConfig.EnableInstantCapture	, "FEATURES", "INSTANT_CAPTURE");
 	GetSetting(ActiveCFEPatchConfig.EnableAttackMove		, "FEATURES", "ATTACK_MOVE");
+    GetSetting(ActiveCFEPatchConfig.EnableChronoTankAttackMove		, "FEATURES", "CHRONOTANK_ATTACK_MOVE");
 	GetSetting(ActiveCFEPatchConfig.EnableTanyaGuard		, "FEATURES", "TANYA_GUARD");
 	GetSetting(ActiveCFEPatchConfig.EnableSafeSabotage      , "FEATURES", "SAFE_SABOTAGE");
     GetSetting(ActiveCFEPatchConfig.EnableSmarterAircraft      , "FEATURES", "SMARTER_AIRCRAFT");
