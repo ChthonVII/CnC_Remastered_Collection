@@ -1811,12 +1811,12 @@ void MapClass::CFELogic(void){
                     // if that failed too, now we are truly SOL and just fail to spread/grow anything
                     // just for shits and giggles, let's maybe spawn a visceroid if it was a tree that failed to spread
                     else if (
-                        (   (ActiveCFEPatchConfig.TreeVisceroidSpawnMode > 0) && 
-                            (   (GameToPlay != GAME_NORMAL) ||  (ActiveCFEPatchConfig.TreeVisceroidSpawnMode > 1) ) &&
-                            (   (GameToPlay == GAME_NORMAL) ||
-                                Special.IsVisceroids ||
-                                ActiveCFEPatchConfig.TreeVisceroidSpawnAnyway
-                            )
+                        (ActiveCFEPatchConfig.TreeVisceroidSpawnMode > 0) && 
+                        (   (GameToPlay != GAME_NORMAL) ||  (ActiveCFEPatchConfig.TreeVisceroidSpawnMode > 1) ) &&
+                        (   (GameToPlay == GAME_NORMAL) ||
+                            Special.IsVisceroids ||
+                            ActiveCFEPatchConfig.TreeVisceroidSpawnAnyway
+                        )
                     ) {
                         TerrainClass * thisterrain = thiscell->Cell_Terrain();
                         if (thisterrain && thisterrain->Class->IsTiberiumSpawn){
