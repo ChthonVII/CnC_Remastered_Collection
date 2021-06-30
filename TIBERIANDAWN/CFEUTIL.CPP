@@ -75,7 +75,7 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     GetSetting(ActiveCFEPatchConfig.EnableSmarterRepairBays , "FEATURES", "SMARTER_REPAIRBAY");
     GetSetting(ActiveCFEPatchConfig.EnableSmarterMammoths      , "FEATURES", "SMARTER_MAMMOTHS");
     GetSetting(ActiveCFEPatchConfig.BetterTibGrowth      , "FEATURES", "BETTER_TIB_GROWTH");
-    GetSetting(ActiveCFEPatchConfig.TreeVisceroidSpawn      , "FEATURES", "TREE_VISCEROID_SPAWN");
+    GetSetting(ActiveCFEPatchConfig.TreeVisceroidSpawnAnyway      , "FEATURES", "TREE_VISCEROID_SPAWN_OVERRIDE");
     GetSetting(ActiveCFEPatchConfig.TSVisceroidSpawn      , "FEATURES", "TS_VISCEROID_SPAWN");
     GetSetting(ActiveCFEPatchConfig.MeanerVisceroids      , "FEATURES", "MEANER_VISCEROIDS");
     GetSetting(ActiveCFEPatchConfig.EnableVeterancy      , "FEATURES", "VETERANCY");
@@ -92,6 +92,7 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     GetSetting(ActiveCFEPatchConfig.HarvyOptimizeCommunalismNumerator      , "SETTINGS", "HARVY_OPTIMIZE_COMMUNALISM_NUMERATOR");
     GetSetting(ActiveCFEPatchConfig.HarvyOptimizeCommunalismDenominator      , "SETTINGS", "HARVY_OPTIMIZE_COMMUNALISM_DENOMINATOR");
 	GetSetting(ActiveCFEPatchConfig.TibGrowthScale            , "SETTINGS", "TIB_GROWTH_SCALE");
+    GetSetting(ActiveCFEPatchConfig.TreeVisceroidSpawnMode      , "SETTINGS", "TREE_VISCEROID_SPAWN_MODE");
 	GetSetting(ActiveCFEPatchConfig.WallBuildLength           , "SETTINGS", "WALL_BUILD_LENGTH");
 	GetSetting(ActiveCFEPatchConfig.WallsAlwaysHaveFullCost   , "SETTINGS", "WALLS_HAVE_FULL_COST");
     GetSetting(ActiveCFEPatchConfig.InverseBuildingPreviewMode           , "SETTINGS", "INVERSE_PREVIEW_MODE");

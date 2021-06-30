@@ -95,7 +95,7 @@ struct CFEPatchConfig
     bool EnableSmarterRepairBays = false;
     bool EnableSmarterMammoths = false;
     bool BetterTibGrowth = false;
-    bool TreeVisceroidSpawn = false;
+    bool TreeVisceroidSpawnAnyway = false;
     bool TSVisceroidSpawn = false;
     bool MeanerVisceroids = false;
     bool EnableVeterancy = false;
@@ -128,6 +128,7 @@ struct CFEPatchConfig
     int  HarvyOptimizeCommunalismDenominator = 4;
     int  HarvyOptimizeCommunalismWeight = 29;
 	int  TibGrowthScale = 1;
+    int TreeVisceroidSpawnMode = 0;
 	int  WallBuildLength = 5;
     int InverseBuildingPreviewMode = 0; // 0=off; 1= MP only; 2 = all game modes
     int SmarterSAMAmmo = 2;
