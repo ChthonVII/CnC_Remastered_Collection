@@ -8033,7 +8033,8 @@ TARGET TechnoClass::FindChainLightningTarget(const TARGET primarytarget, const i
                     (((1 << tentative->What_Am_I()) & mask) != 0) &&       // acceptable unit type
                     tentative->Techno_Type_Class()->IsLegalTarget &&      // unit type is one that can be targeted
                     !((tentative->What_Am_I() == RTTI_INFANTRY) && (*((InfantryClass*)tentative) == INFANTRY_SPY)) &&
-                    (primaryobject->Distance(tentative) <= range)
+                    //(primaryobject->Distance(tentative) <= range)
+                    (Distance(primary_target_coord, tentative->Target_Coord()) <= range)
                 ) {
                     int tentativevalue = tentative->Value(); // + tentative->Crew.Kills; // Crew.Kills appears to be part of an unimplemented veterancy system! 
                     // Do we want to increase target priority for veterancy (both here and generally)?
