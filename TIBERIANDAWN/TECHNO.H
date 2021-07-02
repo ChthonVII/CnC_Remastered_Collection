@@ -244,7 +244,7 @@ class TechnoClass :	public RadioClass,
         // Attack Move rework by ChthonVII eats 3 bytes (including CFEPatchFlags)
         // megamaps -> TARGET type for attack-move now takes 4 bytes
         // Veterancy eats 2 bytes (not including CFEPatchFlags since that's counted with attack move)
-		unsigned char SaveLoadPadding[2];
+		unsigned char SaveLoadPadding[1];
 
 		/*---------------------------------------------------------------------
 		**	Constructors, Destructors, and overloaded operators.
