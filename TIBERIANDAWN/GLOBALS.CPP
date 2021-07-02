@@ -947,9 +947,12 @@ int MenuList[][8]={
 GraphicBufferClass		VisiblePage;
 GraphicBufferClass		HiddenPage;
 
-GraphicViewPortClass	SeenBuff(&VisiblePage, 0,0,1536,1536);
+// megamaps
+//GraphicViewPortClass	SeenBuff(&VisiblePage, 0,0,1536,1536);
+GraphicViewPortClass	SeenBuff(&VisiblePage, 0,0,GBUFF_INIT_WIDTH, GBUFF_INIT_HEIGHT);
 GraphicBufferClass		ModeXBuff;
-GraphicViewPortClass	HidPage(&HiddenPage, 0,0, 1536,1536);
+//GraphicViewPortClass	HidPage(&HiddenPage, 0,0, 1536,1536);
+GraphicViewPortClass	HidPage(&HiddenPage, 0,0, GBUFF_INIT_WIDTH, GBUFF_INIT_HEIGHT);
 GraphicBufferClass		SysMemPage(DEFAULT_SCREEN_WIDTH, 200, (void*)NULL);
 int 						SoundOn;
 CountDownTimerClass	FrameTimer(BT_SYSTEM, 0L);
@@ -1037,8 +1040,11 @@ int					Argc;				//Command line argument count
 
 
 WWKeyboardClass	Kbd;
-int					ScreenWidth=1536;
-int					ScreenHeight=1536;
+// megamaps
+//int					ScreenWidth=1536;
+//int					ScreenHeight=1536;
+int					ScreenWidth=GBUFF_INIT_WIDTH;
+int					ScreenHeight=GBUFF_INIT_HEIGHT;
 WWMouseClass		*WWMouse = NULL;
 HANDLE hInstance;
 int AllDone;

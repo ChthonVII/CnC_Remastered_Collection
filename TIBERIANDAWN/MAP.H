@@ -37,7 +37,8 @@
 
 #include	"gscreen.h"
 
-#define	BIGMAP	0
+// megamaps
+// #define	BIGMAP	0
 
 
 class MapClass: public GScreenClass
@@ -129,7 +130,20 @@ class MapClass: public GScreenClass
 		**	This is the total value of all harvestable Tiberium on the map.
 		*/
 		long TotalValue;
+        
+        // megamaps
+        /*
+        **	To enable big maps we need to load the normal format a little differently.
+        **  This value should be set when reading the map ini before the binary is loaded.
+        */
+        int MapBinaryVersion;
+        // don't need to offset this against padding since we've already hopelessly broken save compatibility
 
+        // // not implementing vanilla-conquer's "unsigned long -> unit32_t" change b/c it's a pain and remastered doesn't need it (we're only ever compiling with MSVC)
+        //bool Read_Binary_Big(char const* fname, uint32_t* crc);
+        bool Read_Binary_Big(char const* fname, unsigned long* crc);
+        bool Write_Binary_Big(char const* root);
+        
 	protected:
 
 		/*
@@ -150,14 +164,22 @@ class MapClass: public GScreenClass
 		/*
 		**	Tiberium growth potiential cells are recorded here.
 		*/
-		CELL TiberiumGrowth[50];
+        // megamaps
+        // vanilla-conquer changes these to MAP_CELL_W / 2 without explanation
+        // In order for megamaps to maintain the vanilla bias for cells at the start/end of the array getting picked for grow/spread,
+        // we need to preserve the ratio of buffer :: MAP_CELL_TOTAL.
+        // (And in order to preserve the original bias for non-megamaps, we need to pretend the buffer is still only 50)
+		//CELL TiberiumGrowth[50];
+		CELL TiberiumGrowth[200];
 		int TiberiumGrowthCount;
 
 		/*
 		**	List of cells that are full enough strength that they could spread
 		**	Tiberium to adjacent cells.
 		*/
-		CELL TiberiumSpread[50];
+        // megamaps -- ditto comment above
+		//CELL TiberiumSpread[50];
+		CELL TiberiumSpread[200];
 		int TiberiumSpreadCount;
 
 		/*

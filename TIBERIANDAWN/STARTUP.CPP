@@ -512,14 +512,21 @@ int DLL_Startup(const char * command_line_in)
 				}
 #endif
 			}
-			ScreenHeight = 1536;
+			// megamaps
+			// vanilla-conquer refactored this file; guessing every 1536 should be replaced
+			//ScreenHeight = 1536;
+			ScreenHeight = GBUFF_INIT_HEIGHT;
 
 			if (VisiblePage.Get_Height() == 480){
-				SeenBuff.Attach(&VisiblePage,0, 40, 1536, 1536);
-				HidPage.Attach(&HiddenPage, 0, 40, 1536, 1536);
+				//SeenBuff.Attach(&VisiblePage,0, 40, 1536, 1536);
+				//HidPage.Attach(&HiddenPage, 0, 40, 1536, 1536);
+                SeenBuff.Attach(&VisiblePage,0, 40, GBUFF_INIT_WIDTH, GBUFF_INIT_HEIGHT);
+				HidPage.Attach(&HiddenPage, 0, 40, GBUFF_INIT_WIDTH, GBUFF_INIT_HEIGHT);
 			}else{
-				SeenBuff.Attach(&VisiblePage,0, 0, 1536, 1536);
-				HidPage.Attach(&HiddenPage, 0, 0, 1536, 1536);
+				//SeenBuff.Attach(&VisiblePage,0, 0, 1536, 1536);
+				//HidPage.Attach(&HiddenPage, 0, 0, 1536, 1536);
+                SeenBuff.Attach(&VisiblePage,0, 0, GBUFF_INIT_WIDTH, GBUFF_INIT_HEIGHT);
+				HidPage.Attach(&HiddenPage, 0, 0, GBUFF_INIT_WIDTH, GBUFF_INIT_HEIGHT);
 			}
 			CCDebugString ("C&C95 - Adjusting variables for resolution.\n");
 			Options.Adjust_Variables_For_Resolution();
@@ -814,7 +821,9 @@ void Read_Setup_Options( RawFileClass *config_file )
 
 		VideoBackBufferAllowed = WWGetPrivateProfileInt ("Options", "VideoBackBuffer", 1, buffer);
 		AllowHardwareBlitFills = WWGetPrivateProfileInt ("Options", "HardwareFills", 1, buffer);
-		ScreenHeight = WWGetPrivateProfileInt ("Options", "Resolution", 0, buffer) ? 1536 : 1536;
+        // megamaps
+		//ScreenHeight = WWGetPrivateProfileInt ("Options", "Resolution", 0, buffer) ? 1536 : 1536;
+        ScreenHeight = WWGetPrivateProfileInt ("Options", "Resolution", 0, buffer) ? GBUFF_INIT_HEIGHT : GBUFF_INIT_ALTHEIGHT;
 		IsV107 = WWGetPrivateProfileInt ("Options", "Compatibility", 0, buffer);
 
 		/*

@@ -99,7 +99,9 @@
 **	Maximum lookahead cells. Twice this value in bytes will be
 **	reserved on the stack. The smaller this number, the faster the processing.
 */
-#define MAX_MLIST_SIZE		300
+// megamaps
+//#define MAX_MLIST_SIZE		300
+#define MAX_MLIST_SIZE		400
 #define THREAT_THRESHOLD	5
 
 #define	MAX_PATH_EDGE_FOLLOW	400
@@ -142,8 +144,12 @@ static inline void Draw_Cell_Point(CELL cell, bool passable, int threat_stage, i
 				}
 			}
 		} else {
-			int x = cell & 63;
-			int y = cell / 64;
+            // megamaps
+			//int x = cell & 63;
+			//int y = cell / 64;
+            int x = cell & (MAP_CELL_W - 1);
+            int y = cell / MAP_CELL_H;
+            // for megamaps, don't I need to change the below as well?...
 			if (!overide) {
 				SeenBuff.Put_Pixel(64 + (x * 3) + 1, 8 + (y * 3) + 1, (passable) ? WHITE : BLACK);
 			} else {
@@ -1787,7 +1793,9 @@ void FootClass::Debug_Draw_Map(char *txt, CELL start, CELL dest, bool pause)
  		for (int y = 0; y < 64; y++) {
 			int color = 0;
 
-			switch (Can_Enter_Cell( (CELL)((y << 6) + x))) {
+            // megamaps
+			//switch (Can_Enter_Cell( (CELL)((y << 6) + x))) {
+            switch (Can_Enter_Cell(XY_Cell(x, y))) {
 				case MOVE_OK:
 					color = GREEN;
 					break;
@@ -1805,9 +1813,12 @@ void FootClass::Debug_Draw_Map(char *txt, CELL start, CELL dest, bool pause)
 					color = RED;
 					break;
 			}
-			if ((CELL)((y << 6) + x) == start)
+			//megamaps
+			//if ((CELL)((y << 6) + x) == start)
+			if (XY_Cell(x, y) == start)
 				color = LTBLUE;
-			if ((CELL)((y << 6) + x) == dest)
+			//if ((CELL)((y << 6) + x) == dest)
+            if (XY_Cell(x, y) == dest)
 				color = BLUE;
 			Fat_Put_Pixel(64 + (x*3), 8 + (y*3), color, 3, SeenBuff);
 		}

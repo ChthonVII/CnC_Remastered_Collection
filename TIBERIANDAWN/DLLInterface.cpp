@@ -4448,7 +4448,9 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char *buffer_i
 }
 
 
-static const int _map_width_shift_bits = 6;
+//megamaps
+//static const int _map_width_shift_bits = 6;
+static const int _map_width_shift_bits = 7;
 
 void DLLExportClass::Calculate_Placement_Distances(BuildingTypeClass* placement_type, unsigned char* placement_distance)
 {

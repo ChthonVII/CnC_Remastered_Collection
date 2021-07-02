@@ -49,6 +49,12 @@
 #include	"options.h"
 #include	"infantry.H"
 
+// megamaps
+#define GBUFF_INIT_WIDTH     3072
+#define GBUFF_INIT_HEIGHT    3072
+#define GBUFF_INIT_ALTHEIGHT 3072
+
+
 #ifdef JAPANESE
 extern bool ForceEnglish;
 #endif

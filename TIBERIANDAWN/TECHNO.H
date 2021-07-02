@@ -242,8 +242,9 @@ class TechnoClass :	public RadioClass,
         // Chthon CFE Note: Original padding was 16
         // firepower and armor biases eat 8 bytes
         // Attack Move rework by ChthonVII eats 3 bytes (including CFEPatchFlags)
+        // megamaps -> TARGET type for attack-move now takes 4 bytes
         // Veterancy eats 2 bytes (not including CFEPatchFlags since that's counted with attack move)
-		unsigned char SaveLoadPadding[3];
+		unsigned char SaveLoadPadding[2];
 
 		/*---------------------------------------------------------------------
 		**	Constructors, Destructors, and overloaded operators.

@@ -427,7 +427,9 @@ int MapClass::Cell_Distance(CELL cell1, CELL cell2)
  *=============================================================================================*/
 bool MapClass::In_Radar(CELL cell) const
 {
-	if (cell & 0xF000) return(false);
+    // megamaps
+	//if (cell & 0xF000) return(false);
+    if ((unsigned)cell > MAP_CELL_TOTAL) return(false);
 	return((unsigned)(Cell_X(cell) - MapCellX) < (unsigned)MapCellWidth && (unsigned)(Cell_Y(cell) - MapCellY) < (unsigned)MapCellHeight);
 }
 
@@ -642,87 +644,135 @@ long MapClass::Overpass(void)
  *   11/14/1994 BR : Created.                                                                  *
  *   01/08/1995 JLB : Fixup any obsolete icons detected.                                       *
  *=============================================================================================*/
-#ifdef DEMO
-bool MapClass::Read_Binary(char const * root, unsigned long *)
-#else
+// megamaps
+// vanilla-conquer #632 turns this into a wrapper around Read_Binary_File()
+// not implementing vanilla-conquer's "unsigned long -> unit32_t" change b/c it's a pain and remastered doesn't need it (we're only ever compiling with MSVC)
 bool MapClass::Read_Binary(char const * root, unsigned long *crc)
-#endif
 {
-	CCFileClass file;
+
 	char fname[_MAX_FNAME+_MAX_EXT];
-	int i;
-	char *map;
-	void *rawmap;
-	void const * shape;
 
 	/*
 	**	Filename = INI name with BIN extension.
 	*/
 	sprintf(fname,"%s.BIN",root);
+    
+    return Read_Binary_File(fname, crc);
 
-	/*
-	**	Create object & open file.
-	*/
-	file.Set_Name(fname);
-	if (!file.Is_Available()) {
-		return(false);
-	}
-	file.Open(READ);
-
-	/*
-	**	Loop through all cells.
-	*/
-	CellClass * cellptr = &Map[0];
-	for (i = 0; i < MAP_CELL_TOTAL; i++) {
-		struct {
-			TemplateType TType;		// Template type.
-			unsigned char TIcon;		// Template icon number.
-		} temp;
-
-		if (file.Read(&temp, sizeof(temp)) != sizeof(temp)) break;
-		if (temp.TType == (TemplateType)255) {
-			temp.TType = TEMPLATE_NONE;
-		}
-
-		/*
-		**	Verify that the template type actually contains the template number specified. If
-		**	an illegal icon was specified, then replace it with clear terrain.
-		*/
-		if (temp.TType != TEMPLATE_CLEAR1 && temp.TType != TEMPLATE_NONE) {
-			TemplateTypeClass const &ttype = TemplateTypeClass::As_Reference(temp.TType);
-			shape = ttype.Get_Image_Data();
-			if (shape) {
-				rawmap = Get_Icon_Set_Map(shape);
-				if (rawmap) {
-					map = (char*)rawmap;
-					if ((temp.TIcon >= (ttype.Width * ttype.Height)) || (map[temp.TIcon] == -1)) {
-						temp.TIcon = 0;
-						temp.TType = TEMPLATE_NONE;
-					}
-				}
-			}
-		}
-
-		cellptr->TType = temp.TType;
-		cellptr->TIcon = temp.TIcon;
-		cellptr->Recalc_Attributes();
-
-#ifndef DEMO
-		Add_CRC(crc, (unsigned long)cellptr->TType);
-		Add_CRC(crc, (unsigned long)cellptr->TIcon);
-#endif
-
-		cellptr++;
-	}
-
-	/*
-	**	Close the file.
-	*/
-	file.Close();
-
-	return(i == MAP_CELL_TOTAL);
 }
 
+
+/***********************************************************************************************
+ * MapClass::Read_Binary_Big -- reads the map's binary image file                              *
+ *                                                                                             *
+ * INPUT:                                                                                      *
+ *      root      root filename for scenario                                                   *
+ *      crc       ptr to CRC value to update                                                   *
+ *                                                                                             *
+ * OUTPUT:                                                                                     *
+ *      1 = success, 0 = failure                                                               *
+ *                                                                                             *
+ * WARNINGS:                                                                                   *
+ *      none.                                                                                  *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   11/14/1994 BR : Created.                                                                  *
+ *   01/08/1995 JLB : Fixup any obsolete icons detected.                                       *
+ *=============================================================================================*/
+// megamaps -- function added for megamaps
+// extra fixup from vanilla-conquer #623
+// not implementing vanilla-conquer's "unsigned long -> unit32_t" change b/c it's a pain and remastered doesn't need it (we're only ever compiling with MSVC)
+//bool MapClass::Read_Binary_Big(char const* root, uint32_t* crc)
+bool MapClass::Read_Binary_Big(char const* fname, unsigned long* crc)
+{
+    CCFileClass file;
+    int i;
+    char* map;
+    void* rawmap;
+    void const* shape;
+    CellClass* cellptr = NULL;
+
+    /*
+    **	Create object & open file.
+    */
+    file.Set_Name(fname);
+    if (!file.Is_Available()) {
+        return (false);
+    }
+    file.Open(READ);
+
+    /*
+    **	Loop through all cells and set all to the clear tile.
+    */
+    for (i = 0; i < MAP_CELL_TOTAL; i++) {
+        cellptr = &Map[i];
+        cellptr->TType = (TemplateType)255;
+        cellptr->TIcon = 0;
+        cellptr->Recalc_Attributes();
+    }
+
+    /*
+    **	Loop through all cells.
+    */
+    struct
+    {
+        CELL Cell;           // cell number on the map.
+        TemplateType TType;  // Template type.
+        unsigned char TIcon; // Template icon number.
+    } temp;
+
+    int file_size = file.Size() / sizeof(temp);
+    cellptr = &Map[0];
+    for (i = 0; i < MAP_CELL_TOTAL; i++) {
+
+        if (i >= file_size)
+            break;
+        if (file.Read(&temp, sizeof(temp)) != sizeof(temp))
+            break;
+        if (temp.TType == (TemplateType)255) {
+            temp.TType = TEMPLATE_NONE;
+        }
+
+        cellptr = &Map[temp.Cell];
+
+        /*
+        **	Verify that the template type actually contains the template number specified. If
+        **	an illegal icon was specified, then replace it with clear terrain.
+        */
+        if (temp.TType != TEMPLATE_CLEAR1 && temp.TType != TEMPLATE_NONE) {
+            TemplateTypeClass const& ttype = TemplateTypeClass::As_Reference(temp.TType);
+            shape = ttype.Get_Image_Data();
+            if (shape) {
+                rawmap = Get_Icon_Set_Map(shape);
+                if (rawmap) {
+                    map = (char*)rawmap;
+                    if ((temp.TIcon >= (ttype.Width * ttype.Height)) || (map[temp.TIcon] == -1)) {
+                        temp.TIcon = 0;
+                        temp.TType = TEMPLATE_NONE;
+                    }
+                }
+            }
+        }
+
+        cellptr->TType = temp.TType;
+        cellptr->TIcon = temp.TIcon;
+        cellptr->Recalc_Attributes();
+
+#ifndef DEMO
+        Add_CRC(crc, (unsigned long)cellptr->TType);
+        Add_CRC(crc, (unsigned long)cellptr->TIcon);
+#endif
+
+        cellptr++;
+    }
+
+    /*
+    **	Close the file.
+    */
+    file.Close();
+
+    return (i == MAP_CELL_TOTAL);
+}
 
 /***********************************************************************************************
  * MapClass::Read_BinaryRead_Binary_File -- reads the map's binary image file						  *
@@ -740,6 +790,8 @@ bool MapClass::Read_Binary(char const * root, unsigned long *crc)
  * HISTORY:                                                                                    *
  *   10/28/2019 JAS : Created.                                                                  *
  *=============================================================================================*/
+// megmaps -- overhauled in vanilla-conquer #623
+// not implementing vanilla-conquer's "unsigned long -> unit32_t" change b/c it's a pain and remastered doesn't need it (we're only ever compiling with MSVC)
 bool MapClass::Read_Binary_File(char const * fname, unsigned long *crc)
 {
 	CCFileClass file;
@@ -748,7 +800,12 @@ bool MapClass::Read_Binary_File(char const * fname, unsigned long *crc)
 	char *map;
 	void *rawmap;
 	void const * shape;
+    CellClass* cellptr = NULL;
 
+    if (MapBinaryVersion == MAP_VERSION_MEGA) {
+        return Read_Binary_Big(fname, crc);
+    }
+    
 	/*
 	**	Create object & open file.
 	*/
@@ -758,15 +815,37 @@ bool MapClass::Read_Binary_File(char const * fname, unsigned long *crc)
 	}
 	file.Open(READ);
 
-	/*
-	**	Loop through all cells.
-	*/
-	CellClass * cellptr = &Map[0];
-	for (i = 0; i < MAP_CELL_TOTAL; i++) {
+    /*
+    **	Loop through all cells and set all to the clear tile.
+    */
+    for (i = 0; i < MAP_CELL_TOTAL; i++) {
+        cellptr = &Map[i];
+        cellptr->TType = (TemplateType)255;
+        cellptr->TIcon = 0;
+        cellptr->Recalc_Attributes();
+    }
+    
+    /*
+    **	We need to handle the orignal maps differently now as MAP_CELL_TOTAL is larger
+    **  and will break all maps made the old way. This new piece of code will offset the
+    **  cells of the smaller maps to be within the new MAP_CELL_TOTAL range.
+    */
+    
+	    /*
+    **	Loop through all cells. The helper funtion will convert the old map binary cell
+    **  to a position in the new big map array.
+    */
+    for (i = 0; i < (MAP_CELL_TOTAL / 4); i++) {
+        CELL cell = Confine_Old_Cell(i);
+        cellptr = &Map[cell];
+
+        
+        #pragma pack(push, 1)
 		struct {
 			TemplateType TType;		// Template type.
 			unsigned char TIcon;		// Template icon number.
 		} temp;
+        #pragma pack(pop)
 
 		if (file.Read(&temp, sizeof(temp)) != sizeof(temp)) break;
 		if (temp.TType == (TemplateType)255) {
@@ -800,7 +879,6 @@ bool MapClass::Read_Binary_File(char const * fname, unsigned long *crc)
 		Add_CRC(crc, (unsigned long)cellptr->TIcon);
 #endif
 
-		cellptr++;
 	}
 
 	/*
@@ -808,7 +886,7 @@ bool MapClass::Read_Binary_File(char const * fname, unsigned long *crc)
 	*/
 	file.Close();
 
-	return(i == MAP_CELL_TOTAL);
+	return (i == (MAP_CELL_TOTAL / 4));
 }
 
 
@@ -828,9 +906,15 @@ bool MapClass::Read_Binary_File(char const * fname, unsigned long *crc)
  * HISTORY:                                                                                    *
  *   11/14/1994 BR : Created.                                                                  *
  *=============================================================================================*/
+// megamaps -- overhauled this function
 bool MapClass::Write_Binary(char const * root)
 {
-	CCFileClass *file;
+	
+    if (MapBinaryVersion == MAP_VERSION_MEGA) {
+        return Write_Binary_Big(root);
+    }
+    
+    CCFileClass *file;
 	char fname[_MAX_FNAME+_MAX_EXT];
 	int i;
 
@@ -848,11 +932,16 @@ bool MapClass::Write_Binary(char const * root)
 	/*
 	**	Loop through all cells.
 	*/
-	for (i = 0; i < MAP_CELL_TOTAL; i++) {
+    for (i = 0; i < (MAP_CELL_TOTAL / 4); i++) {
+        /*
+        **	Work out which cell in the larger array we need data from.
+        */
+        CELL cell = Confine_Old_Cell(i);
+
 		/*
 		**	Save TType.
 		*/
-		if (file->Write (&(Map[i].TType), sizeof(TemplateType)) != sizeof(TemplateType)) {
+		if (file->Write(&(Map[cell].TType), sizeof(TemplateType)) != sizeof(TemplateType)) {
 			file->Close();
 			delete file;
 			return(false);
@@ -861,7 +950,7 @@ bool MapClass::Write_Binary(char const * root)
 		/*
 		**	Save TIcon.
 		*/
-		if (file->Write (&(Map[i].TIcon), sizeof(unsigned char)) != sizeof(unsigned char)) {
+		if (file->Write(&(Map[cell].TIcon), sizeof(unsigned char)) != sizeof(unsigned char)) {
 			file->Close();
 			delete file;
 			return(false);
@@ -875,6 +964,83 @@ bool MapClass::Write_Binary(char const * root)
 	delete file;
 
 	return(true);
+}
+
+
+/***********************************************************************************************
+ * MapClass::Write_Binary_Big -- writes the map's binary image file                                *
+ *                                                                                             *
+ * INPUT:                                                                                      *
+ *      root      root filename for scenario                                                   *
+ *                                                                                             *
+ * OUTPUT:                                                                                     *
+ *      1 = success, 0 = failure                                                               *
+ *                                                                                             *
+ * WARNINGS:                                                                                   *
+ *      none.                                                                                  *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   11/14/1994 BR : Created.                                                                  *
+ *=============================================================================================*/
+// megamaps -- added this function
+bool MapClass::Write_Binary_Big(char const* root)
+{
+    CCFileClass* file;
+    char fname[_MAX_FNAME + _MAX_EXT];
+    int i;
+
+    /*
+    **	Filename = INI name with BIN extension.
+    */
+    sprintf(fname, "%s.BIN", root);
+
+    /*
+    **	Create object & open file.
+    */
+    file = new CCFileClass(fname);
+    file->Open(WRITE);
+
+    /*
+    **	Loop through all cells.
+    */
+    for (i = 0; i < MAP_CELL_TOTAL; i++) {
+#pragma pack(push, 1)
+        struct
+        {
+            CELL Cell;           // cell number on the map.
+            TemplateType TType;  // Template type.
+            unsigned char TIcon; // Template icon number.
+        } temp;
+#pragma pack(pop)
+        /*
+        **	To cut down the size of the scenario binary don't save clear tiles.
+        **  Read_Binary handles this by initialising the map data with clear tiles for us.
+        */
+        if (Map[i].TType == TEMPLATE_NONE || Map[i].TType == TEMPLATE_CLEAR1) {
+            continue;
+        }
+
+        temp.Cell = i;
+        temp.TType = Map[i].TType;
+        temp.TIcon = Map[i].TIcon;
+
+        /*
+        **	Save cell data.
+        */
+        if (file->Write(&temp, sizeof(temp)) != sizeof(temp)) {
+            file->Close();
+            delete file;
+            return (false);
+        }
+    }
+
+    /*
+    **	Close the file.
+    */
+    file->Close();
+    delete file;
+
+    return (true);
 }
 
 
@@ -907,7 +1073,14 @@ void MapClass::Logic(void)
 	**	Scan another block of the map in order to accumulate the potential
 	**	Tiberium cells that can grow or spread.
 	*/
-	int subcount = 30;
+	// megamaps
+	// This slightly changes vanilla behavior:
+	// This changes the delay between when a given cell is scanned and the next grow/spread phase,
+	// and thus changes the odds that cell will be harvested/shot during that window,
+	// and thus changes that odds of rolling a failed grow/spread.
+	// Since the fix for this would be hella ugly, and the modded logic is so much better anyway, I'm not going to properly fix this.
+    //int subcount = 30;
+    int subcount = 120;
 	int index;
 	for (index = TiberiumScan; index < MAP_CELL_TOTAL; index++) {
 		CELL cell = index;
@@ -915,11 +1088,21 @@ void MapClass::Logic(void)
 		CellClass *ptr = &(*this)[cell];
 
 		if (Special.IsTGrowth && ptr->Land_Type() == LAND_TIBERIUM && ptr->OverlayData < 11) {
-			if (TiberiumGrowthCount < sizeof(TiberiumGrowth)/sizeof(TiberiumGrowth[0])) {
-				TiberiumGrowth[TiberiumGrowthCount++] = cell;
-			} else {
-				TiberiumGrowth[Random_Pick(0, TiberiumGrowthCount-1)] = cell;
-			}
+			// use the full buffer for megamaps, but pretend it's only 50 elements for non-megamaps
+            if (MapBinaryVersion == MAP_VERSION_MEGA) {
+                if (TiberiumGrowthCount < sizeof(TiberiumGrowth)/sizeof(TiberiumGrowth[0])) {
+                    TiberiumGrowth[TiberiumGrowthCount++] = cell;
+                } else {
+                    TiberiumGrowth[Random_Pick(0, TiberiumGrowthCount-1)] = cell;
+                }
+            }
+            else {
+                if (TiberiumGrowthCount < 50) {
+                    TiberiumGrowth[TiberiumGrowthCount++] = cell;
+                } else {
+                    TiberiumGrowth[Random_Pick(0, 49)] = cell;
+                }
+            }
 		}
 
 		/*
@@ -933,11 +1116,21 @@ void MapClass::Logic(void)
 			int tries = 1;
 			if (terrain) tries = 3;
 			for (int i = 0; i < tries; i++) {
-				if (TiberiumSpreadCount < sizeof(TiberiumSpread)/sizeof(TiberiumSpread[0])) {
-					TiberiumSpread[TiberiumSpreadCount++] = cell;
-				} else {
-					TiberiumSpread[Random_Pick(0, TiberiumSpreadCount-1)] = cell;
-				}
+                // use the full buffer for megamaps, but pretend it's only 50 elements for non-megamaps
+                if (MapBinaryVersion == MAP_VERSION_MEGA) {
+                    if (TiberiumSpreadCount < sizeof(TiberiumSpread)/sizeof(TiberiumSpread[0])) {
+                        TiberiumSpread[TiberiumSpreadCount++] = cell;
+                    } else {
+                        TiberiumSpread[Random_Pick(0, TiberiumSpreadCount-1)] = cell;
+                    }
+                }
+                else {
+                    if (TiberiumSpreadCount < 50) {
+                        TiberiumSpread[TiberiumSpreadCount++] = cell;
+                    } else {
+                        TiberiumSpread[Random_Pick(0, 49)] = cell;
+                    }
+                }
 			}
 		}
 		subcount--;
@@ -1723,6 +1916,14 @@ void MapClass::CFELogic(void){
     }
     else {
         growthstrength *= ActiveCFEPatchConfig.TibGrowthScale;
+    }
+    
+    // megamaps
+    // since total amount of growth/spread is fixed no matter how much tiberium is on the map
+    // (or at least that's what we're probabilistically approximating),
+    // we should probably quadruple it for maps that are 4x as large as the original grow/spread rate was designed for
+    if (MapBinaryVersion == MAP_VERSION_MEGA) {
+        growthstrength *= 4;
     }
     
     

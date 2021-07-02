@@ -389,7 +389,11 @@ COORDINATE Coord_Scatter(COORDINATE coord, unsigned distance, bool lock)
 
 	newcoord = Coord_Move(coord, Random_Pick(DIR_N, DIR_MAX), distance);
 
-	if (newcoord & 0xC000C000L) newcoord = coord;
+    // megamaps
+	//if (newcoord & 0xC000C000L) newcoord = coord;
+    if (newcoord & HIGH_COORD_MASK) {
+        newcoord = coord;
+    }
 
 	if (lock) {
 		newcoord = Coord_Snap(newcoord);
