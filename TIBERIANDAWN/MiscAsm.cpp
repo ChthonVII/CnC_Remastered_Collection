@@ -54,6 +54,8 @@ extern "C" void __cdecl Mem_Copy(void const *source, void *dest, unsigned long b
  * HISTORY:                                                                                    *
  *   05/27/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
+// megmaps (maybe) -- this is now implemented in C++ in coord.cpp
+/*
 int Distance_Coord(COORDINATE coord1, COORDINATE coord2)
 {
 	__asm {
@@ -77,7 +79,8 @@ ok:
 		shr	dx,1				
 		add	ax,dx
 	}
-}			  
+}
+*/
 
 
 
@@ -874,7 +877,8 @@ okmax:
 
 
 
-
+// megmaps (maybe) -- this is now implemented in C++ in coord.cpp
+/*
 CELL __cdecl Coord_Cell(COORDINATE coord)
 {
 	__asm {
@@ -887,7 +891,7 @@ CELL __cdecl Coord_Cell(COORDINATE coord)
 	}
 
 }
-
+*/
 
 
 

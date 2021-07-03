@@ -208,7 +208,10 @@ __cdecl CELL Coord_Cell(COORDINATE coord);
 	"shr	eax,2"					\
 	"or	al,bh"
 #endif
-CELL __cdecl Coord_Cell(COORDINATE coord);
+
+// megmaps (maybe) -- this is now implemented in C++ in coord.cpp
+//CELL __cdecl Coord_Cell(COORDINATE coord);
+CELL Coord_Cell(COORDINATE coord);
 
 #include	"rules.h"
 #include  "utracker.h"

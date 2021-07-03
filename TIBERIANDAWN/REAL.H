@@ -209,6 +209,8 @@ inline CELL Coord_XCell(COORDINATE coord) {return (CELL)(*(((unsigned char*)&coo
 inline CELL Coord_YCell(COORDINATE coord) {return (CELL)(*(((unsigned char*)&coord)+3));}
 //inline CELL Coord_Cell(COORD coord){return (CELL)(((*(((unsigned short *)&coord)+1) & 0xFF00) >> 2) | *(((unsigned char *)&coord)+1));}
 CELL Coord_Cell(COORDINATE coord);
+// megmaps (maybe) -- this is now implemented in C++ in coord.cpp
+/*
 #pragma aux Coord_Cell parm [eax] \
 	modify [ebx] \
 	value [ax]		= 				\
@@ -217,7 +219,7 @@ CELL Coord_Cell(COORDINATE coord);
 	"xor	al,al"					\
 	"shr	eax,2"					\
 	"or	al,bh"
-
+*/
 
 #include	"facing.h"
 #include	"ftimer.h"
@@ -841,6 +843,8 @@ extern int Load_Interpolated_Palettes(char const *filename, BOOL add=FALSE);
  *   05/27/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
 int Distance_Coord(COORDINATE coord1, COORDINATE coord2);
+// megmaps (maybe) -- this is now implemented in C++ in coord.cpp
+/*
 #pragma aux Distance_Coord parm [eax] [ebx] \
 	modify [edx ebx] \
 	value [eax]		= 				\
@@ -861,6 +865,7 @@ int Distance_Coord(COORDINATE coord1, COORDINATE coord2);
 	"ok:"						\
 	"shr	dx,1"				\
 	"add	ax,dx"
+*/
 
 inline int Distance(COORDINATE coord1, COORDINATE coord2)
 {
