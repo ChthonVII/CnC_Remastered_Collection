@@ -830,6 +830,15 @@ void TerrainClass::Read_INI(char *buffer)
 		CELL			cell;
 
 		cell = atoi(tbuffer);
+        
+        // megamaps
+        /*
+        ** Convert the normal cell position to a new big map position.
+        */
+        if (Map.MapBinaryVersion == MAP_VERSION_NORMAL) {
+            cell = Confine_Old_Cell(cell);
+        }
+        
 		WWGetPrivateProfileString(INI_Name(), tbuffer, NULL, buf, sizeof(buf)-1, buffer);
 		terrain = TerrainTypeClass::From_Name(strtok(buf, ","));
 		if (terrain != TERRAIN_NONE) {

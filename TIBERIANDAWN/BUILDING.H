@@ -319,9 +319,10 @@ class BuildingClass : public TechnoClass
 		*/
         // Chthon CFE Note: original padding was 32 bytes
         // Rally points eat 2 bytes
+        // megamaps -> TARGET type for rally pointnow takes 4 bytes
         // Smarter SAMS eat 3 bytes
         // ShowInverseWallPreviewMarkers eats 1 byte
-		unsigned char SaveLoadPadding[26];
+		unsigned char SaveLoadPadding[24];
 
 		static COORDINATE const CenterOffset[BSIZE_COUNT];
 

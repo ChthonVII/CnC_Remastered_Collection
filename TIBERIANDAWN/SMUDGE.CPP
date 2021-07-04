@@ -306,6 +306,15 @@ void SmudgeClass::Read_INI(char *buffer)
 			if (ptr) {
 				int data = 0;
 				CELL cell = atoi(ptr);
+                
+                // megamaps
+                /*
+                ** Convert the normal cell position to a new big map position.
+                */
+                if (Map.MapBinaryVersion == MAP_VERSION_NORMAL) {
+                    cell = Confine_Old_Cell(cell);
+                }
+                
 				ptr = strtok(NULL, ",");
 				if (ptr) data = atoi(ptr);
 				new SmudgeClass(smudge, Cell_Coord(cell));

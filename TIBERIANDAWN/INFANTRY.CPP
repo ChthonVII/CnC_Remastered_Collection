@@ -3087,7 +3087,16 @@ void InfantryClass::Read_INI(char *buffer)
 						/*
 						**	4th token: cell #.
 						*/
-						COORDINATE coord = Cell_Coord((CELL)atoi(strtok(NULL, ",\n\r")));
+                        // megamaps
+						//COORDINATE coord = Cell_Coord((CELL)atoi(strtok(NULL, ",\n\r")));
+						CELL cell = (CELL)atoi(strtok(NULL, ",\n\r"));
+                        /*
+                        ** Convert the normal cell position to a new big map position.
+                        */
+                        if (Map.MapBinaryVersion == MAP_VERSION_NORMAL) {
+                            cell = Confine_Old_Cell(cell);
+                        }
+                        COORDINATE coord = Cell_Coord(cell);
 
 						/*
 						**	5th token: cell sub-location.

@@ -1658,7 +1658,9 @@ ResultType AircraftClass::Take_Damage(int & damage, int distance, WarheadType wa
 				Kill_Cargo(source);
 				Death_Announcement();
 				COORDINATE coord = Target_Coord();
-				if (!(coord & 0xC000C000L)) {
+                // megamaps
+				//if (!(coord & 0xC000C000L)) {
+                if (!(coord & HIGH_COORD_MASK)) {
 					new AnimClass(ANIM_FBALL1, coord);
 				}
 				Delete_This();

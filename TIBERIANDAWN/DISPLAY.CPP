@@ -1331,6 +1331,19 @@ void DisplayClass::Read_INI(char *buffer)
 		Theater = THEATER_DESERT;
 	}
 
+	// megamaps
+	// don't have vanilla-conquer's ini support, so use WWGetPrivateProfileInt instead
+	//MapBinaryVersion = ini.Get_Int("MAP", "Version", MAP_VERSION_NORMAL);
+    MapBinaryVersion = WWGetPrivateProfileInt("MAP", "Version", MAP_VERSION_NORMAL, buffer);
+    // The sample megamap uses "MegaMap" instead of  "Version," so let's check that too
+    int megapambackstop = WWGetPrivateProfileInt("MAP", "MegaMap", MAP_VERSION_NORMAL, buffer);
+    if (megapambackstop > 0){
+        MapBinaryVersion = megapambackstop;
+    }
+    MapBinaryVersion = Bound(MapBinaryVersion, 0, 1); // Little hack to stop arbitrary values.
+	
+    
+	
 	/*
 	** Remove any old theater specific uncompressed shapes
 	*/
@@ -1366,6 +1379,15 @@ void DisplayClass::Read_INI(char *buffer)
 		sprintf(buf,"%d",i);
 		Waypoint[i] = WWGetPrivateProfileInt ("Waypoints",buf,-1,buffer);
 		if (Waypoint[i] != -1) {
+            
+            // megamaps
+            /*
+            ** Convert the waypoints normal cell position to a new big map position.
+            */
+            if (Map.MapBinaryVersion == MAP_VERSION_NORMAL) {
+                Waypoint[i] = Confine_Old_Cell(Waypoint[i]);
+            }
+            
 			(*this)[Waypoint[i]].IsWaypoint = 1;
 		}
 	}
@@ -1405,6 +1427,15 @@ void DisplayClass::Read_INI(char *buffer)
 		**	Get cell # from entry name.
 		*/
 		cell = atoi(tbuffer);
+        
+        // megamaps
+        /*
+        ** Convert the normal cell position to a big big map position.
+        */
+        if (Map.MapBinaryVersion == MAP_VERSION_NORMAL) {
+            cell = Confine_Old_Cell(cell);
+        }
+        
 		if (cell > 0 && cell < MAP_CELL_TOTAL && !(*this)[cell].IsTrigger) {
 
 			/*
@@ -1455,6 +1486,19 @@ void DisplayClass::Write_INI(char *buffer)
 	WWWritePrivateProfileInt("MAP", "Y", MapCellY, buffer);
 	WWWritePrivateProfileInt("MAP", "Width", MapCellWidth, buffer);
 	WWWritePrivateProfileInt("MAP", "Height", MapCellHeight, buffer);
+    
+    // megamaps
+    // (not doing this because remastered editor won't like it anyway) 
+    /*
+    ** Unconditionally set it for now, need to conditionally write cell numbers to the ini file
+    ** to support being able to write either version.
+    */
+    //MapBinaryVersion = MAP_VERSION_MEGA;
+
+    //if (MapBinaryVersion == MAP_VERSION_MEGA) {
+    //    ini.Put_Int(NAME, "Version", 1);
+    //}
+    
 
 	/*
 	**	Save the Waypoint entries.
@@ -2675,7 +2719,9 @@ COORDINATE DisplayClass::Pixel_To_Coord(int x, int y)
 	*/
 	// Possibly ignore the view constraints if we aren't using the internal renderer. ST - 4/17/2019 9:06AM
 	//if (x < TacLeptonWidth && y < TacLeptonHeight) {
-	if (IgnoreViewConstraints || (x < TacLeptonWidth && y < TacLeptonHeight)) {
+	// megamaps
+	//if (IgnoreViewConstraints || (x < TacLeptonWidth && y < TacLeptonHeight)) {
+	if (IgnoreViewConstraints || ((unsigned)x < (unsigned)TacLeptonWidth && (unsigned)y < (unsigned)TacLeptonHeight)) {
 		return(Coord_Add(TacticalCoord, XY_Coord(x, y)));
 	}
 	return(0);
@@ -2894,7 +2940,9 @@ CELL DisplayClass::Calculated_Cell(SourceType dir, HousesType house)
 		**	The selected edge cell must be unoccupied and if this is for
 		**	the player, then it must be on an accessible map cell.
 		*/
-		cell &= 0x0FFF;
+        //megamaps
+		//cell &= 0x0FFF;
+		cell &= MAP_CELL_TOTAL - 1;
 		if (cell && (*this)[cell].Cell_Techno()) {
 			cell = 0;
 		}
@@ -4287,7 +4335,9 @@ bool DisplayClass::In_View(register CELL cell)
 
 COORDINATE DisplayClass::Closest_Free_Spot(COORDINATE coord, bool any) const
 {
-	if (coord & 0xC000C000) {
+	// megamaps
+    //if (coord & 0xC000C000) {
+    if (coord & HIGH_COORD_MASK) {
 		return(0x00800080);
 	}
 	return (*this)[Coord_Cell(coord)].Closest_Free_Spot(coord, any);

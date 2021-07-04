@@ -363,6 +363,14 @@ void OverlayClass::Read_INI(char *buffer)
 		cell = atoi(tbuffer);
 		WWGetPrivateProfileString(INI_Name(), tbuffer, NULL, buf, sizeof(buf)-1, buffer);
 		classid = OverlayTypeClass::From_Name(strtok(buf, ",\n\r"));
+        
+        // megamaps
+        /*
+        ** Convert the normal cell position to a new big map position.
+        */
+        if (Map.MapBinaryVersion == MAP_VERSION_NORMAL) {
+            cell = Confine_Old_Cell(cell);
+        }
 
 		/*
 		**	Don't allow placement of crates in the multiplayer scenarios.

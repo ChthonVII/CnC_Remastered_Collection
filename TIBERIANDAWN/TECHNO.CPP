@@ -1593,8 +1593,11 @@ bool TechnoClass::Evaluate_Cell(ThreatType method, int mask, CELL cell, int rang
 	/*
 	**	If the cell is not on the legal map, then always ignore it.
 	*/
-	if (cell & 0xF000) return(false);
-	if (!Map.In_Radar(cell)) return(false);
+    
+    // megamaps
+	//if (cell & 0xF000) return(false);
+	if ((unsigned)cell > MAP_CELL_TOTAL) return(false);
+    if (!Map.In_Radar(cell)) return(false);
 
 	/*
 	**	Fetch the techno object from the cell. If there is no

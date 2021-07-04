@@ -209,6 +209,8 @@ inline CELL Coord_XCell(COORDINATE coord) {return (CELL)(*(((unsigned char*)&coo
 inline CELL Coord_YCell(COORDINATE coord) {return (CELL)(*(((unsigned char*)&coord)+3));}
 //inline CELL Coord_Cell(COORD coord){return (CELL)(((*(((unsigned short *)&coord)+1) & 0xFF00) >> 2) | *(((unsigned char *)&coord)+1));}
 CELL Coord_Cell(COORDINATE coord);
+// megmaps (maybe) -- this is now implemented in C++ in coord.cpp
+/*
 #pragma aux Coord_Cell parm [eax] \
 	modify [ebx] \
 	value [ax]		= 				\
@@ -217,7 +219,7 @@ CELL Coord_Cell(COORDINATE coord);
 	"xor	al,al"					\
 	"shr	eax,2"					\
 	"or	al,bh"
-
+*/
 
 #include	"facing.h"
 #include	"ftimer.h"
@@ -720,12 +722,17 @@ inline FacingType Dir_Facing(DirType facing) {return (FacingType)(((unsigned cha
 inline DirType Facing_Dir(FacingType facing) {return (DirType)((int)facing << 5);}
 inline int Cell_To_Lepton(int cell) {return cell<<8;}
 inline int Lepton_To_Cell(int lepton) {return ((unsigned)(lepton + 0x0080))>>8;}
-inline CELL XY_Cell(int x, int y) {return ((CELL)(((y)<<6)|(x)));}
+// megamaps -- change this here too
+//inline CELL XY_Cell(int x, int y) {return ((CELL)(((y)<<6)|(x)));}
+inline CELL XY_Cell(int x, int y) {return ((CELL)(((y) << MAP_CELL_MAX_X_BITS) | (x)));}
 inline COORDINATE XY_Coord(int x, int y) {return ((COORDINATE)MAKE_LONG(y, x));}
 inline int Coord_X(COORDINATE coord) {return (short)(LOW_WORD(coord));}
 inline int Coord_Y(COORDINATE coord) {return (short)(HIGH_WORD(coord));}
-inline int Cell_X(CELL cell) {return (int)(((unsigned)cell) & 0x3F);}
-inline int Cell_Y(CELL cell) {return (int)(((unsigned)cell) >> 6);}
+// megamaps -- change this here too
+//inline int Cell_X(CELL cell) {return (int)(((unsigned)cell) & 0x3F);}
+//inline int Cell_Y(CELL cell) {return (int)(((unsigned)cell) >> 6);}
+inline int Cell_X(CELL cell) {return (int)(((unsigned)cell) & MAP_CELL_X_MASK);}
+inline int Cell_Y(CELL cell) {return (int)(((unsigned)cell) >> MAP_CELL_MAX_X_BITS);}
 inline int Dir_Diff(DirType dir1, DirType dir2) {return (int)(*((signed char*)&dir2) - *((signed char*)&dir1));}
 inline CELL Coord_XLepton(COORDINATE coord) {return (CELL)(*((unsigned char*)&coord));}
 inline CELL Coord_YLepton(COORDINATE coord) {return (CELL)(*(((unsigned char*)&coord)+2));}
@@ -734,7 +741,9 @@ inline COORDINATE Coord_Add(COORDINATE coord1, COORDINATE coord2) {return (COORD
 inline COORDINATE Coord_Sub(COORDINATE coord1, COORDINATE coord2) {return (COORDINATE)MAKE_LONG((*((short*)(&coord1)+1) - *((short*)(&coord2)+1)), (*((short*)(&coord1)) - *((short*)(&coord2))));}
 inline COORDINATE Coord_Snap(COORDINATE coord) {return (COORDINATE)MAKE_LONG((((*(((unsigned short *)&coord)+1))&0xFF00)|0x80), (((*((unsigned short *)&coord))&0xFF00)|0x80));}
 inline COORDINATE Coord_Mid(COORDINATE coord1, COORDINATE coord2) {return (COORDINATE)MAKE_LONG((*((unsigned short *)(&coord1)+1) + *((unsigned short *)(&coord2)+1))>>1, (*((unsigned short *)(&coord1)) + *((unsigned short *)(&coord2)))>>1);}
-inline COORDINATE Cell_Coord(CELL cell) {return (COORDINATE) MAKE_LONG( (((cell & 0x0FC0)<<2)|0x80), ((((cell & 0x003F)<<1)+1)<<7) );}
+// megamaps -- change this here too
+//inline COORDINATE Cell_Coord(CELL cell) {return (COORDINATE) MAKE_LONG( (((cell & 0x0FC0)<<2)|0x80), ((((cell & 0x003F)<<1)+1)<<7) );}
+inline COORDINATE Cell_Coord(CELL cell) {return (COORDINATE)MAKE_LONG((((cell & 0x3F80) << 1) | 0x80), ((((cell & 0x007F) << 1) + 1) << 7));}
 inline COORDINATE XYPixel_Coord(int x, int y) {return ((COORDINATE)MAKE_LONG((int)(((long)y*(long)ICON_LEPTON_H)/(long)ICON_PIXEL_H)/*+LEPTON_OFFSET_Y*/, (int)(((long)x*(long)ICON_LEPTON_W)/(long)ICON_PIXEL_W)/*+LEPTON_OFFSET_X*/));}
 //inline int Facing_To_16(int facing) {return Facing16[facing];}
 inline int Facing_To_32(DirType facing) {return Facing32[facing];}
@@ -834,6 +843,8 @@ extern int Load_Interpolated_Palettes(char const *filename, BOOL add=FALSE);
  *   05/27/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
 int Distance_Coord(COORDINATE coord1, COORDINATE coord2);
+// megmaps (maybe) -- this is now implemented in C++ in coord.cpp
+/*
 #pragma aux Distance_Coord parm [eax] [ebx] \
 	modify [edx ebx] \
 	value [eax]		= 				\
@@ -854,6 +865,7 @@ int Distance_Coord(COORDINATE coord1, COORDINATE coord2);
 	"ok:"						\
 	"shr	dx,1"				\
 	"add	ax,dx"
+*/
 
 inline int Distance(COORDINATE coord1, COORDINATE coord2)
 {

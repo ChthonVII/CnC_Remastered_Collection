@@ -4448,7 +4448,9 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char *buffer_i
 }
 
 
-static const int _map_width_shift_bits = 6;
+//megamaps
+//static const int _map_width_shift_bits = 6;
+static const int _map_width_shift_bits = 7;
 
 void DLLExportClass::Calculate_Placement_Distances(BuildingTypeClass* placement_type, unsigned char* placement_distance)
 {
@@ -4509,7 +4511,7 @@ void DLLExportClass::Calculate_Placement_Distances(BuildingTypeClass* placement_
                             continue;
                         }
                         //XY_CELL is incompatible with this because x/y do not take the map offset into account
-						const CELL adjCell = map_cell_x + adjX + ((map_cell_y + adjY) << 6);
+						const CELL adjCell = map_cell_x + adjX + ((map_cell_y + adjY) << _map_width_shift_bits);
 						if (Map.In_Radar(adjCell))
 							placement_distance[adjCell] = 0U;
 					}

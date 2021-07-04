@@ -3816,6 +3816,11 @@ void BuildingClass::Read_INI(char *buffer)
 			*/
 			cell = atoi(strtok(NULL, ","));
 
+            //megamaps
+            if (Map.MapBinaryVersion == MAP_VERSION_NORMAL) {
+                cell = Confine_Old_Cell(cell);
+            }
+            
 			/*
 			**	5th token: facing.
 			*/
