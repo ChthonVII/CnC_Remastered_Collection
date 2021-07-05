@@ -533,10 +533,10 @@ char MPlayerName[MPLAYER_NAME_MAX];
 int MPlayerGColors[MAX_MPLAYER_COLORS] = {
 	5, 			// Yellow
 	127, 			// Red
-	135, 			// BlueGreen
+	202,			// Blue-Grey            //135, 			// BlueGreen // Chthon CFE Note: swap lightblue & bluegreen to put lightblue in dinos
 	26,			// Orange
 	4,				// Green
-	202,			// Blue-Grey
+	135, 			// BlueGreen        //202,			// Blue-Grey // Chthon CFE Note: swap lightblue & bluegreen to put put lightblue in dinos
     // 8players
     11, // purple
     1 // pink
@@ -545,10 +545,10 @@ int MPlayerGColors[MAX_MPLAYER_COLORS] = {
 int MPlayerTColors[MAX_MPLAYER_COLORS] = {
 	CC_GDI_COLOR, 			// Yellow
 	CC_NOD_COLOR, 			// Red
-	CC_BLUE_GREEN, 		// BlueGreen
+	CC_BLUE_GREY,			// Blue        //CC_BLUE_GREEN, 		// BlueGreen // Chthon CFE Note: swap lightblue & bluegreen to put lightblue in dinos
 	CC_ORANGE,				// Orange	//26
 	CC_GREEN,				// Green
-	CC_BLUE_GREY,			// Blue
+	CC_BLUE_GREEN, 		// BlueGreen      // CC_BLUE_GREY,			// Blue // Chthon CFE Note: swap lightblue & bluegreen to put lightblue in dinos
     // 8 players
     11, // purple
     1 // pink

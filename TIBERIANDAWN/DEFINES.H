@@ -700,11 +700,14 @@ typedef enum HousesType : char {
 #define	HOUSEF_MULTI7	(1<<HOUSE_MULTI7)
 #define	HOUSEF_MULTI8	(1<<HOUSE_MULTI8)
 
+// Chthon CFE Note: Just swapping these around to change the multiplayer colors *DOES* work,
+// however it also mucks with which team GlyphX uses for the dino missions (da fuq?).
+// So the only solution is to leave these be and swap the behavior of LtBlue and Blue in HouseClass::Init_Data() instead.
 typedef enum PlayerColorType : char {
 	REMAP_NONE = -1,
 	REMAP_GOLD,
 	REMAP_FIRST=REMAP_GOLD,
-	REMAP_LTBLUE,
+	REMAP_LTBLUE, 
 	REMAP_RED,
 	REMAP_GREEN,
 	REMAP_ORANGE,
