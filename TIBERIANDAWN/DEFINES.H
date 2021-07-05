@@ -676,6 +676,9 @@ typedef enum HousesType : char {
 	HOUSE_MULTI4,				// Multi-Player house #4
 	HOUSE_MULTI5,				// Multi-Player house #5
 	HOUSE_MULTI6,				// Multi-Player house #6
+    // 8players
+    HOUSE_MULTI7,				// Multi-Player house #7
+    HOUSE_MULTI8,				// Multi-Player house #8
 
 	HOUSE_COUNT,
 	HOUSE_FIRST=HOUSE_GOOD
@@ -693,6 +696,9 @@ typedef enum HousesType : char {
 #define	HOUSEF_MULTI4	(1<<HOUSE_MULTI4)
 #define	HOUSEF_MULTI5	(1<<HOUSE_MULTI5)
 #define	HOUSEF_MULTI6	(1<<HOUSE_MULTI6)
+// 8players
+#define	HOUSEF_MULTI7	(1<<HOUSE_MULTI7)
+#define	HOUSEF_MULTI8	(1<<HOUSE_MULTI8)
 
 typedef enum PlayerColorType : char {
 	REMAP_NONE = -1,
@@ -703,7 +709,12 @@ typedef enum PlayerColorType : char {
 	REMAP_GREEN,
 	REMAP_ORANGE,
 	REMAP_BLUE,
-	REMAP_LAST=REMAP_BLUE,
+    // 8players
+    // REMAP_LAST=REMAP_BLUE,
+    REMAP_PURPLE,
+    REMAP_PINK,
+    REMAP_LAST=REMAP_PINK,
+	
 
 	REMAP_COUNT
 } PlayerColorType;
@@ -2512,7 +2523,9 @@ typedef enum WaypointEnum : unsigned char
 /****************************************************************************
 **	Max # of players total, including the game's owner
 */
-#define	MAX_PLAYERS			6
+// 8players
+// #define	MAX_PLAYERS			6
+#define	MAX_PLAYERS			8
 
 
 /****************************************************************************
@@ -2540,7 +2553,9 @@ typedef enum GameEnum : unsigned char {
 /****************************************************************************
 **	Max # of colors for multiplayer games
 */
-#define	MAX_MPLAYER_COLORS		6
+// 8players
+//#define	MAX_MPLAYER_COLORS		6
+#define	MAX_MPLAYER_COLORS		8
 
 
 /****************************************************************************

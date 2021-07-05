@@ -4649,6 +4649,19 @@ void HouseClass::Init_Data(PlayerColorType color, HousesType house, int credits)
 			((unsigned char &)Class->Color) = 203;
 			((unsigned char &)Class->BrightColor) = 201;
 			break;
+            
+        // 8players
+        case REMAP_PURPLE:
+			RemapTable = RemapPurple;
+			((unsigned char &)Class->Color) = 11;
+			((unsigned char &)Class->BrightColor) = 11;
+			break;
+        case REMAP_PINK:
+			RemapTable = RemapPink;
+			((unsigned char &)Class->Color) = 1;
+			((unsigned char &)Class->BrightColor) = 1;
+			break;
+            
 	}
 }
 

@@ -207,6 +207,8 @@ static BuildingTypeClass const ClassTemple(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_BAD,								// OWNABLE:		Ownable by house (bit field).
 	WEAPON_NONE,WEAPON_NONE,
@@ -262,6 +264,8 @@ static BuildingTypeClass const ClassEye(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_GOOD,							// OWNABLE:		Ownable by house (bit field).
 	WEAPON_NONE,WEAPON_NONE,
@@ -321,6 +325,8 @@ static BuildingTypeClass const ClassWeapon(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_GOOD,							// OWNABLE:		Ownable by house (bit field).
 	WEAPON_NONE,WEAPON_NONE,
@@ -376,6 +382,8 @@ static BuildingTypeClass const ClassGTower(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_GOOD,							// OWNABLE:		Ownable by house (bit field).
 	WEAPON_CHAIN_GUN,WEAPON_NONE,
@@ -432,6 +440,8 @@ static BuildingTypeClass const ClassATower(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_GOOD,							// OWNABLE:		Ownable by house (bit field).
 	WEAPON_TOW_TWO,WEAPON_NONE,
@@ -488,6 +498,8 @@ static BuildingTypeClass const ClassObelisk(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_BAD,								// OWNABLE:		Ownable by house (bit field).
 	WEAPON_OBELISK_LASER,WEAPON_NONE,
@@ -551,6 +563,8 @@ static BuildingTypeClass const ClassTurret(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_BAD,								// OWNABLE:		Ownable by house (bit field).
 	WEAPON_TURRET_GUN,WEAPON_NONE,
@@ -606,6 +620,8 @@ static BuildingTypeClass const ClassConst(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_GOOD|
 	HOUSEF_BAD,								// OWNABLE:		Ownable by house (bit field).
@@ -662,6 +678,8 @@ static BuildingTypeClass const ClassRefinery(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_GOOD|
 	HOUSEF_BAD,								// OWNABLE:		Ownable by house (bit field).
@@ -719,6 +737,8 @@ static BuildingTypeClass const ClassStorage(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_GOOD|
 	HOUSEF_BAD,								// OWNABLE:		Ownable by house (bit field).
@@ -775,6 +795,8 @@ static BuildingTypeClass const ClassHelipad(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_BAD|
 	HOUSEF_GOOD,							// OWNABLE:		Ownable by house (bit field).
@@ -831,6 +853,8 @@ static BuildingTypeClass const ClassCommand(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_GOOD|
 	HOUSEF_BAD,								// OWNABLE:		Ownable by house (bit field).
@@ -887,6 +911,8 @@ static BuildingTypeClass const ClassSAM(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_BAD,								// OWNABLE:		Ownable by house (bit field).
 	WEAPON_NIKE,WEAPON_NONE,
@@ -942,6 +968,8 @@ static BuildingTypeClass const ClassAirStrip(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_BAD,								// OWNABLE:		Ownable by house (bit field).
 	WEAPON_NONE,WEAPON_NONE,
@@ -997,6 +1025,8 @@ static BuildingTypeClass const ClassPower(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_BAD|
 	HOUSEF_GOOD,							// OWNABLE:		Ownable by house (bit field).
@@ -1053,6 +1083,8 @@ static BuildingTypeClass const ClassAdvancedPower(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_BAD|
 	HOUSEF_GOOD,							// OWNABLE:		Ownable by house (bit field).
@@ -1109,6 +1141,8 @@ static BuildingTypeClass const ClassHospital(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_BAD|
 	HOUSEF_GOOD,							// OWNABLE:		Ownable by house (bit field).
@@ -1166,6 +1200,8 @@ static BuildingTypeClass const ClassBioLab(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_BAD,								// OWNABLE:		Ownable by house (bit field).
 	WEAPON_NONE,WEAPON_NONE,
@@ -1221,6 +1257,8 @@ static BuildingTypeClass const ClassBarracks(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_GOOD,							// OWNABLE:		Ownable by house (bit field).
 	WEAPON_NONE,WEAPON_NONE,
@@ -1276,6 +1314,8 @@ static BuildingTypeClass const ClassHand(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_BAD,								// OWNABLE:		Ownable by house (bit field).
 	WEAPON_NONE,WEAPON_NONE,
@@ -1331,6 +1371,8 @@ static BuildingTypeClass const ClassTanker(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_NEUTRAL,						// OWNABLE:		Ownable by house (bit field).
 	WEAPON_NONE,WEAPON_NONE,
@@ -1386,6 +1428,8 @@ static BuildingTypeClass const ClassRepair(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_GOOD|
 	HOUSEF_BAD,								// OWNABLE:		Ownable by house (bit field).
@@ -1444,6 +1488,8 @@ static BuildingTypeClass const ClassRoad(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_GOOD|
 	HOUSEF_BAD,								// OWNABLE:		Ownable by house (bit field).
@@ -1501,6 +1547,8 @@ static BuildingTypeClass const ClassV01(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_NEUTRAL,						// OWNABLE:		Ownable by house (bit field).
 	WEAPON_NONE,WEAPON_NONE,
@@ -1556,6 +1604,8 @@ static BuildingTypeClass const ClassV02(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_NEUTRAL,						// OWNABLE:		Ownable by house (bit field).
 	WEAPON_NONE,WEAPON_NONE,
@@ -1611,6 +1661,8 @@ static BuildingTypeClass const ClassV03(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_NEUTRAL,						// OWNABLE:		Ownable by house (bit field).
 	WEAPON_NONE,WEAPON_NONE,
@@ -1666,6 +1718,8 @@ static BuildingTypeClass const ClassV04(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_NEUTRAL,						// OWNABLE:		Ownable by house (bit field).
 	WEAPON_NONE,WEAPON_NONE,
@@ -1721,6 +1775,8 @@ static BuildingTypeClass const ClassV05(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_NEUTRAL,						// OWNABLE:		Ownable by house (bit field).
 	WEAPON_NONE,WEAPON_NONE,
@@ -1776,6 +1832,8 @@ static BuildingTypeClass const ClassV06(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_NEUTRAL,						// OWNABLE:		Ownable by house (bit field).
 	WEAPON_NONE,WEAPON_NONE,
@@ -1831,6 +1889,8 @@ static BuildingTypeClass const ClassV07(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_NEUTRAL,						// OWNABLE:		Ownable by house (bit field).
 	WEAPON_NONE,WEAPON_NONE,
@@ -1886,6 +1946,8 @@ static BuildingTypeClass const ClassV08(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_NEUTRAL,						// OWNABLE:		Ownable by house (bit field).
 	WEAPON_NONE,WEAPON_NONE,
@@ -1941,6 +2003,8 @@ static BuildingTypeClass const ClassV09(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_NEUTRAL,						// OWNABLE:		Ownable by house (bit field).
 	WEAPON_NONE,WEAPON_NONE,
@@ -1996,6 +2060,8 @@ static BuildingTypeClass const ClassV10(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_NEUTRAL,						// OWNABLE:		Ownable by house (bit field).
 	WEAPON_NONE,WEAPON_NONE,
@@ -2051,6 +2117,8 @@ static BuildingTypeClass const ClassV11(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_NEUTRAL,						// OWNABLE:		Ownable by house (bit field).
 	WEAPON_NONE,WEAPON_NONE,
@@ -2106,6 +2174,8 @@ static BuildingTypeClass const ClassV12(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_NEUTRAL,						// OWNABLE:		Ownable by house (bit field).
 	WEAPON_NONE,WEAPON_NONE,
@@ -2161,6 +2231,8 @@ static BuildingTypeClass const ClassV13(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_NEUTRAL,						// OWNABLE:		Ownable by house (bit field).
 	WEAPON_NONE,WEAPON_NONE,
@@ -2216,6 +2288,8 @@ static BuildingTypeClass const ClassV14(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_NEUTRAL,						// OWNABLE:		Ownable by house (bit field).
 	WEAPON_NONE,WEAPON_NONE,
@@ -2271,6 +2345,8 @@ static BuildingTypeClass const ClassV15(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_NEUTRAL,						// OWNABLE:		Ownable by house (bit field).
 	WEAPON_NONE,WEAPON_NONE,
@@ -2326,6 +2402,8 @@ static BuildingTypeClass const ClassV16(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_NEUTRAL,						// OWNABLE:		Ownable by house (bit field).
 	WEAPON_NONE,WEAPON_NONE,
@@ -2381,6 +2459,8 @@ static BuildingTypeClass const ClassV17(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_NEUTRAL,						// OWNABLE:		Ownable by house (bit field).
 	WEAPON_NONE,WEAPON_NONE,
@@ -2436,6 +2516,8 @@ static BuildingTypeClass const ClassV18(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_NEUTRAL,						// OWNABLE:		Ownable by house (bit field).
 	WEAPON_NONE,WEAPON_NONE,
@@ -2491,6 +2573,8 @@ static BuildingTypeClass const ClassV19(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_NEUTRAL|
 	HOUSEF_GOOD,							// OWNABLE:		Ownable by house (bit field).
@@ -2547,6 +2631,8 @@ static BuildingTypeClass const ClassV20(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_NEUTRAL|
 	HOUSEF_GOOD,							// OWNABLE:		Ownable by house (bit field).
@@ -2603,6 +2689,8 @@ static BuildingTypeClass const ClassV21(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_NEUTRAL|
 	HOUSEF_GOOD,							// OWNABLE:		Ownable by house (bit field).
@@ -2659,6 +2747,8 @@ static BuildingTypeClass const ClassV22(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_NEUTRAL|
 	HOUSEF_GOOD,							// OWNABLE:		Ownable by house (bit field).
@@ -2715,6 +2805,8 @@ static BuildingTypeClass const ClassV23(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_NEUTRAL|
 	HOUSEF_GOOD,							// OWNABLE:		Ownable by house (bit field).
@@ -2771,6 +2863,8 @@ static BuildingTypeClass const ClassV24(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_NEUTRAL|
 	HOUSEF_GOOD,							// OWNABLE:		Ownable by house (bit field).
@@ -2827,6 +2921,8 @@ static BuildingTypeClass const ClassV25(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_NEUTRAL|
 	HOUSEF_GOOD,							// OWNABLE:		Ownable by house (bit field).
@@ -2883,6 +2979,8 @@ static BuildingTypeClass const ClassV26(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_NEUTRAL|
 	HOUSEF_GOOD,							// OWNABLE:		Ownable by house (bit field).
@@ -2939,6 +3037,8 @@ static BuildingTypeClass const ClassV27(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_NEUTRAL|
 	HOUSEF_GOOD,							// OWNABLE:		Ownable by house (bit field).
@@ -2995,6 +3095,8 @@ static BuildingTypeClass const ClassV28(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_NEUTRAL|
 	HOUSEF_GOOD,							// OWNABLE:		Ownable by house (bit field).
@@ -3051,6 +3153,8 @@ static BuildingTypeClass const ClassV29(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_NEUTRAL|
 	HOUSEF_GOOD,							// OWNABLE:		Ownable by house (bit field).
@@ -3107,6 +3211,8 @@ static BuildingTypeClass const ClassV30(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_NEUTRAL|
 	HOUSEF_GOOD,							// OWNABLE:		Ownable by house (bit field).
@@ -3163,6 +3269,8 @@ static BuildingTypeClass const ClassV31(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_NEUTRAL|
 	HOUSEF_GOOD,							// OWNABLE:		Ownable by house (bit field).
@@ -3219,6 +3327,8 @@ static BuildingTypeClass const ClassV32(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_NEUTRAL|
 	HOUSEF_GOOD,							// OWNABLE:		Ownable by house (bit field).
@@ -3275,6 +3385,8 @@ static BuildingTypeClass const ClassV33(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_NEUTRAL|
 	HOUSEF_GOOD,							// OWNABLE:		Ownable by house (bit field).
@@ -3331,6 +3443,8 @@ static BuildingTypeClass const ClassV34(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_NEUTRAL|
 	HOUSEF_GOOD,							// OWNABLE:		Ownable by house (bit field).
@@ -3387,6 +3501,8 @@ static BuildingTypeClass const ClassV35(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_NEUTRAL|
 	HOUSEF_GOOD,							// OWNABLE:		Ownable by house (bit field).
@@ -3443,6 +3559,8 @@ static BuildingTypeClass const ClassV36(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_NEUTRAL|
 	HOUSEF_GOOD,							// OWNABLE:		Ownable by house (bit field).
@@ -3498,6 +3616,8 @@ static BuildingTypeClass const ClassV37(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_NEUTRAL|
 	HOUSEF_GOOD,							// OWNABLE:		Ownable by house (bit field).
@@ -3553,6 +3673,8 @@ static BuildingTypeClass const ClassMission(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_BAD|
 	HOUSEF_NEUTRAL|
@@ -3611,6 +3733,8 @@ static BuildingTypeClass const Sandbag(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_GOOD|
 	HOUSEF_BAD,								// OWNABLE:		Ownable by house (bit field).
@@ -3667,6 +3791,8 @@ static BuildingTypeClass const Cyclone(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_GOOD|
 	HOUSEF_BAD,								// OWNABLE:		Ownable by house (bit field).
@@ -3723,6 +3849,8 @@ static BuildingTypeClass const Brick(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_BAD|
 	HOUSEF_GOOD,							// OWNABLE:		Ownable by house (bit field).
@@ -3779,6 +3907,8 @@ static BuildingTypeClass const Barbwire(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_BAD|
 	HOUSEF_JP|
 	HOUSEF_NEUTRAL|
@@ -3836,6 +3966,8 @@ static BuildingTypeClass const Wood(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_NEUTRAL|
 	HOUSEF_GOOD,							// OWNABLE:		Ownable by house (bit field).

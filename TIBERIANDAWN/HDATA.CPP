@@ -177,6 +177,34 @@ static HouseTypeClass const HouseMulti6(
 	'M'							// VOICE:		Voice prefix character.
 );
 
+// 8players
+static HouseTypeClass const HouseMulti7(
+	HOUSE_MULTI7,
+	"Multi7",					//	NAME:			House name.
+	TXT_CIVILIAN,				// FULLNAME:	Translated house name.
+	"MP7",						// SUFFIX:		House file suffix.
+	0,								// LEMON:		Lemon vehicle frequency.
+	COLOR_NEUTRAL,				// COLOR:		Radar map color.
+	COLOR_BRIGHT_NEUTRAL,	// COLOR:		Bright Radar map color.
+	REMAP_PURPLE,					// Remap color ID number.
+	RemapPurple,					// Default remap table.
+	'M'							// VOICE:		Voice prefix character.
+);
+
+// 8players
+static HouseTypeClass const HouseMulti8(
+	HOUSE_MULTI8,
+	"Multi8",					//	NAME:			House name.
+	TXT_CIVILIAN,				// FULLNAME:	Translated house name.
+	"MP8",						// SUFFIX:		House file suffix.
+	0,								// LEMON:		Lemon vehicle frequency.
+	COLOR_NEUTRAL,				// COLOR:		Radar map color.
+	COLOR_BRIGHT_NEUTRAL,	// COLOR:		Bright Radar map color.
+	REMAP_PINK,					// Remap color ID number.
+	RemapPink,					// Default remap table.
+	'M'							// VOICE:		Voice prefix character.
+);
+
 HouseTypeClass const * const HouseTypeClass::Pointers[HOUSE_COUNT] = {
 	&HouseGood,
 	&HouseBad,
@@ -188,6 +216,9 @@ HouseTypeClass const * const HouseTypeClass::Pointers[HOUSE_COUNT] = {
 	&HouseMulti4,
 	&HouseMulti5,
 	&HouseMulti6,
+    // 8players
+    &HouseMulti7,
+    &HouseMulti8,
 };
 
 

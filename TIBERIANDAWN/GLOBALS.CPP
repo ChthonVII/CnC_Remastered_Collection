@@ -536,7 +536,10 @@ int MPlayerGColors[MAX_MPLAYER_COLORS] = {
 	135, 			// BlueGreen
 	26,			// Orange
 	4,				// Green
-	202			// Blue-Grey
+	202,			// Blue-Grey
+    // 8players
+    11, // purple
+    1 // pink
 };
 
 int MPlayerTColors[MAX_MPLAYER_COLORS] = {
@@ -546,6 +549,9 @@ int MPlayerTColors[MAX_MPLAYER_COLORS] = {
 	CC_ORANGE,				// Orange	//26
 	CC_GREEN,				// Green
 	CC_BLUE_GREY,			// Blue
+    // 8 players
+    11, // purple
+    1 // pink
 };
 
 
@@ -562,7 +568,9 @@ DynamicVectorClass <int> MPlayerFilenum;
 /***************************************************************************
 **	This value determines the max allowable # of players.
 */
-int MPlayerMax = 6;
+// 8players
+//int MPlayerMax = 6;
+int MPlayerMax = 8;
 
 
 /***************************************************************************
