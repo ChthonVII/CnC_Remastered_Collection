@@ -186,8 +186,8 @@ static HouseTypeClass const HouseMulti7(
 	0,								// LEMON:		Lemon vehicle frequency.
 	COLOR_NEUTRAL,				// COLOR:		Radar map color.
 	COLOR_BRIGHT_NEUTRAL,	// COLOR:		Bright Radar map color.
-	REMAP_PURPLE,					// Remap color ID number.
-	RemapPurple,					// Default remap table.
+	REMAP_MODCOLOR_BLUE,					// Remap color ID number.
+	RemapModBlue,					// Default remap table.
 	'M'							// VOICE:		Voice prefix character.
 );
 
@@ -200,8 +200,8 @@ static HouseTypeClass const HouseMulti8(
 	0,								// LEMON:		Lemon vehicle frequency.
 	COLOR_NEUTRAL,				// COLOR:		Radar map color.
 	COLOR_BRIGHT_NEUTRAL,	// COLOR:		Bright Radar map color.
-	REMAP_PINK,					// Remap color ID number.
-	RemapPink,					// Default remap table.
+	REMAP_MODCOLOR_PURPLE,					// Remap color ID number.
+	RemapModPurple,					// Default remap table.
 	'M'							// VOICE:		Voice prefix character.
 );
 

@@ -538,8 +538,8 @@ int MPlayerGColors[MAX_MPLAYER_COLORS] = {
 	4,				// Green
 	135, 			// BlueGreen        //202,			// Blue-Grey // Chthon CFE Note: swap lightblue & bluegreen to put put lightblue in dinos
     // 8players
-    11, // purple
-    1 // pink
+    11, // modblue
+    1 // modpurple
 };
 
 int MPlayerTColors[MAX_MPLAYER_COLORS] = {
@@ -550,8 +550,8 @@ int MPlayerTColors[MAX_MPLAYER_COLORS] = {
 	CC_GREEN,				// Green
 	CC_BLUE_GREEN, 		// BlueGreen      // CC_BLUE_GREY,			// Blue // Chthon CFE Note: swap lightblue & bluegreen to put lightblue in dinos
     // 8 players
-    11, // purple
-    1 // pink
+    11, // modblue
+    1 // modpurple
 };
 
 
