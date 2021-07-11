@@ -1343,7 +1343,7 @@ void InfantryClass::AI(void)
     // or we have have finished the death animation and Doing_AI() deleted this unit
     // we need to check for both cases to make sure we're still alive
     // (not sure how WW got away with putting Movement_AI() after Doing_AI()...
-    if (IsActive && Strength){
+    if (IsActive && !IsInLimbo && Strength){
     
         // Chthon CFE Note: Extremely ugly hack to get rank 3 veteran medics to heal themselves
         // Just using Fire_At() is buggy since there's no animation and the healing missile doesn't hit
