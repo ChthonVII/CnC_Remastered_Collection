@@ -4528,6 +4528,11 @@ void InfantryClass::AlphaPuppersHowl(){
 
 // returns true if within the guard radius of an unfriendly dog
 bool InfantryClass::UnfriendlyDogCheck(){
+    
+    if (!IsActive || IsInLimbo || !Strength){
+        return false;
+    }
+    
     for (int i = 0; i < Infantry.Count(); i++) {
         InfantryClass* iptr = Infantry.Ptr(i);
         if (iptr && iptr->IsActive && !iptr->IsInLimbo && iptr->Class->IsDog && !House->Is_Ally(iptr) && (Distance(iptr) <= iptr->Techno_Type_Class()->ThreatRange)){
