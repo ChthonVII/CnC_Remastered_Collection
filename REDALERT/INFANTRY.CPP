@@ -4514,10 +4514,10 @@ void InfantryClass::AlphaPuppersHowl(){
         if (iptr && iptr->IsActive && !iptr->IsInLimbo && iptr->Class->IsDog && (House == iptr->House) && (Distance(iptr) <= (10*CELL_LEPTON_W))){
             if (!Target_Legal(iptr->TarCom)){
                 iptr->Assign_Destination(TARGET_NONE);
-                iptr->Stop_Driver();
+                //iptr->Stop_Driver();
                 iptr->Assign_Target(TarCom);
                 iptr->Assign_Mission(MISSION_ATTACK);
-                iptr->Commence();
+                //iptr->Commence();
             }
         }
         
