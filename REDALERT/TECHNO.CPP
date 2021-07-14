@@ -8029,7 +8029,7 @@ TARGET TechnoClass::FindChainLightningTarget(const TARGET primarytarget, const i
                     tentative->Is_Techno() &&
                     !House->Is_Ally(tentative) && 
                     !tentative->Is_Cloaked(this) &&
-                    ((tentative->Mission == MISSION_NONE) || !MissionControl[tentative->Mission].IsNoThreat)s &&
+                    ((tentative->Mission == MISSION_NONE) || !MissionControl[tentative->Mission].IsNoThreat) &&
                     (((1 << tentative->What_Am_I()) & mask) != 0) &&       // acceptable unit type
                     tentative->Techno_Type_Class()->IsLegalTarget &&      // unit type is one that can be targeted
                     !((tentative->What_Am_I() == RTTI_INFANTRY) && (*((InfantryClass*)tentative) == INFANTRY_SPY)) &&
