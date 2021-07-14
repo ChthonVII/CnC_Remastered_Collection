@@ -88,6 +88,8 @@ static AircraftTypeClass const AttackPlane(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_GOOD|
 	HOUSEF_BAD,				// Who can own this aircraft type.
@@ -134,6 +136,8 @@ static AircraftTypeClass const TransportHeli(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_BAD|
 	HOUSEF_GOOD,			// Who can own this aircraft type.
@@ -180,6 +184,8 @@ static AircraftTypeClass const AttackHeli(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_BAD,				// Who can own this aircraft type.
 	WEAPON_CHAIN_GUN,WEAPON_NONE,
@@ -226,6 +232,8 @@ static AircraftTypeClass const OrcaHeli(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_GOOD,			// Who can own this aircraft type.
 	WEAPON_DRAGON,WEAPON_NONE,
@@ -272,6 +280,8 @@ static AircraftTypeClass const CargoPlane(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_GOOD|
 	HOUSEF_BAD,				// Who can own this aircraft type.

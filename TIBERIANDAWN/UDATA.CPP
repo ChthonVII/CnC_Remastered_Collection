@@ -94,6 +94,8 @@ static UnitTypeClass const UnitVisceroid(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_GOOD|
 	HOUSEF_BAD|
 	HOUSEF_NEUTRAL|
@@ -153,6 +155,8 @@ static UnitTypeClass const UnitFTank(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_BAD,								// OWNABLE:		Ownable by house (bit field).
 	WEAPON_FLAME_TONGUE,WEAPON_NONE,
@@ -210,6 +214,8 @@ static UnitTypeClass const UnitSTank(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_BAD,								// OWNABLE:		Ownable by house (bit field).
 	WEAPON_DRAGON,WEAPON_NONE,
@@ -267,6 +273,8 @@ static UnitTypeClass const UnitLTank(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_BAD,								// OWNABLE:		Ownable by house (bit field).
 	WEAPON_75MM,WEAPON_NONE,
@@ -324,6 +332,8 @@ static UnitTypeClass const UnitMTank(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_GOOD,							// OWNABLE:		Ownable by house (bit field).
 	WEAPON_105MM,WEAPON_NONE,
@@ -381,6 +391,8 @@ static UnitTypeClass const UnitHTank(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_GOOD,							// OWNABLE:		Ownable by house (bit field).
 	WEAPON_120MM,WEAPON_MAMMOTH_TUSK,
@@ -438,6 +450,8 @@ static UnitTypeClass const UnitMHQ(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_GOOD|
 	HOUSEF_BAD,								// OWNABLE:		Ownable by house (bit field).
@@ -497,6 +511,8 @@ static UnitTypeClass const UnitHover(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_GOOD|
 	HOUSEF_BAD,								// OWNABLE:		Ownable by house (bit field).
@@ -555,6 +571,8 @@ static UnitTypeClass const UnitSAM(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 //	HOUSEF_GOOD|
 	HOUSEF_BAD,								// OWNABLE:		Ownable by house (bit field).
@@ -613,6 +631,8 @@ static UnitTypeClass const UnitArty(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_BAD,								// OWNABLE:		Ownable by house (bit field).
 	WEAPON_155MM,WEAPON_NONE,
@@ -671,6 +691,8 @@ static UnitTypeClass const UnitHarvester(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_GOOD|
 	HOUSEF_BAD,								// OWNABLE:		Ownable by house (bit field).
@@ -729,6 +751,8 @@ static UnitTypeClass const UnitMCV(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_GOOD|
 	HOUSEF_BAD,								// OWNABLE:		Ownable by house (bit field).
@@ -787,6 +811,8 @@ static UnitTypeClass const UnitJeep(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_GOOD,							// OWNABLE:		Ownable by house (bit field).
 	WEAPON_M60MG,WEAPON_NONE,
@@ -844,6 +870,8 @@ static UnitTypeClass const UnitBuggy(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_BAD,								// OWNABLE:		Ownable by house (bit field).
 	WEAPON_M60MG,WEAPON_NONE,
@@ -905,6 +933,8 @@ static UnitTypeClass const UnitBike(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_BAD,								// OWNABLE:		Ownable by house (bit field).
 	WEAPON_DRAGON,WEAPON_NONE,
@@ -962,6 +992,8 @@ static UnitTypeClass const UnitMLRS(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_BAD|
 	HOUSEF_GOOD,							// OWNABLE:		Ownable by house (bit field).
@@ -1020,6 +1052,8 @@ static UnitTypeClass const UnitAPC(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_BAD|
 	HOUSEF_JP|
 	HOUSEF_GOOD,							// OWNABLE:		Ownable by house (bit field).
@@ -1078,6 +1112,8 @@ static UnitTypeClass const UnitGunBoat(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_GOOD|
 	HOUSEF_BAD,								// OWNABLE:		Ownable by house (bit field).
@@ -1339,6 +1375,8 @@ static UnitTypeClass const UnitNukeTank(
 	HOUSEF_MULTI4|
 	HOUSEF_MULTI5|
 	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
 	HOUSEF_JP|
 	HOUSEF_BAD,								// OWNABLE:		Ownable by house (bit field).
 	WEAPON_NUKE_LOB,WEAPON_NONE,

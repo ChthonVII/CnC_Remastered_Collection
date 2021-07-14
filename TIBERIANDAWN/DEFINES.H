@@ -676,6 +676,9 @@ typedef enum HousesType : char {
 	HOUSE_MULTI4,				// Multi-Player house #4
 	HOUSE_MULTI5,				// Multi-Player house #5
 	HOUSE_MULTI6,				// Multi-Player house #6
+    // 8players
+    HOUSE_MULTI7,				// Multi-Player house #7
+    HOUSE_MULTI8,				// Multi-Player house #8
 
 	HOUSE_COUNT,
 	HOUSE_FIRST=HOUSE_GOOD
@@ -693,17 +696,28 @@ typedef enum HousesType : char {
 #define	HOUSEF_MULTI4	(1<<HOUSE_MULTI4)
 #define	HOUSEF_MULTI5	(1<<HOUSE_MULTI5)
 #define	HOUSEF_MULTI6	(1<<HOUSE_MULTI6)
+// 8players
+#define	HOUSEF_MULTI7	(1<<HOUSE_MULTI7)
+#define	HOUSEF_MULTI8	(1<<HOUSE_MULTI8)
 
+// Chthon CFE Note: Just swapping these around to change the multiplayer colors *DOES* work,
+// however it also mucks with which team GlyphX uses for the dino missions (da fuq?).
+// So the only solution is to leave these be and swap the behavior of LtBlue and Blue in HouseClass::Init_Data() instead.
 typedef enum PlayerColorType : char {
 	REMAP_NONE = -1,
 	REMAP_GOLD,
 	REMAP_FIRST=REMAP_GOLD,
-	REMAP_LTBLUE,
+	REMAP_LTBLUE, 
 	REMAP_RED,
 	REMAP_GREEN,
 	REMAP_ORANGE,
 	REMAP_BLUE,
-	REMAP_LAST=REMAP_BLUE,
+    // 8players
+    // REMAP_LAST=REMAP_BLUE,
+    REMAP_MODCOLOR_BLUE,
+    REMAP_MODCOLOR_PURPLE,
+    REMAP_LAST=REMAP_MODCOLOR_PURPLE,
+	
 
 	REMAP_COUNT
 } PlayerColorType;
@@ -1948,22 +1962,37 @@ inline TextPrintType operator~(TextPrintType a)
 **	maximums never exceed the maximum value for the "ID" element in the
 **	object class.
 */
-#define	AIRCRAFT_MAX			100			// Lasts for minutes.
-#define	ANIM_MAX					200			// Lasts only a few seconds.
-#define	BUILDING_MAX			500		// Lasts for hours.
-#define	BULLET_MAX				50			// Lasts several seconds.
-#define	FACTORY_MAX				32			// Lasts a few minutes.
+
+// Chthon CFE Note: Increase some of these maxes to be more suitable for megmaps/8 players
+// Memory/performance Impact should be trivial on today's hardware, I think... 
+//#define	AIRCRAFT_MAX			100			// Lasts for minutes.
+#define	AIRCRAFT_MAX			200			// Lasts for minutes.
+//#define	ANIM_MAX					200			// Lasts only a few seconds.
+#define	ANIM_MAX					400			// Lasts only a few seconds.
+//#define	BUILDING_MAX			500		// Lasts for hours.
+#define	BUILDING_MAX			1000		// Lasts for hours.
+//#define	BULLET_MAX				50			// Lasts several seconds.
+#define	BULLET_MAX				100			// Lasts several seconds.
+//#define	FACTORY_MAX				32			// Lasts a few minutes.
+#define	FACTORY_MAX				64			// Lasts a few minutes. // 48 should be enough, but let's keep some headroom in case further mods add more superweapons or something.
 #define	HOUSE_MAX				12			// Lasts entire scenario.
-#define	INFANTRY_MAX			500		// Lasts for minutes.
+//#define	INFANTRY_MAX			500		// Lasts for minutes.
+#define	INFANTRY_MAX			1000		// Lasts for minutes.
 #define	OVERLAY_MAX				1			// Very transitory.
-#define	REINFORCEMENT_MAX		50			// Maximum number of reinforcements.
+//#define	REINFORCEMENT_MAX		50			// Maximum number of reinforcements.
+#define	REINFORCEMENT_MAX		100			// Maximum number of reinforcements. // nice for custom missions
 #define	SMUDGE_MAX				1			// Very transitory.
-#define	TEAM_MAX					60			// Lasts forever.
+//#define	TEAM_MAX					60			// Lasts forever.
+#define	TEAM_MAX					120			// Lasts forever.
 #define	TEMPLATE_MAX			1			// Very transitory.
-#define	TERRAIN_MAX				500		// Lasts for hours or eternity.
-#define	TRIGGER_MAX				80			// Lasts forever.
-#define	UNIT_MAX					500		// Lasts for minutes.
-#define	TEAMTYPE_MAX			60			// Lasts forever.
+//#define	TERRAIN_MAX				500		// Lasts for hours or eternity.
+#define	TERRAIN_MAX				1000		// Lasts for hours or eternity.
+//#define	TRIGGER_MAX				80			// Lasts forever.
+#define	TRIGGER_MAX				200			// Lasts forever. // same as RA
+//#define	UNIT_MAX					500		// Lasts for minutes.
+#define	UNIT_MAX					1000		// Lasts for minutes.
+//#define	TEAMTYPE_MAX			60			// Lasts forever.
+#define	TEAMTYPE_MAX			120			// Lasts forever.
 
 // Save filename description.
 #define	DESCRIP_MAX				44			// 40 chars + CR + LF + CTRL-Z + NULL
@@ -1972,11 +2001,14 @@ inline TextPrintType operator~(TextPrintType a)
 
 #define  OBUTTON_HEIGHT       9			// Is defined in mapedit.h, need for buttons
 
+// RA uses 12, but changing this would change the unit behavior
 #define	CONQUER_PATH_MAX		9			// Number of cells to look ahead for movement.
 
-#define	EACH_UNIT_MAX			(UNIT_MAX/4)			// Default maximum any one player can have.
-#define	EACH_BUILDING_MAX		(BUILDING_MAX/4)		// Default maximum any one player can build.
-
+// These affect the AI, so they must be adjusted to the same ultimate values
+//#define	EACH_UNIT_MAX			(UNIT_MAX/4)			// Default maximum any one player can have.
+//#define	EACH_BUILDING_MAX		(BUILDING_MAX/4)		// Default maximum any one player can build.
+#define	EACH_UNIT_MAX			(UNIT_MAX/8)			// Default maximum any one player can have.
+#define	EACH_BUILDING_MAX		(BUILDING_MAX/8)		// Default maximum any one player can build.
 
 /**********************************************************************
 **	Terrain can be of these different classes. At any point in the game
@@ -2512,7 +2544,9 @@ typedef enum WaypointEnum : unsigned char
 /****************************************************************************
 **	Max # of players total, including the game's owner
 */
-#define	MAX_PLAYERS			6
+// 8players
+// #define	MAX_PLAYERS			6
+#define	MAX_PLAYERS			8
 
 
 /****************************************************************************
@@ -2540,7 +2574,9 @@ typedef enum GameEnum : unsigned char {
 /****************************************************************************
 **	Max # of colors for multiplayer games
 */
-#define	MAX_MPLAYER_COLORS		6
+// 8players
+//#define	MAX_MPLAYER_COLORS		6
+#define	MAX_MPLAYER_COLORS		8
 
 
 /****************************************************************************

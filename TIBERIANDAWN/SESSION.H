@@ -54,9 +54,12 @@ class CellClass;
 //...........................................................................
 // Various limiting values
 //...........................................................................
-#define	MAX_PLAYERS						6		// max # of players we can have
+// 8players
+//#define	MAX_PLAYERS						6		// max # of players we can have
+#define	MAX_PLAYERS						8		// max # of players we can have
 #define	MPLAYER_BUILD_LEVEL_MAX		7		// max build level in multiplay
-#define	MAX_MPLAYER_COLORS			6		// max # of colors
+//#define	MAX_MPLAYER_COLORS			6		// max # of colors
+#define	MAX_MPLAYER_COLORS			8		// max # of colors
 
 //...........................................................................
 // Max sizes of packets we want to send

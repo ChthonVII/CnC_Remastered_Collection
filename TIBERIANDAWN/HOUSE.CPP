@@ -4626,7 +4626,9 @@ void HouseClass::Init_Data(PlayerColorType color, HousesType house, int credits)
 			((unsigned char &)Class->BrightColor) = 127;
 			break;
 
-		case REMAP_LTBLUE:
+		// Chthon CFE Note: Swap the behavior of LtBlue and Blue so we can get the right color in the dino missions in both remastered and legacy renderers
+        //case REMAP_LTBLUE:
+        case REMAP_BLUE:
 			RemapTable = RemapLtBlue;
 			((unsigned char &)Class->Color) = 135;
 			((unsigned char &)Class->BrightColor) = 2;
@@ -4644,11 +4646,26 @@ void HouseClass::Init_Data(PlayerColorType color, HousesType house, int credits)
 			((unsigned char &)Class->BrightColor) = 159;
 			break;
 
-		case REMAP_BLUE:
+        // Chthon CFE Note: Swap the behavior of LtBlue and Blue so we can get the right color in the dino missions in both remastered and legacy renderers
+		//case REMAP_BLUE:
+        case REMAP_LTBLUE:
 			RemapTable = RemapBlue;
 			((unsigned char &)Class->Color) = 203;
 			((unsigned char &)Class->BrightColor) = 201;
 			break;
+            
+        // 8players
+        case REMAP_MODCOLOR_BLUE:
+			RemapTable = RemapModBlue;
+			((unsigned char &)Class->Color) = 11;
+			((unsigned char &)Class->BrightColor) = 10;
+			break;
+        case REMAP_MODCOLOR_PURPLE:
+			RemapTable = RemapModPurple;
+			((unsigned char &)Class->Color) = 212;
+			((unsigned char &)Class->BrightColor) = 109;
+			break;
+            
 	}
 }
 

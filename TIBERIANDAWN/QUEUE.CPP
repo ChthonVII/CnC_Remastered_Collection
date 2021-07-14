@@ -94,13 +94,18 @@ static unsigned long CRC[32] =
 	 0,0,0,0,0,0,0,0,0,0,
 	 0,0};
 
-static char *ColorNames[6] = {
+// 8players
+//static char *ColorNames[6] = {
+static char *ColorNames[8] = {
 	"Yellow",
 	"Red",
 	"BlueGreen",
 	"Orange",
 	"Green",
 	"Blue",
+    // 8players
+    "Purple",
+    "Pink"
 };
 #endif	//DEMO
 
