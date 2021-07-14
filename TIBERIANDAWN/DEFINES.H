@@ -1969,13 +1969,15 @@ inline TextPrintType operator~(TextPrintType a)
 #define	AIRCRAFT_MAX			200			// Lasts for minutes.
 //#define	ANIM_MAX					200			// Lasts only a few seconds.
 #define	ANIM_MAX					400			// Lasts only a few seconds.
-#define	BUILDING_MAX			500		// Lasts for hours. // Not changing this b/c it impacts AI
+//#define	BUILDING_MAX			500		// Lasts for hours.
+#define	BUILDING_MAX			1000		// Lasts for hours.
 //#define	BULLET_MAX				50			// Lasts several seconds.
 #define	BULLET_MAX				100			// Lasts several seconds.
 //#define	FACTORY_MAX				32			// Lasts a few minutes.
 #define	FACTORY_MAX				64			// Lasts a few minutes. // 48 should be enough, but let's keep some headroom in case further mods add more superweapons or something.
 #define	HOUSE_MAX				12			// Lasts entire scenario.
-#define	INFANTRY_MAX			500		// Lasts for minutes.
+//#define	INFANTRY_MAX			500		// Lasts for minutes.
+#define	INFANTRY_MAX			1000		// Lasts for minutes.
 #define	OVERLAY_MAX				1			// Very transitory.
 //#define	REINFORCEMENT_MAX		50			// Maximum number of reinforcements.
 #define	REINFORCEMENT_MAX		100			// Maximum number of reinforcements. // nice for custom missions
@@ -1987,7 +1989,8 @@ inline TextPrintType operator~(TextPrintType a)
 #define	TERRAIN_MAX				1000		// Lasts for hours or eternity.
 //#define	TRIGGER_MAX				80			// Lasts forever.
 #define	TRIGGER_MAX				200			// Lasts forever. // same as RA
-#define	UNIT_MAX					500		// Lasts for minutes. // Not changing this b/c it impacts AI
+//#define	UNIT_MAX					500		// Lasts for minutes.
+#define	UNIT_MAX					1000		// Lasts for minutes.
 //#define	TEAMTYPE_MAX			60			// Lasts forever.
 #define	TEAMTYPE_MAX			120			// Lasts forever.
 
@@ -1998,12 +2001,14 @@ inline TextPrintType operator~(TextPrintType a)
 
 #define  OBUTTON_HEIGHT       9			// Is defined in mapedit.h, need for buttons
 
+// RA uses 12, but changing this would change the unit behavior
 #define	CONQUER_PATH_MAX		9			// Number of cells to look ahead for movement.
 
-// Not changing these b/c it impacts AI
-#define	EACH_UNIT_MAX			(UNIT_MAX/4)			// Default maximum any one player can have.
-#define	EACH_BUILDING_MAX		(BUILDING_MAX/4)		// Default maximum any one player can build.
-
+// These affect the AI, so they must be adjusted to the same ultimate values
+//#define	EACH_UNIT_MAX			(UNIT_MAX/4)			// Default maximum any one player can have.
+//#define	EACH_BUILDING_MAX		(BUILDING_MAX/4)		// Default maximum any one player can build.
+#define	EACH_UNIT_MAX			(UNIT_MAX/8)			// Default maximum any one player can have.
+#define	EACH_BUILDING_MAX		(BUILDING_MAX/8)		// Default maximum any one player can build.
 
 /**********************************************************************
 **	Terrain can be of these different classes. At any point in the game
