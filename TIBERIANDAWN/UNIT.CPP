@@ -5185,7 +5185,7 @@ void UnitClass::Do_Squidgy_Spawn(){
     if (*this != UNIT_VICE){
         return;
     }
-    SquidgySpawningTimer = 20;
+    SquidgySpawningTimer = 15; //20;
     Sound_Effect(VOC_SQUISH2, Coord); // make a squishy sound
     return;
 }

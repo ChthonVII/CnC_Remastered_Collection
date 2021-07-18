@@ -3305,13 +3305,22 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number, int x, int y, int widt
     if (object && (object->What_Am_I() == RTTI_UNIT)){
 		UnitClass* squidgy = static_cast<UnitClass*>(object);
 		if ((squidgy->Class->Type == UNIT_VICE) && (squidgy->SquidgySpawningTimer > 0)){
-			const int squidgyscales[20] = {
+			// replace with simple parametric easing function over 1 sec
+            /*
+            const int squidgyscales[20] = {
 				0x00C, 0x02C, 0x04C, 0x06C, 0x08C,
 				0x0A3, 0x0BA, 0x0CF, 0x0E3, 0x0F8,
 				0x10C, 0x114, 0x119, 0x114, 0x10A,
 				0x0F5, 0x0EB, 0x0E6, 0x0EB, 0x0F3
 			}; 
 			new_object.Scale = squidgyscales[20 - squidgy->SquidgySpawningTimer];
+            */
+            const int squidgyscales[15] = {
+				0x001, 0x005, 0x00D, 0x01A, 0x02C,
+				0x044, 0x060, 0x080, 0x0A0, 0x0BC,
+				0x0D4, 0x0E6, 0x0F3, 0x0FB, 0x0FF
+			}; 
+			new_object.Scale = squidgyscales[15 - squidgy->SquidgySpawningTimer];
 		}
     }
 	
