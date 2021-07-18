@@ -1099,6 +1099,9 @@ void HouseClass::AI(void)
 					if (!Scan_Place_Object(obj, cell)) {
 						delete obj;
 					}
+					else{
+                        obj->Do_Squidgy_Spawn();
+                    }
 				}
 			}
 		}

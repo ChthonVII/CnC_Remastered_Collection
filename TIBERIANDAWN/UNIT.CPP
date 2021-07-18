@@ -540,6 +540,11 @@ void UnitClass::AI(void)
 		if (Fetch_Stage() >= Get_Build_Frame_Count(Class->Get_Image_Data())-1) {
 			Set_Stage(0);
 		}
+		// Chthon CFE Note: advance visceroid spawn animation
+        if (SquidgySpawningTimer > 0){
+            SquidgySpawningTimer--;
+            Mark(MARK_CHANGE);
+        }
 	}
 
 	/*
@@ -5171,4 +5176,16 @@ bool UnitClass::DoSmarterRunAway(){
     // if we didn't find a suitable cell, return false
     // this should cause Receive_Message() to punt us up to FootClass::Receive_Message(), which will call Scatter()... for all the good that's likely to do...
     return false;
+}
+
+// display spawn animation for visceroids
+// (actually, tell DLL_Draw_Intercept() to scale them way down and then increase size
+// to make it look like they're growing out of the ground/dead infantry)
+void UnitClass::Do_Squidgy_Spawn(){
+    if (*this != UNIT_VICE){
+        return;
+    }
+    SquidgySpawningTimer = 20;
+    Sound_Effect(VOC_SQUISH2, Coord); // make a squishy sound
+    return;
 }

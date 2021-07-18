@@ -3300,6 +3300,20 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number, int x, int y, int widt
         // seems like VisibleFlags uses the same type of mask as HouseClass.Allies -- left shift 1 by the house number
         new_object.VisibleFlags = ((unsigned int)1 << (unsigned int)(((TechnoClass*)object)->House->Class->House)); 
     }
+    
+    // Chthon CFE Note: Override scale on newly-spawned viseroids to fake a spawn animation
+    if (object && (object->What_Am_I() == RTTI_UNIT)){
+		UnitClass* squidgy = static_cast<UnitClass*>(object);
+		if ((squidgy->Class->Type == UNIT_VICE) && (squidgy->SquidgySpawningTimer > 0)){
+			const int squidgyscales[20] = {
+				0x00C, 0x02C, 0x04C, 0x06C, 0x08C,
+				0x0A3, 0x0BA, 0x0CF, 0x0E3, 0x0F8,
+				0x10C, 0x114, 0x119, 0x114, 0x10A,
+				0x0F5, 0x0EB, 0x0E6, 0x0EB, 0x0F3
+			}; 
+			new_object.Scale = squidgyscales[20 - squidgy->SquidgySpawningTimer];
+		}
+    }
 	
 	CurrentDrawCount++;
 }			  

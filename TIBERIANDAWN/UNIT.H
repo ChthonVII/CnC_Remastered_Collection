@@ -209,10 +209,18 @@ class UnitClass :	public TarComClass
 		*/
 		mutable BuildingClass* TiberiumUnloadRefinery;
 
+public:
+        // Chthon CFE Note: counter for visceroid spawn animation duration
+		unsigned char SquidgySpawningTimer = 0;
+
+private:
+        
 		/*
 		** Some additional padding in case we need to add data to the class and maintain backwards compatibility for save/load
 		*/
-		unsigned char SaveLoadPadding[28];
+        // Chthon CFE Note: original padding was 28 bytes
+        //  SquidgySpawningTimer ate 1 byte
+		unsigned char SaveLoadPadding[27];
 
 		/*
 		** This contains the value of the Virtual Function Table Pointer
@@ -222,7 +230,9 @@ class UnitClass :	public TarComClass
 public:
         // Chthon CFE Note: for getting things to consistently exit the repair bay instead of twitching stupidly sometimes 
         bool DoSmarterRunAway();
-    
+        // display spawn animation for visceroids
+        void Do_Squidgy_Spawn();
+        
 };
 
 #endif

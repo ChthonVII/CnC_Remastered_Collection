@@ -2028,7 +2028,8 @@ void MapClass::CFELogic(void){
                                 UnitClass * unit = new UnitClass(UNIT_VICE, HOUSE_JP);
                                 if (unit) {
                                     if (Scan_Place_Object(unit, cell)){
-                                        Sound_Effect(VOC_SQUISH2, unit->Coord); // make a squishy sound
+                                        //Sound_Effect(VOC_SQUISH2, unit->Coord); // make a squishy sound
+                                        unit->Do_Squidgy_Spawn();
                                         VisceroidTreeFrustrationCount = 0;
                                     }
                                     else {
@@ -2047,7 +2048,7 @@ void MapClass::CFELogic(void){
 }
 
 // Chthon CFE Note -- generate visceroids if infantry died in interesting ways
-bool MapClass::ProcessTiberiumDeath(CELL where, unsigned char how){
+bool MapClass::ProcessTiberiumDeath(CELL where, COORDINATE specifically_where, unsigned char how){
 
     // infantry died running through tiberium
     if (how == 1){
@@ -2055,8 +2056,13 @@ bool MapClass::ProcessTiberiumDeath(CELL where, unsigned char how){
         if (Random_Pick(0, 19) < VisceroidOffalCount){
             UnitClass * unit = new UnitClass(UNIT_VICE, HOUSE_JP);
             if (unit) {
-                if (Scan_Place_Object(unit, where)){
-                    Sound_Effect(VOC_SQUISH2, unit->Coord); // make a squishy sound
+                if (unit->Unlimbo(specifically_where)){
+                    unit->Do_Squidgy_Spawn();
+                    Map.VisceroidOffalCount = 0;
+                    return true;
+                }
+                else if (Scan_Place_Object(unit, where)){
+                    unit->Do_Squidgy_Spawn();
                     Map.VisceroidOffalCount = 0;
                     return true;
                 }
@@ -2071,8 +2077,12 @@ bool MapClass::ProcessTiberiumDeath(CELL where, unsigned char how){
         if (Random_Pick(0, 3) < 1){
             UnitClass * unit = new UnitClass(UNIT_VICE, HOUSE_JP);
             if (unit) {
-                if (Scan_Place_Object(unit, where)){
-                    Sound_Effect(VOC_SQUISH2, unit->Coord); // make a squishy sound
+                if (unit->Unlimbo(specifically_where)){
+                    unit->Do_Squidgy_Spawn();
+                    return true;
+                }
+                else if (Scan_Place_Object(unit, where)){
+                    unit->Do_Squidgy_Spawn();
                     return true;
                 }
                 else {
@@ -2086,8 +2096,12 @@ bool MapClass::ProcessTiberiumDeath(CELL where, unsigned char how){
         if (Random_Pick(0, 99) < 10 + (5 * (how - 3))){
             UnitClass * unit = new UnitClass(UNIT_VICE, HOUSE_JP);
             if (unit) {
-                if (Scan_Place_Object(unit, where)){
-                    Sound_Effect(VOC_SQUISH2, unit->Coord); // make a squishy sound
+                if (unit->Unlimbo(specifically_where)){
+                    unit->Do_Squidgy_Spawn();
+                    return true;
+                }
+                else if (Scan_Place_Object(unit, where)){
+                    unit->Do_Squidgy_Spawn();
                     return true;
                 }
                 else {

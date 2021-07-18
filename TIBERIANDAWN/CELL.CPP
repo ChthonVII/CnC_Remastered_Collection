@@ -2335,6 +2335,7 @@ bool CellClass::Goodie_Check(FootClass * object, bool check_steel)
 					unit = new UnitClass(UNIT_VICE, HOUSE_JP);
 					if (unit) {
 						if (unit->Unlimbo(Cell_Coord())) {
+                            unit->Do_Squidgy_Spawn();
 							return(false);
 						}
 						delete unit;

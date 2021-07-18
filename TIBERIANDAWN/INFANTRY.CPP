@@ -1255,11 +1255,7 @@ void InfantryClass::AI(void)
 	*/
 
 	if (Doing == DO_NOTHING || Fetch_Stage() >= Class->DoControls[Doing].Count) {
-        
-        // Chthon CFE note -- can't set variables inside a switch, so do it here:
-        CELL rememberedcell = Coord_Cell(Coord);
-        unsigned char rememberedDBT = DeathByTiberium;
-        
+                
 		switch (Doing) {
 			default:
 				if (IsDriving) {
@@ -1308,16 +1304,24 @@ void InfantryClass::AI(void)
 			case DO_EXPLOSION2_DEATH:
 			case DO_GRENADE_DEATH:
 			case DO_FIRE_DEATH:
-				Delete_This();
+            { //Chthon CFE Note: add brackets so we can set variables here
+                // remember stuff that's about to get nuked by Delete_This();
+                COORDINATE rememberedcoord = Coord;
+                CELL rememberedcell = Coord_Cell(Coord);
+                unsigned char rememberedDBT = DeathByTiberium;
+                
+                
+                Delete_This();
                 
                 // Chthon CFE Note -- possibly spawn visercoid if infantry died by tiberium or by visceroid
                 // Do this after the infantry is deleted so the cell will no longer be occupied
-                // (If it's occupied by other inantry, ther visceroid will get bumped to an adjacent cell.)
+                // (If it's occupied by other infantry, the visceroid will get bumped to an adjacent cell.)
                 if (rememberedDBT > 0){
-                    Map.ProcessTiberiumDeath(rememberedcell, rememberedDBT);
+                    Map.ProcessTiberiumDeath(rememberedcell, rememberedcoord, rememberedDBT);
                 }
                 
 				return;
+            } // add brackets
 		}
 	}
 
