@@ -1,0 +1,3443 @@
+<?xml version="1.0"?>
+<GameConstants>
+	<GameConstantsClass>
+
+		<!-- ***************************************************************************** -->
+		<!-- ***********     		CLIENT AND SERVER GAME CONSTANTS				************* -->
+		<!-- ***************************************************************************** -->
+
+		<LocomotorAngleSnapDegrees>.01</LocomotorAngleSnapDegrees>
+		<LocomotorOvershootDistance>10.0</LocomotorOvershootDistance>
+		<LocomotorStopSpeed>0.01</LocomotorStopSpeed>
+		<LocomotorStopAngularSpeed>0.01</LocomotorStopAngularSpeed>
+
+		<MaxUnitsAbreast>9</MaxUnitsAbreast>
+		<UnitDistanceMultiplier>2.0</UnitDistanceMultiplier>
+		<PermissibleStructureConstructionQueueAttachLayers>1</PermissibleStructureConstructionQueueAttachLayers>
+
+		<MaxMapExtents>50000.0</MaxMapExtents>
+
+		<EnvironmentPlayerType>EnvironmentPlayer</EnvironmentPlayerType>
+
+		<MaxLevel> 50 </MaxLevel>
+		<MaxTacticalLevel> 20 </MaxTacticalLevel>
+		<MaxAbilityLevel>25</MaxAbilityLevel>
+
+		<MaxAchievableLevel> 50 </MaxAchievableLevel>	
+		<MaxAchievableTacticalLevel> 20 </MaxAchievableTacticalLevel>
+		<LevelTableName> PersistentPlayerXPTable </LevelTableName>
+		<TacticalLevelTableName> TacticalPlayerXPTable </TacticalLevelTableName>
+
+		<!-- attribute caps -->
+		<MinMaxSpeedPercentage>0.01</MinMaxSpeedPercentage>
+		<MaxCDRPercentage>0.4</MaxCDRPercentage>
+		<MaxACRPercentage>0.4</MaxACRPercentage>
+		<MaxCriticalHitProbabilityModifier>0.8</MaxCriticalHitProbabilityModifier>
+		<MaxPhysicalDodge>0.3</MaxPhysicalDodge>
+		<MaxLifeSteal>0.5</MaxLifeSteal>
+		<MaxSpiritVamp>0.5</MaxSpiritVamp>
+		<MaxManaBurn>0.3</MaxManaBurn>
+
+		<!-- attribute modifiers for tier -->
+		<TierAttributeModInfo/>
+		<EffectDurationModifierAttributes/>
+
+		<ProgressiveCampaignDifficultyInfo>
+			<Entry>
+				<Key>Easy</Key>
+				<Value>
+					<AIVsHumanDamageMultiplier>0.5</AIVsHumanDamageMultiplier>
+					<NumObjectivesCanAchieve>3</NumObjectivesCanAchieve> <!-- Was 1 for 8-Bit Games, now 3 -->
+				</Value>
+			</Entry>
+			<Entry>
+				<Key>Normal</Key>
+				<Value>
+					<AIVsHumanDamageMultiplier>1.0</AIVsHumanDamageMultiplier>
+					<NumObjectivesCanAchieve>3</NumObjectivesCanAchieve>
+				</Value>
+			</Entry>
+			<Entry>
+				<Key>Hard</Key>
+				<Value>
+					<AIVsHumanDamageMultiplier>1.5</AIVsHumanDamageMultiplier>
+					<NumObjectivesCanAchieve>3</NumObjectivesCanAchieve>
+				</Value>
+			</Entry>
+		</ProgressiveCampaignDifficultyInfo>
+
+		<!-- How many missions (maximum) can be listed in the CampaignMenu, If -1, no limit -->
+		<ProgressiveCamapignMaxMissionsDisplayed> -1 </ProgressiveCamapignMaxMissionsDisplayed>
+
+		<GlobalTimersSeconds>
+			<Entry>
+				<Key> Global </Key>
+				<Value> 3.0 </Value>
+			</Entry>
+		</GlobalTimersSeconds>
+
+		<TargetingRangeGroupingInterval>10</TargetingRangeGroupingInterval>
+
+		<LootRollTimeSeconds>60.0</LootRollTimeSeconds>
+		<RequiredLootRollItemCategories/>
+		<MaxSpeedMultiplier> 1.0 </MaxSpeedMultiplier>
+
+		<InstantResurrectDelaySeconds>6.0</InstantResurrectDelaySeconds>
+
+		<MinBuildTimeSeconds>1.0</MinBuildTimeSeconds>
+
+		<CustomMapInstanceDataTemplate>Base_SimpleRTS_Custom_Map_Instance_Template</CustomMapInstanceDataTemplate>
+		<CustomMapTDInstanceDataTemplate>Base_SimpleRTS_Custom_CNC_TD_Map_Instance_Template</CustomMapTDInstanceDataTemplate>
+		<CustomMapRAInstanceDataTemplate>Base_SimpleRTS_Custom_CNC_RA_Map_Instance_Template</CustomMapRAInstanceDataTemplate>
+		<CustomMapTDSoloInstanceDataTemplate>Base_SimpleRTS_Custom_CNC_TD_Solo_Map_Instance_Template</CustomMapTDSoloInstanceDataTemplate>
+		<CustomMapRASoloInstanceDataTemplate>Base_SimpleRTS_Custom_CNC_RA_Solo_Map_Instance_Template</CustomMapRASoloInstanceDataTemplate>
+
+		<!-- Global Speed Variable-->
+
+		<MovementSystemConstants>
+			<AgentRadiusExtentMultiplier>1.0</AgentRadiusExtentMultiplier>
+			<AgentRadiusExtentMovingMultiplier>0.85</AgentRadiusExtentMovingMultiplier>
+			<CrowdConstants>
+				<MaxAgents>600</MaxAgents>
+				<MaxAgentRadius>60.0</MaxAgentRadius>
+				<TopologyOptimizationTimeThreshold>0.5</TopologyOptimizationTimeThreshold>
+				<CollisionResolveFactor>0.5</CollisionResolveFactor>
+				<CollisionDistanceModifier>0.0</CollisionDistanceModifier>
+				<CollisionDisplacementRotationDegrees>0.0</CollisionDisplacementRotationDegrees>
+				<ResetDisplacementDirectionSeconds>0.5</ResetDisplacementDirectionSeconds>
+				<NumCollisionIterations>12</NumCollisionIterations>
+				<DoInitialQuickPathfind>false</DoInitialQuickPathfind>
+			</CrowdConstants>
+			<ObstacleAvoidanceConstants>
+				<!-- these are the defaults -->
+				<!--<VelocityBias>0.4</VelocityBias> 
+				<DesiredVelocityWeight>2.0</DesiredVelocityWeight>
+				<CurrentVelocityWeight>0.75</CurrentVelocityWeight>
+				<SideWeight>0.75</SideWeight>
+				<ToIntersectionWeight>2.5</ToIntersectionWeight>
+				<HorizonTime>2.5</HorizonTime>
+				<GridSize>33</GridSize>
+				<AdaptiveDivisions>7</AdaptiveDivisions>
+				<AdaptiveRings>2</AdaptiveRings>
+				<AdaptiveDepth>5</AdaptiveDepth>-->
+				<VelocityBias>0.4</VelocityBias>
+				<DesiredVelocityWeight>2.0</DesiredVelocityWeight>
+				<!-- modified current velocity weight to try to reduce oscillation -->
+				<CurrentVelocityWeight>0.90</CurrentVelocityWeight>
+				<SideWeight>0.75</SideWeight>
+				<ToIntersectionWeight>2.5</ToIntersectionWeight>
+				<HorizonTime>2.5</HorizonTime>
+				<GridSize>33</GridSize>
+				<AdaptiveDivisions>7</AdaptiveDivisions>
+				<AdaptiveRings>2</AdaptiveRings>
+				<AdaptiveDepth>5</AdaptiveDepth>
+			</ObstacleAvoidanceConstants>
+		</MovementSystemConstants>
+
+		<PGUGCConstants>
+			<DatabaseSyncCooldownMilliseconds>30000</DatabaseSyncCooldownMilliseconds>
+			<!--<DatabaseDownloadURL>http://127.0.0.1/pg_workshop.json.gz</DatabaseDownloadURL>-->
+			<!--<MapDownloadBaseURL>http://127.0.0.1/maps/</MapDownloadBaseURL>-->
+			<!--<RadarMapDownloadBaseURL>http://127.0.0.1/radarimages/</RadarMapDownloadBaseURL>-->
+			<DatabaseDownloadURL>https://workshop.cnctdra.ea.com/metadata/pg_workshop.json.gz</DatabaseDownloadURL>
+			<MapDownloadBaseURL>https://workshop.cnctdra.ea.com/maps/</MapDownloadBaseURL>
+			<RadarMapDownloadBaseURL>https://workshop.cnctdra.ea.com/maps/</RadarMapDownloadBaseURL>
+			<LocalUGCFolderName>UGC</LocalUGCFolderName>
+		</PGUGCConstants>
+
+		<ProductionCostTickInterval>.1</ProductionCostTickInterval>
+		<PowerConnectorType>Building</PowerConnectorType>
+		<!--<PriceTickPriority>LeastExpensiveFirst</PriceTickPriority> -->
+		<SellObjectModifier>0.5</SellObjectModifier>
+		<CancelConstructionModifier>1.0</CancelConstructionModifier>
+		<!-- <HumanTeleportAbilityItem>Structure_Human_Teleporter_Item</HumanTeleportAbilityItem> -->
+		<MaxPatrolPoints>128</MaxPatrolPoints>
+		<ControlGroupClusteringDistance>300.</ControlGroupClusteringDistance>
+		<ControlGroupClusteringMinObjectCount>2</ControlGroupClusteringMinObjectCount>
+		<MaxConduitPivots>8</MaxConduitPivots>
+		<AttackingUnitsUnpushableAndModifyUnitMesh>false</AttackingUnitsUnpushableAndModifyUnitMesh>
+		<HoldPositionUnpushableAndModifiesUnitMesh>false</HoldPositionUnpushableAndModifiesUnitMesh>
+		<EnableAvoidanceOfStoppedUnits>true</EnableAvoidanceOfStoppedUnits>
+		<MaxQueuedOrders>12</MaxQueuedOrders>
+		<MultiplayerUnpauseTime>5</MultiplayerUnpauseTime>
+		<DefaultStructurePlacementFacing>270.0</DefaultStructurePlacementFacing>
+		<MaxBuildableRange>1200</MaxBuildableRange>
+		<SaveFileExtension>sav</SaveFileExtension>
+		<SaveFileScreenshotPreviewFileName>glyphx_cnc_save_game_preview</SaveFileScreenshotPreviewFileName>
+		<EnableReplaySystem>true</EnableReplaySystem>
+		<EnableGranularRecastCells>true</EnableGranularRecastCells>
+		<ScatterDistance>400</ScatterDistance>
+		<ResourceTradingDefaultAmount>500</ResourceTradingDefaultAmount>
+		<ResourceTradingWaitSeconds>60.0</ResourceTradingWaitSeconds>
+		<OverrideResourceNodeStartingResourceMin>3000</OverrideResourceNodeStartingResourceMin>
+		<OverrideResourceNodeStartingResourceMax>3000</OverrideResourceNodeStartingResourceMax>
+		<OverrideResourceNodeStartingResourceIncrement>0</OverrideResourceNodeStartingResourceIncrement>
+		<OverrideResourceNodeStartingResourceDefault>3000</OverrideResourceNodeStartingResourceDefault>
+		<CrateDropPercentageMin>0.0</CrateDropPercentageMin>
+		<CrateDropPercentageMax>1.0</CrateDropPercentageMax>
+		<CrateDropPercentageIncrement>0.05</CrateDropPercentageIncrement>
+		<CrateDropPercentageDefault>0.05</CrateDropPercentageDefault>
+
+		<GoalsToWinMin>5</GoalsToWinMin>
+		<GoalsToWinMax>100</GoalsToWinMax>
+		<GoalsToWinIncrement>1</GoalsToWinIncrement>
+		<GoalsToWinDefault>100</GoalsToWinDefault>
+		<HalfDurationMin>5</HalfDurationMin>
+		<HalfDurationMax>30</HalfDurationMax>
+		<HalfDurationIncrement>1</HalfDurationIncrement>
+		<HalfDurationDefault>5</HalfDurationDefault>
+		<OTSessionsMin>0</OTSessionsMin>
+		<OTSessionsMax>4</OTSessionsMax>
+		<OTSessionsIncrement>1</OTSessionsIncrement>
+		<OTSessionsDefault>4</OTSessionsDefault>
+
+		<StartingTemplateName>Starting_Template</StartingTemplateName>
+		<FirstTemplateName>Default Blueprint</FirstTemplateName>
+		<TemplateCharacterLimit>18</TemplateCharacterLimit>
+		<ValidUnitNameCharacterTypes>
+			<Entry>alnum</Entry>
+			<Entry>space</Entry>
+		</ValidUnitNameCharacterTypes>
+		<ValidUnitNameCharacters>_</ValidUnitNameCharacters>
+
+		<!-- For shards, how much percentage of health and mana is returned from stones -->
+		<HealthReturnPercentage> 0.25 </HealthReturnPercentage>
+		<ManaReturnPercentage> 0.35 </ManaReturnPercentage>
+		<!-- ABILITY LEVELING STAT MODS -->
+		<!-- DO NOT CHANGE THESE NUMBERS WITHOUT TALKING TO PAT FIRST-->
+		<MinionCasterLevelDamageIncrease>3</MinionCasterLevelDamageIncrease>
+		<SpellCasterLevelDamageIncrease>20</SpellCasterLevelDamageIncrease>
+		<DOTSpellCasterLevelDamageIncrease>4</DOTSpellCasterLevelDamageIncrease>
+		<HOTSpellCasterLevelDamageIncrease>1.0</HOTSpellCasterLevelDamageIncrease>
+		<BuyInventoryCostMultipliers/>
+		<BuySlotCapacityCostMultipliers/>
+		<ItemAbilityUpgradeCostMultiplier>1.5</ItemAbilityUpgradeCostMultiplier>
+		<!-- ******************* start Experience data ********************* -->
+		<!-- start experience reward modification data -->
+
+		<GroupSizeEXPModifiers>
+			<Entry> 1.0 </Entry>
+			<!-- 1 member / Soloing-->
+			<Entry> 1.0 </Entry>
+			<!-- 2 members -->
+			<Entry> 1.0 </Entry>
+			<!-- 3 members -->
+			<Entry> 1.0 </Entry>
+			<!-- 4 members -->
+		</GroupSizeEXPModifiers>
+		<LevelDifferenceEXPModifiers>
+			<Entry>
+				<!-- No Contest - Avatar is 4 or more levels higher -->
+				<Multiplier> 1.0 </Multiplier>
+				<MaxGroupMemberMultiplier> 0.5 </MaxGroupMemberMultiplier>
+				<MaximumLevelDifference> -4 </MaximumLevelDifference>
+			</Entry>
+			<Entry>
+				<!-- Low Challenge - Avatar is 1-3 levels higher -->
+				<Multiplier> 1.0 </Multiplier>
+				<MinimumLevelDifference> -3 </MinimumLevelDifference>
+				<MaximumLevelDifference> -1 </MaximumLevelDifference>
+			</Entry>
+			<Entry>
+				<!-- High Challenge - Avatar is 1-2 levels lower -->
+				<Multiplier> 1.0 </Multiplier>
+				<MinimumLevelDifference> 1 </MinimumLevelDifference>
+				<MaximumLevelDifference> 2 </MaximumLevelDifference>
+			</Entry>
+			<Entry>
+				<!-- Very High Challenge - Avatar is 3-4 levels lower -->
+				<Multiplier> 1.0 </Multiplier>
+				<MinimumLevelDifference> 3 </MinimumLevelDifference>
+				<MaximumLevelDifference> 4 </MaximumLevelDifference>
+			</Entry>
+			<Entry>
+				<!-- Outclassed - Avatar is 5 or more levels lower -->
+				<Multiplier> 1.0 </Multiplier>
+				<MinimumLevelDifference> 5 </MinimumLevelDifference>
+			</Entry>
+		</LevelDifferenceEXPModifiers>
+		<!-- end experience reward modification data -->
+		<LevelDifferenceDamageModifiers>
+			<Entry>
+				<DamageMultiplier>1.0</DamageMultiplier>
+				<CriticalHitModifier>0.0</CriticalHitModifier>
+				<MinLevelDiff>1</MinLevelDiff>
+				<MaxLevelDiff>1</MaxLevelDiff>
+			</Entry>
+			<Entry>
+				<DamageMultiplier>1.0</DamageMultiplier>
+				<CriticalHitModifier>0.0</CriticalHitModifier>
+				<MinLevelDiff>2</MinLevelDiff>
+				<MaxLevelDiff>4</MaxLevelDiff>
+			</Entry>
+			<Entry>
+				<DamageMultiplier>1.0</DamageMultiplier>
+				<CriticalHitModifier>0.0</CriticalHitModifier>
+				<MinLevelDiff>5</MinLevelDiff>
+				<MaxLevelDiff>8</MaxLevelDiff>
+			</Entry>
+			<Entry>
+				<DamageMultiplier>1.0</DamageMultiplier>
+				<CriticalHitModifier>0.0</CriticalHitModifier>
+				<MinLevelDiff>9</MinLevelDiff>
+				<MaxLevelDiff>15</MaxLevelDiff>
+			</Entry>
+			<Entry>
+				<DamageMultiplier>1.0</DamageMultiplier>
+				<CriticalHitModifier>0.0</CriticalHitModifier>
+				<MinLevelDiff>16</MinLevelDiff>
+				<MaxLevelDiff>20</MaxLevelDiff>
+			</Entry>
+			<Entry>
+				<DamageMultiplier>1.0</DamageMultiplier>
+				<CriticalHitModifier>0.0</CriticalHitModifier>
+				<MinLevelDiff>21</MinLevelDiff>
+				<MaxLevelDiff>30</MaxLevelDiff>
+			</Entry>
+			<Entry>
+				<DamageMultiplier>1.0</DamageMultiplier>
+				<CriticalHitModifier>0.0</CriticalHitModifier>
+				<MinLevelDiff>31</MinLevelDiff>
+				<MaxLevelDiff>35</MaxLevelDiff>
+			</Entry>
+			<Entry>
+				<DamageMultiplier>1.0</DamageMultiplier>
+				<CriticalHitModifier>0.0</CriticalHitModifier>
+				<MinLevelDiff>36</MinLevelDiff>
+				<MaxLevelDiff>40</MaxLevelDiff>
+			</Entry>
+			<Entry>
+				<DamageMultiplier>1.0</DamageMultiplier>
+				<CriticalHitModifier>0.0</CriticalHitModifier>
+				<MinLevelDiff>41</MinLevelDiff>
+				<MaxLevelDiff>9999</MaxLevelDiff>
+			</Entry>
+		</LevelDifferenceDamageModifiers>
+		<ExpKdiffHigh> 20 </ExpKdiffHigh>
+		<ExpKdiff>
+			<Entry> 0 </Entry>
+			<Entry> 5 </Entry>
+			<Entry> 5 </Entry>
+			<Entry> 5 </Entry>
+			<Entry> 5 </Entry>
+			<Entry> 5 </Entry>
+			<Entry> 5 </Entry>
+			<Entry> 5 </Entry>
+			<Entry> 6 </Entry>
+			<Entry> 6 </Entry>
+			<Entry> 7 </Entry>
+			<Entry> 7 </Entry>
+			<Entry> 8 </Entry>
+			<Entry> 8 </Entry>
+			<Entry> 8 </Entry>
+			<Entry> 8 </Entry>
+			<Entry> 9 </Entry>
+			<Entry> 9 </Entry>
+			<Entry> 9 </Entry>
+			<Entry> 9 </Entry>
+			<Entry> 11 </Entry>
+			<Entry> 11 </Entry>
+			<Entry> 11 </Entry>
+			<Entry> 11 </Entry>
+			<Entry> 11 </Entry>
+			<Entry> 11 </Entry>
+			<Entry> 11 </Entry>
+			<Entry> 11 </Entry>
+			<Entry> 11 </Entry>
+			<Entry> 11 </Entry>
+			<Entry> 12 </Entry>
+			<Entry> 12 </Entry>
+			<Entry> 12 </Entry>
+			<Entry> 12 </Entry>
+			<Entry> 12 </Entry>
+			<Entry> 12 </Entry>
+			<Entry> 12 </Entry>
+			<Entry> 12 </Entry>
+			<Entry> 12 </Entry>
+			<Entry> 12 </Entry>
+			<Entry> 13 </Entry>
+			<Entry> 13 </Entry>
+			<Entry> 13 </Entry>
+			<Entry> 13 </Entry>
+			<Entry> 13 </Entry>
+			<Entry> 13 </Entry>
+			<Entry> 14 </Entry>
+			<Entry> 14 </Entry>
+			<Entry> 14 </Entry>
+			<Entry> 14 </Entry>
+			<Entry> 15 </Entry>
+		</ExpKdiff>
+		<ExpKxscale> 5 </ExpKxscale>
+		<ExpKoffset> 45 </ExpKoffset>
+		<ExpKtolevel> 8 </ExpKtolevel>
+		<ExpDlevel>
+			<Entry> 0 </Entry>
+			<Entry> 0 </Entry>
+			<Entry> 0 </Entry>
+			<Entry> 0 </Entry>
+			<Entry> 0 </Entry>
+			<Entry> 0 </Entry>
+			<Entry> 0 </Entry>
+			<Entry> 0 </Entry>
+			<Entry> 0 </Entry>
+			<Entry> 0 </Entry>
+			<Entry> 0 </Entry>
+			<Entry> 0 </Entry>
+			<Entry> 0 </Entry>
+			<Entry> 0 </Entry>
+			<Entry> 0 </Entry>
+			<Entry> 0 </Entry>
+			<Entry> 0 </Entry>
+			<Entry> 0 </Entry>
+			<Entry> 0 </Entry>
+			<Entry> 0 </Entry>
+			<Entry> 0 </Entry>
+			<Entry> 0 </Entry>
+			<Entry> 0 </Entry>
+			<Entry> 0 </Entry>
+			<Entry> 0 </Entry>
+			<Entry> 0 </Entry>
+			<Entry> 0 </Entry>
+			<Entry> 0 </Entry>
+			<Entry> 0 </Entry>
+			<Entry> 1 </Entry>
+			<Entry> 3 </Entry>
+			<Entry> 6 </Entry>
+			<Entry> 10 </Entry>
+			<Entry> 15 </Entry>
+			<Entry> 20 </Entry>
+			<Entry> 25 </Entry>
+			<Entry> 30 </Entry>
+			<Entry> 35 </Entry>
+			<Entry> 40 </Entry>
+			<Entry> 45 </Entry>
+			<Entry> 50 </Entry>
+			<Entry> 55 </Entry>
+			<Entry> 60 </Entry>
+			<Entry> 65 </Entry>
+			<Entry> 70 </Entry>
+			<Entry> 75 </Entry>
+			<Entry> 80 </Entry>
+			<Entry> 85 </Entry>
+			<Entry> 90 </Entry>
+			<Entry> 95 </Entry>
+			<Entry> 100 </Entry>
+		</ExpDlevel>
+		<!-- ******************* End Experience data ********************* -->
+
+		<MaxPopulationCap>1000</MaxPopulationCap>
+
+		<PirateNameList network="client"/>
+		<AINameList/>
+		<AITemplateList/>
+		<UserPlayableAITemplateList/>
+		<UserPlayableAITemplateDescriptionList network="client"/>
+		<UserPlayableAITemplateNameList network="client"/>
+
+		<AIHarvestersPerResourceNode network="server"> 2 </AIHarvestersPerResourceNode>
+
+		<PendingBattleCountdownTime> 10.0 </PendingBattleCountdownTime>
+
+		<GameMovieList network="client">
+			<Entry>
+				<Key>Faction1</Key>
+				<Value>
+					<Entry>Victory.ogv</Entry>
+					<Entry>Defeat.ogv</Entry>
+				</Value>
+			</Entry>
+		</GameMovieList>
+
+		<UseToggleRepairModeButton>false</UseToggleRepairModeButton>
+
+		<!-- Negative states for units and structures, used for GUI alert icons and unit state audio logic -->
+		<UnitStructureNegativeStates network="client">
+			<Entry> Diseased </Entry>
+			<Entry> Burning </Entry>
+			<Entry> Poisoned </Entry>
+			<Entry> Hungry </Entry>
+			<Entry> Deserting </Entry>
+			<Entry> Sandstormed </Entry>
+			<Entry> Taunted </Entry>
+		</UnitStructureNegativeStates>
+		<UnitStructureNegativeStateIconNames network="client">
+			<Entry> ui_unitstatusicon_diseased_00.tga </Entry> 	<!-- Diseased -->
+			<Entry> ui_unitstatusicon_burning_00.tga </Entry> 		<!-- Burning -->
+			<Entry> ui_unitstatusicon_poisoned.tga </Entry> 		<!-- Poisoned -->
+			<Entry> warning_stealthrevealed.tga </Entry> 			<!-- Hungry -->
+			<Entry> ui_unitstatusicon_derserting_00.tga </Entry> 	<!-- Deserting -->
+			<Entry> warning_stealthrevealed.tga </Entry>   			<!-- Sandstormed -->
+			<Entry> ui_unitstatusicon_diseased_00.tga </Entry>		<!-- Taunted (enemies only) -->
+		</UnitStructureNegativeStateIconNames>
+
+
+
+
+		<!-- ***************************************************************************** -->
+		<!-- ***********     				SERVER GAME CONSTANTS					************* -->
+		<!-- ***************************************************************************** -->
+
+		<EnvironmentObjectType network="server">EnvironmentSpellObject</EnvironmentObjectType>
+
+		<MaxAutoLevel network="server">10</MaxAutoLevel>
+
+		<SpawnerDormantRadius network="server">2000.0</SpawnerDormantRadius>
+
+		<LootRadius>100</LootRadius>
+		<LootConsiderPercentage network="server">1.0</LootConsiderPercentage>
+
+		<WalksOnPaths network="server">false</WalksOnPaths>
+
+		<MaxCurrencyAllowed network="server">
+		</MaxCurrencyAllowed>
+
+		<ResourceFieldObjects network="server">
+		</ResourceFieldObjects>
+
+
+
+		<AvatarDefenseReductionPercent network="server">.05</AvatarDefenseReductionPercent>
+
+		<AnnouncementColor network="server">
+			<R>1.0</R>
+			<G>1.0</G>
+			<B>0.0</B>
+			<A>1.0</A>
+		</AnnouncementColor>
+
+		<PatrolFormationType	network="server">None</PatrolFormationType>
+
+		<MinSecondsBetweenAbilityTargeting network="server">0.4</MinSecondsBetweenAbilityTargeting>
+
+		<TimeToCacheAttacks network="server">0.1</TimeToCacheAttacks>
+		<TimeToCacheAttacksOnAvatars network="server">10</TimeToCacheAttacksOnAvatars>
+		<TimeToCacheAttacksForXPAward network="server">0.1</TimeToCacheAttacksForXPAward>
+		<TimeToCacheAttacksForXPAwardOnAvatars network="server">6</TimeToCacheAttacksForXPAwardOnAvatars>
+		<OnlyLastAttackerForXPAward network="server">false</OnlyLastAttackerForXPAward>
+
+		<NPCInteractRadius network="server">200.0</NPCInteractRadius>
+
+		<SurrenderTimeoutTime network="server">30</SurrenderTimeoutTime>
+		<MinimumSurrenderDelay network="server">0</MinimumSurrenderDelay>
+		<SurrenderCooldownTime network="server">0</SurrenderCooldownTime>
+		<SurrenderLoserRewardPercent network="server">0.60</SurrenderLoserRewardPercent>
+		<ServerLaggedPlayerPauseThreshold network="server">90</ServerLaggedPlayerPauseThreshold>
+
+		<MinPersistentLevelForTesting network="server">1</MinPersistentLevelForTesting>
+
+		<MaxSuicideKillTime network="server">10</MaxSuicideKillTime>
+		<MaxKillStreakTime network="server">15</MaxKillStreakTime>
+		<MaxAltKillStreakTime network="server">25</MaxAltKillStreakTime>
+		<MaxAltKillStreak network="server">5</MaxAltKillStreak>
+		<MinAltKillStreak network="server">3</MinAltKillStreak>
+		<MinAceTeamSize network="server">5</MinAceTeamSize>
+		<CloseCallMaxHealthPercent network="server">0.75</CloseCallMaxHealthPercent>
+		<CloseCallMinHealthPercent network="server">0.10</CloseCallMinHealthPercent>
+		<CloseCallHealthLossTime network="server">10</CloseCallHealthLossTime>
+		<CloseCallHealthMaintainTime network="server">10</CloseCallHealthMaintainTime>
+
+		<MinimumKickVoteDelay network="server">600</MinimumKickVoteDelay>
+		<KickVoteCooldownTime network="server">120</KickVoteCooldownTime>
+
+		<FirstWinExperienceBonus network="server">0.25</FirstWinExperienceBonus>
+		<FirstWinMetaBonus network="server">.5</FirstWinMetaBonus>
+		<FirstWinAccountExperienceBonus network="server">0.5</FirstWinAccountExperienceBonus>
+		<FirstWinAccountMetaBonus network="server">1</FirstWinAccountMetaBonus>
+
+		<MIAPingFrequency network="server"> 3.0 </MIAPingFrequency>
+
+		<EffectDurationModifierAttributes network="server">
+			<Entry>
+				<Key>CrowdControl</Key>
+				<Value>
+					<Attribute>CrowdControlDuration</Attribute>
+					<OwnerObject>Target</OwnerObject>
+				</Value>
+			</Entry>
+			<Entry>
+				<Key>BasicBuff</Key>
+				<Value>
+					<Attribute>BasicBuffDuration</Attribute>
+					<OwnerObject>Target</OwnerObject>
+				</Value>
+			</Entry>
+		</EffectDurationModifierAttributes>
+
+		<AIMaxActivations network="server">-1</AIMaxActivations>
+		<AIMaxRunTimeInMilliseconds network="server">15000.0</AIMaxRunTimeInMilliseconds>
+		<AIUpdateInterval network="server">0.75</AIUpdateInterval>
+		<AIEnemyTargetClusterDistance network="server">300.0</AIEnemyTargetClusterDistance>
+		<AIEnemyTurretClusterDistance network="server">500.0</AIEnemyTurretClusterDistance>
+		<AIMaxDeathAgeInSeconds network="server">400.0</AIMaxDeathAgeInSeconds>
+		<AIScoutUnitChoiceStealthBonus network="server">500</AIScoutUnitChoiceStealthBonus>
+		<AIScoutUnitChoiceStealthDetectorBonus network="server">500</AIScoutUnitChoiceStealthDetectorBonus>
+		<AIClusterStructures network="server">false</AIClusterStructures>
+		<AIDesiredTimeToKillUnit network="server">20.0</AIDesiredTimeToKillUnit>
+		<AIDesiredTimeToKillStructure network="server">40.0</AIDesiredTimeToKillStructure>
+		<AdditionalAICombatTypes network="server"/>
+		<AdditionalObjectTypesForAI network="server"/>
+		<AICounterRangeWeight network="server">10.0</AICounterRangeWeight>
+		<AICounterSpeedWeight network="server">10.0</AICounterSpeedWeight>
+		<AICounterMoveAndFireWeight network="server">10.0</AICounterMoveAndFireWeight>
+		<AICounterCostWeight network="server">10000.0</AICounterCostWeight>
+		<AICounterCostRemainingWeight network="server">10000.0</AICounterCostRemainingWeight>
+		<AICounterBuildTimeWeight network="server">10000.0</AICounterBuildTimeWeight>
+		<AICounterBuildTimeRemainingWeight network="server">10000.0</AICounterBuildTimeRemainingWeight>
+		<AIMinimumPoolResources network="server">3000.0</AIMinimumPoolResources>
+		<AIPathThreatPenaltyMultiplier network="server">0.1</AIPathThreatPenaltyMultiplier>
+		<AIScoutPathInterval network="server">500</AIScoutPathInterval>
+		<AICombatSimMaxAttackers network="server">100</AICombatSimMaxAttackers>
+		<AICombatSimSkipTargets network="server">
+			<Entry></Entry>
+		</AICombatSimSkipTargets>
+		<AICombatSimSkipAttackers network="server">
+			<Entry></Entry>
+		</AICombatSimSkipAttackers>
+		<AICombatSimSkipAbilities network="server">
+			<Entry></Entry>
+		</AICombatSimSkipAbilities>
+		<AICombatSimSkipCreatedObjects network="server">
+		</AICombatSimSkipCreatedObjects>
+		<AICombatSimForceTimeToKill network="server">
+		</AICombatSimForceTimeToKill>
+		<AICombatSimUseWhitelist network="server">False</AICombatSimUseWhitelist>
+		<AICombatSimWhitelistObjects network="server">
+		</AICombatSimWhitelistObjects>
+		<AIShroudBaseSampleCount network="server">8</AIShroudBaseSampleCount>
+		<AIShroudBaseTurretSampleCount network="server">12</AIShroudBaseTurretSampleCount>
+		<AIShroudBaseHQSeperationBuffer network="server">350.0</AIShroudBaseHQSeperationBuffer>
+		<AIShroudBaseAmplifierOverlapBuffer network="server">50.0</AIShroudBaseAmplifierOverlapBuffer>
+		<AIShroudBaseTurretSeperationBuffer network="server">150.0</AIShroudBaseTurretSeperationBuffer>
+		<AIMaxSimulationTime network="server">300</AIMaxSimulationTime>
+		<AIShroudBaseTurretStructureCoverageWeight network="server">200.0</AIShroudBaseTurretStructureCoverageWeight>
+		<AIShroudBaseTurretAmplifierCoverageWeight network="server">50.0</AIShroudBaseTurretAmplifierCoverageWeight>
+		<AIShroudBaseTurretOtherTurretWeight network="server">0.5</AIShroudBaseTurretOtherTurretWeight>
+		<AIShroud42AttackRange network="server">1000.0</AIShroud42AttackRange>
+		<AISquishTargetDistance network="server">300.0</AISquishTargetDistance>
+
+		<BrushCheckRecruitmentRange network="server">400</BrushCheckRecruitmentRange>
+		
+		<GhostFOWObjectType network="server"></GhostFOWObjectType>
+		<AlwaysVisibleToTeamIDs network="server">
+			<Entry>8</Entry>
+		</AlwaysVisibleToTeamIDs>
+
+		<TacticalPersonalityValues network="server">
+			<Entry>
+				<Key>Balanced</Key>
+				<Value>
+					<SplitProbability>50</SplitProbability>
+					<SplitProbabilitySizeFactor>2</SplitProbabilitySizeFactor>
+					<SplitThreshold>10</SplitThreshold>
+					<MinStagingDistanceToTarget>1000</MinStagingDistanceToTarget>
+					<MaxStagingDistanceToTarget>50000</MaxStagingDistanceToTarget>
+					<MinMoveToStagingArea>4000</MinMoveToStagingArea>
+					<StagingAreaDeathsCheckRange>5</StagingAreaDeathsCheckRange>
+					<StagingAreaThreatCheckRange>7</StagingAreaThreatCheckRange>
+					<StagingAreaFriendlyDeathThreshold>300</StagingAreaFriendlyDeathThreshold>
+					<StagingAreaCompromisedCooldownTime>300</StagingAreaCompromisedCooldownTime>
+					<StagingAreaMaxDemerits>15</StagingAreaMaxDemerits>
+					<StagingAreaFriendlyDeathDemerits>6</StagingAreaFriendlyDeathDemerits>
+					<StagingAreaCompromisedDemerits>9</StagingAreaCompromisedDemerits>
+					<StagingAreaLastUsedDemerits>5</StagingAreaLastUsedDemerits>
+					<ForcesLostStagingAreaRecalc>2</ForcesLostStagingAreaRecalc>
+					<ForcesRemainingStagingAreaRecalc>3</ForcesRemainingStagingAreaRecalc>
+					<ScoutingMaxDiversionFactor>1.5</ScoutingMaxDiversionFactor>
+					<ScoutingMaxDiversions>2</ScoutingMaxDiversions>
+				</Value>
+			</Entry>
+		</TacticalPersonalityValues>
+
+		<PreserveMovingUnitsRelativeOffsetRadius network="server">90.0</PreserveMovingUnitsRelativeOffsetRadius>
+		<GuardExitedRangeBufferDistance network="server">450</GuardExitedRangeBufferDistance>
+
+		<AutonomousTargetingIgnoresPendingDamage network="server">True</AutonomousTargetingIgnoresPendingDamage>
+
+		<HumanAutonomousTargetingRetargetingTime network="server">1.0</HumanAutonomousTargetingRetargetingTime>
+		<MaxCallForHelpRecursionDepth network="server">4</MaxCallForHelpRecursionDepth>
+		<MinCallForHelpTime network="server">4.0</MinCallForHelpTime>
+		<OutOfAmmoIdleTimeout network="server">30.0</OutOfAmmoIdleTimeout>
+
+		<BrainScoreTargetTimeToHealMaxSeconds network="server">180.0</BrainScoreTargetTimeToHealMaxSeconds>
+
+		<HealthShardDecaySeconds network="server">10.0</HealthShardDecaySeconds>
+		<ManaShardDecaySeconds network="server">10.0</ManaShardDecaySeconds>
+		<DurationEffectUpdateSeconds network="server">15</DurationEffectUpdateSeconds>
+		<DurationEffectUpdateRandomSeconds network="server">10</DurationEffectUpdateRandomSeconds>
+		<PVPRestartTeleportTime network="server">5.0</PVPRestartTeleportTime>
+		<PVPWaitForConnectionsSeconds network="server">180</PVPWaitForConnectionsSeconds>
+		<PVPWaitForReadySeconds network="server">180</PVPWaitForReadySeconds>
+		<ShouldSendRMTRequests network="server">true</ShouldSendRMTRequests>
+		<BaseRespawnDelaySeconds network="server"> 10 </BaseRespawnDelaySeconds>
+		<RespawnDelaySecondsPerObject network="server"> 5 </RespawnDelaySecondsPerObject>
+		<RespawnDelaySecondsPerLevel network="server">2.5</RespawnDelaySecondsPerLevel>
+		<UseLevelForRespawnDelay network="server">true</UseLevelForRespawnDelay>
+		<RPSPercentAdjustmentLimit network="server">0.0</RPSPercentAdjustmentLimit>
+		<DamageModificationPercentAdjustmentLimit network="server">0.0</DamageModificationPercentAdjustmentLimit>
+		<MaxRespawnDelaySeconds network="server"> 0 </MaxRespawnDelaySeconds>
+		<AvatarAssistCurrencyAwardPercentage network="server">0.7</AvatarAssistCurrencyAwardPercentage>
+		<MultipleAvatarExperienceBonusPercentage network="server">1.1</MultipleAvatarExperienceBonusPercentage>
+		<MaxStreakCount network="server">10</MaxStreakCount>
+		<IdleCirclePathTolerance network="server">300.0</IdleCirclePathTolerance>
+		<IdleCircleDegreesPerSegment network="server">10.0</IdleCircleDegreesPerSegment>
+		<IdleCircleNumSegments network="server">32</IdleCircleNumSegments>
+		<ResourceFieldRegrowthIntervalSeconds network="server">300</ResourceFieldRegrowthIntervalSeconds>
+		<ResourceFieldRegrowthAmount network="server">475</ResourceFieldRegrowthAmount>
+		<MultiplayerPauseTimePerPlayer network="server">120</MultiplayerPauseTimePerPlayer>
+		<MultiplayerPauseCooldownTimePerPlayer network="server">125</MultiplayerPauseCooldownTimePerPlayer>
+
+		<!-- These items can't be used for item bundles -->
+		<DisallowedItemBundleItemTypes network="server"></DisallowedItemBundleItemTypes>
+
+		<ClickScriptStructureHighlightEffect network="server">ClickScript_Structure_Highlight_Effect_Generator</ClickScriptStructureHighlightEffect>
+		<ClickScriptUnitHighlightEffect network="server">ClickScript_Unit_Highlight_Effect_Generator</ClickScriptUnitHighlightEffect>
+		
+		<DesertToPlayer network="server">EnemyPlayer</DesertToPlayer>
+		<DesertDisgruntlementLevel network="server"> 4 </DesertDisgruntlementLevel>
+		<DesertMaxCountPerResourceTick network="server"> 5 </DesertMaxCountPerResourceTick>
+
+		<!-- Poison damage base value to each poisoned unit, as if one food structure is infected/poisoned (multipler 1.0) -->
+		<ResourceTickPoisonDamage network="server"> 5.0f </ResourceTickPoisonDamage>
+		<!-- 
+			0.0+: Damage multiplier based on number of infected/poisoned food structures:
+			Examples:
+				If 0.0, just applies flat <ResourceTickPoisonDamage> to all applicable units (when 1 or more bad structures)
+				if 1.0, applies base <ResourceTickPoisonDamage> * number of bad structures to all units
+				if 1.5, applies base <ResourceTickPoisonDamage> * 1.5 * number of bad structures to all units
+		-->
+		<ResourceTickPoisonDamagePerStructureMultiplier network="server"> 1.0 </ResourceTickPoisonDamagePerStructureMultiplier>
+
+
+
+
+		
+		<!-- ***************************************************************************** -->
+		<!-- ***********     				CLIENT GAME CONSTANTS					************* -->
+		<!-- ***************************************************************************** -->
+
+		<OcclusionRenderLocalUnits network="client">  true </OcclusionRenderLocalUnits>
+		<OcclusionRenderAlliedUnits network="client"> true </OcclusionRenderAlliedUnits>
+		<OcclusionRenderEnemyUnits network="client">  true </OcclusionRenderEnemyUnits>
+		<OcclusionRenderNeutralUnits network="client">false </OcclusionRenderNeutralUnits>
+
+		<AOEInRangeColor network="client">
+			<R>0.0</R>
+			<G>0.0</G>
+			<B>1.0</B>
+			<A>1.0</A>
+		</AOEInRangeColor>
+		<AOEOutOfRangeColor network="client">
+			<R>1.0</R>
+			<G>0.0</G>
+			<B>0.0</B>
+			<A>1.0</A>
+		</AOEOutOfRangeColor>
+		<MaxAOEDisplayRange network="client"> 50000 </MaxAOEDisplayRange>
+		<AoERangeCircleSegmentCountPerDelta network="client">
+			<X>10.0</X>
+			<Y>1.0</Y>
+		</AoERangeCircleSegmentCountPerDelta>
+		<AoERangeCircleSegmentDelta network="client">
+			<X>100.0</X>	<!-- radius -->
+			<Y>10.0</Y>		<!-- thickness -->
+		</AoERangeCircleSegmentDelta>
+		<AoERangeArcSegmentCountPerDelta network="client">
+			<X>30.0</X>
+			<Y>5.0</Y>
+		</AoERangeArcSegmentCountPerDelta>
+		<AoERangeArcSegmentDelta network="client">
+			<X>100.0</X>	<!-- radius -->
+			<Y>50.0</Y>		<!-- thickness -->
+		</AoERangeArcSegmentDelta>
+		<AoERangeCircleThickness network="client">20.0 </AoERangeCircleThickness>
+		<AoERangeCircleSegmentCount network="client">40</AoERangeCircleSegmentCount>
+		<AoERangeCircleThicknessPercentage network="client">0.0</AoERangeCircleThicknessPercentage>
+		<AoERangeArcThicknessPercentage network="client">1.0</AoERangeArcThicknessPercentage>
+		<!--This requires the full file name (e.g. MS_FX_Avatar_Glow_Decal.tga) -->
+		<AoERangeCircleTextureName network="client">W_Generic_White.tga</AoERangeCircleTextureName>
+		<AoERangeArcTextureName network="client">Turret_Range_Arc.tga</AoERangeArcTextureName>
+
+		<StatusEffectBoneName network="client"> B_Halo </StatusEffectBoneName>
+		<StatusEffectCycleSeconds network="client"> 1 </StatusEffectCycleSeconds>
+
+		<HitEffectsBoneName network="client"> TEST Halo </HitEffectsBoneName>
+
+		<ActiveLootVisual network="client">CorpseLootingParticle</ActiveLootVisual>
+		<InactiveLootVisual network="client">CorpseLootingParticle</InactiveLootVisual>
+		<FloatyTextDelaySeconds network="client">0.0</FloatyTextDelaySeconds>
+
+		<DummyFOWObjectType network="client">Generic_FOW_Dummy_Object</DummyFOWObjectType>
+
+		<!-- ***********     SCROLLING/CAMERA VIEW PARAMETERS - END   ************* -->
+
+		<WaterRenderTargetResolution network="client">1024</WaterRenderTargetResolution>
+		<WaterClipPlaneOffset network="client">1.5</WaterClipPlaneOffset>
+		<ShadowMapResolution network="client">2048</ShadowMapResolution>
+		<RadarMapResolution network="client">1024</RadarMapResolution>
+		<MinRadarMapResolution network="client">256</MinRadarMapResolution>
+
+		<!-- Intentionally set to 0 because they make sizing inconsistent and unpredictable.  -Happ 8/1/2013 -->
+		<LaserBeamZScaleFactor network="client">0</LaserBeamZScaleFactor>
+		<LaserKiteZScaleFactor network="client">0</LaserKiteZScaleFactor>
+
+		<!-- Carousel; Constants -->
+		<GUICarouselMaxSpeedMultiplier network="client">1.8</GUICarouselMaxSpeedMultiplier>
+
+		<CameraConstantsToUse network="client"> DefaultThirdPerson </CameraConstantsToUse>
+
+		<ItemRarityColors network="client">
+			<Entry>
+				<Key>Basic</Key>
+				<Value>
+					<R>1.0</R>
+					<G>1.0</G>
+					<B>1.0</B>
+					<A>1.0</A>
+				</Value>
+			</Entry>
+			<Entry>
+				<Key>Common</Key>
+				<Value>
+					<R>1.0</R>
+					<G>1.0</G>
+					<B>1.0</B>
+					<A>1.0</A>
+				</Value>
+			</Entry>
+			<Entry>
+				<Key>Uncommon</Key>
+				<Value>
+					<R>0.0</R>
+					<G>0.80</G>
+					<B>0.0</B>
+					<A>1.0</A>
+				</Value>
+			</Entry>
+			<Entry>
+				<Key>Rare</Key>
+				<Value>
+					<R>0.0</R>
+					<G>0.76</G>
+					<B>1.0</B>
+					<A>1.0</A>
+				</Value>
+			</Entry>
+			<Entry>
+				<Key>SuperRare</Key>
+				<Value>
+					<R> 1.0 </R>
+					<G> 0.83 </G>
+					<B> 0.16 </B>
+					<A> 1.0 </A>
+				</Value>
+			</Entry>
+			<Entry>
+				<Key>UltraRare</Key>
+				<Value>
+					<R> 1.0 </R>
+					<G> 0.83 </G>
+					<B> 0.16 </B>
+					<A> 1.0 </A>
+				</Value>
+			</Entry>
+		</ItemRarityColors>
+
+		<BlinkUpdateRate network="client">0.1</BlinkUpdateRate>
+		<BlinkLength network="client">0.4</BlinkLength>
+		<BlinkCount network="client">3.0</BlinkCount>
+		<BlinkLevel network="client">3.0</BlinkLevel>
+
+		<PositionExtentColor network="client">
+			<R>1.0</R>
+			<G>1.0</G>
+			<B>1.0</B>
+			<A>1.0</A>
+		</PositionExtentColor>
+
+		<DragSelectAvatar network="client"> True </DragSelectAvatar>
+
+		<BattleLoadHintCycleSeconds network="client">7.0</BattleLoadHintCycleSeconds>
+
+		<BasicTooltipDisplaySpeedMaxSeconds network="client">2.0</BasicTooltipDisplaySpeedMaxSeconds>
+		<BasicTooltipDisplaySpeedIncrementSeconds network="client">0.2</BasicTooltipDisplaySpeedIncrementSeconds>
+		<!-- BasicTooltipDisplaySpeedDefaultSeconds is set as a const in RTS/PlayerProfile.cpp -->
+
+		<DetailedTooltipDisplaySpeedMaxSeconds network="client">2.0</DetailedTooltipDisplaySpeedMaxSeconds>
+		<DetailedTooltipDisplaySpeedIncrementSeconds network="client">0.2</DetailedTooltipDisplaySpeedIncrementSeconds>
+		<DetailedTooltipDisplaySpeedDefaultSeconds network="client">0.4</DetailedTooltipDisplaySpeedDefaultSeconds> <!-- MBL 04.09.2020 0.6->0.8 per JAAS task -->
+
+		<FOWAlphaModifierMax network="client">0.5</FOWAlphaModifierMax>
+		<FOWAlphaModifierMin network="client">0.0</FOWAlphaModifierMin>
+		<FOWAlphaModifierIncrement network="client">0.05</FOWAlphaModifierIncrement>
+
+   	<FOWAlphaModifierDefault network="client">-.20</FOWAlphaModifierDefault> 
+
+		<GroupDifficultyModifiers>
+			<entry>
+				<!-- Solo avatar -->
+				<DamageMultiplier> 1.0 </DamageMultiplier>
+				<HealthMultiplier> 1.0 </HealthMultiplier>
+			</entry>
+			<entry>
+				<!-- Two in group -->
+				<DamageMultiplier> 1.0 </DamageMultiplier>
+				<HealthMultiplier> 1.0 </HealthMultiplier>
+			</entry>
+			<entry>
+				<!-- Three in group -->
+				<DamageMultiplier> 1.0 </DamageMultiplier>
+				<HealthMultiplier> 1.0 </HealthMultiplier>
+			</entry>
+			<entry>
+				<!-- Four in group -->
+				<DamageMultiplier> 1.0 </DamageMultiplier>
+				<HealthMultiplier> 1.0 </HealthMultiplier>
+			</entry>
+		</GroupDifficultyModifiers>
+
+		<AbilityMinimumCooldown> .1 </AbilityMinimumCooldown>
+
+		<MaxFormUpDistance> 300 </MaxFormUpDistance>
+
+		<ItemAbilityEmptyUpgradePipColor network="client">
+			<R>0.5</R>
+			<G>0.5</G>
+			<B>0.5</B>
+			<A>0.5</A>
+		</ItemAbilityEmptyUpgradePipColor>
+
+		<ItemAbilityStaticUpgradePipColor network="client">
+			<R>0.0</R>
+			<G>1.0</G>
+			<B>0.0</B>
+			<A>1.0</A>
+		</ItemAbilityStaticUpgradePipColor>
+
+		<ItemAbilityDynamicUpgradePipColor network="client">
+			<R>1.0</R>
+			<G>1.0</G>
+			<B>0.0</B>
+			<A>1.0</A>
+		</ItemAbilityDynamicUpgradePipColor>
+
+		<PushEnabled network="client">True</PushEnabled>
+
+		<ArchetypeDescriptions network="client"/>
+
+		<CombatIdleTimeout network="client"> 180.0 </CombatIdleTimeout>
+
+		<SurrenderMessageColor network="client">
+			<R>0.0</R>
+			<G>1.0</G>
+			<B>0.0</B>
+			<A>1.0</A>
+		</SurrenderMessageColor>
+
+		<KickVoteMessageColor network="client">
+			<R>0.0</R>
+			<G>1.0</G>
+			<B>0.0</B>
+			<A>1.0</A>
+		</KickVoteMessageColor>
+
+		<MIAPingMessageColor network="client">
+			<R>1.0</R>
+			<G>0.25</G>
+			<B>0.25</B>
+			<A>1.0</A>
+		</MIAPingMessageColor>
+
+		<ObserverRadarColors network="client">
+			<Entry> <!-- Lime Green -->
+				<R>0.5882</R>
+				<G>1.0</G>
+				<B>0.0</B>
+				<A>1.0</A>
+			</Entry>
+			<Entry> <!-- Teal -->
+				<R>0.0</R>
+				<G>0.5882</G>
+				<B>1.0</B>
+				<A>1.0</A>
+			</Entry>
+			<Entry> <!-- Orange -->
+				<R>0.0</R>
+				<G>1.0</G>
+				<B>0.5882</B>
+				<A>1.0</A>
+			</Entry>
+			<Entry> <!-- Purple -->
+				<R>0.5882</R>
+				<G>0.0</G>
+				<B>1.0</B>
+				<A>1.0</A>
+			</Entry>
+		</ObserverRadarColors>
+
+		<PlayerUnitColorList>
+			<Entry> <!-- Blue -->
+				<R>1.00</R>
+				<G>1.00</G>
+				<B>1.00</B>
+				<A>1.00</A>
+			</Entry>
+			<Entry> <!-- Green -->
+				<R>.45</R>
+				<G>1</G>
+				<B>.3</B>
+			</Entry>
+			<Entry> <!-- Red -->
+				<R>1</R>
+				<G>.1</G>
+				<B>.1</B>
+			</Entry>
+			<Entry> <!-- Yellow -->
+				<R>.99</R>
+				<G>.98</G>
+				<B>.15</B>
+			</Entry>
+			<Entry> <!-- Orange -->
+				<R>1</R>
+				<G>.55</G>
+				<B>.1</B>
+			</Entry>
+			<Entry> <!-- Cyan -->
+				<R>.45</R>
+				<G>.9</G>
+				<B>.99</B>
+			</Entry>
+			<Entry> <!-- Purple -->
+				<R>1</R>
+				<G>.45</G>
+				<B>.85</B>
+			</Entry>
+			<Entry> <!-- Grey -->
+				<R>.55</R>
+				<G>.55</G>
+				<B>.55</B>
+			</Entry>
+		</PlayerUnitColorList>
+
+		<MinFadeTime network="client"> 0.5 </MinFadeTime>
+
+		<MaxLogicalRenderOffsetSeconds network="client">1.0f</MaxLogicalRenderOffsetSeconds>
+		<AbsoluteMaxLogicalRenderOffset network="client">25.0f</AbsoluteMaxLogicalRenderOffset>
+
+		<UniquePlayerTextures> 11 </UniquePlayerTextures>
+		<UniquePlayerTextureStart> 10 </UniquePlayerTextureStart>
+
+		<InvisibleAlpha network="client">0.5</InvisibleAlpha>
+
+		<PriorityRenderingPeriodUnit network="client">2.0</PriorityRenderingPeriodUnit>
+		<PriorityRenderingVisiblePercentageUnit network="client">95.0</PriorityRenderingVisiblePercentageUnit>
+		<OutlineThickness network="client">2</OutlineThickness>
+
+		<FeaturedCustomMapsPreviewImagePath network="client">http://www.8bitarmies.com/featured_maps/images</FeaturedCustomMapsPreviewImagePath>
+		
+		<ReplaySkipDestructionClassifications network="client">
+			<entry>Decoration</entry>
+		</ReplaySkipDestructionClassifications>
+
+		<!-- Theme data -->
+		<DefaultTheme network="client">
+			<MousePointersFilename>MousePointerFiles.xml</MousePointersFilename>
+			<MousePointersX2Filename>MousePointerFilesX2.xml</MousePointersX2Filename>
+		</DefaultTheme>
+
+		<Themes network="client">
+			<Entry>
+				<Name>FACTION1</Name>
+				<ClientThemedDataStruct>
+					<BlobsUseTeamColor>true</BlobsUseTeamColor>
+					<EnemyBlobColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</EnemyBlobColor>
+
+					<PlayerBlobColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</PlayerBlobColor>
+
+					<AllyBlobColor>
+						<R>0.0</R>
+						<G>0.0</G>
+						<B>0.0</B>
+						<A>0.0</A>
+					</AllyBlobColor>
+
+					<!--
+					<PlayerBlobColor>
+						<R>0.0</R>
+						<G>0.55</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</PlayerBlobColor>
+
+					<AllyBlobColor>
+						<R>0.0</R>
+						<G>1.0</G>
+						<B>0.39</B>
+						<A>1.0</A>
+					</AllyBlobColor>
+					-->
+
+					<NPCOutlineEffect>Example_NPC_Outline</NPCOutlineEffect>
+					<AllyOutlineEffect>Example_Ally_Outline</AllyOutlineEffect>
+					<EnemyOutlineEffect>Example_Enemy_Outline</EnemyOutlineEffect>
+					<AttachmentPointOutlineEffect>Example_Ally_Outline</AttachmentPointOutlineEffect>
+
+					<LocalPlayerColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</LocalPlayerColor>
+					<AllyPlayerColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</AllyPlayerColor>
+					<EnemyPlayerColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</EnemyPlayerColor>
+					<NeutralPlayerColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</NeutralPlayerColor>
+
+					<LocalPlayerInBrushColor>
+						<R>0.588235</R>
+						<G>1.0</G>
+						<B>0.0</B>
+						<A>1.0</A>
+					</LocalPlayerInBrushColor>
+					<AllyPlayerInBrushColor>
+						<R>0.0</R>
+						<G>0.505882</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</AllyPlayerInBrushColor>
+					<EnemyPlayerInBrushColor>
+						<R>1.0</R>
+						<G>0.196078</G>
+						<B>0.196078</B>
+						<A>1.0</A>
+					</EnemyPlayerInBrushColor>
+					<NeutralPlayerInBrushColor>
+						<R>0.7</R>
+						<G>0.7</G>
+						<B>0.7</B>
+						<A>1.0</A>
+					</NeutralPlayerInBrushColor>
+
+					<WaypointLineTextureName> w_generic_white.tga </WaypointLineTextureName>
+					<WaypointFlagModelName> w_flag_marker_RED.alo </WaypointFlagModelName>
+					<MovementOrderTextureName> w_generic_white.tga </MovementOrderTextureName>
+					<MovementOrderModelName> w_flag_marker_Blue.alo </MovementOrderModelName>
+
+					<LocalOcclusionRenderingColor>
+						<R>0.7</R>
+						<G>0.8</G>
+						<B>1.0</B>
+						<A>0.5</A>
+					</LocalOcclusionRenderingColor>
+					<LocalStealthOcclusionRenderingColor>
+						<R>1.0</R>
+						<G>0.5</G>
+						<B>0.15</B>
+						<A>0.5</A>
+					</LocalStealthOcclusionRenderingColor>
+					<AllyOcclusionRenderingColor>
+						<R>1.0</R>
+						<G>0.85</G>
+						<B>0.7</B>
+						<A>0.5</A>
+					</AllyOcclusionRenderingColor>
+					<EnemyOcclusionRenderingColor>
+						<R>1.0</R>
+						<G>0.6</G>
+						<B>0.6</B>
+						<A>0.5</A>
+					</EnemyOcclusionRenderingColor>
+					<NeutralOcclusionRenderingColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>0.0</B>
+						<A>0.5</A>
+					</NeutralOcclusionRenderingColor>
+
+					<MousePointersFilename>MousePointerFiles.xml</MousePointersFilename>
+					<MousePointersX2Filename>MousePointerFilesX2.xml</MousePointersX2Filename>
+
+					<DragSelectOutlineColor>
+						<!-- (0.2, .8, 1, .8) -->
+						<R>0.9</R>
+						<G>0.9</G>
+						<B>0.9</B>
+						<A>0.85</A>
+					</DragSelectOutlineColor>
+					<DragSelectFillColor>
+						<!-- (0.0, 0.0, 0.0, 0.3) -->
+						<R>0.0</R>
+						<G>0.0</G>
+						<B>0.0</B>
+						<A>0.25</A>
+					</DragSelectFillColor>
+					<DragSelectOutlinePixelWidth> 1 </DragSelectOutlinePixelWidth>
+
+					<WaypointLineColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</WaypointLineColor>
+					<WaypointLineTexture>UI_Waypoint_Line_03.tga</WaypointLineTexture>
+					<WaypointLineWidth>18.0</WaypointLineWidth>
+					<WaypointMarkerName>PR_OB_Waypoint_00.ALO</WaypointMarkerName>
+					<WaypointAnimationFrames>10</WaypointAnimationFrames>
+					<WaypointLineLandDashLength> 5.0 </WaypointLineLandDashLength>
+					<WaypointLineLandGapLength> 5.0 </WaypointLineLandGapLength>
+
+					<WaypointAttackLineColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</WaypointAttackLineColor>
+					<WaypointAttackLineTexture>UI_Waypoint_Line_01.tga</WaypointAttackLineTexture>
+					<WaypointAttackLineWidth>18.0</WaypointAttackLineWidth>
+
+					<PatrolLineColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</PatrolLineColor>
+					<PatrolLineTexture>UI_Waypoint_Line_02.tga</PatrolLineTexture>
+					<PatrolLineWidth>18.0</PatrolLineWidth>
+					<PatrolWaypointMarkerName>PR_OB_Patrol_00.ALO</PatrolWaypointMarkerName>
+					<PatrolAnimationFrames>20</PatrolAnimationFrames>
+
+					<RallyPointLineColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</RallyPointLineColor>
+					<RallyPointLineTexture>UI_Waypoint_Line_00.tga</RallyPointLineTexture>
+					<RallyPointLineWidth>18.0</RallyPointLineWidth>
+					<RallyPointMarkerName>PR_OB_Rally_Point_00.ALO</RallyPointMarkerName>
+					<RallyPointAnimationFrames>20</RallyPointAnimationFrames>
+
+					<StructureRotationValidColor>
+						<R>0.180</R>
+						<G>0.855</G>
+						<B>0.133</B>
+						<A>1.0</A>
+					</StructureRotationValidColor>
+
+					<StructureRotationInvalidColor>
+						<R>0.972</R>
+						<G>0.200</G>
+						<B>0.270</B>
+						<A>1.0</A>
+					</StructureRotationInvalidColor>
+
+					<StructureValidPlacementColor>
+						<R>0.180</R>
+						<G>2.855</G>
+						<B>0.133</B>
+						<A>0.60</A>
+					</StructureValidPlacementColor>
+
+					<StructureInvalidPlacementColor>
+						<R>2.972</R>
+						<G>0.200</G>
+						<B>0.270</B>
+						<A>0.20</A>
+					</StructureInvalidPlacementColor>
+
+					<StructureTentativePlacementColor> <!-- Pause Mode placed structure tint -->
+						<R>0.9</R>
+						<G>0.9</G>
+						<B>0.9</B>
+						<A>0.5</A>
+					</StructureTentativePlacementColor>
+
+					<StructureTentativePlacementHighlightColor> <!-- Pause Mode placed structure highlight -->
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>0.875</A>
+					</StructureTentativePlacementHighlightColor>
+
+					<StructureOccupationValidColor>
+						<R>0.996</R>
+						<G>0.706</G>
+						<B>0.333</B>
+						<A>1.0</A>
+					</StructureOccupationValidColor>
+
+					<StructureOccupationInvalidColor>
+						<R>0.949</R>
+						<G>0.169</G>
+						<B>0.169</B>
+						<A>1.0</A>
+					</StructureOccupationInvalidColor>
+
+					<!-- Fog Of War -->
+					<FOWFullFogColor network="client">
+						<R>0.01</R>
+						<G>0.01</G>
+						<B>0.01</B>
+						<A>0.50</A>
+					</FOWFullFogColor>
+					<FOWExploredFogColor network="client">
+						<R>0.45</R>
+						<G>0.40</G>
+						<B>0.40</B>
+						<A>0.50</A>
+					</FOWExploredFogColor>
+					<FOWNoFogColor network="client">
+						<R>1.00</R>
+						<G>1.00</G>
+						<B>1.00</B>
+						<A>1.00</A>
+					</FOWNoFogColor>
+					<MetaFOWLightScale>
+						<X>0.33</X>
+						<Y>0.33</Y>
+						<Z>0.33</Z>
+						<W>1.0</W>
+					</MetaFOWLightScale>
+				</ClientThemedDataStruct>
+			</Entry>
+		</Themes>
+
+		<MaximumAllowedAvatars network="client">20</MaximumAllowedAvatars>
+		<InspectAvatarAutoBeautyCam network="client">true</InspectAvatarAutoBeautyCam>
+		<ShardSelectionNameColumnWidth network="client"> .45 </ShardSelectionNameColumnWidth>
+		<ShardSelectionStatusColumnWidth network="client"> .3 </ShardSelectionStatusColumnWidth>
+		<PVPChoiceInstanceNameColumnWidth network="client"> .8 </PVPChoiceInstanceNameColumnWidth>
+		<PVPQueueDisplayNameColumnWidth network="client"> .7 </PVPQueueDisplayNameColumnWidth>
+		<AutomaticBecomeAFKSeconds network="client"> 90 </AutomaticBecomeAFKSeconds>
+		<AutomaticAFKLogoutSeconds network="client"> 14400 </AutomaticAFKLogoutSeconds>
+		<AutomaticHubBecomeAFKSeconds network="client"> 300 </AutomaticHubBecomeAFKSeconds>
+		<AutomaticHubAFKLogoutSeconds network="client"> 90000 </AutomaticHubAFKLogoutSeconds>
+		<!-- Will wait this long (seconds) between displaying pvp result message and the result dialog-->
+		<PVPResultMessageWait network="client"> 2 </PVPResultMessageWait>
+		<MapPreviewImageHighResSize network="client">2048</MapPreviewImageHighResSize>
+		<MapPreviewImageSize network="client">1024</MapPreviewImageSize>
+		<FeedbackURL network="client"></FeedbackURL>
+		<EULAURL network="client"></EULAURL>
+		<CommunityNewsURL network="client"></CommunityNewsURL>
+		<MOTDURLFormat network="client"></MOTDURLFormat>
+		<URLInfoPerGame network="client">
+			<Entry>
+				<Key>Base</Key>
+				<Value>
+					<MOTDURL>http://www.8bitarmies.com/motd/motd_intro_e_game_5.php</MOTDURL>
+					<MOTDMoreInfoURL>http://www.8bitarmies.com/motd/motd_full_e_game_5.html</MOTDMoreInfoURL>
+					<FeaturedCustomMapsURL></FeaturedCustomMapsURL>
+					<FacebookURL>https://www.facebook.com/8bitarmies</FacebookURL>
+					<TwitterURL>https://twitter.com/8BitArmies</TwitterURL>
+					<TwitchURL>https://www.twitch.tv/directory/game/8-Bit%20Armies</TwitchURL>
+					<DiscordURL>https://discord.gg/0saHhNOgywJuc77l</DiscordURL>
+					<ClanWarsURL>http://8bit.clanwars.cc/default.aspx</ClanWarsURL>
+					<GameReplaysURL>http://www.gamereplays.org/8bitarmies/portals.php?show=gameladder</GameReplaysURL>
+					<MetaTutorialURL>https://www.youtube.com/tv#/watch/video/control?v=kQqAd5gq6gE&resume</MetaTutorialURL>
+					<SteamLeaderboardsURL>http://steamcommunity.com/stats/427250/leaderboards/1754886/</SteamLeaderboardsURL>
+				</Value>
+			</Entry>
+		</URLInfoPerGame>
+		<SteamLeaderboardsURL network="client">http://steamcommunity.com//stats/686260/leaderboards/2144372</SteamLeaderboardsURL>
+
+		<TechRankInfo network="client"/>
+
+		<GuildsEnabled network="client">true</GuildsEnabled>
+		<BuildingRotationDelay network="client">0.25</BuildingRotationDelay>
+		<BuildingSnapDistance network="client">90.</BuildingSnapDistance>
+		<CharacterSelectFaceAmbientLight network="client">
+			<R>0.0</R>
+			<G>0.0</G>
+			<B>0.0</B>
+			<A>0.6</A>
+		</CharacterSelectFaceAmbientLight>
+		<CharacterSelectFaceAnimations network="client">
+			<entry> CS_CU_IDLE </entry>
+			<!--<entry> idle </entry>-->
+		</CharacterSelectFaceAnimations>
+		<ShowInfoClusterNamesOnMouseOver network="client">true</ShowInfoClusterNamesOnMouseOver>
+
+		<IntroMovieNames network="client">
+			<entry>
+				<Key>TiberianDawn</Key>
+				<Value>
+					<!-- TD intro videos are programmed into the main menu since they differ on first-run and subsequent runs.-->
+				</Value>
+			</entry>
+			<entry>
+				<Key>RedAlert</Key>
+				<Value>
+					<!-- <entry>RA/REDINTRO.bk2</entry> -->
+				</Value>
+			</entry>
+		</IntroMovieNames>
+
+		<CharacterSelectionHeadCameraPosition network="client">
+			<X>0.0</X>
+			<Y>-15.0</Y>
+			<Z>28.7</Z>
+		</CharacterSelectionHeadCameraPosition>
+		<CharacterSelectionSceneCameraPosition network="client">
+			<X>0.0</X>
+			<Y>0.0</Y>
+			<Z>0.0</Z>
+		</CharacterSelectionSceneCameraPosition>
+		<CharacterSelectionSceneModelName network="client"> env_frontend.alo </CharacterSelectionSceneModelName>
+		<UnacceptablePvPInstanceTextColor network="client">
+			<R>0.6</R>
+			<G>0.6</G>
+			<B>0.6</B>
+			<A>1.0</A>
+		</UnacceptablePvPInstanceTextColor>
+
+		<!-- *********** BattleCam (TM) -->
+		<SaliencySize network="client">1.0</SaliencySize>
+		<SaliencyX network="client">0.5</SaliencyX>
+		<SaliencyY network="client">0.5</SaliencyY>
+		<SaliencyHealth network="client">1.0</SaliencyHealth>
+		<SaliencySpeed network="client">0.5</SaliencySpeed>
+		<SaliencyCinematic network="client">5.0</SaliencyCinematic>
+		<SaliencyCombat network="client">3.0</SaliencyCombat>
+		<SaliencyAircraft network="client">2.0</SaliencyAircraft>
+		<SaliencyInfantry network="client">1.0</SaliencyInfantry>
+		<SaliencyVehicle network="client">1.0</SaliencyVehicle>
+		 
+		<!-- ***********     SCROLLING/CAMERA VIEW PARAMETERS - BEGIN   ************* -->
+		<EdgeScrollZone network="client"> 1.0 </EdgeScrollZone>
+		<EdgeScrollDistanceForMaxScroll network="client"> 1.0 </EdgeScrollDistanceForMaxScroll>
+		<ButtonScrollDeadZone network="client"> 15.0 </ButtonScrollDeadZone>
+		<ButtonScrollDistanceForMaxScroll network="client"> 200.0 </ButtonScrollDistanceForMaxScroll>
+		<ButtonScrollStartDistance network="client"> 500000.0 </ButtonScrollStartDistance>
+		<!--  Set at huge value to disable -->
+		<PushScrollStartDistance network="client"> 110.0 </PushScrollStartDistance>
+		<TacticalScrollAcceleration network="client"> 0.3 </TacticalScrollAcceleration>
+		<TacticalScrollVelocity network="client"> 0.010 </TacticalScrollVelocity>
+
+		<!-- Mouse scroll / zoom / rotate controls -->
+		<MouseScrollSpeedScale network="client">1.0</MouseScrollSpeedScale>
+		<MouseZoomSpeedScale network="client">1.0</MouseZoomSpeedScale>
+		<MouseRotateSpeedScale network="client">1.0</MouseRotateSpeedScale>
+
+		<!-- Keyboard scroll / zoom / rotate controls -->
+		<KeyboardScrollSpeedScale network="client">1.0</KeyboardScrollSpeedScale>
+		<KeyboardZoomSpeedScale network="client">1.0</KeyboardZoomSpeedScale>
+		<KeyboardRotateSpeedScale network="client">1.0</KeyboardRotateSpeedScale>
+
+		<!-- Scroll speed -->
+		<!-- Game setting modifying scroll speed -->
+		<TacticalScrollSpeeds network="client">
+			<Entry>0.5</Entry>
+			<Entry>1.0</Entry>
+			<Entry>2.0</Entry>
+			<Entry>3.0</Entry>
+			<Entry>4.0</Entry>
+			<Entry>5.0</Entry>
+			<Entry>7.5</Entry>
+			<Entry>10.0</Entry>
+			<Entry>12.5</Entry>
+			<Entry>15.0</Entry>
+		</TacticalScrollSpeeds>
+
+		<!-- Button scrolling for tactical modes -->
+		<TacticalButtonScrollMaxSpeed network="client"> 5.0 </TacticalButtonScrollMaxSpeed>
+		<TacticalButtonScrollMinSpeed network="client"> 1.0 </TacticalButtonScrollMinSpeed>
+		<!-- Edge scrolling for tactical modes -->
+		<TacticalEdgeScrollMaxSpeed network="client"> 1 </TacticalEdgeScrollMaxSpeed>
+		<TacticalEdgeScrollMinSpeed network="client"> .75 </TacticalEdgeScrollMinSpeed>
+		<!-- Absolute Push Scrolling -->
+		<TacticalPushScrollSpeedModifier network="client"> 0.65 </TacticalPushScrollSpeedModifier>
+
+		<!-- Controller scrolling for tactical modes -->
+		<TacticalControllerScrollMaxSpeed network="client"> 0.01 </TacticalControllerScrollMaxSpeed>
+		<TacticalControllerScrollMinSpeed network="client"> 0.0001 </TacticalControllerScrollMinSpeed>
+
+		<!-- AcceleratedMouseScrolling: This is what is used for middle mouse wheel hold scrolling in 8-Bit Armies! -->
+		<!-- Accelerated mouse scrolling parameters -->
+		<AcceleratedMouseScrollingMinDistance network="client">10</AcceleratedMouseScrollingMinDistance>
+		<AcceleratedMouseScrollingMaxDistance network="client">400</AcceleratedMouseScrollingMaxDistance>
+		<AcceleratedMouseScrollingMinSpeed network="client">0.00013</AcceleratedMouseScrollingMinSpeed>
+		<AcceleratedMouseScrollingMaxSpeed network="client">0.010</AcceleratedMouseScrollingMaxSpeed>
+		<AcceleratedMouseScrollingAnchorTexture network="client">Accelerated_Mouse_Scroll_Anchor.tga</AcceleratedMouseScrollingAnchorTexture>
+		<AcceleratedMouseScrollingArrowIconTexture network="client">Accelerated_Mouse_Scroll_Arrow_Icon.tga</AcceleratedMouseScrollingArrowIconTexture>
+		<AcceleratedMouseScrollingArrowLineTexture network="client">w_generic_white.tga</AcceleratedMouseScrollingArrowLineTexture>
+		<AcceleratedMouseScrollingArrowLineTint network="client">
+			<R> 1.0 </R>
+			<G> 1.0 </G>
+			<B> 1.0 </B>
+			<A> 1.0 </A>
+		</AcceleratedMouseScrollingArrowLineTint>
+		<AcceleratedMouseScrollingArrowThickness network="client">10</AcceleratedMouseScrollingArrowThickness>
+
+		<!-- Acceleration on scrolling. The higher the number, the less acceleration will be evident -->
+		<ScrollDecelerationFactor network="client"> 3.0 </ScrollDecelerationFactor>
+		<VerticalScrollingFactor network="client"> 2.0 </VerticalScrollingFactor>
+		<!-- Camera View parameters (middle button down + hold) -->
+		<CameraViewRotationMoveMultiplier network="client"> 0.25 </CameraViewRotationMoveMultiplier>
+		<!-- Maria 12.06.2007: Camera View Rotation can already be performed using the left and arrow keys on the keyboard.
+			In that case, the distance to rotate the camera while the keys are pressed down is determined by this variable. -->
+		<CameraViewRotationKeyboardDistance network="client"> 0.05 </CameraViewRotationKeyboardDistance>
+
+		<!-- ***********     SCROLLING/CAMERA VIEW PARAMETERS - END   ************* -->
+
+
+		<!-- Enable or disable right mouse button holding to do repeated movement chase toward the mouse cursor position -->
+		<ButtonHeldRepeatMovementEnabled network="client"> true </ButtonHeldRepeatMovementEnabled>
+		<!-- Show movement ping particles during constant movement? They will always show are start and end of sequence -->
+		<ButtonHeldRepeatMovementShowPingParticles network="client"> false </ButtonHeldRepeatMovementShowPingParticles> <!-- Only enable is ButtonHeldRepeatMovementDelayBetweenRequestsMS is more sparse -->
+		<!-- Ground distance from avatar or selected objects(s) to continue repeated movement -->
+		<ButtonHeldRepeatMovementDistanceThreshold network="client"> 20.0 </ButtonHeldRepeatMovementDistanceThreshold>
+		<!-- Millisecond delay before repeated movement starts following the mouse button down event -->
+		<ButtonHeldRepeatMovementDelayBeforeStartMS network="client"> 200 </ButtonHeldRepeatMovementDelayBeforeStartMS> <!-- 200 is 1/5th of a second -->
+		<!-- Millisecond delay between movement requests, tested with each GameObjectActionHandler::Service() call -->
+		<ButtonHeldRepeatMovementDelayBetweenRequestsMS network="client"> 0 </ButtonHeldRepeatMovementDelayBetweenRequestsMS> <!-- 0 is once per Service() (temporary, but as fast as possible), 1000 is once per second -->
+
+
+		<!-- MARIA 06.12.2007: XML variables for the Move Command Visual Range mode - BEGIN . -->
+		<GUIIdleCommandGroundBlobMaterialName network="client">       GUI_Idle_Command_Ground_Blob        </GUIIdleCommandGroundBlobMaterialName>
+		<GUIIdleCommandGroundBlobFadeoutTime network="client"> 1.5 </GUIIdleCommandGroundBlobFadeoutTime>
+		<GUIItemAbilityTargetingRangeBlobMaterialName network="client">GUI_Idle_Command_Ground_Blob</GUIItemAbilityTargetingRangeBlobMaterialName>
+		<!-- Tactical camera overrides -->
+		<LandTacticalCameraLocked network="client"> True </LandTacticalCameraLocked>
+		<!-- True for default, Can be False for demo purposes -->
+		<OcclusionSilhouettesEnabled network="client">true</OcclusionSilhouettesEnabled>
+		<MouseOverHighlightScale network="client">1.8</MouseOverHighlightScale>
+		<MinimumDragSelectDistance network="client"> 50.0 </MinimumDragSelectDistance>
+		<MinimumDragDistance network="client"> 8.0 </MinimumDragDistance>
+		<AbilityTooltipEffectTotalTextColor network="client">FFFFFF</AbilityTooltipEffectTotalTextColor>
+		<AbilityTooltipEffectLevelTextColor network="client">FFFFFF</AbilityTooltipEffectLevelTextColor>
+		<AbilityTooltipEffectUpgradeTextColor network="client">FF9517</AbilityTooltipEffectUpgradeTextColor>
+		<!-- +/- Clicks-->
+		<NormalDamageTextColor network="client">
+			<R> 0.0 </R>
+			<G> 0.45 </G>
+			<B> 0.81 </B>
+			<A> 0.75 </A>
+		</NormalDamageTextColor>
+		<HealTextColor network="client">
+			<R> 0.0 </R>
+			<G> 0.65 </G>
+			<B> 0.0 </B>
+			<A> 0.75 </A>
+		</HealTextColor>
+		<NoDamageTextColor network="client">
+			<R> 1.0 </R>
+			<G> 1.0 </G>
+			<B> 1.0 </B>
+			<A> 1.0 </A>
+		</NoDamageTextColor>
+		<ExpTextColor network="client">
+			<R> 0.92 </R>
+			<G> 0.77 </G>
+			<B> 1.0 </B>
+			<A> 1.0 </A>
+		</ExpTextColor>
+		<NPExpTextColor network="client">
+			<R> 1.0 </R>
+			<G> 0.92 </G>
+			<B> 0.77 </B>
+			<A> 1.0 </A>
+		</NPExpTextColor>
+		<CurrencyAddedTextColor network="client">
+			<R> 1.0 </R>
+			<G> 0.87 </G>
+			<B> 0.0 </B>
+			<A> 1.0 </A>
+		</CurrencyAddedTextColor>
+		<CurrencySubtractedTextColor network="client">
+			<R> 0.7 </R>
+			<G> 0.53 </G>
+			<B> 1.0 </B>
+			<A> 1.0 </A>
+		</CurrencySubtractedTextColor>
+		<AutoLevelNotificationTextColor network="client">
+			<R>1.0</R>
+			<G>1.0</G>
+			<B>1.0</B>
+			<A>1.0</A>
+		</AutoLevelNotificationTextColor>
+		<AutoLevelNotificationSFXName network="client"></AutoLevelNotificationSFXName>
+		<AutoLevelNotificationFontName network="client"></AutoLevelNotificationFontName>
+		<AutoLevelNotificationDisplaySeconds network="client">3.0</AutoLevelNotificationDisplaySeconds>
+		<MergeComboAssociationColor0 network="client">
+			<R>0.9</R>
+			<G>0.9</G>
+			<B>0.2</B>
+			<A>1.0</A>
+		</MergeComboAssociationColor0>
+		<MergeComboAssociationColor1 network="client">
+			<R>0.7</R>
+			<G>0.4</G>
+			<B>0.4</B>
+			<A>1.0</A>
+		</MergeComboAssociationColor1>
+		<DeepWaterZCutoff network="client"> -50.0 </DeepWaterZCutoff>
+		<ShallowWaterZCutoff network="client"> -8.0 </ShallowWaterZCutoff>
+		<SteepZCutoff network="client"> .94 </SteepZCutoff>
+		<!-- Minimun and Maximum times to wait before a transition into a non-base random idle animation.  -->
+		<IdleAnimationMinTimeToTransition network="client"> 10.0 </IdleAnimationMinTimeToTransition>
+		<IdleAnimationMaxTimeToTransition network="client"> 18.0 </IdleAnimationMaxTimeToTransition>
+		<DefaultIdleAnim network="client"> Idle </DefaultIdleAnim>
+		<DefaultMoveAnim network="client"> Run_Forward </DefaultMoveAnim>
+		<AutoEnemySelectMaxDistance network="client">700</AutoEnemySelectMaxDistance>
+		<UnusableItemColor network="client">
+			<R> 1.0 </R>
+			<G> 0.0 </G>
+			<B> 0.0 </B>
+			<A> 1.0 </A>
+		</UnusableItemColor>
+		<UsableItemTooltipTextColor network="client">
+			<R> 1.0 </R>
+			<G> 1.0 </G>
+			<B> 1.0 </B>
+			<A> 1.0 </A>
+		</UsableItemTooltipTextColor>
+		<UnusableItemTooltipTextColor network="client">
+			<R> 1.0 </R>
+			<G> 0.0 </G>
+			<B> 0.0 </B>
+			<A> 1.0 </A>
+		</UnusableItemTooltipTextColor>
+		<ItemModifierStatTooltipFont network="client">General Text Small</ItemModifierStatTooltipFont>
+		<ItemModifierStatPositiveTextColor network="client">
+			<R> 0.15 </R>
+			<G> 0.96 </G>
+			<B> 0.26 </B>
+			<A> 1.0 </A>
+		</ItemModifierStatPositiveTextColor>
+		<ItemModifierStatNegativeTextColor network="client">
+			<R> 1.0 </R>
+			<G> 0.0 </G>
+			<B> 0.0 </B>
+			<A> 1.0 </A>
+		</ItemModifierStatNegativeTextColor>
+		<AvatarStatNotModifiedFromBaseTextColor network="client">
+			<R> 1.0 </R>
+			<G> 1.0 </G>
+			<B> 1.0 </B>
+			<A> 1.0 </A>
+		</AvatarStatNotModifiedFromBaseTextColor>
+		<AvatarStatIncreasedFromBaseTextColor network="client">
+			<R> 0.15 </R>
+			<G> 0.96 </G>
+			<B> 0.26 </B>
+			<A> 1.0 </A>
+		</AvatarStatIncreasedFromBaseTextColor>
+		<AvatarStatDecreasedFromBaseTextColor network="client">
+			<R> 0.91 </R>
+			<G> 0.57 </G>
+			<B> 0.11 </B>
+			<A> 1.0 </A>
+		</AvatarStatDecreasedFromBaseTextColor>
+		<AvatarStatReachedCapTextColor network="client">
+			<R> 1.0 </R>
+			<G> 0.0 </G>
+			<B> 0.0 </B>
+			<A> 1.0 </A>
+		</AvatarStatReachedCapTextColor>
+		<LocalBuffEffectCircleWedgeColor network="client">
+			<R> 0.0 </R>
+			<G> 1.0 </G>
+			<B> 0.0 </B>
+			<A> 1.0 </A>
+		</LocalBuffEffectCircleWedgeColor>
+		<LocalDebuffEffectCircleWedgeColor network="client">
+			<R> 1.0 </R>
+			<G> 0.0 </G>
+			<B> 1.0 </B>
+			<A> 1.0 </A>
+		</LocalDebuffEffectCircleWedgeColor>
+		<LocalNeutralEffectCircleWedgeColor network="client">
+			<R> 0.0 </R>
+			<G> 0.0 </G>
+			<B> 1.0 </B>
+			<A> 1.0 </A>
+		</LocalNeutralEffectCircleWedgeColor>
+		<AllyBuffEffectCircleWedgeColor network="client">
+			<R> 0.0 </R>
+			<G> 1.0 </G>
+			<B> 0.0 </B>
+			<A> 1.0 </A>
+		</AllyBuffEffectCircleWedgeColor>
+		<AllyDebuffEffectCircleWedgeColor network="client">
+			<R> 1.0 </R>
+			<G> 0.0 </G>
+			<B> 1.0 </B>
+			<A> 1.0 </A>
+		</AllyDebuffEffectCircleWedgeColor>
+		<AllyNeutralEffectCircleWedgeColor network="client">
+			<R> 0.0 </R>
+			<G> 0.0 </G>
+			<B> 1.0 </B>
+			<A> 1.0 </A>
+		</AllyNeutralEffectCircleWedgeColor>
+		<EnemyBuffEffectCircleWedgeColor network="client">
+			<R> 1.0 </R>
+			<G> 0.0 </G>
+			<B> 0.0 </B>
+			<A> 1.0 </A>
+		</EnemyBuffEffectCircleWedgeColor>
+		<EnemyDebuffEffectCircleWedgeColor network="client">
+			<R> 1.0 </R>
+			<G> 0.0 </G>
+			<B> 0.0 </B>
+			<A> 1.0 </A>
+		</EnemyDebuffEffectCircleWedgeColor>
+		<EnemyNeutralEffectCircleWedgeColor network="client">
+			<R> 0.184 </R>
+			<G> 0.31 </G>
+			<B> 0.31 </B>
+			<A> 1.0 </A>
+		</EnemyNeutralEffectCircleWedgeColor>
+
+		<BountyColor network="client">
+			<R> 1.0 </R>
+			<G> 1.0 </G>
+			<B> 1.0 </B>
+			<A> 1.0 </A>
+		</BountyColor>
+		<BonusBountyColor network="client">
+			<R> 1.0 </R>
+			<G> 0.843 </G>
+			<B> 0.0 </B>
+			<A> 1.0 </A>
+		</BonusBountyColor>
+		<AntiBountyColor network="client">
+			<R> 1.0 </R>
+			<G> 0.0 </G>
+			<B> 0.0 </B>
+			<A> 1.0 </A>
+		</AntiBountyColor>
+
+		<SayAndEmoteDistance network="client">1000</SayAndEmoteDistance>
+		<InterfaceWindowInfo network="client">
+			<Entry>
+				<Key>Loot</Key>
+				<Value>
+					<KeepDisplayedTypes>
+						<Entry>MetaInventory</Entry>
+					</KeepDisplayedTypes>
+				</Value>
+			</Entry>
+			<Entry>
+				<Key>MetaInventory</Key>
+				<Value>
+					<KeepDisplayedTypes>
+						<Entry>Loot</Entry>
+						<Entry>Vendor</Entry>
+						<Entry>ItemBundle</Entry>
+						<Entry>AvatarInspect</Entry>
+						<Entry>ItemDelivery</Entry>
+						<Entry>CombatLog</Entry>
+						<Entry>DeathRecap</Entry>
+					</KeepDisplayedTypes>
+					<AlsoHiddenTypes>
+						<Entry>ItemBundle</Entry>
+					</AlsoHiddenTypes>
+				</Value>
+			</Entry>
+			<Entry>
+				<Key>Vendor</Key>
+				<Value>
+					<KeepDisplayedTypes>
+						<Entry>MetaInventory</Entry>
+					</KeepDisplayedTypes>
+					<AlsoDisplayedTypes>
+						<!--<Entry>MetaInventory</Entry>-->
+					</AlsoDisplayedTypes>
+					<AlsoHiddenTypes>
+						<Entry>MetaInventory</Entry>
+					</AlsoHiddenTypes>
+				</Value>
+			</Entry>
+			<Entry>
+				<Key>ItemBundle</Key>
+				<Value>
+					<KeepDisplayedTypes>
+						<Entry>MetaInventory</Entry>
+					</KeepDisplayedTypes>
+					<AlsoDisplayedTypes>
+						<Entry>MetaInventory</Entry>
+					</AlsoDisplayedTypes>
+					<AlsoHiddenTypes>
+						<Entry>MetaInventory</Entry>
+					</AlsoHiddenTypes>
+				</Value>
+			</Entry>
+			<Entry>
+				<Key>ItemDelivery</Key>
+				<Value>
+					<KeepDisplayedTypes>
+						<Entry>MetaInventory</Entry>
+					</KeepDisplayedTypes>
+				</Value>
+			</Entry>
+			<Entry>
+				<Key>SocialDialog</Key>
+				<Value>
+					<KeepDisplayedTypes>
+					</KeepDisplayedTypes>
+				</Value>
+			</Entry>
+			<Entry>
+				<Key>Leaderboard</Key>
+				<Value>
+					<KeepDisplayedTypes>
+					</KeepDisplayedTypes>
+				</Value>
+			</Entry>
+			<Entry>
+				<Key>NPCDialog</Key>
+				<Value>
+					<KeepDisplayedTypes>
+					</KeepDisplayedTypes>
+				</Value>
+			</Entry>
+			<Entry>
+				<Key>AvatarInspect</Key>
+				<Value>
+					<KeepDisplayedTypes>
+						<Entry>MetaInventory</Entry>
+					</KeepDisplayedTypes>
+				</Value>
+			</Entry>
+			<Entry>
+				<Key>LargeMap</Key>
+				<Value>
+					<KeepDisplayedTypes>
+						<Entry>CombatLog</Entry>
+					</KeepDisplayedTypes>
+				</Value>
+			</Entry>
+			<Entry>
+				<Key>WorldMap</Key>
+				<Value>
+					<KeepDisplayedTypes>
+						<Entry>CombatLog</Entry>
+					</KeepDisplayedTypes>
+				</Value>
+			</Entry>
+			<Entry>
+				<Key>CombatLog</Key>
+				<Value>
+					<KeepDisplayedTypes>
+						<Entry>MetaInventory</Entry>
+						<Entry>DeathRecap</Entry>
+					</KeepDisplayedTypes>
+				</Value>
+			</Entry>
+			<Entry>
+				<Key>DeathRecap</Key>
+				<Value>
+					<KeepDisplayedTypes>
+						<Entry>MetaInventory</Entry>
+						<Entry>CombatLog</Entry>
+					</KeepDisplayedTypes>
+				</Value>
+			</Entry>
+		</InterfaceWindowInfo>
+		<ShardPopulationLevelsInformation network="client">
+			<!-- These need to be in ascending order of the number of the maximum number of players covered-->
+			<Entry>
+				<!-- Low population -->
+				<PopulationLevelNameTextID> TEXT_POPULATION_LOW </PopulationLevelNameTextID>
+				<MaximumNumberOfPlayers> 50 </MaximumNumberOfPlayers>
+				<Color>
+					<R>0.1</R>
+					<G>1.0</G>
+					<B>0.1</B>
+					<A>1.0</A>
+				</Color>
+			</Entry>
+			<Entry>
+				<!-- Medium population -->
+				<PopulationLevelNameTextID> TEXT_POPULATION_MEDIUM </PopulationLevelNameTextID>
+				<MaximumNumberOfPlayers> 150 </MaximumNumberOfPlayers>
+				<Color>
+					<R>1.0</R>
+					<G>1.0</G>
+					<B>0.1</B>
+					<A>1.0</A>
+				</Color>
+			</Entry>
+			<Entry>
+				<!-- High population -->
+				<PopulationLevelNameTextID> TEXT_POPULATION_HIGH </PopulationLevelNameTextID>
+				<Color>
+					<R>1.0</R>
+					<G>0.1</G>
+					<B>0.1</B>
+					<A>1.0</A>
+				</Color>
+			</Entry>
+		</ShardPopulationLevelsInformation>
+
+		<NotificationLifetime network="client">30</NotificationLifetime>
+		<EventNotificationFilter network="client">
+			<Entry>
+				<Notification>InsufficientFunds</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>30</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>NoPower</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>0</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>FieldDepleted</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>0</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>TeleporterReady</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>0</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>ConstructionComplete</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>0</FilterTime>
+			</Entry>
+
+			<Entry>
+				<Notification>AllyUnderAttack</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>30</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>HQUnderAttack</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>15</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>CoreUnderAttack</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>15</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>UnitUnderAttack</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>15</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>EpicUnderAttack</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>10</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>HarvesterUnderAttack</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>20</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>StructureUnderAttack</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>15</FilterTime>
+			</Entry>
+
+			<Entry>
+				<Notification>AllyUnderAttackByUnseen</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>30</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>HQUnderAttackByUnseen</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>15</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>CoreUnderAttackByUnseen</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>15</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>UnitUnderAttackByUnseen</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>15</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>EpicUnderAttackByUnseen</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>10</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>HarvesterUnderAttackByUnseen</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>20</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>StructureUnderAttackByUnseen</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>10</FilterTime>
+			</Entry>
+
+			<Entry>
+				<Notification>HarvesterDestroyed</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>3</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>UnitDestroyed</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>10</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>MotherDestroyed</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>0</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>StructureDestroyed</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>3</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>EpicConstructed</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>0</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>PlayerEliminated</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>0</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>PlayerEliminatedLightBlue</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>0</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>PlayerEliminatedRed</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>0</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>PlayerEliminatedGreen</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>0</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>PlayerEliminatedYellow</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>0</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>PlayerEliminatedOrange</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>0</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>PlayerEliminatedBlue</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>0</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>PlayerEliminatedPink</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>0</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>PlayerEliminatedPurple</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>0</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>PlayerEliminatedWhite</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>0</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>PlayerEliminatedBlackGrey</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>0</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>ResourceCapReached</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>29</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>PopulationCapReached</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>29</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>TechUpgradeComplete</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>0</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>PlayerRevealed</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>0</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>OpenedVehicleCrate</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>3</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>OpenedInfantryCrate</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>3</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>OpenedAircraftCrate</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>3</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>OpenedHarvesterCrate</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>3</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>OpenedCommandoCrate</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>3</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>OpenedMoneyCrate</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>3</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>OpenedRepairHealCrate</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>3</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>OpenedNukeCrate</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>3</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>OpenedExplosionCrate</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>3</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>OpenedTurretCrate</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>3</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>OpenedMissionCrate</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>1</FilterTime>
+			</Entry>
+
+			<Entry>
+				<Notification>OutpostCaptured</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>5</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>OutpostContested</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>30</FilterTime>
+			</Entry>
+			<Entry>
+				<Notification>OutpostCaptureLost</Notification>
+				<FilterDistance>0</FilterDistance>
+				<FilterTime>5</FilterTime>
+			</Entry>
+		</EventNotificationFilter>
+
+		<TotalDestructionMinCurrency network="client">
+			<Entry>
+				<key>Faction1</key>
+				<value>1000</value>
+			</Entry>
+		</TotalDestructionMinCurrency>
+		<FilteredEventNotifications network="client">
+			<Entry>FieldDepleted</Entry>
+			<Entry>AllyUnderAttack</Entry>
+			<Entry>HQUnderAttack</Entry>
+			<Entry>CoreUnderAttack</Entry>
+			<Entry>UnitUnderAttack</Entry>
+			<Entry>EpicUnderAttack</Entry>
+			<Entry>HarvesterUnderAttack</Entry>
+			<Entry>StructureUnderAttack</Entry>
+			<Entry>AllyUnderAttackByUnseen</Entry>
+			<Entry>HQUnderAttackByUnseen</Entry>
+			<Entry>CoreUnderAttackByUnseen</Entry>
+			<Entry>UnitUnderAttackByUnseen</Entry>
+			<Entry>EpicUnderAttackByUnseen</Entry>
+			<Entry>HarvesterUnderAttackByUnseen</Entry>
+			<Entry>StructureUnderAttackByUnseen</Entry>
+			<Entry>EpicConstructed</Entry>
+			<Entry>PlayerEliminated</Entry>
+			<Entry>PlayerEliminatedLightBlue</Entry>
+			<Entry>PlayerEliminatedRed</Entry>
+			<Entry>PlayerEliminatedGreen</Entry>
+			<Entry>PlayerEliminatedYellow</Entry>
+			<Entry>PlayerEliminatedOrange</Entry>
+			<Entry>PlayerEliminatedBlue</Entry>
+			<Entry>PlayerEliminatedPink</Entry>
+			<Entry>PlayerEliminatedPurple</Entry>
+			<Entry>PlayerEliminatedWhite</Entry>
+			<Entry>PlayerEliminatedBlackGrey</Entry>
+			<Entry>PlayerRevealed</Entry>
+			<Entry>HarvesterDestroyed</Entry>
+			<Entry>OpenedVehicleCrate</Entry>
+			<Entry>OpenedInfantryCrate</Entry>
+			<Entry>OpenedAircraftCrate</Entry>
+			<Entry>OpenedHarvesterCrate</Entry>
+			<Entry>OpenedCommandoCrate</Entry>
+			<Entry>OpenedMoneyCrate</Entry>
+			<Entry>OpenedRepairHealCrate</Entry>
+			<Entry>OpenedNukeCrate</Entry>
+			<Entry>OpenedExplosionCrate</Entry>
+			<Entry>OpenedTurretCrate</Entry>
+			<Entry>OpenedMissionCrate</Entry>
+			<Entry>OutpostCaptured</Entry>
+			<Entry>OutpostContested</Entry>
+			<Entry>OutpostCaptureLost</Entry>
+		</FilteredEventNotifications>
+
+		<MatchListRefreshTime network="client">5</MatchListRefreshTime>
+		<MatchEloRange network="client">150</MatchEloRange>
+		<MatchMaxEloExpansion network="client">2000</MatchMaxEloExpansion>
+		<MatchEloExpansion network="client">10</MatchEloExpansion>
+		<MatchEloExpansionTime network="client">5</MatchEloExpansionTime>
+		<MatchRegionExpansion network="client">12</MatchRegionExpansion>
+		<MatchAnySearchTime network="client">30</MatchAnySearchTime>
+		<MatchPremadeEloInflation network="client">1.10</MatchPremadeEloInflation>
+
+		<MatchStartTimeoutTime network="client">10</MatchStartTimeoutTime>
+		<MatchMaxObservers network="client">2</MatchMaxObservers>
+		<ObserverStreamDelay network="client">180</ObserverStreamDelay>
+
+		<TacticalLoadGameCommandWhitelist network="client">
+			<Entry>COMMAND_MOUSE_MOVE</Entry>
+			<Entry>COMMAND_MOUSE_PRIMARY_DOWN</Entry>
+			<Entry>COMMAND_MOUSE_SECONDARY_DOWN</Entry>
+			<Entry>COMMAND_MOUSE_MIDDLE_DOWN</Entry>
+			<Entry>COMMAND_MOUSE_ALT1_DOWN</Entry>
+			<Entry>COMMAND_MOUSE_ALT2_DOWN</Entry>
+			<Entry>COMMAND_MOUSE_WHEEL_FORWARD</Entry>
+			<Entry>COMMAND_MOUSE_WHEEL_BACK</Entry>
+			<Entry>COMMAND_DEBUG_CONSOLE</Entry>
+		</TacticalLoadGameCommandWhitelist>
+
+		<DefaultMouseInputConfig network="client">DEFAULT_MOUSE</DefaultMouseInputConfig>
+		<DefaultKeyboardInputConfig network="client">DEFAULT_KEYBOARD</DefaultKeyboardInputConfig>
+		<UIIntroCinematicsInputConfig network="client">UI_INTRO_CINEMATICS</UIIntroCinematicsInputConfig>
+		<UICinematicsInputConfig network="client">UI_CINEMATICS</UICinematicsInputConfig>
+		<InGameCinematicsInputConfig network="client">IN_GAME_CINEMATICS</InGameCinematicsInputConfig>
+		<DefaultTacticalAlwaysModeInputConfig network="client">DEFAULT_TACTICAL_ALWAYS_MODE</DefaultTacticalAlwaysModeInputConfig>
+		<TacticalChatInputConfig network="client">TACTICAL_CHAT</TacticalChatInputConfig>
+		<TacticalCameraInputConfig network="client">TACTICAL_CAMERA</TacticalCameraInputConfig>
+		<TacticalSelectedObjectInputConfig network="client">TACTICAL_SELECTED_OBJECT</TacticalSelectedObjectInputConfig>
+		<TacticalSelectedUnitInputConfig network="client">TACTICAL_SELECTED_UNIT</TacticalSelectedUnitInputConfig>
+
+		<!-- Removal asserts -->
+		<TacticalSelectedMotherGooInputConfig network="client">TACTICAL_SELECTED_MOTHER_GOO</TacticalSelectedMotherGooInputConfig>
+		<TacticalSelectedChildGooSmallInputConfig network="client">TACTICAL_SELECTED_CHILD_GOO_SMALL</TacticalSelectedChildGooSmallInputConfig>
+		<TacticalSelectedChildGooLargeInputConfig network="client">TACTICAL_SELECTED_CHILD_GOO_LARGE</TacticalSelectedChildGooLargeInputConfig>
+		<!-- Removal asserts -->
+
+		<TacticalSelectedStructureInputConfig network="client">TACTICAL_SELECTED_STRUCTURE</TacticalSelectedStructureInputConfig>
+		<TacticalSelectedAircraftInputConfig network="client">TACTICAL_SELECTED_AIRCRAFT</TacticalSelectedAircraftInputConfig>
+		<TacticalSelectedFactoryInputConfig network="client">TACTICAL_SELECTED_FACTORY</TacticalSelectedFactoryInputConfig>
+		<TacticalSelectedTurretInputConfig network="client">TACTICAL_SELECTED_TURRET</TacticalSelectedTurretInputConfig>
+		<TacticalSelectedMountableInputConfig network="client">TACTICAL_SELECTED_MOUNTABLE</TacticalSelectedMountableInputConfig>
+		<TacticalSelectedEpicCapableInputConfig network="client">TACTICAL_SELECTED_EPIC_CAPABLE</TacticalSelectedEpicCapableInputConfig>
+		<TacticalSelectedTeleporterInputConfig network="client">TACTICAL_SELECTED_TELEPORTER</TacticalSelectedTeleporterInputConfig>
+		<TacticalSelectedTeleportableStructureInputConfig network="client">TACTICAL_SELECTED_TELEPORTABLE_STRUCTURE</TacticalSelectedTeleportableStructureInputConfig>
+		<TacticalPingsInputConfig network="client">TACTICAL_PINGS</TacticalPingsInputConfig>
+		<TacticalBuildTechInputConfig network="client">TACTICAL_BUILD_TECH</TacticalBuildTechInputConfig>
+		<TacticalBuildUnitInputConfig network="client">TACTICAL_BUILD_UNIT</TacticalBuildUnitInputConfig>
+		<TacticalBuildStructureInputConfig network="client">TACTICAL_BUILD_STRUCTURE</TacticalBuildStructureInputConfig>
+		<!-- MOBIUS C&C UPDATE -->
+		<!--
+		<DefaultTacticalInputConfig network="client">DEFAULT_TACTICAL</DefaultTacticalInputConfig>
+		-->
+		<DefaultTacticalInputConfig network="client"> TACTICAL_CNC </DefaultTacticalInputConfig>
+		<TacticalCNCBuildStructureInputConfig network="client"> TACTICAL_CNC_BUILD_STRUCTURES </TacticalCNCBuildStructureInputConfig>
+		<TacticalCNCBuildInfantryInputConfig network="client"> TACTICAL_CNC_BUILD_INFANTRY </TacticalCNCBuildInfantryInputConfig>
+		<TacticalCNCBuildVehicleInputConfig network="client"> TACTICAL_CNC_BUILD_VEHICLES </TacticalCNCBuildVehicleInputConfig>
+		<TacticalCNCSuperweaponInputConfig network="client"> TACTICAL_CNC_SUPERWEAPONS </TacticalCNCSuperweaponInputConfig>
+		<MultiplayerLobbyInputConfig network="client"> MULTIPLAYER_GAME_LOBBY </MultiplayerLobbyInputConfig>
+
+		<!--2048 for me 4096 for else-->
+		<MapPreviewImageHighResSize network="client">2048</MapPreviewImageHighResSize>
+		<MapPreviewImageSize network="client">512</MapPreviewImageSize>
+		<!-- ***********     SCROLLING/CAMERA VIEW PARAMETERS - BEGIN   ************* -->
+		<EdgeScrollZone network="client"> 1.0 </EdgeScrollZone>
+		<EdgeScrollDistanceForMaxScroll network="client"> 1.0 </EdgeScrollDistanceForMaxScroll>
+		<ButtonScrollDeadZone network="client"> 30.0 </ButtonScrollDeadZone>
+		<ButtonScrollDistanceForMaxScroll network="client"> 200.0 </ButtonScrollDistanceForMaxScroll>
+		<ButtonScrollStartDistance network="client"> 1.0 </ButtonScrollStartDistance>
+		<PushScrollStartDistance network="client"> 30.0 </PushScrollStartDistance>
+		<TacticalScrollAcceleration network="client"> 800.0 </TacticalScrollAcceleration>
+		<!-- Button scrolling for tactical modes -->
+		<TacticalButtonScrollMaxSpeed network="client"> 400.0 </TacticalButtonScrollMaxSpeed>
+		<TacticalButtonScrollMinSpeed network="client"> 10.0 </TacticalButtonScrollMinSpeed>
+		<!-- Edge scrolling for tactical modes -->
+		<TacticalEdgeScrollMaxSpeed network="client"> 30.0 </TacticalEdgeScrollMaxSpeed>
+		<TacticalEdgeScrollMinSpeed network="client"> 30.0 </TacticalEdgeScrollMinSpeed>
+		<!-- Absolute Push Scrolling -->
+		<TacticalPushScrollSpeedModifier network="client"> 2.0 </TacticalPushScrollSpeedModifier>
+		<!-- Acceleration on scrolling. The higher the number, the less acceleration will be evident -->
+		<ScrollDecelerationFactor network="client"> 4.0 </ScrollDecelerationFactor>
+		<VerticalScrollingFactor network="client"> 1.2 </VerticalScrollingFactor>
+		<!-- Camera View parameters (middle button down + hold) -->
+		<CameraViewRotationMoveMultiplier network="client"> 1.0 </CameraViewRotationMoveMultiplier>
+		<!-- Maria 12.06.2007: Camera View Rotation can already be performed using the left and arrow keys on the keyboard.
+		In that case, the distance to rotate the camera while the keys are pressed down is determined by this variable. -->
+		<CameraViewRotationKeyboardDistance network="client"> 0.05 </CameraViewRotationKeyboardDistance>
+		<!-- MARIA 06.12.2007: XML variables for the Move Command Visual Range mode - BEGIN -->
+		<GUIIdleCommandGroundBlobMaterialName network="client"> GUI_Idle_Command_Ground_Blob </GUIIdleCommandGroundBlobMaterialName>
+		<GUIIdleCommandGroundBlobFadeoutTime network="client"> 1.5 </GUIIdleCommandGroundBlobFadeoutTime>
+
+		<!-- Game credits -->
+		<CreditsScrollRate network="client"> 0.1045 </CreditsScrollRate>
+		<CreditsFont network="client">40 Point Drop</CreditsFont>
+		<CreditsFullScreenBackgroundNames network="client">
+			<entry> UI_MainMenuBG_01.tga </entry>
+		</CreditsFullScreenBackgroundNames>
+
+		<!-- Minimun and Maximum times to wait before a transition into a non-base random idle animation.  -->
+		<IdleAnimationMinTimeToTransition network="client"> 5.0 </IdleAnimationMinTimeToTransition>
+		<IdleAnimationMaxTimeToTransition network="client"> 10.0 </IdleAnimationMaxTimeToTransition>
+		<MinimumDragSelectDistance network="client"> 40.0 </MinimumDragSelectDistance>
+		<MinimumDragDistance network="client"> 4.0 </MinimumDragDistance>
+		<DeepWaterZCutoff network="client"> -50.0 </DeepWaterZCutoff>
+		<ShallowWaterZCutoff network="client"> -8.0 </ShallowWaterZCutoff>
+		<SteepZCutoff network="client"> .94 </SteepZCutoff>
+		<MoveAckEffect network="client"> GUI_Move_Command_Particle </MoveAckEffect>
+		<FriendlyAvatarArrowName network="client"> Friendly_Pointer </FriendlyAvatarArrowName>
+		<EnemyAvatarArrowName network="client"> Enemy_Pointer </EnemyAvatarArrowName>
+		<CurrencyIcons network="client">
+			<Entry>
+				<Key>Tactical</Key>
+				<Value>i_blank.tga</Value>
+			</Entry>
+			<Entry>
+				<Key>Meta</Key>
+				<Value></Value>
+			</Entry>
+			<Entry>
+				<Key>RMT</Key>
+				<Value></Value>
+			</Entry>
+		</CurrencyIcons>
+		<CurrencyQuadTextures network="client">
+			<Entry>
+				<Key>Tactical</Key>
+				<Value>i_blank.tga</Value>
+			</Entry>
+			<Entry>
+				<Key>Meta</Key>
+				<Value>i_blank.tga</Value>
+			</Entry>
+			<Entry>
+				<Key>RMT</Key>
+				<Value>i_blank.tga</Value>
+			</Entry>
+		</CurrencyQuadTextures>
+		<StoneExpirationMultiplier> 1.0 </StoneExpirationMultiplier>
+		<!-- Adjusts stone timers on a global level 1.0 is normal.  DO NOT TOUCH THIS NUMBER (EVEN YOU CHRIS) WITHOUT SEEING ME FIRST! - PAT-->
+		<ResurrectQueryDelay network="client"> 5 </ResurrectQueryDelay>
+		<LevelFlashSeconds network="client"> 5.0 </LevelFlashSeconds>
+		<UnitFollowDistance network="client"> 1.0 </UnitFollowDistance>
+		<UnitFollowApproachDistance network="client"> 40.0 </UnitFollowApproachDistance>
+		<MinionSpawnDistance network="client"> 40.0 </MinionSpawnDistance>
+		<OpenInventoryPageMouseOverTime network="client">0.5</OpenInventoryPageMouseOverTime>
+		<CameraViewScrollMaxDistanceFromAvatar network="client"> 30000 </CameraViewScrollMaxDistanceFromAvatar>
+		<CameraViewScrollMaxDistanceFromMinion network="client"> 30000 </CameraViewScrollMaxDistanceFromMinion>
+		<ReattachDist network="client"> 0.10 </ReattachDist>
+		<FloatyXPTextDelay network="client">.75</FloatyXPTextDelay>
+		<MinOcclusionZ network="client"> 10 </MinOcclusionZ>
+		<CameraRotateAmount network="client"> 7 </CameraRotateAmount>
+		<TerrainEditorDefaultPlayer network="client"> EnemyPlayer </TerrainEditorDefaultPlayer>
+		<DetachCameraWithMiddleMouse network="client">false</DetachCameraWithMiddleMouse>
+		<RageQuitTime network="client">20</RageQuitTime>
+		<ShowCurrencyFloatyText network="client"> false </ShowCurrencyFloatyText>
+		<SkillTreePanelDisplayNames network="client"/>
+		<InitialSkillTextTint network="client">
+			<R>1.0</R>
+			<G>1.0</G>
+			<B>1.0</B>
+			<A>1.0</A>
+		</InitialSkillTextTint>
+		<UpgradedSkillTextTint network="client">
+			<R>0.0</R>
+			<G>1.0</G>
+			<B>0.0</B>
+			<A>1.0</A>
+		</UpgradedSkillTextTint>
+		<FullSkillTextTint network="client">
+			<R>1.0</R>
+			<G>1.0</G>
+			<B>0.0</B>
+			<A>1.0</A>
+		</FullSkillTextTint>
+		<FriendHubTextTint network="client">
+			<R>0.0</R>
+			<G>1.0</G>
+			<B>0.0</B>
+			<A>1.0</A>
+		</FriendHubTextTint>
+		<FriendInstanceTextTint network="client">
+			<R>1.0</R>
+			<G>1.0</G>
+			<B>0.0</B>
+			<A>1.0</A>
+		</FriendInstanceTextTint>
+		<FriendOfflineTextTint network="client">
+			<R>0.5</R>
+			<G>0.5</G>
+			<B>0.5</B>
+			<A>1.0</A>
+		</FriendOfflineTextTint>
+
+		<CriticalHitEffectType network="client"> </CriticalHitEffectType>
+
+		<DamageTypeGUIInfo network="client">
+		</DamageTypeGUIInfo>
+
+		<DamageGroupingTypeGUIInfo network="client">
+		</DamageGroupingTypeGUIInfo>
+
+		<MinCastingTimerDisplay network="client"> 0.6 </MinCastingTimerDisplay>
+		<UseAvatarFacingForInitialCamera network="client">false</UseAvatarFacingForInitialCamera>
+
+		<AbilityTooltipColorStatsHeader network="client"> 255/255/255 </AbilityTooltipColorStatsHeader>
+		<AbilityTooltipColorStatLabel network="client"> 255/255/255 </AbilityTooltipColorStatLabel>
+		<AbilityTooltipColorStatText network="client"> 221/221/221 </AbilityTooltipColorStatText>
+		<AbilityTooltipColorSummaryText network="client"> 221/221/221 </AbilityTooltipColorSummaryText>
+		<AbilityTooltipColorEffectHeader network="client"> 0/128/0 </AbilityTooltipColorEffectHeader>
+		<AbilityTooltipColorEffectText network="client"> 221/221/221 </AbilityTooltipColorEffectText>
+		<AbilityTooltipColorEffectName network="client"> 0/128/0 </AbilityTooltipColorEffectName>
+		<AbilityTooltipColorNextLevelHeader network="client"> 75/132/224 </AbilityTooltipColorNextLevelHeader>
+		<AbilityTooltipColorModifiersHeader network="client"> 255/128/0 </AbilityTooltipColorModifiersHeader>
+		<AbilityTooltipColorModifierLabel network="client"> 255/128/64 </AbilityTooltipColorModifierLabel>
+		<AbilityTooltipColorModifierText network="client"> 0/128/0 </AbilityTooltipColorModifierText>
+		<AbilityTooltipColorAttributeModifierText network="client"> 0/128/0 </AbilityTooltipColorAttributeModifierText>
+		<AbilityTooltipColorPassive network="client"> 0/128/0 </AbilityTooltipColorPassive>
+		<AbilityTooltipColorActive network="client"> 0/128/0 </AbilityTooltipColorActive>
+		<AbilityTooltipColorGood network="client"> 0/128/0 </AbilityTooltipColorGood>
+		<AbilityTooltipColorBad network="client"> 128/0/0 </AbilityTooltipColorBad>
+
+		<MaxHealthTextValueDisplay network="client">0.15</MaxHealthTextValueDisplay>
+
+		<!-- Matching killer/assist buffer for simplicities sake... -->
+		<TimeToCacheCombatLogEvents network="client">10.0</TimeToCacheCombatLogEvents>
+		<MaxCombatLogRows network="client">500</MaxCombatLogRows>
+
+		<HealthPerDividingLine network="client">200.0</HealthPerDividingLine>
+		<HealthDividingLineWidth network="client">1.0</HealthDividingLineWidth>
+		<HealthDividingLineTint network="client">
+			<R>0</R>
+			<G>0</G>
+			<B>0</B>
+			<A>1.0</A>
+		</HealthDividingLineTint>
+		<ManaPerDividingLine network="client">0.0</ManaPerDividingLine>
+		<ManaDividingLineWidth network="client">1.0</ManaDividingLineWidth>
+		<ManaDividingLineTint network="client">
+			<R>0</R>
+			<G>0</G>
+			<B>0</B>
+			<A>1.0</A>
+		</ManaDividingLineTint>
+		<EnergyPerDividingLine network="client">10.0</EnergyPerDividingLine>
+		<EnergyDividingLineWidth network="client">1.0</EnergyDividingLineWidth>
+		<EnergyDividingLineTint network="client">
+			<R>0</R>
+			<G>0</G>
+			<B>0</B>
+			<A>1.0</A>
+		</EnergyDividingLineTint>
+
+		<LowPingValue network="client"> 100 </LowPingValue>
+		<MediumPingValue network="client"> 200 </MediumPingValue>
+		<LowPingColor network="client">
+			<R>0</R>
+			<G>1.0</G>
+			<B>0</B>
+			<A>1.0</A>
+		</LowPingColor>
+		<MediumPingColor network="client">
+			<R>1.0</R>
+			<G>0.97</G>
+			<B>0.09</B>
+			<A>1.0</A>
+		</MediumPingColor>
+		<HighPingColor network="client">
+			<R>1.0</R>
+			<G>0</G>
+			<B>0</B>
+			<A>1.0</A>
+		</HighPingColor>
+
+		<CompleteSkinCollectionIcon network="client"/>
+
+		<MainMenuTerrainName network="client">Data/Art/Maps/Main_Menu_Terrain_02.ter</MainMenuTerrainName>
+		<MainMenuCameraDefaultFOV network="client">75.0</MainMenuCameraDefaultFOV>
+		<MainMenuCameraEndFOV network="client">60.0</MainMenuCameraEndFOV>
+		<MainMenuAvatarDisplayList network="client"/>
+		<MainMenuSpecialAvatarAnimChance network="client"> 0.0 </MainMenuSpecialAvatarAnimChance>
+
+		<TutorialAvatarDiscipline network="client"> 20 </TutorialAvatarDiscipline>
+
+		<MainMenuFlyInStartFrame network="client"> 0 </MainMenuFlyInStartFrame>
+		<MainMenuFlyInEndFrame network="client"> 60 </MainMenuFlyInEndFrame>
+		<MainMenuFlyOutStartFrame network="client"> 60 </MainMenuFlyOutStartFrame>
+		<MainMenuFlyOutEndFrame network="client"> 90 </MainMenuFlyOutEndFrame>
+
+		<MaxHealthPercentForFlash network="client"> 0.75f </MaxHealthPercentForFlash>
+		<MaxHealthPercentFlashAlpha network="client"> 0.1f </MaxHealthPercentFlashAlpha>
+		<MinHealthPercentForFlash network="client"> 0.15f </MinHealthPercentForFlash>
+		<MinHealthPercentFlashAlpha network="client"> 1.0f </MinHealthPercentFlashAlpha>
+		<DamageFlashRampUpTime network="client"> 9.0f </DamageFlashRampUpTime>
+		<DamageFlashRampDownTime network="client"> 3.0f </DamageFlashRampDownTime>
+
+		<DamagedHarvesterFlashSeconds network="client">5.0</DamagedHarvesterFlashSeconds>
+
+		<ParticlePreviewModelName network="client">Jason Pet Mover.alo</ParticlePreviewModelName>
+		<ParticlePreviewModelAnimName network="client">Jason Pet Mover_Idle_00.ala</ParticlePreviewModelAnimName>
+		<SkinPreviewWorldBoundsExtent network="client">
+			<X>15</X>
+			<Y>15</Y>
+			<Z>20</Z>
+		</SkinPreviewWorldBoundsExtent>
+		<SkinPreviewWorldBoundsCenter network="client">
+			<X>0</X>
+			<Y>0</Y>
+			<Z>20</Z>
+		</SkinPreviewWorldBoundsCenter>
+
+		<LocalPlayerHealthBarColorData network="client">
+			<Entry>
+				<BelowHealthPercentage>0.01</BelowHealthPercentage>
+				<DisplayColor>
+					<R>0.949</R>
+					<G>0.169</G>
+					<B>0.169</B>
+					<A>1.0</A>
+				</DisplayColor>
+			</Entry>
+			<Entry>
+				<BelowHealthPercentage>0.25</BelowHealthPercentage>
+				<DisplayColor>
+					<R>0.949</R>
+					<G>0.169</G>
+					<B>0.169</B>
+					<A>1.0</A>
+				</DisplayColor>
+			</Entry>
+			<Entry>
+				<BelowHealthPercentage>0.50</BelowHealthPercentage>
+				<DisplayColor>
+					<R>1.0</R>
+					<G>0.467</G>
+					<B>0.0</B>
+					<A>1.0</A>
+				</DisplayColor>
+			</Entry>
+			<Entry>
+				<BelowHealthPercentage>0.75</BelowHealthPercentage>
+				<DisplayColor>
+					<R>1.0</R>
+					<G>0.910</G>
+					<B>0.361</B>
+					<A>1.0</A>
+				</DisplayColor>
+			</Entry>
+			<Entry>
+				<BelowHealthPercentage>1.0</BelowHealthPercentage>
+				<DisplayColor>
+					<R>0.514</R>
+					<G>0.816</G>
+					<B>0.125</B>
+					<A>1.0</A>
+				</DisplayColor>
+			</Entry>
+		</LocalPlayerHealthBarColorData>
+		<AllyHealthBarColorData network="client">
+			<Entry>
+				<BelowHealthPercentage>0.35</BelowHealthPercentage>
+				<DisplayColor>
+					<R>0.27</R>
+					<G>0.33</G>
+					<B>1.0</B>
+					<A>1.0</A>
+				</DisplayColor>
+			</Entry>
+			<Entry>
+				<BelowHealthPercentage>0.75</BelowHealthPercentage>
+				<DisplayColor>
+					<R>0.27</R>
+					<G>0.53</G>
+					<B>1.0</B>
+					<A>1.0</A>
+				</DisplayColor>
+			</Entry>
+			<Entry>
+				<BelowHealthPercentage>1.0</BelowHealthPercentage>
+				<DisplayColor>
+					<R>0.27</R>
+					<G>0.74</G>
+					<B>1.0</B>
+					<A>1.0</A>
+				</DisplayColor>
+			</Entry>
+		</AllyHealthBarColorData>
+		<EnemyHealthBarColorData network="client">
+			<Entry>
+				<BelowHealthPercentage>0.35</BelowHealthPercentage>
+				<DisplayColor>
+					<R>0.69</R>
+					<G>0.094</G>
+					<B>0.094</B>
+					<A>1.0</A>
+				</DisplayColor>
+			</Entry>
+			<Entry>
+				<BelowHealthPercentage>0.75</BelowHealthPercentage>
+				<DisplayColor>
+					<R>0.85</R>
+					<G>0.13</G>
+					<B>0.13</B>
+					<A>1.0</A>
+				</DisplayColor>
+			</Entry>
+			<Entry>
+				<BelowHealthPercentage>1.0</BelowHealthPercentage>
+				<DisplayColor>
+					<R>0.95</R>
+					<G>0.17</G>
+					<B>0.17</B>
+					<A>1.0</A>
+				</DisplayColor>
+			</Entry>
+		</EnemyHealthBarColorData>
+		<NeutralHealthBarColorData network="client">
+			<Entry>
+				<BelowHealthPercentage>0.35</BelowHealthPercentage>
+				<DisplayColor>
+					<R>1.0</R>
+					<G>0.305882</G>
+					<B>0.0</B>
+					<A>1.0</A>
+				</DisplayColor>
+			</Entry>
+			<Entry>
+				<BelowHealthPercentage>0.75</BelowHealthPercentage>
+				<DisplayColor>
+					<R>1.0</R>
+					<G>0.588235</G>
+					<B>0.0</B>
+					<A>1.0</A>
+				</DisplayColor>
+			</Entry>
+			<Entry>
+				<BelowHealthPercentage>1.0</BelowHealthPercentage>
+				<DisplayColor>
+					<R>1.0</R>
+					<G>0.752941</G>
+					<B>0.0</B>
+					<A>1.0</A>
+				</DisplayColor>
+			</Entry>
+		</NeutralHealthBarColorData>
+
+		<AmmoBarColor network="client">
+			<R>1.0</R>
+			<G>0.44</G>
+			<B>0.06</B>
+			<A>1.0</A>
+		</AmmoBarColor>
+
+		<ResourceBarColor network="client">
+			<R>0.6</R>
+			<G>0.75</G>
+			<B>0.75</B>
+			<A>1.0</A>
+		</ResourceBarColor>
+
+		<ShieldBarColor network="client">
+			<R>0.9</R>
+			<G>0.9</G>
+			<B>0.9</B>
+			<A>1.0</A>
+		</ShieldBarColor>
+
+		<ManaBarColor network="client">
+			<R>0</R>
+			<G>0</G>
+			<B>1</B>
+			<A>1.0</A>
+		</ManaBarColor>
+
+		<EnergyBarColor network="client">
+			<R>1</R>
+			<G>1</G>
+			<B>0</B>
+			<A>1.0</A>
+		</EnergyBarColor>
+
+		<CaptureBarNeutralAllyColor network="client">
+			<R>0.624</R>
+			<G>0.914</G>
+			<B>0.98</B>
+			<A>1.0</A>
+		</CaptureBarNeutralAllyColor>
+
+		<CaptureBarNeutralEnemyColor network="client">
+			<R>0.984</R>
+			<G>0.737</G>
+			<B>0.737</B>
+			<A>1.0</A>
+		</CaptureBarNeutralEnemyColor>
+
+		<CaptureBarAllyColor network="client">
+			<R>0.169</R>
+			<G>0.584</G>
+			<B>0.894</B>
+			<A>1.0</A>
+		</CaptureBarAllyColor>
+
+		<CaptureBarEnemyColor network="client">
+			<R>0.949</R>
+			<G>0.169</G>
+			<B>0.169</B>
+			<A>1.0</A>
+		</CaptureBarEnemyColor>
+
+		<CaptureBarPipCount network="client">5</CaptureBarPipCount>
+
+		<!--Physics engine constants.-->
+		<Gravity network="client">-300</Gravity>
+		<GravityWithoutTerrainCollision network="client">-40</GravityWithoutTerrainCollision>
+		<Density network="client">.18</Density>
+		<MaxRigidBodyMassWithoutTerrainCollision network="client">30</MaxRigidBodyMassWithoutTerrainCollision>
+		<MaxRigidBodyMass network="client">50</MaxRigidBodyMass>
+		<MinRigidBodyMass network="client">1</MinRigidBodyMass>
+		<DistAboveTerrainToTriggerProxies network="client">25</DistAboveTerrainToTriggerProxies>
+		<MinTorqueWithoutTerrainCollision network="client">
+			<X>0.0</X>
+			<Y>0.0</Y>
+			<Z>0.0</Z>
+		</MinTorqueWithoutTerrainCollision>
+		<RandomTorqueWithoutTerrainCollision network="client">
+			<X>2000.0</X>
+			<Y>2000.0</Y>
+			<Z>2000.0</Z>
+		</RandomTorqueWithoutTerrainCollision>
+		<ObjectTypesToPreload network="client">
+			<Entry>GUI_Move_Command_Particle</Entry>
+			<Entry>GUI_Double_Click_Move_Command_Particle</Entry>
+			<Entry>Not_Powered_Icon_Particle</Entry>
+			<Entry>Power_Blocked_Icon_Particle</Entry>
+			<Entry>Queued_Icon_Particle</Entry>
+			<Entry>Refinery_Idle_Icon_Particle</Entry>
+			<Entry>General_Repair_Icon_Particle</Entry>
+		</ObjectTypesToPreload>
+
+		<ModelsToPreload network="client">
+			<Entry>FX_Mesh_Waypoint.alo</Entry>
+		</ModelsToPreload>
+
+		<GameEndDialogDelaySeconds network="client">5.</GameEndDialogDelaySeconds>
+
+		<ResourceFieldDisplayEffectiveRadius network="client">100.0</ResourceFieldDisplayEffectiveRadius>
+		<ResourceFieldDisplayEfficiencyIncrement network="client">80.0</ResourceFieldDisplayEfficiencyIncrement>
+		<ResourceFieldDisplayContourThickness network="client">4.0</ResourceFieldDisplayContourThickness>
+		<ResourceFieldDisplayMinimumEfficiency network="client">10.0</ResourceFieldDisplayMinimumEfficiency>
+
+		<InfluenceZonesDisplayOffset network="client">5.0</InfluenceZonesDisplayOffset>
+
+		<InfluenceZonesDisplayTexture network="client">w_generic_white.tga</InfluenceZonesDisplayTexture>
+		<InfluenceZonesDisplayTextureScale network="client">0.0025</InfluenceZonesDisplayTextureScale>
+		<InfluenceZonesDisplayColor network="client">
+			<R>0.854902</R>
+			<G>0.490196</G>
+			<B>0.137255</B>
+			<A>0.026</A>
+		</InfluenceZonesDisplayColor>
+
+		<InfluenceZonesDisplayContourTexture network="client">w_generic_white.tga</InfluenceZonesDisplayContourTexture>
+		<InfluenceZonesDisplayContourTextureScale network="client">1.0</InfluenceZonesDisplayContourTextureScale>
+		<InfluenceZonesDisplayContourColor network="client">
+			<R>0.854902</R>
+			<G>0.490196</G>
+			<B>0.137255</B>
+			<A>0.4</A>
+		</InfluenceZonesDisplayContourColor>
+		<InfluenceZonesDisplayContourThickness network="client">10.0</InfluenceZonesDisplayContourThickness>
+
+		<UnbuildableAreaDisplayOffset network="client">1.0</UnbuildableAreaDisplayOffset>
+
+		<UnbuildableAreaDisplayTexture network="client">w_generic_white.tga</UnbuildableAreaDisplayTexture>
+		<UnbuildableAreaDisplayTextureScale network="client">0.0025</UnbuildableAreaDisplayTextureScale>
+		<UnbuildableAreaDisplayColor network="client">
+			<R>0.854902</R>
+			<G>0.490196</G>
+			<B>0.137255</B>
+			<A>0.026</A>
+		</UnbuildableAreaDisplayColor>
+
+		<UnbuildableAreaDisplayContourTexture network="client">w_generic_white.tga</UnbuildableAreaDisplayContourTexture>
+		<UnbuildableAreaDisplayContourTextureScale network="client">1.0</UnbuildableAreaDisplayContourTextureScale>
+		<UnbuildableAreaDisplayContourColor network="client">
+			<R>0.854902</R>
+			<G>0.490196</G>
+			<B>0.137255</B>
+			<A>0.4</A>
+		</UnbuildableAreaDisplayContourColor>
+		<UnbuildableAreaDisplayContourThickness network="client">10.0</UnbuildableAreaDisplayContourThickness>
+
+		<BrushDisplayOffset network="client">5.0</BrushDisplayOffset>
+
+		<BrushDisplayTexture network="client">w_generic_white.tga</BrushDisplayTexture>
+		<BrushDisplayTextureScale network="client">0.0025</BrushDisplayTextureScale>
+		<BrushDisplayColor network="client">
+			<R>0.0</R>
+			<G>1.0</G>
+			<B>0.0</B>
+			<A>0.026</A>
+		</BrushDisplayColor>
+
+		<BrushDisplayContourTexture network="client">w_generic_white.tga</BrushDisplayContourTexture>
+		<BrushDisplayContourTextureScale network="client">1.0</BrushDisplayContourTextureScale>
+		<BrushDisplayContourColor network="client">
+			<R>0.0</R>
+			<G>1.0</G>
+			<B>0.0</B>
+			<A>0.4</A>
+		</BrushDisplayContourColor>
+		<BrushDisplayContourThickness network="client">10.0</BrushDisplayContourThickness>
+
+		<ControlGroupTextures network="client">
+			<Entry>text_00.tga</Entry>
+			<Entry>text_01.tga</Entry>
+			<Entry>text_02.tga</Entry>
+			<Entry>text_03.tga</Entry>
+			<Entry>text_04.tga</Entry>
+			<Entry>text_05.tga</Entry>
+			<Entry>text_06.tga</Entry>
+			<Entry>text_07.tga</Entry>
+			<Entry>text_08.tga</Entry>
+			<Entry>text_09.tga</Entry>
+		</ControlGroupTextures>
+
+		<SpigotFactionColors network="client">
+			<Entry>
+				<R>1.0</R>
+				<G>0.588235</G>
+				<B>0.0</B>
+			</Entry>
+			<Entry>
+				<R>0.1</R>
+				<G>0.5</G>
+				<B>0.9</B>
+			</Entry>
+			<Entry>
+				<R>1.0</R>
+				<G>1.0</G>
+				<B>1.0</B>
+			</Entry>
+			<Entry>
+				<R>1.0</R>
+				<G>1.0</G>
+				<B>1.0</B>
+			</Entry>
+			<Entry>
+				<R>1.0</R>
+				<G>1.0</G>
+				<B>1.0</B>
+			</Entry>
+			<Entry>
+				<R>1.0</R>
+				<G>1.0</G>
+				<B>1.0</B>
+			</Entry>
+		</SpigotFactionColors>
+		<SpigotEmptyColor network="client">
+			<R>0.75</R>
+			<G>0.0</G>
+			<B>0.0</B>
+		</SpigotEmptyColor>
+		<SpigotOverlaySegmentCount network="client">12.0</SpigotOverlaySegmentCount>
+
+		<StructureGridDataByFaction>
+			<Entry>
+				<Key>Faction1</Key>
+				<Value>
+					<StructureGridCellSize>
+						<X>80</X>
+						<Y>80</Y>
+					</StructureGridCellSize>
+					<StructureGridCellTint>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</StructureGridCellTint>
+					<StructureGridBorderBlob>UI_Structure_Grid_Border</StructureGridBorderBlob>
+					<StructureGridInvalidPlacementBlobSmall>Structure_Placement_Build_Range_Invalid_Placement</StructureGridInvalidPlacementBlobSmall>
+					<StructureGridValidPlacementBlob>Structure_Placement_Build_Range_Valid_Placement</StructureGridValidPlacementBlob>
+					<StructureGridValidGoodResourcePlacementBlob>Structure_Placement_Valid_Good_Resource_Placement</StructureGridValidGoodResourcePlacementBlob>
+					<StructureGridOutOfRangeResourcePlacementBlob>Structure_Placement_Out_Of_Range_Resource_Placement</StructureGridOutOfRangeResourcePlacementBlob>
+					<StructureGridAttemptedFootprintPlacementBlob>Structure_Placement_Attempted_Footprint_Placement</StructureGridAttemptedFootprintPlacementBlob>
+					<StructureGridFoundationValidPlacementBlob>Structure_Placement_Foundation_Valid_Placement</StructureGridFoundationValidPlacementBlob>
+					<StructureGridFoundationInvalidPlacementBlob>Structure_Placement_Foundation_Invalid_Placement</StructureGridFoundationInvalidPlacementBlob>
+					<StructureGridValidTechPlacementBlob></StructureGridValidTechPlacementBlob>
+					<StructureGridRollout0Blob>UI_Structure_Grid_Rollout_0</StructureGridRollout0Blob>
+					<StructureGridValidPlacementOverlayBlob></StructureGridValidPlacementOverlayBlob>
+					<StructureGridValidNodePlacementOverlayBlob></StructureGridValidNodePlacementOverlayBlob>
+					<StructureGridRollout0OverlayBlob></StructureGridRollout0OverlayBlob>
+					<StructureGridConduitDirectionBlob></StructureGridConduitDirectionBlob>
+					<StructureGridConduitDirectionBlobSize>0</StructureGridConduitDirectionBlobSize>
+					<StructureGridConduitDirectionBlobOffset>0</StructureGridConduitDirectionBlobOffset>
+					<StructureGridPlacementRadius>400</StructureGridPlacementRadius>
+				</Value>
+			</Entry>
+		</StructureGridDataByFaction>
+
+		<WallBuildDirectionData>
+			<Entry>
+				<DirectionDegrees>0</DirectionDegrees>
+				<XIncrement>1</XIncrement>
+				<YIncrement>0</YIncrement>
+			</Entry>
+			<Entry>
+				<DirectionDegrees>45</DirectionDegrees>
+				<XIncrement>1</XIncrement>
+				<YIncrement>1</YIncrement>
+			</Entry>
+			<Entry>
+				<DirectionDegrees>90</DirectionDegrees>
+				<XIncrement>0</XIncrement>
+				<YIncrement>1</YIncrement>
+			</Entry>
+			<Entry>
+				<DirectionDegrees>135</DirectionDegrees>
+				<XIncrement>-1</XIncrement>
+				<YIncrement>1</YIncrement>
+			</Entry>
+			<Entry>
+				<DirectionDegrees>180</DirectionDegrees>
+				<XIncrement>-1</XIncrement>
+				<YIncrement>0</YIncrement>
+			</Entry>
+			<Entry>
+				<DirectionDegrees>225</DirectionDegrees>
+				<XIncrement>-1</XIncrement>
+				<YIncrement>-1</YIncrement>
+			</Entry>
+			<Entry>
+				<DirectionDegrees>270</DirectionDegrees>
+				<XIncrement>0</XIncrement>
+				<YIncrement>-1</YIncrement>
+			</Entry>
+			<Entry>
+				<DirectionDegrees>315</DirectionDegrees>
+				<XIncrement>1</XIncrement>
+				<YIncrement>-1</YIncrement>
+			</Entry>
+		</WallBuildDirectionData>
+
+		<RunningGameAssociatedData/>
+
+		<UnitTemplateTechTiersList>
+			<entry>
+				<Chassis> Infantry </Chassis>
+				<Tier2MinTechValue> 5 </Tier2MinTechValue>
+				<Tier3MinTechValue> 9 </Tier3MinTechValue>
+			</entry>
+			<entry>
+				<Chassis> Air </Chassis>
+				<Tier2MinTechValue> 6 </Tier2MinTechValue>
+				<Tier3MinTechValue> 11 </Tier3MinTechValue>
+			</entry>
+			<entry>
+				<Chassis> Turret </Chassis>
+				<Tier2MinTechValue> 6 </Tier2MinTechValue>
+				<Tier3MinTechValue> 11 </Tier3MinTechValue>
+			</entry>
+			<entry>
+				<Chassis> HeavyVehicle </Chassis>
+				<Tier2MinTechValue> 8 </Tier2MinTechValue>
+				<Tier3MinTechValue> 15 </Tier3MinTechValue>
+			</entry>
+			<entry>
+				<Chassis> LightVehicle </Chassis>
+				<Tier2MinTechValue> 7 </Tier2MinTechValue>
+				<Tier3MinTechValue> 13 </Tier3MinTechValue>
+			</entry>
+		</UnitTemplateTechTiersList>
+		<TechPointPriceMod>8</TechPointPriceMod>
+		<TechPointTimeMod>0.5</TechPointTimeMod>
+		<SocketPowerBonus>10</SocketPowerBonus>
+		<SocketPriceBonus>25</SocketPriceBonus>
+
+		<StructureRotationBlobName network="client">Structure_Placement_Beta_Rotation</StructureRotationBlobName>
+		<StructureNodeRotationTexture network="client">i_blank.tga</StructureNodeRotationTexture>
+		<StructureNodeRotationEmptyTexture network="client">i_blank.tga</StructureNodeRotationEmptyTexture>
+
+		<ResourceNodePlacementLowThreshold network="client">8.0</ResourceNodePlacementLowThreshold>
+		<ResourceNodePlacementMediumThreshold network="client">10.0</ResourceNodePlacementMediumThreshold>
+		<ResourceNodePlacementHighThreshold network="client">13.0</ResourceNodePlacementHighThreshold>
+
+		<ResourceNodePlacementEmptyTexture network="client">i_blank.tga</ResourceNodePlacementEmptyTexture>
+		<ResourceNodePlacementLowTexture network="client">i_blank.tga</ResourceNodePlacementLowTexture>
+		<ResourceNodePlacementMediumTexture network="client">i_blank.tga</ResourceNodePlacementMediumTexture>
+		<ResourceNodePlacementHighTexture network="client">i_blank.tga</ResourceNodePlacementHighTexture>
+		<ResourceNodePlacementTextBounds network="client">
+			<X>0.0</X>
+			<Y>0.55</Y>
+			<Z>1.0</Z>
+			<W>0.45</W>
+		</ResourceNodePlacementTextBounds>
+
+		<StructureCircularOccupationTexture network="client"></StructureCircularOccupationTexture>
+		<!-- image width/height (should be equal) divided by cropped image length -->
+		<!-- in this case, width/height = 128; number of empty pixels on every side = 6; 128 / (128 - 6 * 2 sides) = 1.103...-->
+		<StructureCircularOccupationScaleFactor network="client">1.103448275</StructureCircularOccupationScaleFactor>
+
+		<StructureOutOfRangeTexture network="client">UI_Structure_Out_Of_Range.tga</StructureOutOfRangeTexture>
+		<StructureOutOfRangeTextBounds network="client">
+			<X>-0.75</X>
+			<Y>0.90</Y>
+			<Z>2.5</Z>
+			<W>0.6</W>
+		</StructureOutOfRangeTextBounds>
+		<StructureOutOfRangeFont network="client">14 Point Bold</StructureOutOfRangeFont>
+
+		<StructureTechInvalidTexture network="client">i_blank.tga</StructureTechInvalidTexture>
+		<StructureBetaTechValidTexture network="client">i_blank.tga</StructureBetaTechValidTexture>
+		<StructureBetaTechInvalidTexture network="client">i_blank.tga</StructureBetaTechInvalidTexture>
+		<StructureHumanTechValidTexture network="client">i_blank.tga</StructureHumanTechValidTexture>
+		<StructureHumanTechInvalidTexture network="client">i_blank.tga</StructureHumanTechInvalidTexture>
+
+		<MultiplayerWinAchievementCount network="client"> 100 </MultiplayerWinAchievementCount>
+		<SkirmishWinAchievementCount network="client"> 100 </SkirmishWinAchievementCount>
+
+		<LoadTipHints network="client">
+		</LoadTipHints>
+		<LoadTipHintDisplayTimeSeconds network="client">8</LoadTipHintDisplayTimeSeconds>
+
+		<UIHintLabelDisplaySeconds network="client">12.0</UIHintLabelDisplaySeconds>
+		<UIHintLabelFadeSeconds network="client">2.0</UIHintLabelFadeSeconds>
+
+		<LoadingScreenHintTextIDs network="client">
+			<entry>
+				<TextID>TEXT_LOADING_ENTRY1</TextID>
+				<BaseFaction>Unspecified</BaseFaction>
+			</entry>
+			<entry>
+				<TextID>TEXT_LOADING_ENTRY2</TextID>
+				<BaseFaction>Unspecified</BaseFaction>
+			</entry>
+			<entry>
+				<TextID>TEXT_LOADING_ENTRY3</TextID>
+				<BaseFaction>Unspecified</BaseFaction>
+			</entry>
+			<entry>
+				<TextID>TEXT_LOADING_ENTRY4</TextID>
+				<BaseFaction>Unspecified</BaseFaction>
+			</entry>
+			<entry>
+				<TextID>TEXT_LOADING_ENTRY5</TextID>
+				<BaseFaction>Unspecified</BaseFaction>
+			</entry>
+			<entry>
+				<TextID>TEXT_LOADING_ENTRY6</TextID>
+				<BaseFaction>Unspecified</BaseFaction>
+			</entry>
+			<entry>
+				<TextID>TEXT_LOADING_ENTRY7</TextID>
+				<BaseFaction>Unspecified</BaseFaction>
+			</entry>
+			<entry>
+				<TextID>TEXT_LOADING_ENTRY8</TextID>
+				<BaseFaction>Unspecified</BaseFaction>
+			</entry>
+			<entry>
+				<TextID>TEXT_LOADING_ENTRY9</TextID>
+				<BaseFaction>Unspecified</BaseFaction>
+			</entry>
+			<entry>
+				<TextID>TEXT_LOADING_ENTRY10</TextID>
+				<BaseFaction>Unspecified</BaseFaction>
+			</entry>
+			<entry>
+				<TextID>TEXT_LOADING_ENTRY11</TextID>
+				<BaseFaction>Unspecified</BaseFaction>
+			</entry>
+			<entry>
+				<TextID>TEXT_LOADING_ENTRY12</TextID>
+				<BaseFaction>Unspecified</BaseFaction>
+			</entry>
+			<entry>
+				<TextID>TEXT_LOADING_ENTRY13</TextID>
+				<BaseFaction>Unspecified</BaseFaction>
+			</entry>
+			<entry>
+				<TextID>TEXT_LOADING_ENTRY14</TextID>
+				<BaseFaction>Unspecified</BaseFaction>
+			</entry>
+			<entry>
+				<TextID>TEXT_LOADING_ENTRY15</TextID>
+				<BaseFaction>Unspecified</BaseFaction>
+			</entry>
+			<entry>
+				<TextID>TEXT_LOADING_ENTRY16</TextID>
+				<BaseFaction>Unspecified</BaseFaction>
+			</entry>
+			<entry>
+				<TextID>TEXT_LOADING_ENTRY17</TextID>
+				<BaseFaction>Faction1</BaseFaction>
+			</entry>
+			<entry>
+				<TextID>TEXT_LOADING_ENTRY18</TextID>
+				<BaseFaction>Faction5</BaseFaction>
+			</entry>
+		</LoadingScreenHintTextIDs>
+
+
+		<EpicAmmoFullColor network="client">
+			<R>0.969</R>
+			<G>0.557</G>
+			<B>0.220</B>
+		</EpicAmmoFullColor>
+
+		<UnitClickAnnoyCount network="client"> 3 </UnitClickAnnoyCount>
+
+		<MultiUnitQueueModeCount network="client">5</MultiUnitQueueModeCount>
+
+		<DefaultMapSelection network="client"> </DefaultMapSelection>
+
+		<!-- EMP Stun Object State Settings - for use with powered/unpowered state transitions. -->
+		<EMPFlickerOutDuration network="client">1.0</EMPFlickerOutDuration>
+		<EMPFlickerInDuration network="client">1.0</EMPFlickerInDuration>
+		<EMPFlickerOutLightScale network="client">
+			<X>0.1</X>
+			<Y>0.1</Y>
+			<Z>0.1</Z>
+			<W>1.0</W>
+		</EMPFlickerOutLightScale>
+
+		<GeneratedPowerLineWidth network="client">3.0</GeneratedPowerLineWidth>
+		<GeneratedPowerLineTint network="client">
+			<R>0.0</R>
+			<G>0.0</G>
+			<B>0.0</B>
+			<A>1.0</A>
+		</GeneratedPowerLineTint>
+		<NoPowerAnnouncementUpdateSeconds network="client">30.0</NoPowerAnnouncementUpdateSeconds> <!-- This gets really annoying, so keep sparse -->
+
+		<TurretRangeBlobName network="client"> Turret_Range </TurretRangeBlobName>
+		<TurretRangeBlobColor network="client">
+			<R>0.0</R>
+			<G>0.0</G>
+			<B>1.0</B>
+			<A>1.0</A>
+		</TurretRangeBlobColor>
+		<TurretRangeBlobSize network="client"> 1400.0 </TurretRangeBlobSize>
+
+		<CustomMapPreviewImageTexture network="client">Frontend_Custom_Map.png</CustomMapPreviewImageTexture>
+
+		<TutorialMovieName network="client">8Bit Tutorial F.ogv</TutorialMovieName>
+
+		<ChatFadeTime network="client">5</ChatFadeTime>
+
+		<GoodRPSHitSurfaceFXEvents network="client">
+		</GoodRPSHitSurfaceFXEvents>
+		<BadRPSHitSurfaceFXEvents network="client">
+			<!--<Entry>SURFACEFX_Null</Entry>-->
+		</BadRPSHitSurfaceFXEvents>
+
+		<WorkshopEntryUnselectedTextTint network="client">
+			<R>1.00</R>
+			<G>1.00</G>
+			<B>1.00</B>
+			<A>1.00</A>
+		</WorkshopEntryUnselectedTextTint>
+		<WorkshopEntrySelectedTextTint network="client">
+			<R>1.00</R>
+			<G>1.00</G>
+			<B>1.00</B>
+			<A>1.00</A>
+		</WorkshopEntrySelectedTextTint>
+
+		<PauseModeStructureRepairIndicatorType network="client"> Pause_Mode_Structure_Repair_Indicator </PauseModeStructureRepairIndicatorType>
+		<PauseModeRepairParticleToHide network="client"> fx_generic_repair_00 </PauseModeRepairParticleToHide>
+		<PauseModeStructureRepairIndicatorBoneAttachName network="client"> Root </PauseModeStructureRepairIndicatorBoneAttachName>
+		<PauseModeStructureInCombatIndicatorType network="client"> Pause_Mode_Structure_In_Combat_Indicator </PauseModeStructureInCombatIndicatorType> <!-- Can't Repair -->
+
+		<KeyBindingsDefaultCommandColor network="client">
+			<!-- Pat Color Blind Test Approved! -->
+			<R> 1.00 </R>
+			<G> 1.00 </G>
+			<B> 1.00 </B>
+			<A> 1.00 </A>
+		</KeyBindingsDefaultCommandColor>
+		<KeyBindingsUnitBuildCommandColor network="client">
+			<!-- Pat Color Blind Test Approved! -->
+			<R> 1.00 </R>
+			<G> 1.00 </G>
+			<B> 0.50 </B>
+			<A> 1.00 </A>
+		</KeyBindingsUnitBuildCommandColor>
+		<KeyBindingsStructureBuildCommandColor network="client">
+			<!-- Pat Color Blind Test Approved! -->
+			<R> 1.00 </R>
+			<G> 0.65 </G>
+			<B> 0.00 </B>
+			<A> 1.00 </A>
+		</KeyBindingsStructureBuildCommandColor>
+		<KeyBindingsResearchBuildCommandColor network="client">
+			<!-- NOTE YET Pat Color Blind Test Approved! -->
+			<R> 0.38 </R>
+			<G> 0.47 </G>
+			<B> 0.67 </B>
+			<A> 1.00 </A>
+		</KeyBindingsResearchBuildCommandColor>
+
+
+		<CustomMapLoadingImage network="client"> CustomLoading_Map_01.tga </CustomMapLoadingImage>
+
+		<RightJustifiedLanguages network="client"> 
+			<Entry>Arabic</Entry>
+		</RightJustifiedLanguages>
+
+		<WallPlacementResourcesRequiredFont network="client">18 Point PT Outline</WallPlacementResourcesRequiredFont>
+		<WallPlacementResourcesOffset network="client">
+			<X>0.05</X>
+			<Y>-0.02</Y>
+		</WallPlacementResourcesOffset>
+
+		<MetaDesignerEmptyUpgradeLargeIcon network="client">i_blank</MetaDesignerEmptyUpgradeLargeIcon>
+		<MetaDesignerEmptyUpgradeSmallIcon network="client">i_blank</MetaDesignerEmptyUpgradeSmallIcon>
+
+		<MetaDesignerOverviewInfantryIcon network="client">i_blank</MetaDesignerOverviewInfantryIcon>
+		<MetaDesignerOverviewLightVehicleIcon network="client">i_blank</MetaDesignerOverviewLightVehicleIcon>
+		<MetaDesignerOverviewHeavyVehicleIcon network="client">i_blank</MetaDesignerOverviewHeavyVehicleIcon>
+		<MetaDesignerOverviewAircraftIcon network="client">i_blank</MetaDesignerOverviewAircraftIcon>
+
+		<MetaDesignerOverviewInfantryFactoryNameText network="client"/>
+		<MetaDesignerOverviewLightVehicleFactoryNameText network="client"/>
+		<MetaDesignerOverviewHeavyVehicleFactoryNameText network="client"/>
+		<MetaDesignerOverviewAircraftFactoryNameText network="client"/>
+
+		<!-- Used by Unit tooltips to display what tech structure is needed as a prerequisite - these are in addition the the factories that build them -->
+		<UnitTechLevel1RequiredTechStructureType network="client"/>
+		<UnitTechLevel2RequiredTechStructureType network="client"/>
+		<UnitTechLevel3RequiredTechStructureType network="client"/>
+		<TurretTechLevel1RequiredTechStructureType network="client"/>
+		<TurretTechLevel2RequiredTechStructureType network="client"/>
+		<TurretTechLevel3RequiredTechStructureType network="client"/>
+
+		<CannotAffordTechColor network="client">
+			<R>0.95</R>
+			<G>0.17</G>
+			<B>0.17</B>
+			<A>1</A>
+		</CannotAffordTechColor>
+		<AffordableTechColor network="client">
+			<R>1</R>
+			<G>1</G>
+			<B>1</B>
+			<A>1</A>
+		</AffordableTechColor>
+
+		<!-- Debrief screen tech points tick-up variables -->
+		<!-- Must always be > 0.0 -->
+		<DebriefTechPointsTickUpPerSecond network="client"> 8.0 </DebriefTechPointsTickUpPerSecond> <!-- Originally 8.0f -->
+		<!-- Must always be >= 1; If set too high, beware of audio SFX dropout due to max instances to tick SFX -->
+		<DebriefTechPointsTickUpIncrement network="client"> 8 </DebriefTechPointsTickUpIncrement> <!-- Originally 5 -->
+
+
+		<CNCGameSpeedTextIDs>
+			<Entry> TEXT_ID_GAME_SPEED_1 </Entry>
+			<Entry> TEXT_ID_GAME_SPEED_2 </Entry>
+			<Entry> TEXT_ID_GAME_SPEED_3 </Entry>
+			<Entry> TEXT_ID_GAME_SPEED_4 </Entry>
+			<Entry> TEXT_ID_GAME_SPEED_5 </Entry>
+			<Entry> TEXT_ID_GAME_SPEED_6 </Entry>
+			<Entry> TEXT_ID_GAME_SPEED_7 </Entry>
+			<Entry> TEXT_ID_GAME_SPEED_8 </Entry>
+		</CNCGameSpeedTextIDs>
+		<CNCGameSpeedMods>
+			<Entry> 0.25 </Entry>
+			<Entry> 0.5 </Entry>
+			<Entry> 0.75 </Entry>
+			<Entry> 1.0 </Entry>
+			<Entry> 1.5 </Entry>
+			<Entry> 2.0 </Entry>
+			<Entry> 2.5 </Entry>
+			<Entry> 3.0 </Entry>
+		</CNCGameSpeedMods>
+		<CNCStartingUnits>
+			<Entry> 0 </Entry>
+			<Entry> 1 </Entry>
+			<Entry> 2 </Entry>
+			<Entry> 3 </Entry>
+			<Entry> 4 </Entry>
+			<Entry> 5 </Entry>
+			<Entry> 6 </Entry>
+			<Entry> 7 </Entry>
+			<Entry> 8 </Entry>
+			<Entry> 9 </Entry>
+		</CNCStartingUnits>
+		<CNCStartingUnitTextIDs>
+			<Entry> TEXT_MULTIPLAYER_DETAILS_UNIT_COUNT_0 </Entry>
+			<Entry> TEXT_MULTIPLAYER_DETAILS_UNIT_COUNT_1 </Entry>
+			<Entry> TEXT_MULTIPLAYER_DETAILS_UNIT_COUNT_2 </Entry>
+			<Entry> TEXT_MULTIPLAYER_DETAILS_UNIT_COUNT_3 </Entry>
+			<Entry> TEXT_MULTIPLAYER_DETAILS_UNIT_COUNT_4 </Entry>
+			<Entry> TEXT_MULTIPLAYER_DETAILS_UNIT_COUNT_5 </Entry>
+			<Entry> TEXT_MULTIPLAYER_DETAILS_UNIT_COUNT_6 </Entry>
+			<Entry> TEXT_MULTIPLAYER_DETAILS_UNIT_COUNT_7 </Entry>
+			<Entry> TEXT_MULTIPLAYER_DETAILS_UNIT_COUNT_8 </Entry>
+			<Entry> TEXT_MULTIPLAYER_DETAILS_UNIT_COUNT_9 </Entry>
+		</CNCStartingUnitTextIDs>
+		<CNCTDTechLevels>
+			<Entry> 1 </Entry>
+			<Entry> 2 </Entry>
+			<Entry> 3 </Entry>
+			<Entry> 4 </Entry>
+			<Entry> 5 </Entry>
+			<Entry> 6 </Entry>
+			<Entry> 7 </Entry>
+		</CNCTDTechLevels>
+		<CNCRATechLevels>
+			<Entry> 1 </Entry>
+			<Entry> 2 </Entry>
+			<Entry> 3 </Entry>
+			<Entry> 4 </Entry>
+			<Entry> 5 </Entry>
+			<Entry> 6 </Entry>
+			<Entry> 7 </Entry>
+			<Entry> 8 </Entry>
+			<Entry> 9 </Entry>
+			<Entry> 10 </Entry>
+		</CNCRATechLevels>
+		<CNCStartingCredits>
+			<Entry> 500 </Entry>
+			<Entry> 1000 </Entry>
+			<Entry> 1500 </Entry>
+			<Entry> 2000 </Entry>
+			<Entry> 5000 </Entry>
+			<Entry> 10000 </Entry>
+		</CNCStartingCredits>
+		<CNCOreRegrowth>
+			<Entry> 0 </Entry>
+			<Entry> 1 </Entry>
+			<Entry> 2 </Entry>
+			<Entry> 3 </Entry>
+			<Entry> 4 </Entry>
+			<Entry> 5 </Entry>
+			<Entry> 6 </Entry>
+			<Entry> 7 </Entry>
+			<Entry> 8 </Entry>
+			<Entry> 9 </Entry>
+		</CNCOreRegrowth>
+
+		<CNCUnitCountDefault> 3 </CNCUnitCountDefault>
+		<CNCTDTechLevelDefault> 10 </CNCTDTechLevelDefault>
+		<CNCRATechLevelDefault> 10 </CNCRATechLevelDefault>
+		<CNCGameSpeedDefault> 4 </CNCGameSpeedDefault>
+		<CNCCreditsDefault> 6 </CNCCreditsDefault>
+		<CNCBasesDefault> true </CNCBasesDefault>
+		<CNCTiberiumRegrowthDefault> true</CNCTiberiumRegrowthDefault>
+		<CNCTiberiumRegrowth2Default> 1 </CNCTiberiumRegrowth2Default>
+		<CNCCratesDefault> false </CNCCratesDefault>
+		<CNCVisceroidsDefault> false </CNCVisceroidsDefault>
+		<CNCMCVUndeployDefault> false </CNCMCVUndeployDefault>
+		<CNCShroudRegrowthDefault> false </CNCShroudRegrowthDefault>
+		<CNCSuperWeaponsDefault> true </CNCSuperWeaponsDefault>
+		<CNCAllow8PlayersDefault network="client" overwrite="true"> true </CNCAllow8PlayersDefault>
+		<CNCAllowAftermathDefault> true </CNCAllowAftermathDefault>
+		<CNCProductionQueueDefault> true </CNCProductionQueueDefault>
+		<CNCCaptureTheFlagDefault> false </CNCCaptureTheFlagDefault>
+		<CNCDestroyStructuresDefault> true </CNCDestroyStructuresDefault>
+		<CNCModernBalanceDefault> true </CNCModernBalanceDefault>
+
+		<CNCZoomFactors network="client">
+			<ZoomFactor>1.0</ZoomFactor>
+			<ZoomFactor>1.15</ZoomFactor>
+			<ZoomFactor>1.30</ZoomFactor>
+			<ZoomFactor>1.45</ZoomFactor>
+			<ZoomFactor>1.60</ZoomFactor>
+			<ZoomFactor>1.75</ZoomFactor>
+			<ZoomFactor>1.87</ZoomFactor>
+			<ZoomFactor>2.0</ZoomFactor>
+		</CNCZoomFactors>
+
+		<CNCTDTheaterTilesets network="client">
+			<Tileset>TD_Terrain_Desert</Tileset>
+			<Tileset></Tileset>
+			<Tileset></Tileset>
+			<Tileset>TD_Terrain_Winter</Tileset>
+		</CNCTDTheaterTilesets>
+
+		<CNCRATheaterTilesets network="client">
+			<Tileset></Tileset>
+			<Tileset>RA_Terrain_Snow</Tileset>
+			<Tileset>RA_Terrain_Interior</Tileset>
+		</CNCRATheaterTilesets>
+
+		<CNCTDSupportMegamaps network="client" overwrite="true">true</CNCTDSupportMegamaps>
+
+		<CNCBuildingPipBrightness network="client">0.5</CNCBuildingPipBrightness>
+		<CNCInfantryPipFactor network="client">0.6</CNCInfantryPipFactor>
+
+		<CNCFirstJurassicCampaignMapName network="client">Mobius_Jurassic_Campaign_1_Map</CNCFirstJurassicCampaignMapName>
+		<CNCFirstAntCampaignMapName network="client">Mobius_Ant_Campaign_1_Map</CNCFirstAntCampaignMapName>
+
+		<GraphicsSwapHelperDelaySeconds network="client">10</GraphicsSwapHelperDelaySeconds>
+		<GraphicsSwapHelperShowSeconds network="client">60</GraphicsSwapHelperShowSeconds>
+
+		<CNCRadarMapBorderColor network="client">
+			<R>0.0</R>
+			<G>1.0</G>
+			<B>0.0</B>
+			<A>1</A>
+		</CNCRadarMapBorderColor>
+
+		<CNCPingHistorySize network="client">4</CNCPingHistorySize>
+		<CNCPingTimeoutSeconds network="client">10.0</CNCPingTimeoutSeconds>
+
+		<!-- MBL 09.03.2020: Community-requested Mod option so that players can't access legacy graphics -->
+		<CNCDisableLegacyGraphicsOption network="client"> False </CNCDisableLegacyGraphicsOption> <!-- Default is always False -->
+
+		<!-- MBL 09.08.2020: Community-requested Mod option so that players can have customized mod hotkey commands -->
+		<!-- If True, also need to set GAME_COMMAND_CNC_MOD_COMMAND_1 -> GAME_COMMAND_CNC_MOD_COMMAND_4 entries in InputTranslatorConfigurations.xml -->
+		<CNCEnableModHotKeyGameCommands network="client"> False </CNCEnableModHotKeyGameCommands> <!-- Default is always False -->
+
+		<!-- Community-requested Mod option to allow more than 6 players in skirmish/LAN for TD if a modded DLL is present that supports it -->
+		<CNCTDMaxPlayers network="client" overwrite="true"> 8 </CNCTDMaxPlayers>
+
+</GameConstantsClass>
+</GameConstants>
