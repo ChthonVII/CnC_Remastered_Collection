@@ -672,6 +672,13 @@ int AircraftClass::Mission_Hunt(void)
 				if (Target_Legal(TarCom) && (Ammo || !ActiveCFEPatchConfig.EnableSmarterAircraft || IsALoaner)) {
 					Status = TAKE_OFF;
 					return(1);
+                }
+                else if (!Ammo && ActiveCFEPatchConfig.EnableSmarterAircraft){
+                    AttacksRemaining = 0;
+					if (Team.Is_Valid()) Team->Remove(this);
+					Enter_Idle_Mode();
+                    return(1);
+                }
 				} else {
 					if (!Team.Is_Valid()) {
 						if (Session.Type != GAME_NORMAL) {
