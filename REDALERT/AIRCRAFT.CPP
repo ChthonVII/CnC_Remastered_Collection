@@ -93,6 +93,8 @@
 
 #include	"function.h"
 
+#include "CFEDEBUG.H"
+
 // Chthon CFE Note -- We need this for checking the shift key for attack-move
 extern bool DLL_Export_Get_Input_Key_State(KeyNumType key);
 
@@ -678,7 +680,6 @@ int AircraftClass::Mission_Hunt(void)
 					if (Team.Is_Valid()) Team->Remove(this);
 					Enter_Idle_Mode();
                     return(1);
-                }
 				} else {
 					if (!Team.Is_Valid()) {
 						if (Session.Type != GAME_NORMAL) {
