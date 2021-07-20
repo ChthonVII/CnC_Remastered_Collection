@@ -7719,6 +7719,7 @@ void TechnoClass::GainVeterancyXP(unsigned short int XP){
             Which is ugly but probably still probably faster than the real constructors, and allows us to control the rounding
     */
     const fixed five_percent = FixedFromRawBits(0x00000CCD);
+    const fixed eight_percent = FixedFromRawBits(0x0000147B);
     const fixed ten_percent = FixedFromRawBits(0x0000199A);
     const fixed twenty_percent = FixedFromRawBits(0x00003333);
     const fixed thirty_percent = FixedFromRawBits(0x00004CCD);
@@ -7919,7 +7920,18 @@ void TechnoClass::GainVeterancyXP(unsigned short int XP){
                 ArmorBias = ten_percent; // 10%
             }
             
-            if (What_Am_I() == RTTI_INFANTRY || What_Am_I() == RTTI_UNIT || What_Am_I() == RTTI_AIRCRAFT || What_Am_I() == RTTI_VESSEL){
+            // excessive speed bonuses for fixed-wing aircraft cause animation problems and overshooting on landing
+            // MIG can't land in the repair bay at 20%, and gets animation problems at 30% -- so let's do no speed bonus for MIG
+            // If we reduce Yak to 8% per rank, it should stay slower than MIG, so that should be OK 
+            if ((What_Am_I() == RTTI_AIRCRAFT) && (*((AircraftClass*)this) == AIRCRAFT_YAK)){
+                ((FootClass*)this)->SpeedBias += eight_percent;
+            }
+            else if (
+                (What_Am_I() == RTTI_INFANTRY) ||
+                (What_Am_I() == RTTI_UNIT) ||
+                (   (What_Am_I() == RTTI_AIRCRAFT ) && (*((AircraftClass*)this) != AIRCRAFT_MIG)    ) ||
+                (What_Am_I() == RTTI_VESSEL)
+            ){
                 //((FootClass*)this)->SpeedBias += fixed(0.1); // + 10%
                 ((FootClass*)this)->SpeedBias += ten_percent; // + 10%
             }
