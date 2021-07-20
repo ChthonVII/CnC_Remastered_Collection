@@ -3755,7 +3755,7 @@ BulletClass * TechnoClass::Fire_At(TARGET target, int which)
 			// Chthon CFE Note: rank3 veteran zapper units get chain lightning to a second target
 			if (VeterancyRank == 3){
                 SecondaryElectricZapTarget = NULL;
-                TARGET secondarytarget = FindChainLightningTarget(target, which, 0.66);
+                TARGET secondarytarget = FindChainLightningTarget(target, which, 0.66f);
                 if (Target_Legal(secondarytarget)){
                     BulletClass * secondarybullet = new BulletClass(weapon->Bullet->Type, secondarytarget, this, firepower, WarheadType(weapon->WarheadPtr->ID), firespeed);
                     COORDINATE secondary_target_coord = As_Object(secondarytarget)->Target_Coord(); 
