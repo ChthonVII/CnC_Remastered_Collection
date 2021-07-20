@@ -93,7 +93,7 @@
 
 #include	"function.h"
 
-#include "CFEDEBUG.H"
+//#include "CFEDEBUG.H"
 
 // Chthon CFE Note -- We need this for checking the shift key for attack-move
 extern bool DLL_Export_Get_Input_Key_State(KeyNumType key);
@@ -789,6 +789,12 @@ int AircraftClass::Mission_Hunt(void)
 							}
 						}
 						Fire_At(targ, 0);
+                        
+                        // Chthon CFE Note: rank 3 MIGS fire two missiles per ammo pip (fudge this by restoring 1 ammo between shots)
+                        if ((VeterancyRank == 3) && (*this == AIRCRAFT_MIG)){
+                            Ammo++;
+                        }
+                        
 						if (Class->Is_Two_Shooter()) {
 							Fire_At(targ, 0);
 						}

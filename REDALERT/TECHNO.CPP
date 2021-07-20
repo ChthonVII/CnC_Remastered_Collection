@@ -7848,6 +7848,7 @@ void TechnoClass::GainVeterancyXP(unsigned short int XP){
         //else if (What_Am_I() == RTTI_AIRCRAFT){
                 /*
                 AIRCRAFT_MIG -- repairs for free on airstrip & fires explosive missiles against unarmored targets
+                    MIG also gets 2 missiles per ammo unit, as compensation for not getting  move speed boost
                 AIRCRAFT_YAK -- repairs for free on airstrip & gets AP bullets
                 AIRCRAFT_LONGBOW -- repairs for free on helipad and reloads twice as fast
                 AIRCRAFT_HIND -- repairs for free on helipad and reloads twice as fast
