@@ -879,7 +879,8 @@ int AircraftClass::Mission_Hunt(void)
 			return(1);
 		}
 	}
-	return(MissionControl[Mission].Normal_Delay() + Random_Pick(0, 2));
+	const MissionType exitmission = (Mission == MISSION_NONE) ? MISSION_HUNT : Mission;
+	return(MissionControl[exitmission].Normal_Delay() + Random_Pick(0, 2));
 }
 
 
@@ -1290,7 +1291,8 @@ int AircraftClass::Mission_Unload(void)
 				break;
 		}
 	}
-	return(MissionControl[Mission].Normal_Delay() + Random_Pick(0, 2));
+	const MissionType exitmission = (Mission == MISSION_NONE) ? MISSION_UNLOAD : Mission;
+	return(MissionControl[exitmission].Normal_Delay() + Random_Pick(0, 2));
 }
 
 
@@ -1441,7 +1443,8 @@ int AircraftClass::Mission_Retreat(void)
 		default:
 			break;
 	}
-	return(MissionControl[Mission].Normal_Delay() + Random_Pick(0, 2));
+	const MissionType exitmission = (Mission == MISSION_NONE) ? MISSION_RETREAT : Mission;
+	return(MissionControl[exitmission].Normal_Delay() + Random_Pick(0, 2));
 }
 
 
@@ -1971,8 +1974,8 @@ int AircraftClass::Mission_Move(void)
 		default:
 			break;
 	}
-
-	return(MissionControl[Mission].Normal_Delay() + Random_Pick(0, 2));
+    const MissionType exitmission = (Mission == MISSION_NONE) ? MISSION_MOVE : Mission;
+	return(MissionControl[exitmission].Normal_Delay() + Random_Pick(0, 2));
 }
 
 
@@ -2771,7 +2774,8 @@ int AircraftClass::Mission_Attack(void)
 			break;
 	}
 
-	return(MissionControl[Mission].Normal_Delay() + Random_Pick(0, 2));
+	const MissionType exitmission = (Mission == MISSION_NONE) ? MISSION_ATTACK : Mission;
+	return(MissionControl[exitmission].Normal_Delay() + Random_Pick(0, 2));
 }
 
 
@@ -3816,7 +3820,7 @@ void AircraftClass::Scatter(COORDINATE , bool, bool )
 	**	Certain missions prevent scattering regardless of whether it would be
 	**	a good idea or not.
 	*/
-	if (!MissionControl[Mission].IsScatter) return;
+	if ((Mission != MISSION_NONE) && !MissionControl[Mission].IsScatter) return;
 
 	/*
 	**	Fixed wing aircraft never scatter.
@@ -3863,7 +3867,8 @@ int AircraftClass::Mission_Guard(void)
 			if (Target_Legal(NavCom)) {
 				Assign_Mission(MISSION_MOVE);
 			}
-			return(MissionControl[Mission].Normal_Delay());
+			const MissionType exitmission = (Mission == MISSION_NONE) ? MISSION_GUARD : Mission;
+			return(MissionControl[exitmission].Normal_Delay());
 		}
 
 		if (Class->PrimaryWeapon == NULL) {
@@ -3874,7 +3879,10 @@ int AircraftClass::Mission_Guard(void)
 		}
 		return(1);
 	}
-	if (House->IsHuman) return(MissionControl[Mission].Normal_Delay());
+	if (House->IsHuman){
+        const MissionType exitmission = (Mission == MISSION_NONE) ? MISSION_GUARD : Mission;
+        return(MissionControl[exitmission].Normal_Delay());
+    }
 
 	/*
 	**	If the aircraft is very badly damaged, then it will search for a

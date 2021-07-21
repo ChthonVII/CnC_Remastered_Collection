@@ -196,7 +196,7 @@ void DriveClass::Scatter(COORDINATE threat, bool forced, bool nokidding)
 	**	Certain missions prevent scattering regardless of whether it would be
 	**	a good idea or not.
 	*/
-	if (MissionControl[Mission].IsParalyzed) return;
+	if ((Mission != MISSION_NONE) && MissionControl[Mission].IsParalyzed) return;
 
 	if ((What_Am_I() != RTTI_UNIT || !((UnitClass *)this)->IsDumping) && (!Target_Legal(NavCom) || (nokidding && !IsRotating))) {
 		if (!Target_Legal(TarCom) || forced || Random_Pick(1, 4) == 1) {

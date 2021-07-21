@@ -1424,7 +1424,12 @@ void VesselClass::Enter_Idle_Mode(bool )
 
 		} else {
 
-			if (Mission == MISSION_GUARD || Mission == MISSION_GUARD_AREA || MissionControl[Mission].IsParalyzed || MissionControl[Mission].IsZombie) {
+			if (    (Mission == MISSION_GUARD) ||
+                    (Mission == MISSION_GUARD_AREA) ||
+                    (   (Mission != MISSION_NONE) &&
+                        ((MissionControl[Mission].IsZombie) || (MissionControl[Mission].IsParalyzed))
+                    )
+            ) {
 				return;
 			}
 
@@ -1954,7 +1959,8 @@ int VesselClass::Mission_Unload(void)
 		default:
 			break;
 	}
-	return(MissionControl[Mission].Normal_Delay());
+	const MissionType exitmission = (Mission == MISSION_NONE) ? MISSION_UNLOAD : Mission;
+	return(MissionControl[exitmission].Normal_Delay());
 }
 
 
@@ -2084,7 +2090,8 @@ int VesselClass::Mission_Retreat(void)
 		default:
 			break;
 	}
-	return(MissionControl[Mission].Normal_Delay());
+	const MissionType exitmission = (Mission == MISSION_NONE) ? MISSION_RETREAT : Mission;
+	return(MissionControl[exitmission].Normal_Delay());
 }
 
 

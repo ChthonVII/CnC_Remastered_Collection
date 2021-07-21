@@ -4112,13 +4112,16 @@ int BuildingClass::Mission_Guard(void)
 				break;
 		}
 
+		const MissionType exitmission = (Mission == MISSION_NONE) ? MISSION_GUARD : Mission;
 		if (*this == STRUCT_REPAIR) {
-			return(MissionControl[Mission].Normal_Delay() + Random_Pick(0, 2));
+			return(MissionControl[exitmission].Normal_Delay() + Random_Pick(0, 2));
 		} else {
-			return(MissionControl[Mission].Normal_Delay() * 3 + Random_Pick(0, 2));
+			return(MissionControl[exitmission].Normal_Delay() * 3 + Random_Pick(0, 2));
 		}
 	}
-	return(MissionControl[Mission].AA_Delay() + Random_Pick(0, 2));
+	
+	const MissionType exitmission = (Mission == MISSION_NONE) ? MISSION_GUARD : Mission;
+	return(MissionControl[exitmission].AA_Delay() + Random_Pick(0, 2));
 }
 
 
@@ -4530,7 +4533,9 @@ int BuildingClass::Mission_Attack(void)
 			default:
 				break;
 		}
-		return(MissionControl[Mission].AA_Delay() + Random_Pick(0, 2));
+		
+		const MissionType exitmission = (Mission == MISSION_NONE) ? MISSION_ATTACK : Mission;
+		return(MissionControl[exitmission].AA_Delay() + Random_Pick(0, 2));
 
 	}
 
@@ -4867,7 +4872,9 @@ int BuildingClass::Mission_Repair(void)
 			default:
 				break;
 		}
-		return(MissionControl[Mission].Normal_Delay());
+		
+		const MissionType exitmission = (Mission == MISSION_NONE) ? MISSION_REPAIR : Mission;
+		return(MissionControl[exitmission].Normal_Delay());
 	}
 
 	if (*this == STRUCT_HELIPAD || *this == STRUCT_AIRSTRIP) {
@@ -5147,7 +5154,9 @@ int BuildingClass::Mission_Missile(void)
 				return(60);
 		}
 	}
-	return(MissionControl[Mission].Normal_Delay());
+	
+	const MissionType exitmission = (Mission == MISSION_NONE) ? MISSION_MISSILE : Mission;
+	return(MissionControl[exitmission].Normal_Delay());
 }
 
 
@@ -5475,7 +5484,9 @@ int BuildingClass::Mission_Unload(void)
 			default:
 				break;
 		}
-		return(MissionControl[Mission].Normal_Delay() + Random_Pick(0, 2));
+		
+		const MissionType exitmission = (Mission == MISSION_NONE) ? MISSION_UNLOAD : Mission;
+		return(MissionControl[exitmission].Normal_Delay() + Random_Pick(0, 2));
 	}
 
 	Assign_Mission(MISSION_GUARD);

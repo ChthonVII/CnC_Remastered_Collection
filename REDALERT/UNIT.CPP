@@ -1535,7 +1535,12 @@ void UnitClass::Enter_Idle_Mode(bool initial)
 #endif
 		} else {
 
-			if (Mission == MISSION_GUARD || Mission == MISSION_GUARD_AREA || MissionControl[Mission].IsParalyzed || MissionControl[Mission].IsZombie) {
+			if (    (Mission == MISSION_GUARD) ||
+                    (Mission == MISSION_GUARD_AREA) ||
+                    (   (Mission != MISSION_NONE) &&
+                        ((MissionControl[Mission].IsZombie) || (MissionControl[Mission].IsParalyzed))
+                    )
+            ) {
 				return;
 			}
 
@@ -3015,7 +3020,8 @@ int UnitClass::Mission_Unload(void)
 		default:
 			break;
 	}
-	return(MissionControl[Mission].Normal_Delay() + Random_Pick(0, 2));
+	const MissionType exitmission = (Mission == MISSION_NONE) ? MISSION_UNLOAD : Mission;
+	return(MissionControl[exitmission].Normal_Delay() + Random_Pick(0, 2));
 }
 
 
@@ -3259,7 +3265,8 @@ int UnitClass::Mission_Harvest(void)
 			break;
 
 	}
-	return(MissionControl[Mission].Normal_Delay() + Random_Pick(0, 2));
+	const MissionType exitmission = (Mission == MISSION_NONE) ? MISSION_HARVEST : Mission;
+	return(MissionControl[exitmission].Normal_Delay() + Random_Pick(0, 2));
 }
 
 
@@ -3319,7 +3326,8 @@ int UnitClass::Mission_Hunt(void)
 
 		return(DriveClass::Mission_Hunt());
 	}
-	return(MissionControl[Mission].Normal_Delay()+Random_Pick(0, 2));
+	const MissionType exitmission = (Mission == MISSION_NONE) ? MISSION_HUNT : Mission;
+	return(MissionControl[exitmission].Normal_Delay()+Random_Pick(0, 2));
 }
 
 
@@ -4022,7 +4030,8 @@ int UnitClass::Mission_Guard(void)
 
 	if (*this == UNIT_MCV && House->IsBaseBuilding) {
 		Assign_Mission(MISSION_UNLOAD);
-		return(MissionControl[Mission].Normal_Delay() + Random_Pick(0, 2));
+        const MissionType exitmission = (Mission == MISSION_NONE) ? MISSION_UNLOAD : Mission;
+		return(MissionControl[exitmission].Normal_Delay() + Random_Pick(0, 2));
 	}
 	return(DriveClass::Mission_Guard());
 }
@@ -4424,7 +4433,8 @@ int UnitClass::Mission_Repair(void)
 	**	If no action could be performed at this time, then wait
 	**	around for a bit before trying again.
 	*/
-	return(MissionControl[Mission].Normal_Delay());
+    const MissionType exitmission = (Mission == MISSION_NONE) ? MISSION_REPAIR : Mission;
+	return(MissionControl[exitmission].Normal_Delay());
 }
 
 
@@ -5533,7 +5543,7 @@ void UnitClass::Scatter(COORDINATE threat, bool forced, bool nokidding)
 	**	Certain missions prevent scattering regardless of whether it would be
 	**	a good idea or not.
 	*/
-	if (!MissionControl[Mission].IsScatter && !forced) return;
+	if ((Mission != MISSION_NONE) && !MissionControl[Mission].IsScatter && !forced) return;
 
 	if (PrimaryFacing.Is_Rotating()) return;
 //	if (IsRotating) return;

@@ -525,7 +525,9 @@ int FootClass::Mission_Move(void)
 	if (!Target_Legal(TarCom) && !House->IsPlayerControl && !House->IsHuman && (!Team.Is_Valid() || !Team->Class->IsSuicide)) {
 		Target_Something_Nearby(THREAT_RANGE);
 	}
-	return(MissionControl[Mission].Normal_Delay() + Random_Pick(0, 2));
+	
+	const MissionType exitmission = (Mission == MISSION_NONE) ? MISSION_MOVE : Mission;
+	return(MissionControl[exitmission].Normal_Delay() + Random_Pick(0, 2));
 }
 
 
@@ -598,7 +600,9 @@ int FootClass::Mission_Attack(void)
             Enter_Idle_Mode();
         }
 	}
-	return(MissionControl[Mission].Normal_Delay() + Random_Pick(0, 2));
+	
+	const MissionType exitmission = (Mission == MISSION_NONE) ? MISSION_ATTACK : Mission;
+	return(MissionControl[exitmission].Normal_Delay() + Random_Pick(0, 2));
 }
 
 
@@ -636,12 +640,13 @@ int FootClass::Mission_Guard(void)
         Random_Animate();
 	}
 
-	int dtime = MissionControl[Mission].Normal_Delay();
+	const MissionType dmission = (Mission == MISSION_NONE) ? MISSION_GUARD : Mission;
+	int dtime = MissionControl[dmission].Normal_Delay();
 	if (What_Am_I() == RTTI_VESSEL) {
 		switch (((VesselClass *)this)->Class->Type) {
 			case VESSEL_DD:
 			case VESSEL_PT:
-				dtime = MissionControl[Mission].AA_Delay();
+				dtime = MissionControl[dmission].AA_Delay();
 				break;
 
 			case VESSEL_CA:
@@ -665,7 +670,7 @@ int FootClass::Mission_Guard(void)
 		switch (((InfantryClass *)this)->Class->Type) {
 			case INFANTRY_E1:
 			case INFANTRY_E3:
-				dtime = MissionControl[Mission].AA_Delay();
+				dtime = MissionControl[dmission].AA_Delay();
 				break;
 
 			default:
@@ -741,7 +746,9 @@ int FootClass::Mission_Hunt(void)
 			}
 		}
 	}
-	return(MissionControl[Mission].Normal_Delay() + Random_Pick(0, 2));
+	
+	const MissionType exitmission = (Mission == MISSION_NONE) ? MISSION_HUNT : Mission;
+	return(MissionControl[exitmission].Normal_Delay() + Random_Pick(0, 2));
 }
 
 
@@ -1089,7 +1096,8 @@ int FootClass::Mission_Guard_Area(void)
 		Approach_Target();
 	}
 
-	int dtime = MissionControl[Mission].Normal_Delay();
+	const MissionType dmission = (Mission == MISSION_NONE) ? MISSION_GUARD_AREA : Mission;
+	int dtime = MissionControl[dmission].Normal_Delay();
 	if (What_Am_I() == RTTI_AIRCRAFT) {
 		dtime *= 2;
 	}
@@ -1190,7 +1198,11 @@ ResultType FootClass::Take_Damage(int & damage, int distance, WarheadType warhea
 			**	This ensures that if a unit is in sticky mode, then it will snap out of
 			**	it when it takes damage.
 			*/
-			if (source != NULL && MissionControl[Mission].IsNoThreat && !MissionControl[Mission].IsZombie) {
+			if (     (source != NULL) &&
+                      ((Mission != MISSION_NONE) && MissionControl[Mission].IsNoThreat ) && 
+                      //((Mission == MISSION_NONE) || !MissionControl[Mission].IsZombie)
+                      (!MissionControl[Mission].IsZombie)
+            ) {
 				Enter_Idle_Mode();
 			}
 
@@ -1222,7 +1234,7 @@ ResultType FootClass::Take_Damage(int & damage, int distance, WarheadType warhea
 				/*
 				**	If this object isn't doing anything important, then scatter.
 				*/
-				if (MissionControl[Mission].IsScatter && !IsTethered && !IsDriving && !Target_Legal(TarCom) && !Target_Legal(NavCom) && What_Am_I() != RTTI_AIRCRAFT && What_Am_I() != RTTI_VESSEL) {
+				if (((Mission == MISSION_NONE) || MissionControl[Mission].IsScatter) && !IsTethered && !IsDriving && !Target_Legal(TarCom) && !Target_Legal(NavCom) && What_Am_I() != RTTI_AIRCRAFT && What_Am_I() != RTTI_VESSEL) {
 					if (!House->IsHuman || Rule.IsScatter) {
 						Scatter(0, true);
 					}
@@ -1821,7 +1833,8 @@ int FootClass::Mission_Enter(void)
 		}
 	}
 
-	return(MissionControl[Mission].Normal_Delay() + Random_Pick(0, 2));
+	const MissionType exitmission = (Mission == MISSION_NONE) ? MISSION_ENTER : Mission;
+	return(MissionControl[exitmission].Normal_Delay() + Random_Pick(0, 2));
 }
 
 
@@ -2679,7 +2692,8 @@ int FootClass::Mission_Retreat(void)
 			break;
 	}
 
-	return(MissionControl[Mission].Normal_Delay() + Random_Pick(0, 2));
+	const MissionType exitmission = (Mission == MISSION_NONE) ? MISSION_RETREAT : Mission;
+	return(MissionControl[exitmission].Normal_Delay() + Random_Pick(0, 2));
 }
 
 /***********************************************************************************************
