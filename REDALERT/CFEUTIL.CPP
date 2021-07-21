@@ -70,6 +70,7 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     GetSetting(ActiveCFEPatchConfig.EnableSharedChronoDisasterOdds      , "FEATURES", "USE_SHARED_CHRONO_ODDS");
     GetSetting(ActiveCFEPatchConfig.EnableCumulativeTimelineDamage      , "FEATURES", "CUMULATIVE_TIMELINE_DAMAGE");
     GetSetting(ActiveCFEPatchConfig.EnableLongGapFix      , "FEATURES", "LONG_BGAP_BUGFIX");
+    GetSetting(ActiveCFEPatchConfig.EnableMIGAmmoFudge      , "FEATURES", "MIG_AMMO_FUDGE");
 
 	//Settings
 	GetSetting(ActiveCFEPatchConfig.HarvyQueueJumpCutoff	, "SETTINGS", "QUEUE_JUMP_CUTOFF");

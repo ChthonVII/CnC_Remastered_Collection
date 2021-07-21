@@ -790,12 +790,14 @@ int AircraftClass::Mission_Hunt(void)
 						}
 						Fire_At(targ, 0);
                         
-                        // Chthon CFE Note: rank 3 MIGS fire two missiles per ammo pip (fudge this by restoring 1 ammo between shots)
-                        if ((VeterancyRank == 3) && (*this == AIRCRAFT_MIG)){
+                        // Chthon CFE Note: rank 3 MIGS/Yals fire two missiles per ammo pip (fudge this by restoring 1 ammo between shots) (check for two-shooter in case it's removed via rules.ini edit)
+                        if ((VeterancyRank == 3) && ((*this == AIRCRAFT_MIG) || (*this == AIRCRAFT_YAK)) && Class->Is_Two_Shooter()){
                             Ammo++;
                         }
                         
-						if (Class->Is_Two_Shooter()) {
+                        // Chthon CFE Note: bugfix missing ammo check -- causes fixed-wing planes with two-shooter & odd number of max ammo to make extra free shot
+						//if (Class->Is_Two_Shooter()) {
+						if (Ammo && Class->Is_Two_Shooter()) {
 							Fire_At(targ, 0);
 						}
 						return(Arm);

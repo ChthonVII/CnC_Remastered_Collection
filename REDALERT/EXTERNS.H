@@ -117,6 +117,7 @@ struct CFEPatchConfig
     bool EnableSharedChronoDisasterOdds = false;
     bool EnableCumulativeTimelineDamage = false;
     bool EnableLongGapFix = false;
+    bool EnableMIGAmmoFudge = false;
 
 	int  HarvyQueueJumpCutoff = 4;
 	int  HarvyOptimizeUnloadWaitWeight = 6;
