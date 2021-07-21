@@ -1943,7 +1943,7 @@ void UnitClass::Per_Cell_Process(PCPType why)
 		** If this is a mobile gap generator, restore the shroud where appropriate
 		** and re-shroud around us.
 		*/
-		if (Class->IsGapper && !House->IsPlayerControl) {
+		if (Class->IsGapper /*&& !House->IsPlayerControl*/) {
 			Shroud_Regen();
 		}
 
