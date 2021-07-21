@@ -200,6 +200,7 @@ void CellClass::Code_Pointers(void)
 		OccupierPtr = (ObjectClass *)OccupierPtr->As_Target();
 	}
 
+	/*
 	if (Overlapper[0]) {
 		Overlapper[0] = (ObjectClass *)Overlapper[0]->As_Target();
 	}
@@ -211,6 +212,15 @@ void CellClass::Code_Pointers(void)
 	if (Overlapper[2]) {
 		Overlapper[2] = (ObjectClass *)Overlapper[2]->As_Target();
 	}
+	*/
+    // add active check as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/commit/6b3f0492747bd91409f9db8bf39b79fecef9b9ac
+    for (int index = 0; index < ARRAY_SIZE(Overlapper); index++) {
+        if (Overlapper[index] != NULL && Overlapper[index]->IsActive) {
+            Overlapper[index] = (ObjectClass*)Overlapper[index]->As_Target();
+        } else {
+            Overlapper[index] = NULL;
+        }
+    }
 
 	/*
 	------------------------ Convert trigger pointer -------------------------

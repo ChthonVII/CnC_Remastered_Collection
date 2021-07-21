@@ -665,7 +665,8 @@ void RadarClass::Render_Terrain(CELL cell, int x, int y, int size)
 	*/
 	for (lp = 0; lp < ARRAY_SIZE(Map[cell].Overlapper); lp ++) {
 		obj = Map[cell].Overlapper[lp];
-		if (obj && obj->What_Am_I() == RTTI_TERRAIN)
+        // add active check as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/commit/6b3f0492747bd91409f9db8bf39b79fecef9b9ac
+		if (obj && obj->IsActive && obj->What_Am_I() == RTTI_TERRAIN)
 			list[listidx++] = (TerrainClass *)obj;
 	}
 
