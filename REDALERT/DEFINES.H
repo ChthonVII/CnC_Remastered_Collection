@@ -492,7 +492,10 @@ typedef enum DiffType : unsigned char {
 **	changed, be sure to update the makefile and rebuild all of the shape
 **	data files.
 */
-#define SHAPE_BUFFER_SIZE		131072L
+// Chthon CFE Note: This is also used for the buffer for reading in map ini files.
+// Hopefully we can increase it without any ill effect and people will be able to make cooler maps
+//#define SHAPE_BUFFER_SIZE		131072L
+#define SHAPE_BUFFER_SIZE		524288L
 
 
 /**********************************************************************
