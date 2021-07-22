@@ -67,6 +67,10 @@
 
 #pragma warning (disable : 4302)			// Truncation from pointer to TARGET
 
+#ifndef ARRAY_SIZE
+#define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
+#endif
+
 /***********************************************************************************************
  * CellClass::Should_Save -- Should the cell be written to disk?                               *
  *                                                                                             *
