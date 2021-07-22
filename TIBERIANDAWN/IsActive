@@ -1,2 +1,0 @@
-BUILDING.CPP:1440:			if (saboteur && saboteur->IsActive && saboteur->House && saboteur->House->IsHuman) {
-BUILDING.CPP:1441:				On_Achievement_Event(saboteur->House, "BUILDING_DESTROYED_C4", object_type->IniName);

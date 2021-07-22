@@ -104,8 +104,8 @@ static char *ColorNames[8] = {
 	"Green",
 	"Blue",
     // 8players
-    "Purple",
-    "Pink"
+    "ModBlue",
+    "ModPurple"
 };
 #endif	//DEMO
 
@@ -3509,6 +3509,20 @@ void Print_CRCs(EventClass *ev)
 		fprintf(fp,"Multi6: IsHuman:%d  Color:%s\n",housep->IsHuman,
 			ColorNames[color]);
 	}
+	
+	housep = HouseClass::As_Pointer (HOUSE_MULTI7);
+	if (housep) {
+		color = housep->RemapColor;
+		fprintf(fp,"Multi7: IsHuman:%d  Color:%s\n",housep->IsHuman,
+			ColorNames[color]);
+	}
+	
+	housep = HouseClass::As_Pointer (HOUSE_MULTI8);
+	if (housep) {
+		color = housep->RemapColor;
+		fprintf(fp,"Multi8: IsHuman:%d  Color:%s\n",housep->IsHuman,
+			ColorNames[color]);
+	}
 
 
 	//------------------------------------------------------------------------
@@ -3617,6 +3631,43 @@ void Print_CRCs(EventClass *ev)
 			}
 		}
 		Mono_Printf("Multi6 Infantry:%d\n",GameCRC);
+	}
+	
+	//------------------------------------------------------------------------
+	//	Multi7 Infantry
+	//------------------------------------------------------------------------
+	if (HouseClass::As_Pointer(HOUSE_MULTI7)) {
+		GameCRC = 0;
+		fprintf(fp,"-------------------- MULTI7 INFANTRY -------------------\n");
+		for (i = 0; i < Infantry.Count(); i++) {
+			infp = (InfantryClass *)Infantry.Active_Ptr(i);
+			if (infp->Owner()==HOUSE_MULTI7) {
+				Add_CRC (&GameCRC, (int)infp->Coord + (int)infp->PrimaryFacing);
+				fprintf(fp,"COORD:%x   Facing:%d   Mission:%d   Type:%d\n",
+					infp->Coord,(int)infp->PrimaryFacing,infp->Get_Mission(),
+					infp->Class->Type);
+			}
+		}
+		Mono_Printf("Multi7 Infantry:%d\n",GameCRC);
+	}
+	
+	
+	//------------------------------------------------------------------------
+	//	Multi8 Infantry
+	//------------------------------------------------------------------------
+	if (HouseClass::As_Pointer(HOUSE_MULTI8)) {
+		GameCRC = 0;
+		fprintf(fp,"-------------------- MULTI8 INFANTRY -------------------\n");
+		for (i = 0; i < Infantry.Count(); i++) {
+			infp = (InfantryClass *)Infantry.Active_Ptr(i);
+			if (infp->Owner()==HOUSE_MULTI8) {
+				Add_CRC (&GameCRC, (int)infp->Coord + (int)infp->PrimaryFacing);
+				fprintf(fp,"COORD:%x   Facing:%d   Mission:%d   Type:%d\n",
+					infp->Coord,(int)infp->PrimaryFacing,infp->Get_Mission(),
+					infp->Class->Type);
+			}
+		}
+		Mono_Printf("Multi8 Infantry:%d\n",GameCRC);
 	}
 
 	//------------------------------------------------------------------------
@@ -3739,6 +3790,47 @@ void Print_CRCs(EventClass *ev)
 		Mono_Printf("Multi6 Units:%d\n",GameCRC);
 	}
 
+		//------------------------------------------------------------------------
+	//	Multi7 Units
+	//------------------------------------------------------------------------
+	if (HouseClass::As_Pointer(HOUSE_MULTI7)) {
+		GameCRC = 0;
+		fprintf(fp,"-------------------- MULTI7 UNITS -------------------\n");
+		for (i = 0; i < Units.Count(); i++) {
+			unitp = (UnitClass *)Units.Active_Ptr(i);
+			if (unitp->Owner()==HOUSE_MULTI7) {
+				Add_CRC (&GameCRC, (int)unitp->Coord + (int)unitp->PrimaryFacing);
+				fprintf(fp,
+					"COORD:%x   Facing:%d   Facing2:%d   Mission:%d   Type:%d\n",
+					unitp->Coord,(int)unitp->PrimaryFacing,
+					(int)unitp->SecondaryFacing,unitp->Get_Mission(),
+					unitp->Class->Type);
+			}
+		}
+		Mono_Printf("Multi7 Units:%d\n",GameCRC);
+	}
+	
+		//------------------------------------------------------------------------
+	//	Multi8 Units
+	//------------------------------------------------------------------------
+	if (HouseClass::As_Pointer(HOUSE_MULTI8)) {
+		GameCRC = 0;
+		fprintf(fp,"-------------------- MULTI8 UNITS -------------------\n");
+		for (i = 0; i < Units.Count(); i++) {
+			unitp = (UnitClass *)Units.Active_Ptr(i);
+			if (unitp->Owner()==HOUSE_MULTI8) {
+				Add_CRC (&GameCRC, (int)unitp->Coord + (int)unitp->PrimaryFacing);
+				fprintf(fp,
+					"COORD:%x   Facing:%d   Facing2:%d   Mission:%d   Type:%d\n",
+					unitp->Coord,(int)unitp->PrimaryFacing,
+					(int)unitp->SecondaryFacing,unitp->Get_Mission(),
+					unitp->Class->Type);
+			}
+		}
+		Mono_Printf("Multi8 Units:%d\n",GameCRC);
+	}
+	
+	
 	//------------------------------------------------------------------------
 	//	Multi1 Buildings
 	//------------------------------------------------------------------------
@@ -3846,6 +3938,43 @@ void Print_CRCs(EventClass *ev)
 		}
 		Mono_Printf("Multi6 Buildings:%d\n",GameCRC);
 	}
+	
+		//------------------------------------------------------------------------
+	//	Multi7 Buildings
+	//------------------------------------------------------------------------
+	if (HouseClass::As_Pointer(HOUSE_MULTI7)) {
+		GameCRC = 0;
+		fprintf(fp,"-------------------- MULTI7 BUILDINGS -------------------\n");
+		for (i = 0; i < Buildings.Count(); i++) {
+			bldgp = (BuildingClass *)Buildings.Active_Ptr(i);
+			if (bldgp->Owner()==HOUSE_MULTI7) {
+				Add_CRC (&GameCRC, (int)bldgp->Coord + (int)bldgp->PrimaryFacing);
+				fprintf(fp,"COORD:%x   Facing:%d   Mission:%d   Type:%d\n",
+					bldgp->Coord,(int)bldgp->PrimaryFacing,bldgp->Get_Mission(),
+					bldgp->Class->Type);
+			}
+		}
+		Mono_Printf("Multi7 Buildings:%d\n",GameCRC);
+	}
+	
+		//------------------------------------------------------------------------
+	//	Multi6 Buildings
+	//------------------------------------------------------------------------
+	if (HouseClass::As_Pointer(HOUSE_MULTI8)) {
+		GameCRC = 0;
+		fprintf(fp,"-------------------- MULTI8 BUILDINGS -------------------\n");
+		for (i = 0; i < Buildings.Count(); i++) {
+			bldgp = (BuildingClass *)Buildings.Active_Ptr(i);
+			if (bldgp->Owner()==HOUSE_MULTI8) {
+				Add_CRC (&GameCRC, (int)bldgp->Coord + (int)bldgp->PrimaryFacing);
+				fprintf(fp,"COORD:%x   Facing:%d   Mission:%d   Type:%d\n",
+					bldgp->Coord,(int)bldgp->PrimaryFacing,bldgp->Get_Mission(),
+					bldgp->Class->Type);
+			}
+		}
+		Mono_Printf("Multi8 Buildings:%d\n",GameCRC);
+	}
+	
 #if (0)
 	//------------------------------------------------------------------------
 	//	Map Layers

@@ -212,47 +212,6 @@
 	</TeamColorTypeClass>
 	<TeamColorTypeClass Name="MULTI2" Variant="BASE_TEAM">
 		<LowerBounds>
-			<R>0.26</R>
-			<G>1</G>
-			<B>0</B>
-		</LowerBounds>
-		<UpperBounds>
-			<R>0</R>
-			<G>1</G>
-			<B>0.22</B>
-		</UpperBounds>
-		<Fudge>0</Fudge>
-		<HSVShift>
-			<X>0.148</X>
-			<Y>-0.077</Y>
-			<Z>0</Z>
-		</HSVShift>
-		<InputLevels>
-			<X>0</X>
-			<Y>1</Y>
-			<Z>1</Z>
-		</InputLevels>
-		<OutputLevels>
-			<X>0</X>
-			<Y>1</Y>
-		</OutputLevels>
-		<OverallInputLevels>
-			<X>0</X>
-			<Y>1</Y>
-			<Z>1</Z>
-		</OverallInputLevels>
-		<OverallOutputLevels>
-			<X>0</X>
-			<Y>1</Y>
-		</OverallOutputLevels>
-		<RadarMapColor>
-			<R>0</R>
-			<G>0.490196</G>
-			<B>0.4757784</B>
-		</RadarMapColor>
-	</TeamColorTypeClass>
-	<TeamColorTypeClass Name="MULTI3" Variant="BASE_TEAM">
-		<LowerBounds>
 			<R>0.264706</R>
 			<G>1</G>
 			<B>0</B>
@@ -292,7 +251,7 @@
 			<B>0.015686</B>
 		</RadarMapColor>
 	</TeamColorTypeClass>
-	<TeamColorTypeClass Name="MULTI4"  Variant="BASE_TEAM">
+    <TeamColorTypeClass Name="MULTI3" Variant="BASE_TEAM">
 		<LowerBounds>
 			<R>0.26</R>
 			<G>1</G>
@@ -305,8 +264,8 @@
 		</UpperBounds>
 		<Fudge>0</Fudge>
 		<HSVShift>
-			<X>0.882</X>
-			<Y>1</Y>
+			<X>0.148</X>
+			<Y>-0.077</Y>
 			<Z>0</Z>
 		</HSVShift>
 		<InputLevels>
@@ -328,12 +287,12 @@
 			<Y>1</Y>
 		</OverallOutputLevels>
 		<RadarMapColor>
-			<R>0.38985</R>
-			<G>0.8284314</G>
-			<B>0</B>
+			<R>0</R>
+			<G>0.490196</G>
+			<B>0.4757784</B>
 		</RadarMapColor>
 	</TeamColorTypeClass>
-	<TeamColorTypeClass Name="MULTI5" Variant="BASE_TEAM">
+	<TeamColorTypeClass Name="MULTI4" Variant="BASE_TEAM">
 		<LowerBounds>
 			<R>0.26</R>
 			<G>1</G>
@@ -371,6 +330,47 @@
 		<RadarMapColor>
 			<R>1</R>
 			<G>0.3529412</G>
+			<B>0</B>
+		</RadarMapColor>
+	</TeamColorTypeClass>
+	<TeamColorTypeClass Name="MULTI5"  Variant="BASE_TEAM">
+		<LowerBounds>
+			<R>0.26</R>
+			<G>1</G>
+			<B>0</B>
+		</LowerBounds>
+		<UpperBounds>
+			<R>0</R>
+			<G>1</G>
+			<B>0.22</B>
+		</UpperBounds>
+		<Fudge>0</Fudge>
+		<HSVShift>
+			<X>0.882</X>
+			<Y>1</Y>
+			<Z>0</Z>
+		</HSVShift>
+		<InputLevels>
+			<X>0</X>
+			<Y>1</Y>
+			<Z>1</Z>
+		</InputLevels>
+		<OutputLevels>
+			<X>0</X>
+			<Y>1</Y>
+		</OutputLevels>
+		<OverallInputLevels>
+			<X>0</X>
+			<Y>1</Y>
+			<Z>1</Z>
+		</OverallInputLevels>
+		<OverallOutputLevels>
+			<X>0</X>
+			<Y>1</Y>
+		</OverallOutputLevels>
+		<RadarMapColor>
+			<R>0.38985</R>
+			<G>0.8284314</G>
 			<B>0</B>
 		</RadarMapColor>
 	</TeamColorTypeClass>

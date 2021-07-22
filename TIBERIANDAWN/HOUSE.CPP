@@ -2221,7 +2221,11 @@ unsigned char const * HouseClass::Remap_Table(bool blushing, bool unit) const
 		/*
 		**	Special case Jurassic missions to use the bluegrey remapping
 		*/
-		if (Special.IsJurassic && Class->House == HOUSE_MULTI4) {
+        // Chthon CFE Note: Looks like Petroglyph commented out the code that sets HOUSE_MULTI4 in the first place
+        // Copy/pasta from Read_Scenario_Ini()
+        
+		//if (Special.IsJurassic && Class->House == HOUSE_MULTI4) {
+		if (Special.IsJurassic && (GameToPlay == GAME_NORMAL) && (ScenPlayer == SCEN_PLAYER_JP)) {
 			return(RemapLtBlue);
 		}
 

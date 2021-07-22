@@ -248,7 +248,10 @@ typedef enum DiffType : unsigned char {
 **	changed, be sure to update the makefile and rebuild all of the shape
 **	data files.
 */
-#define SHAPE_BUFFER_SIZE		131072L
+// Chthon CFE Note: This is also used for the buffer for reading in map ini files.
+// Hopefully we can increase it without any ill effect and people will be able to make cooler maps
+//#define SHAPE_BUFFER_SIZE		131072L
+#define SHAPE_BUFFER_SIZE		524288L
 
 // Use this to allow keep track of versions as they affect saved games.
 #define	VERSION_NUMBER		1
@@ -707,11 +710,11 @@ typedef enum PlayerColorType : char {
 	REMAP_NONE = -1,
 	REMAP_GOLD,
 	REMAP_FIRST=REMAP_GOLD,
-	REMAP_LTBLUE, 
-	REMAP_RED,
-	REMAP_GREEN,
-	REMAP_ORANGE,
-	REMAP_BLUE,
+    REMAP_RED, // swapped up 1
+	REMAP_LTBLUE, // actually teal (swapped in HouseClass::Init_Data()) // swapped down 1
+    REMAP_ORANGE, //swapped up 1
+	REMAP_GREEN, // swapped down 1
+	REMAP_BLUE, // actually light blue/silver  (swapped in HouseClass::Init_Data())
     // 8players
     // REMAP_LAST=REMAP_BLUE,
     REMAP_MODCOLOR_BLUE,
