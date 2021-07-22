@@ -471,4 +471,5 @@ char const * MissionClass::Missions[MISSION_COUNT] = {
 	"Repair",
 	"Rescue",
 	"Missile",
+    "Attack-Move"
 };

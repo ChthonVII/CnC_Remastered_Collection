@@ -100,7 +100,8 @@ char const * Missions[MISSION_COUNT] = {
 	"Repair",
 	"Rescue",
 	"Missile",
-	"Harmless"
+	"Harmless",
+    "Attack-Move"
 };
 
 
