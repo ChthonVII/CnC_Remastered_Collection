@@ -163,7 +163,8 @@ Buffer & Buffer::operator = (Buffer const & buffer)
 {
 	if (buffer != this) {
 		if (IsAllocated) {
-			delete [] BufferPtr;
+			//delete [] BufferPtr;
+            delete[] static_cast<char*>(BufferPtr);
 		}
 		IsAllocated = false;
 		BufferPtr = buffer.BufferPtr;
@@ -213,7 +214,8 @@ Buffer::~Buffer(void)
 void Buffer::Reset(void)
 {
 	if (IsAllocated) {
-		delete [] BufferPtr;
+		//delete [] BufferPtr;
+        delete[] static_cast<char*>(BufferPtr);
 	}
 	BufferPtr = NULL;
 	Size = 0;
