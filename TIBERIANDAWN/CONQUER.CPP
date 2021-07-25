@@ -2053,6 +2053,7 @@ long MixFileHandler(VQAHandle *vqa, long action, void *buffer, long nbytes)
 					error = 1;
 				}
 			} else {
+                delete file;
 				error = 1;
 			}
 
