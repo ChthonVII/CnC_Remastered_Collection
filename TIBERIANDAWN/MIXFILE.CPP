@@ -131,7 +131,8 @@ MixFileClass::~MixFileClass(void)
 		free((char *)Filename);
 	}
 	if (Data) {
-		delete [] Data;
+		//delete [] Data;
+        delete[] static_cast<char*>(Data);
 	}
 	if (Buffer) {
 		delete [] Buffer;
