@@ -175,6 +175,16 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     else {
         ActiveCFEPatchConfig.AllowSandbagging = true;
     }
+    
+    // clamp balance patch values above 0
+    ActiveCFEPatchConfig.OverrideWarFactoryHP_Value = (std::max)(1, ActiveCFEPatchConfig.OverrideWarFactoryHP_Value);
+    ActiveCFEPatchConfig.OverrideStealthTankCost_Value = (std::max)(1, ActiveCFEPatchConfig.OverrideStealthTankCost_Value);
+    ActiveCFEPatchConfig.OverrideArtyTurn_Value = (std::max)(1, ActiveCFEPatchConfig.OverrideArtyTurn_Value);
+    ActiveCFEPatchConfig.OverrideMLRSHP_Value = (std::max)(1, ActiveCFEPatchConfig.OverrideMLRSHP_Value);
+    ActiveCFEPatchConfig.OverrideMCVSight_Value = (std::max)(1, ActiveCFEPatchConfig.OverrideMCVSight_Value);
+    ActiveCFEPatchConfig.OverrideConYardSight_Value = (std::max)(1, ActiveCFEPatchConfig.OverrideConYardSight_Value);
+    ActiveCFEPatchConfig.OverrideRocketGuyHP_Value = (std::max)(1, ActiveCFEPatchConfig.OverrideRocketGuyHP_Value);
+    ActiveCFEPatchConfig.OverrideRocketGuyCost_Value = (std::max)(1, ActiveCFEPatchConfig.OverrideRocketGuyCost_Value);
 }
 
 bool Create_CFE_Patch_Directory(const char* path)
