@@ -389,7 +389,8 @@ bool MixFileClass::Cache(void)
 void MixFileClass::Free(void)
 {
 	if (Data) {
-		delete [] Data;
+		//delete [] Data;
+        delete[] static_cast<char*>(Data);
 		Data = 0;
 	}
 }
