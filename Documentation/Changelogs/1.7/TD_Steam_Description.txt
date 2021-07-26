@@ -1,0 +1,70 @@
+[h1]CFE Patch Redux[/h1]
+
+This mod updates the original CFE Patch mod by cfehunter and its RA port by Root-Core to the official 9/24/2020 hotfix patch (supposedly the final official patch) and adds new features.
+
+The current version is 1.7.
+
+This is the Tiberian Dawn mod. The Red Alert mod is available on Steam Workshop here: [url=https://steamcommunity.com/sharedfiles/filedetails/?id=2268301299]link[/url]
+
+If you don't have Steam (or Steam is misbehaving), you can download the mod directly from Github here: [url=https://github.com/ChthonVII/CnC_Remastered_Collection/releases]link[/url].
+
+[h1]Static Features[/h1]
+[list]
+[*]Megamap support
+[*]8-Player support
+[*]Incorporates "Pixel-Perfect Zoom"
+[*]Incorporates "Jozef's Silver Funpark"
+[*]Numerous vanilla bugfixes
+[/list]
+
+[h2]Customizable Features[/h2]
+
+The detailed features list has grown too long to fit in the Steam description. See [url=https://github.com/ChthonVII/CnC_Remastered_Collection/wiki/Features-and-INI-Settings-Charts]the features and settings chart on the github page[/url] for full details on the features and how to configure them.
+
+Brief features list: A* Pathing, Infantry Tiberium Aversion, Suspend Building Repairs, Rally Points, Harvester Queue Jumping, Harvester Load Balancing, Harvester Optimization, Harvester Self-Repair, Disable Commando Airstrikes, Commando Guard, Safe Sabotage, Attack-Move, Smarter Aircraft, Smarter SAMs, Smarter Repair Bay, Smarter Mammoths, Configurable Build Distance, Tiberium Growth Scale, Better Tiberium Growth Algorithm, TS/RA2-style Wall Building, Inverse Wall Placement Preview, TS-style Visceroid Spawns, Meaner Visceroids, Veterancy System, Balance Patch, Nuke Tank (disabled by default).
+
+These features can be controlled via the INI file located at "My Documents\CnCRemastered\Mods\Tiberian_Dawn\CFEPatchRedux\CFEPATCHREDUX.INI". See [url=https://github.com/ChthonVII/CnC_Remastered_Collection/wiki/Features-and-INI-Settings-Charts]the settings chart on the wiki[/url] for details.
+
+[h2]LAN Multiplayer[/h2]
+
+This mod is fully compatible with LAN multiplayer. The only mod feature that doesn't work perfectly in LAN multiplayer is the visual preview for TS-style wall building. This is an unfixable consequence of the way the GlyphX client/server handles LAN multiplayer. The "Inverse Wall Placement Preview" feature is provided as a substitute of sorts.
+
+[h2]Megamap and 8-Player Support[/h2]
+
+This mod supports megamaps (128x128) and up to 8 players in LAN and skirmish. Note that while this mod can [i]play[/i] megamaps, it doesn't enable the editor to [i]create[/i] them. If you want to create megamaps for TD, you need to use either [url=https://github.com/screamingchicken/CnCTDRAMapEditor]screaming_chicken's standalone editor[/url] or [url=https://github.com/TheAssemblyArmada/Vanilla-Conquer]vanilla-conquer's standalone TD executable[/url]. In order to better accomodate bigger maps and more players, some object limits have been increased (notable for mission-makers: REINFORCEMENT_MAX=100, TEAM_MAX=120, TERRAIN_MAX=1000, TRIGGER_MAX=200) and the file size limit for mission/map .ini files has been increased to 64kb.
+
+[h2]Pixel-Perfect Zoom[/h2]
+
+"Pixel-Perfect Zoom" has been incorporated, plus a couple extra half/quarter-step zoom factors between 1x and 2x where the gaps were very large. There are 11 zoom factors -- the odd ones should be pixel-perfect on 1080p and 4k monitors; the even ones should be pixel-perfect on 2k monitors. Note that not all zoom factors are available on smaller maps.
+
+[h2]TODO List[/h2]
+
+See [url=https://github.com/ChthonVII/CnC_Remastered_Collection/wiki/TODO-List]wiki[/url].
+
+[h2]Credits[/h2]
+
+For more details on who wrote what, see the [url=https://github.com/ChthonVII/CnC_Remastered_Collection/blob/master/README.md]readme on GitHub[/url]
+[list]
+[*]CFE Patch Redux: ChthonVII
+[*]Original CFE Patch:
+[list]
+[*]cfehunter
+[*]FluffyQuack
+[*]A__Gun
+[*]Spyyre
+[*]pchote
+[*]Butch
+[/list]
+[*]Features borrowed from other mods: screaming_chicken, Jozef, bleid, CCHyper, zerobyte666, the vanilla-conquer developers, Petroglyph
+[*]LAN multiplayer testing: Noddynod443
+[/list]
+
+[h2] Source Code & A Reminder About the GPL[/h2]
+
+The source code is available [url=https://github.com/ChthonVII/CnC_Remastered_Collection]here[/url].
+
+A reminder like this [i]shouldn't[/i] be necessary. But it appears it is necessary since one of the most popular mods on Steam Workshop has appropriated a lot of GPL code (both from EA and from other modders), and yet its author has ignored at least a dozen public requests for its source code. So let me be clear: You are free to copy my source code and use it in your mod, so long as you do so in accordance with the GPL. That means, if you use my code in your mod, then you are legally required to license your mod under the GPL and to make your mod's source code publicly available (and a few other things too -- go read [url=https://github.com/ChthonVII/CnC_Remastered_Collection/blob/master/License.txt]the GPL[/url]). Using my code in a manner inconsistent with the provisions of the GPL is copyright infringement. If it comes to my attention that you are using my code in your mod, but not making your mod's source code publicly available, I will give you a brief opportunity to rectify the situation, and then I will file a DMCA complaint against your mod if you fail to do so. Don't make me do that. Don't be a jerk. Publish your source code.
+
+[h2]A Reminder that Mods Are Not Official EA Products[/h2]
+
+This is a mod. It's not an official EA product. In fact, [url=https://www.ea.com/games/command-and-conquer/command-and-conquer-remastered/modding-faq]EA wants[/url] mod authors to remind you that “EA has not endorsed and does not support this product.” So there.

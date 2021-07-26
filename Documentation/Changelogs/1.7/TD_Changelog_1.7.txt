@@ -1,0 +1,72 @@
+1. Megamap (128x128) support for TD!!
+1.a. Note: This will break all your old save files -- sorry!
+1.b. Note: While this mod can *play* megamaps, it doesn't enable the editor to *create* them. If you want to create megamaps for TD, you need to use one of:
+* screaming_chicken's standalone editor: https://github.com/screamingchicken/CnCTDRAMapEditor
+* vanilla-conquer's standalone TD game: https://github.com/TheAssemblyArmada/Vanilla-Conquer
+
+2. 8-player support for TD! 
+
+3. Increased object limits and increased map ini file size limit to 64k to better accomodate bigger maps and more players.
+
+4. Rearranged TD multiplayer color order to match C&C95 (plus 2 extra colors for players 7 and 8) and incorporated "Jozef's Silver Funpark" (traditional silver color in "funpark" secret levels).
+
+5. Attack-Move Updates
+5.1. Fixed bug with twitchy bazooka guys reported by shadics ARG and related weiredness. (At least I think I fixed it.)
+5.2. Units should now be more persistent about still trying to reach attack-move destination when blocked.
+
+6. "Smarter Repair Bay" Option
+6.1. Ground units can be ordered to queue for repair bay even when the bay is occupied.
+6.2. Vastly improved exit logic: Units will always try to exit the repair bay, unless the unit didn't need repaired in the first place and no one else is waiting to use the bay. (This exception gives you a chance to sell full-health units.) Air units will always return to their helipad. Ground units will go to the rally point if set, or, failing that, exit into the open cell that requires the least rotation, or, failing that, ask the blocking units to scatter. (The annoying "sit on the repair bay and twitch" behavior should now only occur if the unit is too blocked in for the scatter request to clear the blockage.)
+
+7. Balance Patch based on CnCNet's Community Balance Patch:
+7.a. Option to override for APC never requiring repair bay, despite "modern balance" toggle. (default "on")
+7.b. Option to override war factory HP. (default "off")
+7.c. Option to override stealth tank price. (default 700)
+7.d. Option to override arty turn rate. (default 4)
+7.e. Option to make MLRS require radar instead of comm center. (default "on")
+7.f. Option to override MLRS HP. (default 120)
+7.g. Option to make MLRS buildable for GDI only. (default "on")
+7.h. Option to override for MCV/conyard sight range. (default 4/6)
+7.i. Option override rocket guy HP. (default 35)
+7.j. Option to override rocket guy cost. (default 250)
+7.k. Optional chem guy buff (makes biolab buildable and moves req there, chance to create visceroid when killing infantry (increases with veterancy), both chem guy and visceroid 90% resistance to chem spray attack). (default "on")
+7.l. Option to apply balance settings to SP too. (default "on")
+7.m. Option to enable MP units in SP. (default "on")
+
+8. "Smarter Mammoths" -- Mammoth Tanks always use missiles against infantry.
+
+9. Changed rank 3 veteran bonus for Mammoth Tank, AGT, and SAM to "quad shooter." (SAM is actually twice as many shots as "Smarter SAMS" setting, in 4-shot volleys.)
+
+10. Added Nuke Tank (disabled by default).
+
+11. Incorporated "Pixel-Perfect Zoom Levels" by bleid (plus some extra levels between 1x and 2x to make the gaps smaller).
+
+12. Added spawn animation for visceroids (rapidly grow up from a tiny blob).
+
+13. Added ini options to control visceroids spawning from "frustrated" tib trees independently of "Better Tiberium Growth" feature. Now defaults to off in SP and obeys the MP lobby visceroid setting.
+
+14. Change "Better Tiberium Growth" so that chance to spawn visceroid from "frustrated" tib trees doesn't scale together with tiberium growth rate.
+
+15. Changed steath sound for infantry
+
+16. Superweapon buildings no longer gain veterancy XP from superweapon use.
+
+17. Bugfixes:
+* Fixed crash bug when rank 3 veteran bikes/jeeps/minigunners shoot at the ground/walls.
+* Fixed bug with splash damage from rank 3 veteran bikes/jeeps/minigunners sometimes getting incorrect armor penetration.
+* Fixed crash when loading custom map/mission with invalid mission string in ini file.
+* Fixed vanilla bug with units ignoring collision detection on the repair bay, sometimes resulting in multiple units in one cell.
+* Fixed vanilla bugs with unit flash effect being shown to wrong players.
+* Fixed vanilla bug with not being able to assign harvest mission via radar.
+* Fixed vanilla bug with player losing due to dead MHQ in other game modes besides no-bases capture-the-flag.
+* Fixed vanilla bug with gunboats not firing in certain missions.
+* Fixed vanilla crash bug when infantry move into a building during their death animation.
+* Fixed vanilla exploit building off stale proximity check from destroyed building.
+* Fixed vanilla bug with not getting the special GDI ending if another building is destroyed by other means after the temple is destroyed with ion cannon
+* Fixed rally points set on units not being cleared when the units die.
+* Fixed rally points not being cleared when buildings are captured.
+* Fixed auto repair rate for rank 3 veteran helicopters on pad.
+* Fixed not getting veterancy XP for passengers killed when a transport is killed.
+* Fixed fixed turret not always getting 2-shooter bonus applied for next shot after achiving veterancy rank 3.
+* Fixed vanilla bug with AI picking base defense units incorrectly.
+* Fixed numerous memory-related misc vanilla bugs.

@@ -1,0 +1,67 @@
+1. Full LAN multiplayer support. All mod features should now work perfectly in LAN multiplayer, with the exception of the visual preview for TS-style wall building. This is an unfixable consequence of the way the GlyphX client/server handles LAN multiplayer. The "Inverse Wall Placement Preview" feature is provided as a substitute of sorts.
+
+2. New rally point artwork. (Was necessary for making it visible only for building owner in LAN multiplayer.)
+
+3. Veterancy system. Same basic functionality as TD version. Details are available on the wiki.
+
+4. Overhaul of TS/RA2-style wall building.
+4.a. It is now possible to build walls in a straight line from walls of the same type that you own up to the full wall build length. (The endpoint no longer needs to be within the normal building range.)
+4.b. "Inverse Wall Placement Preview" feature added to compensate for lack of TS-style wall preview.
+4.c. "Walls Have Full Cost" is no longer the default setting. (Though it will still be enabled if you keep your current INI file.)
+4.d. When "Walls Have Full Cost" is disabled, walls now sell for 1/N the normal amount, where N is the wall build length.
+
+5. "OpenRA Wide Supers" -- Option to make Chronosphere and Iron Curtain effect up to 4 extra legal targets in cells adjacent to the main target, similar to OpenRA.
+
+6. "OpenRA Quick Supers" -- Option to reduce Chronosphere and Iron Curtain recharge to 2 min. and duration to 20 sec. (and reduce chrono disaster chance proportionately), similar to OpenRA.
+
+7. "SMARTER_CHRONO" Option
+7.1. Units shifted by the Chronosphere are deselected for all players upon shifting in either direction. This prevents accidentally issuing orders to/at a unit that's now in a radically different spot.
+7.2. Chronoshifted units are removed from other units' targeting systems upon shifting in either direction. This prevents other units from trying to chase a chronoshifted unit across the map.
+7.3. Chronoshifted units are removed from bullets' targeting systems upon shifting in either direction. This prevents funky stuff with bullet physics.
+7.4. Some miscellaneous cleanup to make chronoshift visuals and sound effects more consistent.
+
+8. Chrono Disaster Overhaul
+8.1. "TIMEQUAKE_FIX" Option. Fixes the vanilla Aftermath bug that prevented timequakes from working.
+8.2. "USE_SHARED_CHRONO_ODDS" Option. Instead of independent rolls for whether to spawn chronal vortex and timequake, do one roll for whether to spawn a chrono disaster, potentially followed by a second roll to pick vortex or timequake. (Shared odds for a disaster are specified in the mod's .ini file; odds in rules.ini used as weights for picking between vortex and timequake.)
+8.3. "CUMULATIVE_TIMELINE_DAMAGE" Option. Chrono disaster odds start at 1/10th the stated value, and increase by the same amount each time the Chronosphere is used. When a chrono disaster happens, the odds reset to one step higher than the previous starting point.
+
+9. Attack-Move Updates
+9.1. Fixed bug with twitchy bazooka guys reported by shadics ARG and related weiredness. (At least I think I fixed it.)
+9.2. Units should now be more persistent about still trying to reach attack-move destination when blocked.
+9.3. Added special attack-move behavior for minelayers. (AT minelayer is actually useful now.)
+9.4. Added special attack-move behavior for chronotanks. (Plus an option to disable this if you find it overpowered.)
+
+10. "Smarter Repair Bay" Option
+10.1. Ground units can be ordered to queue for repair bay even when the bay is occupied.
+10.2. Fixed and re-enabled rally point for repair bays.
+10.3. Vastly improved exit logic: Units will always try to exit the repair bay, unless the unit didn't need repaired or reloaded in the first place and no one else is waiting to use the bay. (This exception gives you a chance to sell full-health units.) Air units will always return to their helipad/airstrip. Ground units will go to the rally point if set, or, failing that, exit into the open cell that requires the least rotation, or, failing that, ask the blocking units to scatter. (The annoying "sit on the repair bay and twitch" behavior should now only occur if the unit is too blocked in for the scatter request to clear the blockage.)
+
+11. "LONG_BGAP_BUGFIX" Option. Forces the use of the same logic across all functions that test for building placement proximity regardless of building type or building gap settings. Probably fixes some subtle issues with AI building placement arising from inconsistent logic for some building types. Fixes bug in Root-Core's original port with normal buildings using naval yard/sub pen logic in some places when building gap offset is set > 0. (I also made an alternative fix for this bug even when this option is disabled.) Slightly increases the diagonal placement range of naval yard/subpen. 
+
+12. "MIG Ammo Fudge" -- Option to give certain planes 1 extra ammo to preserve original unit balance that depended on now-fixed buggy behavior.
+
+13. Incorporated "Pixel-Perfect Zoom Levels" by bleid (plus some extra levels between 1x and 2x to make the gaps smaller).
+
+14. Incorporated "Red USSR Flag for all Soviet Barracks" by eksmad.
+
+15. Changed steath sound for infantry.
+
+16. Bugfixes:
+* Fixed missing chrono vortex animation.
+* Fixed crash when loading custom map/mission with invalid mission string in ini file.
+* Fixed vanilla bug that allowed certain planes 1 extra shot after running out of ammo.
+* Fixed vanilla bug with mobile gap generator not working while in motion if owned by SP player/MP server
+* Fixed bug in "Smarter Aircraft" that caused planes to fly off the map if given an attack order while airborne with no ammo
+* Fixed building placement map-wrapping bug.
+* Fixed vanilla bug with units ignoring collision detection on the repair bay, sometimes resulting in multiple units in one cell.
+* Fixed vanilla bugs with multiple MAD Tanks detonating on the same tick or consecutive ticks.
+* Fixed vanilla bugs with unit flash effect being shown to wrong players.
+* Fixed vanilla bug with not being able to assign harvest mission via radar.
+* Fixed vanilla bug with Ukrainian general using Stavros voice.
+* Fixed vanilla crash bug when infantry move into a building during their death animation.
+* Fixed vanilla bug with infinite "new construction options" announcement when allies build soviet aircraft stuctures from captured MCV.
+* Fixed vanilla exploit building off  stale proximity check from destroyed building.
+* Fixed vanilla remastered bug with inability to see mission critical units in "monster tank madness" SP mission.
+* Fixed ally points set on units not being cleared when the units die.
+* Fixed rally points not being cleared when buildings are captured.
+* Fixed numerous memory-related misc vanilla bugs.
