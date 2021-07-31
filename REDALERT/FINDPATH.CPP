@@ -653,7 +653,11 @@ int FootClass::Find_Path_AStar(PathType* const resultPath, const CELL source, CE
 		resultPath->Cost = (int)(dest_result->cost_from_start + 0.5f); // +0.5 coupled with cast to int is equivalent to rounding (we need to go back to int unless we want to go changing WW's definition for PathType)
 
 		//Scrub back to the max path length to store
-		while (dest_result->prev && dest_result->cell_distance_from_start > maxLen) {
+		// Chthon CFE Note: Fixed a pernicious bug here.
+		// When this gets called, maxLen is actually the size of the buffer for resultPath
+		// So we need to stop 1 element short, or we'll do an out-of-bounds write when adding the END terminator,
+		// and prompt Optimize_Moves() to do out-of-bounds reads and writes too
+		while (dest_result->prev && dest_result->cell_distance_from_start >= maxLen) {
 			dest_result = dest_result->prev;
 		}
 
