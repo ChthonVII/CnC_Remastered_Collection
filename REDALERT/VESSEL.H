@@ -145,9 +145,12 @@ class VesselClass : public DriveClass
 		*/
 		FacingClass SecondaryFacing;
 
+        
     // Chthon CFE Note: additional members added for mod
+    // Chthon CFE Note: Cannot initialize variables here! RA's savegame loading copies the data then calls new. WTF?!
+    // Do it in the constructor instead.
     public:
-        unsigned short int BuiltInSonarCountdown = 0; // for rank3 veteran destroyer's bult-in sonar
+        unsigned short int BuiltInSonarCountdown; // for rank3 veteran destroyer's bult-in sonar
         
     protected:
         

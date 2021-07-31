@@ -342,6 +342,13 @@ UnitClass::UnitClass(UnitType classid, HousesType house) :
 //	if (Session.Type == GAME_INTERNET) {
 //		House->UnitTotals->Increment_Unit_Total((int)classid);
 //	}
+
+    // Chthon CFE Note: Initialize mood stuff
+    PersonalIronCurtainCooldown = 0;
+    MinelayerRecharge = 0;
+    MLoriginalposition = TARGET_NONE;
+    MLattackmovemode = 0;
+
 }
 
 

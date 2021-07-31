@@ -208,6 +208,9 @@ class BuildingClass : public TechnoClass
 		*/
 		CDTimerClass<FrameTimerClass> PlacementDelay;
 
+        // Chthon CFE Note: Cannot initialize variables here! RA's savegame loading copies the data then calls new. WTF?!
+        // Do it in the constructor instead.
+        
 		//cfehunter 7th June 2020. Took a lot of digging into the allocation
 		//but it looks like memory is initialised to zeros when allocated from the object pools.
 		//So even though this CELL doesn't exist in older saves, it should be zero initialised.
@@ -216,10 +219,10 @@ class BuildingClass : public TechnoClass
 		TARGET RallyPoint;
         
         // Chthon CFE Note: Who created a landmine
-        TARGET WhoLaidMe = TARGET_NONE;
+        TARGET WhoLaidMe;
 
         // Chthon CFE Note: Should I be used as the base to draw inverse wall prview markers? 
-        mutable unsigned char ShowInverseWallPreviewMarkers = 0;
+        mutable unsigned char ShowInverseWallPreviewMarkers;
         
 		TARGET Target_For_Rally_Point(const SpeedType speed = SPEED_TRACK) const;
 

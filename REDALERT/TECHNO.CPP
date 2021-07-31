@@ -659,6 +659,14 @@ TechnoClass::TechnoClass(RTTIType rtti, int id, HousesType house) :
 	} else {
 		IsOwnedByPlayer = House->IsHuman;
 	}
+	
+	// Chthon CFE Note: initialize mod stuff here
+	RememberedNavCom = TARGET_NONE;
+	CFEPatchFlags = 0;
+    VeterancyXP = 0;
+    AttackMoveBoatClock = 0;
+    SecondaryElectricZapTarget = NULL;
+    
 }
 
 

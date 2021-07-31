@@ -116,14 +116,16 @@ class UnitClass :	public DriveClass
 		*/
 		mutable TARGET TiberiumUnloadRefinery;
 
-
+        // Chthon CFE Note: Cannot initialize variables here! RA's savegame loading copies the data then calls new. WTF?!
+        // Do it in the constructor instead.
+        
         // Chthon CFE Note: recharge timer for built-in iron curtain for rank3 veteran mammoth tanks
         unsigned short int PersonalIronCurtainCooldown;
         // Chthon CFE Note: countdown for rank3 veteran minelayer recharge
-        unsigned short int MinelayerRecharge = 0;
+        unsigned short int MinelayerRecharge;
         // Chthon CFE Note: some stuff for minelayers' special attack-move mode
-        TARGET MLoriginalposition = TARGET_NONE;
-        unsigned char MLattackmovemode = 0;
+        TARGET MLoriginalposition;
+        unsigned char MLattackmovemode;
         
        
 		/*

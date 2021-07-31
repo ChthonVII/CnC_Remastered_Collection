@@ -243,11 +243,14 @@ class TechnoClass :	public RadioClass,
 		*/
 		unsigned int IsDiscoveredByPlayerMask;
 
+        // Chthon CFE Note: Cannot initialize variables here! RA's savegame loading copies the data then calls new. WTF?!
+        // Do it in the constructor instead.
+        
         // Attack Move rework by ChthonVII --  Remember the intial destination in case of appearing enemies during an attack move
 		mutable TARGET RememberedNavCom;
         
         // Veterancy by ChthonVII
-		unsigned short int VeterancyXP = 0;
+		unsigned short int VeterancyXP;
         
         // Converted most attack-move variables into bit fields to save space, but then ended up removing most of them during attack-move rework
         // Keep the bitfield arrangment anyway so we can use the space for future mod features.
@@ -255,7 +258,7 @@ class TechnoClass :	public RadioClass,
 		// Compatibility note: MSVC is happy with this, but apparently gcc needs extensions for it.
         // mutable makes them modifiable from inside const functions (the inability to do this greatly complicated Butch's attack move implementation)
         union{
-			mutable unsigned char CFEPatchFlags = 0;
+			mutable unsigned char CFEPatchFlags;
 			struct{
 				mutable unsigned int AttackMove : 1;
                 mutable unsigned int VeterancyRank : 2;
@@ -263,8 +266,8 @@ class TechnoClass :	public RadioClass,
 				mutable unsigned int CFEPatchFlagsPadding : 4; //round out to 1 byte, we can use this space later.
 			};
 		};
-        mutable unsigned char AttackMoveBoatClock = 0; // There is a real-deal timer class available, but I don't want to spend that many bytes for boats.
-        COORDINATE SecondaryElectricZapTarget = NULL; // Target coord for chain lightning for rank3 veteran tesla units (COORDINATE type is unsigned long)
+        mutable unsigned char AttackMoveBoatClock; // There is a real-deal timer class available, but I don't want to spend that many bytes for boats.
+        COORDINATE SecondaryElectricZapTarget; // Target coord for chain lightning for rank3 veteran tesla units (COORDINATE type is unsigned long)
 		/*
 		** Some additional padding in case we need to add data to the class and maintain backwards compatibility for save/load
 		*/

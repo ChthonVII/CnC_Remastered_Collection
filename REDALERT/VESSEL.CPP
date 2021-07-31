@@ -125,6 +125,10 @@ VesselClass::VesselClass(VesselType classid, HousesType house) :
 //	if (Session.Type == GAME_INTERNET) {
 //		House->UnitTotals->Increment_Unit_Total((int)classid);
 //	}
+
+    // Chthon CFE Note: Initialize mod stuff
+    BuiltInSonarCountdown = 0;
+
 }
 
 

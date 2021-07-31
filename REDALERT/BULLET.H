@@ -146,9 +146,12 @@ class BulletClass :	public ObjectClass,
 		*/
 		WarheadType Warhead;
 
+    // Chthon CFE Note: Cannot initialize variables here! RA's savegame loading copies the data then calls new. WTF?!
+    // Do it in the constructor instead.
+        
     // Chthon CFE Note: Added member to store special per-type armor penetration (used by some rank 3 veteran unit bonuses)
     public:
-        ArmorPenType SpecialArmorPen = ARMORPEN_NONE;
+        ArmorPenType SpecialArmorPen;
     private:
         
 		/*

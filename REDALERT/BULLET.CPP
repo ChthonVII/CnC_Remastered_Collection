@@ -88,6 +88,10 @@ BulletClass::BulletClass(BulletType id, TARGET target, TechnoClass * payback, in
 {
 	Strength = strength;
 	Height = FLIGHT_LEVEL;
+    
+    // Chthon CFE Note: Initilaize mod stuff
+    SpecialArmorPen = ARMORPEN_NONE;
+    
 }
 
 

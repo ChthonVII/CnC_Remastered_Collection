@@ -42,7 +42,12 @@ class MapClass: public GScreenClass
 {
 	public:
 
-		MapClass(void) {};
+		//MapClass(void) {};
+        // mod stuff needs to be initialized in constructor
+        MapClass(void) {
+            timelinedamage = 0;
+            permanenttimelinedamage = 0;
+        };
 		MapClass(NoInitClass const & x) : GScreenClass(x), Array(x) {};
         // Chthon CFE Note: needs destructor and it should be virtual, as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/commit/9210c42e5eaca6cd1bd321451fa6c95e925b3887
         virtual ~MapClass(){}
@@ -179,10 +184,13 @@ class MapClass: public GScreenClass
 
 		enum MapEnum {SCAN_AMOUNT=MAP_CELL_TOTAL};
 
+    // Chthon CFE Note: Cannot initialize variables here! RA's savegame loading copies the data then calls new. WTF?!
+    // Do it in the constructor instead.
+        
     // Chthon CFE Note: new variable to track cumulative timeline damage from chronoshifts
     public:
-        int timelinedamage = 0;
-        int permanenttimelinedamage = 0;
+        int timelinedamage;
+        int permanenttimelinedamage;
         
         
 		/*

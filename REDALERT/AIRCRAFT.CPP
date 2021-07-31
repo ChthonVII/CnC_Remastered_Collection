@@ -3792,6 +3792,10 @@ AircraftClass::~AircraftClass(void)
 		Class = 0;
 	}
 	ID = -1;
+    
+    // Chthon CFE Note: Initialize mod stuff here
+    TargetRecheckCounter = 0;
+    
 }
 
 

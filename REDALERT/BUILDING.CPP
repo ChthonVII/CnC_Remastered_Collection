@@ -2112,6 +2112,11 @@ BuildingClass::BuildingClass(StructType type, HousesType house) :
 //		House->BuildingTotals->Increment_Unit_Total( (int) type);
 //	}
 
+    // Chthon CFE Note: Initialize mod stuff
+    RallyPoint = TARGET_NONE;
+    WhoLaidMe = TARGET_NONE;
+    ShowInverseWallPreviewMarkers = 0;
+
 }
 
 
