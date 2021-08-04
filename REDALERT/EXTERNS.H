@@ -103,6 +103,7 @@ struct CFEPatchConfig
 	bool WallsAlwaysHaveFullCost = true;
 	bool EnableAttackMove = false;
     bool EnableChronoTankAttackMove = false;
+    bool EnableQMoveLoops = false;
 	bool EnableTanyaGuard = false;
 	bool EnableSafeSabotage = false;
     bool EnableSmarterAircraft = false;

@@ -81,7 +81,7 @@
 #include	"function.h"
 #include <algorithm>
 
-#include "CFEDEBUG.H"
+//#include "CFEDEBUG.H"
 
 /***********************************************************************************************
  * FootClass::FootClass -- Default constructor for foot class objects.                         *
@@ -137,6 +137,7 @@ FootClass::FootClass(RTTIType rtti, int id, HousesType house) :
 	for (int index = 0; index < ARRAY_SIZE(NavQueue); index++) {
 		NavQueue[index] = TARGET_NONE;
 	}
+	NavQueueOriginalHead = TARGET_NONE;
 }
 
 
@@ -2145,6 +2146,11 @@ void FootClass::Detach(TARGET target, bool all)
 		}
 	}
 
+	// Chthon CFE Note: also remove as nav queue head
+	if (NavQueueOriginalHead == target){
+        NavQueueOriginalHead = TARGET_NONE;
+    }
+	
 	/*
 	**	If targeting the specified object and this unit is obviously heading
 	**	toward the target to get within range, then abort the path.
@@ -2365,8 +2371,8 @@ CELL FootClass::Adjust_Dest(CELL cell) const
  *   07/18/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
 void FootClass::Handle_Navigation_List(void)
-{
-	/*
+{    
+    /*
 	**	The navigation queue only needs to be processed if there is
 	**	currently no navigation target for this object.
 	*/
@@ -2390,7 +2396,16 @@ void FootClass::Handle_Navigation_List(void)
 			if (IsNavQueueLoop) {
 				for (int index = 0; index < ARRAY_SIZE(NavQueue); index++) {
 					if (NavQueue[index] == TARGET_NONE) {
-						NavQueue[index] = target;
+						// if we've gotten ourselves into a loop with only one cell, then break out
+                        if (index == 0){
+                            IsNavQueueLoop = false;
+                            NavQueueOriginalHead = TARGET_NONE;
+                            //CFE_Debug_Printf("unit %i breaking out of loop mode", this);
+                        }
+                        // otherwise stick whatever we just popped onto the back of the queue
+                        else {
+                            NavQueue[index] = target;
+                        }
 						break;
 					}
 				}
@@ -2422,26 +2437,146 @@ void FootClass::Handle_Navigation_List(void)
  *=============================================================================================*/
 void FootClass::Queue_Navigation_List(TARGET target)
 {
-	if (Target_Legal(target)) {
+	
+    // Chthon CFE Note: This function has been significantly overhauled to make queue loops work correctly.
+    
+    //CFE_Debug_Printf("unit %i entered Queue_Navigation_List()", this);
+    
+    if (Target_Legal(target)) {
 		int count;
+        bool is_loop_request = false;
+        bool original_head_found = false;
+        bool array_has_space = false;
+        int original_head_index = 0;
+        CELL tcell = As_Cell(target);
+        
+        // if the immediate target was just just popped off the queue, count a click here as a loop mode request anyway
+        if (ActiveCFEPatchConfig.EnableQMoveLoops && (target == NavCom)){
+            //CFE_Debug_Printf("unit %i got loop request via navcom match", this);
+            is_loop_request = true;
+        }
+        
 		for (count = 0; count < ARRAY_SIZE(NavQueue); count++) {
-			if (!Target_Legal(NavQueue[count])) break;
+            //CFE_Debug_Printf("unit %i queue[%i] is %i", this, count, NavQueue[count]);
+			if (!Target_Legal(NavQueue[count])){
+                //CFE_Debug_Printf("unit %i array has space", this);
+                array_has_space = true; // we need to distinuish whether the last spot was occupied or not
+                break;
+            }
+            // clicking in a cell that's already in the queue is treated as a request for loop mode
+            if (tcell == As_Cell(NavQueue[count]) && ActiveCFEPatchConfig.EnableQMoveLoops){
+                //CFE_Debug_Printf("unit %i got loop request via queue match", this);
+                is_loop_request = true;
+            }
+            // find the index for the original destination so we know where to insert if loop mode is already active
+            if (NavQueue[count] == NavQueueOriginalHead){
+                original_head_found = true;
+                original_head_index = count;
+                //CFE_Debug_Printf("unit %i original head is %i in spot [%i]", this, NavQueueOriginalHead, count);
+            }
 		}
 
+		
+		// Disabling "click on the unit itself" / "click on another unit in the same group selection" to request loop mode
+		// Because it is awkward as heck.
+		// But keeping this code around in case I change my mind about it. 
+		
+		//ObjectClass* thatobject = As_Object(target);
+		
 		/*
 		**	If the target is this object itself, then this indicates that the
 		**	queue list is to be processed as a loop. Otherwise, just tack the
 		**	navigation target to the end of the list.
 		*/
-		if (target == As_Target() && count > 0) {
-			IsNavQueueLoop = true;
+        /*
+		//if (target == As_Target() && count > 0) {
+		if (target == As_Target()) {
+			//IsNavQueueLoop = true;
+            is_loop_request = true;
+        // Chthon CFE Note: If the target is another object in the same group selection, also treat as a loop
+        } else if (
+            ActiveCFEPatchConfig.EnableQMoveLoops &&
+            (count > 0) &&
+            thatobject &&
+            thatobject->IsActive &&
+            thatobject->Is_Foot() &&
+            (thatobject->Owner() == Owner()) &&
+            thatobject->Is_Selected_By_Player(House) // assuming it's not possible to issue an unselect after move order but before Queue_Navigation_List() is called
+        ) {
+            is_loop_request = true;
+        }
+        */
+        
+        if (is_loop_request){
+            // if this is the first time a loop request was made, we need to put the current destination back at the end of the queue
+            if (!IsNavQueueLoop &&
+                array_has_space &&
+                Target_Legal(NavCom)
+            ){
+                //CFE_Debug_Printf("unit %i setting original head", this);
+                NavQueue[count] = NavCom;
+                NavQueueOriginalHead = NavCom;
+                count++;
+            }
+            // even if the above didn't work, still set IsNavQueueLoop
+            // looping with a slightly broken queue is better than not looping
+            if (count > 0){
+                //CFE_Debug_Printf("unit %i setting loop mode on", this);
+                IsNavQueueLoop = true;
+            }
 		} else {
+            // if we are adding the first element to an empty queue, we shouldn't be looping
 			if (count == 0) {
+                //CFE_Debug_Printf("unit %i setting loop mode off", this);
 				IsNavQueueLoop = false;
+                NavQueueOriginalHead = TARGET_NONE;
 			}
-			if (count < ARRAY_SIZE(NavQueue)) {
-				NavQueue[count] = target;
+			// if there's open space in the array to add something
+			//if (count < ARRAY_SIZE(NavQueue)) {
+			if (array_has_space){
+                // if we're in loop mode and we've got the original head, we need to insert in front of it
+                if (IsNavQueueLoop && original_head_found){
+                    // if the head is at the front of the array, then go in the back
+                    // unless we're adding a second element and the first is the navcom that added via reinserting the original head
+                    if ((original_head_index == 0) && !((NavQueue[0] == NavCom) && (count == 1))){
+                        //CFE_Debug_Printf("unit %i inserting at end b/c head is at front", this);
+                        NavQueue[count] = target;
+                    }
+                    // otherwise shift the head and everything behind it over and insert before the head
+                    else {
+                        //CFE_Debug_Printf("unit %i inserting at %i and shifting stuff backwards", this, original_head_index);
+                        memmove(&NavQueue[original_head_index+1], &NavQueue[original_head_index], sizeof(NavQueue[0]) * (ARRAY_SIZE(NavQueue) - original_head_index - 1) );
+                        NavQueue[original_head_index] = target;
+                    }
+                }
+                // otherwise (not in loop mode) just stick things on the back of the queue
+                else {
+                    //CFE_Debug_Printf("unit %i inserting at end b/c not a loop", this);
+                    NavQueue[count] = target;
+                }
 			}
+			// if there's no empty space, evict the oldest entry. This seems like the least bad thing to do.
+			// gate behind the mod feature so this change to vanilla behavior can be turned off
+			else if (ActiveCFEPatchConfig.EnableQMoveLoops){
+                // if this is a loop, then the original head is the oldest
+                if (IsNavQueueLoop && original_head_found){
+                    NavQueue[original_head_index] = target;
+                    // point the head to the next oldest element
+                    int newheadindex = (original_head_index == ARRAY_SIZE(NavQueue) - 1) ? 0 : original_head_index + 1;
+                    //CFE_Debug_Printf("unit %i has no space -- replacing head at [%i] and setting new head at [%i]", this, original_head_index, newheadindex);
+                    NavQueueOriginalHead = NavQueue[newheadindex];
+                }
+                // otherwise, the element in [0] is the oldest
+                else {
+                    //CFE_Debug_Printf("unit %i has no space -- popping [0] and filling [9]", this);
+                    memmove(&NavQueue[0], &NavQueue[1], sizeof(NavQueue)-sizeof(NavQueue[0]));
+                    NavQueue[ARRAY_SIZE(NavQueue)-1] = target;
+                }
+            }
+            // vanilla behavior was buggy -- count always stopped at 9, so (count < ARRAY_SIZE(NavQueue)) was always true even when [9] was occupied, so [9] got overwritten
+            else {
+                NavQueue[count] = target;
+            }
 		}
 
 		/*
@@ -2452,6 +2587,9 @@ void FootClass::Queue_Navigation_List(TARGET target)
 			Enter_Idle_Mode();
 		}
 	}
+	
+	//CFE_Debug_Printf("unit %i exited Queue_Navigation_List()", this);
+	
 }
 
 
@@ -2474,9 +2612,13 @@ void FootClass::Queue_Navigation_List(TARGET target)
  *=============================================================================================*/
 void FootClass::Clear_Navigation_List(void)
 {
+    //CFE_Debug_Printf("unit %i says: entered clear nav list. IsNavQueueLoop: %i.", this, IsNavQueueLoop);
+    
 	for (int index = 0; index < ARRAY_SIZE(NavQueue); index++) {
 		NavQueue[index] = TARGET_NONE;
 	}
+	IsNavQueueLoop = false;
+    NavQueueOriginalHead = TARGET_NONE;
 }
 
 

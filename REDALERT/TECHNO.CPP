@@ -133,6 +133,7 @@
 #include	"function.h"
 
 //#include "CFEDEBUG.H"
+#include <math.h> // for ceil()
 
 /***************************************************************************
 **	Cloaking control values.
@@ -3960,6 +3961,13 @@ ActionType TechnoClass::What_Action(ObjectClass const * object) const
 		**	the no action flag.
 		*/
 		if (object == this && CurrentObject.Count() == 1 && House->IsPlayerControl) {
+            
+            // Chthon CFE Note: QMove Loops -- disabling this because it's awkward and replaced by another input method
+            /*
+            if (ActiveCFEPatchConfig.EnableQMoveLoops && House->IsQueuedMovementToggle && Is_Foot()){
+                return (ACTION_MOVE);
+            }
+            */
 			return(ACTION_SELF);
 		}
 
@@ -4053,6 +4061,27 @@ ActionType TechnoClass::What_Action(ObjectClass const * object) const
 			}
 		}
 
+		// Chthon CFE Note: QMove Loops with multiselection  -- disabling this because it's awkward and replaced by another input method
+		/*
+        if (   ActiveCFEPatchConfig.EnableQMoveLoops &&
+                House->IsPlayerControl &&
+                House->IsQueuedMovementToggle &&
+                Is_Foot() &&
+                (   (object == this) ||
+                    (
+                        object &&
+                        object->IsActive &&
+                        object->Is_Foot() &&
+                        (object->Owner() == Owner()) &&
+                        object->Is_Selected_By_Player(House)
+                    )
+                )
+           ){
+            //CFE_Debug_Printf("returning action_move from what_action()"); 
+            return (ACTION_MOVE);
+        }
+        */
+		
 		/*
 		**	Possibly try to select the specified object, if that is warranted.
 		*/
@@ -7990,7 +8019,7 @@ TARGET TechnoClass::FindChainLightningTarget(const TARGET primarytarget, const i
     // scale weapon range by the given scalar (the assumption here is that chain lightning would probably be really unbalanced if it doubled range)
     // then convert to cell range for scan
     const int range = Weapon_Range(which) * rangescalar;
-    int cellrange = (range/ ICON_LEPTON_W);
+    int cellrange = ceil((double)range/(double)ICON_LEPTON_W); // round up!
     if (cellrange == 0){
         cellrange = 1;
     }

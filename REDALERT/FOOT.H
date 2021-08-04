@@ -388,10 +388,17 @@ class FootClass :	public TechnoClass
 		*/
 		COORDINATE HeadToCoord;
 
+    // Chthon CFE Note: Additional variables for mod
+    public:
+        TARGET NavQueueOriginalHead;
+    private:
+        
 		/*
 		** Some additional padding in case we need to add data to the class and maintain backwards compatibility for save/load
 		*/
-        unsigned char SaveLoadPadding[16]; 
+        // Chthon CFE Note: original padding was 16 bytes
+        // NavQueueOriginalHead ate 4 bytes
+        unsigned char SaveLoadPadding[12]; 
 };
 
 #endif
