@@ -99,6 +99,8 @@
 
 #include "function.h"
 
+//#include "CFEDEBUG.H"
+
 /*
 **	Selected objects have a special marking box around them. This is the shapes that are
 **	used for this purpose.
@@ -2425,8 +2427,8 @@ void ObjectTypeClass::One_Time(void)
  *   07/29/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
 BuildingClass * ObjectTypeClass::Who_Can_Build_Me(bool intheory, bool legal, HousesType house) const
-{
-	BuildingClass * anybuilding = NULL;
+{  
+    BuildingClass * anybuilding = NULL;
 
 	if (!intheory && What_Am_I() == RTTI_AIRCRAFTTYPE && ((AircraftTypeClass*)this)->IsFixedWing) {
 		int num_builders = 0, num_fixed_wings = 0;
@@ -2434,9 +2436,14 @@ BuildingClass * ObjectTypeClass::Who_Can_Build_Me(bool intheory, bool legal, Hou
 			BuildingClass * building = Buildings.Ptr(index);
 			assert(building != NULL);
 
+            // Chthon CFE Note: Bugfix! We need to specifically count ONLY airstrips.
+            // Original code also counted helipads
+            // Which allowed you to create excess planes if you had 1+ helipads and 1+ planes in the air when the construction finished
+            // Petroglyph made it worse by making the blocked production spam retries every frame, guaranteeing you'll activate the bug as soon as your planes take off.
 			if (	!building->IsInLimbo &&
 					building->House->Class->House == house &&
-					building->Class->ToBuild == RTTI &&
+					//building->Class->ToBuild == RTTI &&
+					(*building == STRUCT_AIRSTRIP) &&
 					building->Mission != MISSION_DECONSTRUCTION && building->MissionQueue != MISSION_DECONSTRUCTION &&
 					((1L << building->ActLike) & Get_Ownable()) &&
 					(!legal || building->House->Can_Build(this, building->ActLike))) {
