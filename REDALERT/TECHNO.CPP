@@ -2596,7 +2596,9 @@ void TechnoClass::AI(void)
             if (tpok){
                 ((UnitClass*)this)->MoebiusCell = Coord_Cell(Coord); // probably pointless, but house.cpp sets this even on chronotanks (maybe lefover from earlier version in which they'd revert positions too?)
                 Sound_Effect(VOC_CHRONO, Coord); // let's try having sound at both ends?
+                ((UnitClass*)this)->SkipNavQueueUpdate = true;
                 ((UnitClass*)this)->Teleport_To(tpdestination);
+                ((UnitClass*)this)->SkipNavQueueUpdate = false;
                 if (ActiveCFEPatchConfig.EnableSmarterChrono){
                     Unselect_All_Players_Except_Owner();
                     Minimal_Detach_This_From_All(As_Target(), true);
@@ -2604,7 +2606,9 @@ void TechnoClass::AI(void)
                 ((UnitClass*)this)->MoebiusCountDown = ChronoTankDuration * TICKS_PER_MINUTE;
                 Scen.Do_BW_Fade();
                 Sound_Effect(VOC_CHRONO, Coord);
-                ResetAttackMove();
+                if (!Target_Legal(((UnitClass*)this)->NavQueue[0])){
+                    ResetAttackMove();
+                }
             }
         }
     
@@ -3920,12 +3924,25 @@ void TechnoClass::Player_Assign_Mission(MissionType mission, TARGET target, TARG
 		//
 		// MBL 04.14.2020 - Apply the same logic as above, using what is assigned as hotkeys
 		//
-		if (PlayerPtr && House) {
+		/*if (PlayerPtr && House) {
 			if (PlayerPtr == House) {
 				if (mission == MISSION_MOVE && PlayerPtr->IsQueuedMovementToggle) {
 					mission = MISSION_QMOVE;
 				}
 			}
+		}*/
+		if (   PlayerPtr &&
+                House && 
+                (PlayerPtr == House) &&
+                PlayerPtr->IsQueuedMovementToggle
+        ) {
+            if (mission == MISSION_MOVE) {
+                mission = MISSION_QMOVE;
+            }
+            else if (mission == MISSION_ATTACKMOVE){
+                // probably need to block certain units with special attack move logic from this as it may lead to odd behavior
+                mission = MISSION_QATTACKMOVE;
+            }
 		}
 
 		Queue_Mission(TargetClass(this), mission, target, destination);
@@ -7678,6 +7695,9 @@ void TechnoClass::ResetAttackMove(int minelayercommand)
     RememberedNavCom = TARGET_NONE; //0
 	AttackMove = 0;
     AttackMoveBoatClock = 0;
+    //if (Is_Foot()){
+    //    ((FootClass*)this)->SkipNavQueueUpdate = false; // make sure we haven't borked nav queue processing
+    //}
     return;
 }
 
@@ -7694,28 +7714,34 @@ void TechnoClass::AttackMoveEnterMoveMode(){
     //    ((FootClass*)this)->Stop_Driver(); // Butch had this for infantry only, it seems to be causing problems for other unit types
     //}
     Assign_Target(TARGET_NONE);
-    if (Is_Foot()) {
-        ((FootClass *)this)->Clear_Navigation_List();
-    }
+    //if (Is_Foot()) {
+    //    ((FootClass *)this)->Clear_Navigation_List();
+    //}
     Assign_Destination(RememberedNavCom);
     Assign_Mission(MISSION_MOVE); //Set_Mission() is bad because it makes Commence() not work, and then we end up with units in impossible mission/status combinations
-    //Commence();
+    //Commence(); // Calling Commence() ourselves is bad because the movement system needs units to finish moving into a cell once they've reserved it, and an ill-timed Commence() can make that not happen. Wait for the normal AI processing to call Commence() for us.
+    //if (Is_Foot()){
+        //((FootClass*)this)->SkipNavQueueUpdate = false; // OK to process the nav queue when we go idle because move mode ends .
+    //}
 }
 
 void TechnoClass::AttackMoveEnterAttackMode(){
     Assign_Destination(TARGET_NONE);
-    if (Is_Foot()) {
-        ((FootClass *)this)->Clear_Navigation_List();
-    }
+    //if (Is_Foot()) {
+    //    ((FootClass *)this)->Clear_Navigation_List();
+    //}
     //if (What_Am_I() == RTTI_INFANTRY){
     //    ((FootClass*)this)->Stop_Driver(); // Butch had this for infantry only, it seems to be causing problems for other unit types
     //}
     //((FootClass*)this)->Approach_Target(); // MissionAttack() will do this
     Assign_Mission(MISSION_ATTACK); //Set_Mission() is bad because it makes Commence() not work, and then we end up with units in impossible mission/status combinations
-    //Commence();
+    //Commence(); // Calling Commence() ourselves is bad because the movement system needs units to finish moving into a cell once they've reserved it, and an ill-timed Commence() can make that not happen. Wait for the normal AI processing to call Commence() for us.
     if (What_Am_I() == RTTI_VESSEL){
         AttackMoveBoatClock = 180;
     }
+    //if (Is_Foot()){
+    //    ((FootClass*)this)->SkipNavQueueUpdate = true; // Don't process the nav queue if we fall out of attack mode into idle. Instead wait for attack move logic to kick us back to moving towards RememberedNavCom.
+    //}
 }
 
 

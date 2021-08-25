@@ -104,6 +104,7 @@ struct CFEPatchConfig
 	bool EnableAttackMove = false;
     bool EnableChronoTankAttackMove = false;
     bool EnableQMoveLoops = false;
+    bool EnableAirQMove = false;
 	bool EnableTanyaGuard = false;
 	bool EnableSafeSabotage = false;
     bool EnableSmarterAircraft = false;

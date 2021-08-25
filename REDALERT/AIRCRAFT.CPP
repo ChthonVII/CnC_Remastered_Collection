@@ -260,6 +260,9 @@ AircraftClass::AircraftClass(AircraftType classid, HousesType house) :
 //		House->AircraftTotals->Increment_Unit_Total((int)classid);
 //	}
 
+    // Chthon CFE Note: Initialize mod stuff here
+    TargetRecheckCounter = 0;
+
 }
 
 
@@ -1754,6 +1757,7 @@ int AircraftClass::Mission_Move(void)
                 // Attack Move rework by ChthonVII -- If "smarter aircraft" mode is also enabled, don't attack move if you don't have any ammo to start with
                 if (AttackMove && ActiveCFEPatchConfig.EnableSmarterAircraft && !IsALoaner && !Ammo){
                     ResetAttackMove();
+                    Clear_Navigation_List();
                     Enter_Idle_Mode();
                     return(1);
                 }
@@ -1781,6 +1785,19 @@ int AircraftClass::Mission_Move(void)
 				distance = Distance(NavCom);
 
 				if (distance < 0x00C0) {
+                    // Make q-moves work
+                    if (Target_Legal(NavQueue[0])){
+                        if (AttackMove && !Ammo){
+                            Clear_Navigation_List();
+                        }
+                        else {
+                            Assign_Destination(TARGET_NONE);
+                            Assign_Target(TARGET_NONE);
+                            Enter_Idle_Mode();
+                            return(1);
+                        }
+                    }
+                    
                     // Attack Move rework by ChthonVII -- If we're reached the destination, exit attack move and go home
                     if (AttackMove){
                         ResetAttackMove();
@@ -1872,6 +1889,7 @@ int AircraftClass::Mission_Move(void)
 			// Attack Move rework by ChthonVII -- If "smarter aircraft" mode is also enabled, don't attack move if you don't have any ammo to start with
             if (AttackMove && ActiveCFEPatchConfig.EnableSmarterAircraft && !IsALoaner && !Ammo){
                 ResetAttackMove();
+                Clear_Navigation_List();
                 Enter_Idle_Mode();
             }
 			else if (!Target_Legal(NavCom)) {
@@ -1919,6 +1937,19 @@ int AircraftClass::Mission_Move(void)
 				int distance = Process_Fly_To(true, NavCom);
 
 				if (distance < 0x0080) {
+                    
+                    // Make q-moves work
+                    if (Target_Legal(NavQueue[0])){
+                        if (AttackMove && !Ammo){
+                            Clear_Navigation_List();
+                        } else {
+                            Assign_Destination(TARGET_NONE);
+                            Assign_Target(TARGET_NONE);
+                            Enter_Idle_Mode();
+                            return(1);
+                        }
+                    }
+                    
                     // Attack Move rework by ChthonVII -- helicopters should go home at the end of an attack-move rather than landing
                     if (AttackMove){
                         Assign_Target(TARGET_NONE);
@@ -2000,6 +2031,15 @@ void AircraftClass::Enter_Idle_Mode(bool )
 	assert(Aircraft.ID(this) == ID);
 	assert(IsActive);
     
+    // Chthon CFE Note: Since we're allowing aircraft to have q-moves issued to them, we'd better handle them
+    bool isoldnavcomgood = Target_Legal(NavCom);
+    Handle_Navigation_List();
+    if (Target_Legal(NavCom) && !isoldnavcomgood){
+        Assign_Mission(MISSION_MOVE);
+        Commence();
+        return;
+    }
+    
     // Attack Move rework by ChthonVII -- If we would go idle, but we still have ammo, continue on towards destination instead
     if (AttackMove){
        if (Ammo){
@@ -2008,6 +2048,7 @@ void AircraftClass::Enter_Idle_Mode(bool )
         }
         else {
             ResetAttackMove();
+            Clear_Navigation_List();
         }
     }
 
@@ -2381,6 +2422,24 @@ void AircraftClass::Player_Assign_Mission(MissionType mission, TARGET target, TA
 			Response_Move();
 		}
 	}
+	
+	
+	if (   ActiveCFEPatchConfig.EnableAirQMove &&
+            PlayerPtr &&
+            House && 
+            (PlayerPtr == House) &&
+            PlayerPtr->IsQueuedMovementToggle
+    ) {
+        if (mission == MISSION_MOVE) {
+            mission = MISSION_QMOVE;
+        }
+        else if (mission == MISSION_ATTACKMOVE){
+            // probably need to block certain units with special attack move logic from this as it may lead to odd behavior
+            mission = MISSION_QATTACKMOVE;
+        }
+    }
+	
+	
 	Queue_Mission(TargetClass(this), mission, target, destination);
 }
 
@@ -3792,9 +3851,6 @@ AircraftClass::~AircraftClass(void)
 		Class = 0;
 	}
 	ID = -1;
-    
-    // Chthon CFE Note: Initialize mod stuff here
-    TargetRecheckCounter = 0;
     
 }
 

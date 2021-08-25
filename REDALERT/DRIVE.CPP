@@ -389,7 +389,10 @@ bool DriveClass::Teleport_To(CELL cell)
 	Force_Track(-1, 0);
 	PrimaryFacing.Set_Current(PrimaryFacing.Desired());
 	Transmit_Message(RADIO_OVER_OUT);
-    ResetAttackMove(); // Chthon CFE Note: don't want things driving off to prior destination after porting
+    // chronotanks in Q-attack-move mode should skip this
+    if (!SkipNavQueueUpdate){
+        ResetAttackMove(); // Chthon CFE Note: don't want things driving off to prior destination after porting
+    }
 	Assign_Destination(TARGET_NONE);
 	Assign_Target(TARGET_NONE);
 	Assign_Mission(MISSION_NONE);

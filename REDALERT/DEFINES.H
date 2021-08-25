@@ -1034,6 +1034,7 @@ typedef enum MissionType : char {
 	MISSION_MISSILE,
 	MISSION_HARMLESS,			// Sit around and don't appear like a threat.
     MISSION_ATTACKMOVE,     // Attack Move rework by ChthonVII -- new mission type so the fact that we're attack-moving can go into the multiplayer communication queue
+    MISSION_QATTACKMOVE,    // another new mission type so we can do attack-move and Q-move simultaneously
 
 	MISSION_COUNT,
 	MISSION_FIRST=0

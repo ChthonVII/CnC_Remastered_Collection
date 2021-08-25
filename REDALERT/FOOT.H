@@ -391,6 +391,7 @@ class FootClass :	public TechnoClass
     // Chthon CFE Note: Additional variables for mod
     public:
         TARGET NavQueueOriginalHead;
+        unsigned char SkipNavQueueUpdate; // could make this a bitfield if we need more space someday
     private:
         
 		/*
@@ -398,7 +399,8 @@ class FootClass :	public TechnoClass
 		*/
         // Chthon CFE Note: original padding was 16 bytes
         // NavQueueOriginalHead ate 4 bytes
-        unsigned char SaveLoadPadding[12]; 
+        //  SkipNavQueueUpdate ate 1 byte
+        unsigned char SaveLoadPadding[11]; 
 };
 
 #endif

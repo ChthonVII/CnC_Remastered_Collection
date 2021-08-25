@@ -747,14 +747,29 @@ void EventClass::Execute(void)
 				**	special queued move mission and there is already a valid navigation
 				**	target for this unit.
 				*/
-				bool q = (Data.MegaMission.Mission == MISSION_QMOVE);
+				//bool q = (Data.MegaMission.Mission == MISSION_QMOVE);
+				bool q = ((Data.MegaMission.Mission == MISSION_QMOVE) || (Data.MegaMission.Mission == MISSION_QATTACKMOVE));
 
                 // Attack Move rework by ChthonVII -- now that we are on the back side of the multiplayer communications, swap MISSION_ATTACKMOVE back to MISSION_MOVE and set flag and target
                 if (ActiveCFEPatchConfig.EnableAttackMove){
-                    if (Data.MegaMission.Mission == MISSION_ATTACKMOVE){
+                    if ((Data.MegaMission.Mission == MISSION_ATTACKMOVE) || (Data.MegaMission.Mission == MISSION_QATTACKMOVE)){
                         techno->Assign_Mission(MISSION_MOVE);
                         techno->AttackMove = 1;
-                        techno->RememberedNavCom = Data.MegaMission.Destination.As_TARGET();
+                        // if this is regular attack move, set the RememberedNavCom
+                        if (Data.MegaMission.Mission == MISSION_ATTACKMOVE){
+                            techno->RememberedNavCom = Data.MegaMission.Destination.As_TARGET();
+                        }
+                        // if this is queue attack move, don't set RememberedNavCom if it's already set
+                        else if (!Target_Legal(techno->RememberedNavCom)){
+                            // if we're already moving towards a destination, make that our RememberedNavCom (this command must be adding to an existing queue)
+                            if (techno->Is_Foot() && Target_Legal(((FootClass*)techno)->NavCom)){
+                                techno->RememberedNavCom = ((FootClass*)techno)->NavCom;
+                            }
+                            // otherwise, this must be the first destination, so make it our RememberedNavCom
+                            else {
+                                techno->RememberedNavCom = Data.MegaMission.Destination.As_TARGET();
+                            }
+                        }
                         if ((techno->What_Am_I() == RTTI_UNIT) && (*((UnitClass*)techno) == UNIT_MINELAYER)){
                             ((UnitClass*)techno)->MLoriginalposition = ::As_Target(Coord_Cell(techno->Coord));
                             ((UnitClass*)techno)->MLattackmovemode = 0;
@@ -767,6 +782,11 @@ void EventClass::Execute(void)
                     }
                     // if we assigned any other mission, terminate attack-move
                     else {
+                        // if we're in the middle of an attack phase of q-attack-move and get a regular q-move order, set the reset the current destination before terminating attack move
+                        if (techno->AttackMove && (techno->Mission == MISSION_ATTACK) && techno->Is_Foot() && Target_Legal(((FootClass*)techno)->NavCom) && (Data.MegaMission.Mission == MISSION_QMOVE) && Target_Legal(techno->RememberedNavCom)){
+                            techno->Assign_Destination(techno->RememberedNavCom);
+                        }
+                            
                         techno->Assign_Mission(Data.MegaMission.Mission);
                         techno->ResetAttackMove(0);
                     }

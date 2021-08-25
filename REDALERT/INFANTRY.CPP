@@ -211,6 +211,7 @@ InfantryClass::InfantryClass(InfantryType classid, HousesType house) :
 	**	Civilians carry much less ammo than soldiers do.
 	*/
 	Ammo = Class->MaxAmmo;
+    
 }
 
 

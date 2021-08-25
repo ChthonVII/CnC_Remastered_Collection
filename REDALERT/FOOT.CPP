@@ -138,6 +138,7 @@ FootClass::FootClass(RTTIType rtti, int id, HousesType house) :
 		NavQueue[index] = TARGET_NONE;
 	}
 	NavQueueOriginalHead = TARGET_NONE;
+    SkipNavQueueUpdate = false;
 }
 
 
@@ -500,15 +501,23 @@ int FootClass::Mission_Move(void)
 	if (!Target_Legal(NavCom) && !IsDriving && MissionQueue == MISSION_NONE) {
         // Attack Move rework by ChthonVII -- Destination reached, snap out of attack mode
         // Let's be a little more careful and hopefully avoid units falling out of attack move early
+        // if there's a NavQueue, then we're in Q-attack-move mode, so just skip to enter_idle_mode, which will advance the queue
         if (AttackMove){
             // fall out of attack move if we forgot our destination, we arrived (or got close), or don't have a path
             if (    !Target_Legal(RememberedNavCom) ||
                     (Distance(RememberedNavCom) < Rule.CloseEnoughDistance) ||
                     !Find_Path_AStar(nullptr, Coord_Cell(Coord), As_Cell(RememberedNavCom), 1, MOVE_MOVING_BLOCK, -1)
             ){
-                ResetAttackMove(1);
-                if (!AttackMove){ // if we're a minelayer that stayed in attackmove, then don't go idle!
+                // if we have things in our move queue, then advance the queue (by entering idle mode), but don't reset attack-mvoe 
+                if  (Target_Legal(NavQueue[0])){
+                    //SkipNavQueueUpdate = false;
                     Enter_Idle_Mode();
+                }
+                else {
+                    ResetAttackMove(1);
+                    if (!AttackMove){ // if we're a minelayer that stayed in attackmove, then don't go idle!
+                        Enter_Idle_Mode();
+                    }
                 }
             }
             // otherwise go back to moving
@@ -2373,6 +2382,36 @@ CELL FootClass::Adjust_Dest(CELL cell) const
 void FootClass::Handle_Navigation_List(void)
 {    
     /*
+    if ((What_Am_I() == RTTI_AIRCRAFT) && ((AircraftClass*)this)->Class->IsFixedWing){
+        CFE_Debug_Printf("unit %i is a fixed wing in Handle_Navigation_List(). AttackMove is %i. Target_Legal(RememberedNavCom) is %i. Distance(RememberedNavCom) is %i.  Rule.CloseEnoughDistance is %i. Path is %i", this, AttackMove, Target_Legal(RememberedNavCom), Distance(RememberedNavCom), Rule.CloseEnoughDistance, Find_Path_AStar(nullptr, Coord_Cell(Coord), As_Cell(RememberedNavCom), 1, MOVE_MOVING_BLOCK, -1));
+    }
+    */
+    
+    
+    // Chthon CFE Note: For various reasons related to attack-move, we may want to skip this.
+    if (SkipNavQueueUpdate){
+        return;
+    }
+    // nuclear option to avoid skipping ahead during attack move
+    if (   AttackMove &&
+            Target_Legal(RememberedNavCom) &&
+            (Distance(RememberedNavCom) >= Rule.CloseEnoughDistance) &&
+            (   
+                (What_Am_I() == RTTI_AIRCRAFT) ||
+                (Find_Path_AStar(nullptr, Coord_Cell(Coord), As_Cell(RememberedNavCom), 1, MOVE_MOVING_BLOCK, -1) != 0)
+            ) &&
+            // don't skip if we got here on the very first Q-click setting up path
+            !(
+                    Target_Legal(NavQueue[0]) &&
+                    !Target_Legal(NavQueue[1]) &&
+                    (NavQueue[0] == RememberedNavCom)
+            )
+    ){
+        return;
+    }
+            
+    
+    /*
 	**	The navigation queue only needs to be processed if there is
 	**	currently no navigation target for this object.
 	*/
@@ -2389,6 +2428,10 @@ void FootClass::Handle_Navigation_List(void)
 			memmove(&NavQueue[0], &NavQueue[1], sizeof(NavQueue)-sizeof(NavQueue[0]));
 			NavQueue[ARRAY_SIZE(NavQueue)-1] = TARGET_NONE;
 
+            if (AttackMove){
+                RememberedNavCom = target;
+            }
+            
 			/*
 			**	If the navigation queue is to loop (indefinately), then append the
 			**	target value from the first part to the end of the queue.
@@ -2410,6 +2453,27 @@ void FootClass::Handle_Navigation_List(void)
 					}
 				}
 			}
+			// if we are already somehow occuping the destination cell (b/c pathfinding around traffic jam, or whatever), we'll get stuck
+			// so dequeue again to get a destination that requires movement
+			if (As_Cell(target) == Coord_Cell(Coord)){
+                target = NavQueue[0];
+                if (Target_Legal(target)) {
+                    Assign_Destination(target);
+                    memmove(&NavQueue[0], &NavQueue[1], sizeof(NavQueue)-sizeof(NavQueue[0]));
+                    NavQueue[ARRAY_SIZE(NavQueue)-1] = TARGET_NONE;
+                    if (AttackMove){
+                        RememberedNavCom = target;
+                    }
+                    if (IsNavQueueLoop) {
+                        for (int index = 0; index < ARRAY_SIZE(NavQueue); index++) {
+                            if (NavQueue[index] == TARGET_NONE) {
+                                NavQueue[index] = target;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
 		}
 	}
 }
@@ -2508,6 +2572,21 @@ void FootClass::Queue_Navigation_List(TARGET target)
         */
         
         if (is_loop_request){
+            // if this is a minelayer in attack-move mode, ignore the loop request (otherwise we get stuck going in circles and never drop mines)
+            if (    AttackMove &&
+                    (What_Am_I() == RTTI_UNIT) &&
+                    (*((UnitClass*)this) == UNIT_MINELAYER)
+            ){
+                return;
+            }
+            
+            // never let fixed wing aircraft enter a loop. It allows construction of unlimited aircraft with only one airstrip.
+            /* no longer a problem since the vanilla bug allowing extra planes is fixed.
+            if ((What_Am_I() == RTTI_AIRCRAFT) && ((AircraftClass*)this)->Class->IsFixedWing){
+                return;
+            }
+            */
+            
             // if this is the first time a loop request was made, we need to put the current destination back at the end of the queue
             if (!IsNavQueueLoop &&
                 array_has_space &&
@@ -2526,7 +2605,14 @@ void FootClass::Queue_Navigation_List(TARGET target)
             }
 		} else {
             // if we are adding the first element to an empty queue, we shouldn't be looping
-			if (count == 0) {
+            // we also shouldn't be looping if we're a minlayer in q-attack-move mode
+			if (   (count == 0) ||
+                    (
+                        AttackMove &&
+                        (What_Am_I() == RTTI_UNIT) &&
+                        (*((UnitClass*)this) == UNIT_MINELAYER)
+                    )
+            ) {
                 //CFE_Debug_Printf("unit %i setting loop mode off", this);
 				IsNavQueueLoop = false;
                 NavQueueOriginalHead = TARGET_NONE;
@@ -2577,6 +2663,18 @@ void FootClass::Queue_Navigation_List(TARGET target)
             else {
                 NavQueue[count] = target;
             }
+            
+            // don't let a Q-attack-move added to an existing loop put a minelayer into Q-attack-move-loop
+            if (    AttackMove &&
+                    IsNavQueueLoop &&
+                    (What_Am_I() == RTTI_UNIT) &&
+                    (*((UnitClass*)this) == UNIT_MINELAYER)
+            ){
+                IsNavQueueLoop = false;
+                NavQueueOriginalHead = TARGET_NONE;
+            }
+            
+            
 		}
 
 		/*
@@ -2619,6 +2717,7 @@ void FootClass::Clear_Navigation_List(void)
 	}
 	IsNavQueueLoop = false;
     NavQueueOriginalHead = TARGET_NONE;
+    SkipNavQueueUpdate = false;
 }
 
 
