@@ -178,6 +178,7 @@ class AircraftClass : public FootClass, public FlyClass
         // Chthon CFE Note: logic for exiting repair bay
         bool DoSmarterRunAway();
 
+
 	public:
 
 		/*
@@ -252,6 +253,7 @@ class AircraftClass : public FootClass, public FlyClass
          // Chthon CFE Note: Counter for helicopters to recheck target's location
 public:
         unsigned short int TargetRecheckCounter;
+                
 private:
     
 		/*

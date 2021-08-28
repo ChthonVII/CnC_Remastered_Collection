@@ -58,6 +58,7 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     GetSetting(ActiveCFEPatchConfig.EnableChronoTankAttackMove		, "FEATURES", "CHRONOTANK_ATTACK_MOVE");
     GetSetting(ActiveCFEPatchConfig.EnableQMoveLoops		, "FEATURES", "QMOVE_LOOPS");
     GetSetting(ActiveCFEPatchConfig.EnableAirQMove		, "FEATURES", "AIR_QMOVE");
+    GetSetting(ActiveCFEPatchConfig.EnableAirQAMLRecall		, "FEATURES", "AIR_QAML_RECALL");
 	GetSetting(ActiveCFEPatchConfig.EnableTanyaGuard		, "FEATURES", "TANYA_GUARD");
 	GetSetting(ActiveCFEPatchConfig.EnableSafeSabotage      , "FEATURES", "SAFE_SABOTAGE");
     GetSetting(ActiveCFEPatchConfig.EnableSmarterAircraft      , "FEATURES", "SMARTER_AIRCRAFT");

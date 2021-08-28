@@ -262,7 +262,11 @@ AircraftClass::AircraftClass(AircraftType classid, HousesType house) :
 
     // Chthon CFE Note: Initialize mod stuff here
     TargetRecheckCounter = 0;
-
+    HasMemorizedNavQueue = false;
+    for (int index = 0; index < ARRAY_SIZE(MemorizedNavQueue); index++) {
+		MemorizedNavQueue[index] = TARGET_NONE;
+	}
+	
 }
 
 
@@ -943,6 +947,19 @@ void AircraftClass::AI(void)
                 }
             }
         }
+    }
+    
+    // Chthon CFE Note: If we have a memorized nav list and our ammo is reloaded, then reload the nav list and take off
+    if (   HasMemorizedNavQueue && 
+            (Techno_Type_Class()->PrimaryWeapon != NULL) && 
+            !Class->PrimaryWeapon->IsCamera &&
+            (Class->MaxAmmo > 0) &&
+            (Ammo == Class->MaxAmmo) &&
+            (Height == 0) &&
+            !IsLanding &&
+            !IsTakingOff
+    ){
+        Recall_Navigation_List();
     }
     
     
@@ -1756,6 +1773,7 @@ int AircraftClass::Mission_Move(void)
 
                 // Attack Move rework by ChthonVII -- If "smarter aircraft" mode is also enabled, don't attack move if you don't have any ammo to start with
                 if (AttackMove && ActiveCFEPatchConfig.EnableSmarterAircraft && !IsALoaner && !Ammo){
+                    //Memorize_Navigation_List();
                     ResetAttackMove();
                     Clear_Navigation_List();
                     Enter_Idle_Mode();
@@ -1788,6 +1806,7 @@ int AircraftClass::Mission_Move(void)
                     // Make q-moves work
                     if (Target_Legal(NavQueue[0])){
                         if (AttackMove && !Ammo){
+                            //Memorize_Navigation_List();
                             Clear_Navigation_List();
                         }
                         else {
@@ -1888,6 +1907,7 @@ int AircraftClass::Mission_Move(void)
 		case VALIDATE_LZ:
 			// Attack Move rework by ChthonVII -- If "smarter aircraft" mode is also enabled, don't attack move if you don't have any ammo to start with
             if (AttackMove && ActiveCFEPatchConfig.EnableSmarterAircraft && !IsALoaner && !Ammo){
+                //Memorize_Navigation_List();
                 ResetAttackMove();
                 Clear_Navigation_List();
                 Enter_Idle_Mode();
@@ -1941,6 +1961,7 @@ int AircraftClass::Mission_Move(void)
                     // Make q-moves work
                     if (Target_Legal(NavQueue[0])){
                         if (AttackMove && !Ammo){
+                            //Memorize_Navigation_List();
                             Clear_Navigation_List();
                         } else {
                             Assign_Destination(TARGET_NONE);
@@ -2047,6 +2068,7 @@ void AircraftClass::Enter_Idle_Mode(bool )
             return;
         }
         else {
+            Memorize_Navigation_List();
             ResetAttackMove();
             Clear_Navigation_List();
         }
@@ -2439,6 +2461,7 @@ void AircraftClass::Player_Assign_Mission(MissionType mission, TARGET target, TA
         }
     }
 	
+	//Clear_Memorized_Navigation_List(); // move this to event.cpp so it follows the queue
 	
 	Queue_Mission(TargetClass(this), mission, target, destination);
 }
@@ -4677,3 +4700,4 @@ bool AircraftClass::DoSmarterRunAway(){
     return false;
     
 }
+

@@ -369,6 +369,11 @@ class FootClass :	public TechnoClass
         // Chthon CFE Note: make this public too
 		int Passable_Cell(CELL cell, FacingType face, int threat, MoveType threshhold) const;
         
+        // Chthon CFE Note: Memorize and recall nav list (presently only used by aircraft)
+        void Memorize_Navigation_List();
+        void Recall_Navigation_List();
+        void Clear_Memorized_Navigation_List();
+        
 	private:
 		PathType * Find_Path(CELL dest, FacingType *final_moves, int maxlen, MoveType threshhold);
 		//int Find_Path_AStar(PathType* const resultPath, const CELL source, CELL dest, const int maxLen, const MoveType threshhold, const int threat) const;
@@ -392,6 +397,12 @@ class FootClass :	public TechnoClass
     public:
         TARGET NavQueueOriginalHead;
         unsigned char SkipNavQueueUpdate; // could make this a bitfield if we need more space someday
+        
+        // Stuff for memorizing nav list
+        // This won't fit in the available padding, so we're just going to have to break savegame compatibility
+        bool HasMemorizedNavQueue;
+        TARGET MemorizedNavQueue[10];
+        
     private:
         
 		/*

@@ -2160,6 +2160,28 @@ void FootClass::Detach(TARGET target, bool all)
         NavQueueOriginalHead = TARGET_NONE;
     }
 	
+	// copy/pasta to remove from the memorized Nav queue as well
+	loop_count = 0;
+	for (int index = 0; index < ARRAY_SIZE(MemorizedNavQueue); index++) {
+		if (MemorizedNavQueue[index] == target) {
+			MemorizedNavQueue[index] = TARGET_NONE;
+			if (index < ARRAY_SIZE(MemorizedNavQueue)-1) {
+				memmove(&MemorizedNavQueue[index], &MemorizedNavQueue[index+1], ((ARRAY_SIZE(MemorizedNavQueue)-index)-1) * sizeof(MemorizedNavQueue[0]));
+				MemorizedNavQueue[ARRAY_SIZE(MemorizedNavQueue)-1] = TARGET_NONE;
+				index--;
+			}
+		}
+		/*
+		** Extra safety check
+		*/
+		loop_count++;
+		if (loop_count > ARRAY_SIZE(MemorizedNavQueue)) {
+			break;
+		}
+	}
+	
+	
+	
 	/*
 	**	If targeting the specified object and this unit is obviously heading
 	**	toward the target to get within range, then abort the path.
@@ -2444,6 +2466,10 @@ void FootClass::Handle_Navigation_List(void)
                             IsNavQueueLoop = false;
                             NavQueueOriginalHead = TARGET_NONE;
                             //CFE_Debug_Printf("unit %i breaking out of loop mode", this);
+                            // the only way we can get here is double Q-clicking a destination, then not adding anything to the nav queue before the unit arrives there.
+                            // So the destination we just popped will be our current location.
+                            // So trash the destination to avoid issuing a move order with nowhere to go (really fuxxors fixed-wing planes)
+                            Assign_Destination(TARGET_NONE);
                         }
                         // otherwise stick whatever we just popped onto the back of the queue
                         else {
@@ -3008,3 +3034,89 @@ BuildingClass* FootClass::Find_Docking_Bay(StructType b, bool friendly) const
 	}
 	return as_best ? as_best : direct_best;
 }
+
+
+// save the navigation list so it can be restored later
+void FootClass::Memorize_Navigation_List(){
+    
+    // just return if we aren't doing a Q-attack-move-loop, since that's the only context we want this
+    if (    !ActiveCFEPatchConfig.EnableAirQAMLRecall ||
+             !AttackMove ||
+             !IsNavQueueLoop ||
+             !Target_Legal(NavQueue[0]) ||
+             !Target_Legal(NavQueue[1])
+    ){
+        return;
+    }
+    
+    // save the list (we're assuming both lists are the same size; don't change that!)
+    memcpy(&MemorizedNavQueue[0], &NavQueue[0], sizeof(MemorizedNavQueue));
+    
+    // set a flag
+    HasMemorizedNavQueue = true;
+
+    // roll the list around until the original head is at the front of the list
+    while (MemorizedNavQueue[0] != NavQueueOriginalHead){
+        TARGET target = MemorizedNavQueue[0];
+        memmove(&MemorizedNavQueue[0], &MemorizedNavQueue[1], sizeof(MemorizedNavQueue)-sizeof(MemorizedNavQueue[0]));
+        MemorizedNavQueue[ARRAY_SIZE(MemorizedNavQueue)-1] = TARGET_NONE;
+        for (int index = 0; index < ARRAY_SIZE(MemorizedNavQueue); index++) {
+            if (MemorizedNavQueue[index] == TARGET_NONE) {
+                MemorizedNavQueue[index] = target;
+                break;
+            }
+        }
+    }
+    
+    return;
+}
+
+// copies memorized nav list back and restarts Q-attack-move-loop
+void FootClass::Recall_Navigation_List(){
+    
+    // restore attack-move
+    AttackMove = true;
+    RememberedNavCom = MemorizedNavQueue[0];
+    
+    // restore loop
+    IsNavQueueLoop = true;
+    NavQueueOriginalHead = MemorizedNavQueue[0];
+    
+    // copy the list (we're assuming both lists are the same size; don't change that!)
+    memcpy(&NavQueue[0], &MemorizedNavQueue[0], sizeof(NavQueue));
+    
+    // advance the list one step to put the current destination in the back
+    TARGET target = NavQueue[0];
+    memmove(&NavQueue[0], &NavQueue[1], sizeof(NavQueue)-sizeof(NavQueue[0]));
+    NavQueue[ARRAY_SIZE(NavQueue)-1] = TARGET_NONE;
+    for (int index = 0; index < ARRAY_SIZE(NavQueue); index++) {
+        if (NavQueue[index] == TARGET_NONE) {
+            NavQueue[index] = target;
+            break;
+        }
+    }
+    
+    // clear the old list & flag
+    Clear_Memorized_Navigation_List();
+    
+    // start moving
+    Assign_Target(TARGET_NONE);
+    Assign_Destination(RememberedNavCom);
+    Assign_Mission(MISSION_MOVE);
+    
+    return;
+}
+
+void FootClass::Clear_Memorized_Navigation_List(){
+    
+    // clear the old list
+    for (int index = 0; index < ARRAY_SIZE(MemorizedNavQueue); index++) {
+		MemorizedNavQueue[index] = TARGET_NONE;
+	}
+    
+    // clear the flag
+    HasMemorizedNavQueue = false;
+  
+    return;
+}
+

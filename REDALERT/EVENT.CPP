@@ -827,6 +827,11 @@ void EventClass::Execute(void)
 						techno->Assign_Destination(Data.MegaMission.Destination.As_TARGET());
 					}
 				}
+				
+				// always clear the memorized nav list when receiving a new order from the player
+				if (techno->Is_Foot()) {
+                    ((FootClass *)techno)->Clear_Memorized_Navigation_List();
+                }
 
 				//
 				// Special case for ship repairing: If the assigned mission is to
