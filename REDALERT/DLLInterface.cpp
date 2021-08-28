@@ -3712,6 +3712,7 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number, int x, int y, int widt
     ){
         // seems like VisibleFlags uses the same type of mask as HouseClass.Allies -- left shift 1 by the house number
         new_object.VisibleFlags = ((unsigned int)1 << (unsigned int)(((TechnoClass*)object)->House->Class->House)); 
+        new_object.IsIronCurtain = false;
     }
 	
 	CurrentDrawCount++;
