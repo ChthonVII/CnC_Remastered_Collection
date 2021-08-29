@@ -137,6 +137,7 @@ class MapClass: public GScreenClass
         **  This value should be set when reading the map ini before the binary is loaded.
         */
         int MapBinaryVersion;
+        float MegaMapTibScaleFactor = 1.0f;
         // don't need to offset this against padding since we've already hopelessly broken save compatibility
 
         // // not implementing vanilla-conquer's "unsigned long -> unit32_t" change b/c it's a pain and remastered doesn't need it (we're only ever compiling with MSVC)

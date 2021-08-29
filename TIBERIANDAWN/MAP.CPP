@@ -1150,6 +1150,14 @@ void MapClass::Logic(void)
 				tries += (MPlayerTiberium - 1) << 1;
 			}
 		}
+		
+		// scale growth by up to 4x for megamaps
+        if (MapBinaryVersion == MAP_VERSION_MEGA) {
+            // Since megamaps might not use the full 4x size, use a sliding scale factor based on how big they are relative to 64x64.
+            float megagrowstrength = (tries * MegaMapTibScaleFactor) + 0.5f;
+            tries = megagrowstrength;
+        }
+		
 		TiberiumScan = 0;
 		IsForwardScan = (IsForwardScan == false);
 
@@ -1923,7 +1931,10 @@ void MapClass::CFELogic(void){
     // (or at least that's what we're probabilistically approximating),
     // we should probably quadruple it for maps that are 4x as large as the original grow/spread rate was designed for
     if (MapBinaryVersion == MAP_VERSION_MEGA) {
-        growthstrength *= 4;
+        //growthstrength *= 4;
+        // Since megamaps might not use the full 4x size, use a sliding scale factor based on how big they are relative to 64x64.
+        float megagrowstrength = (growstrength * MegaMapTibScaleFactor) + 0.5f;
+        growthstrength = megagrowstrength;
     }
     
     

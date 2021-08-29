@@ -1349,7 +1349,15 @@ void DisplayClass::Read_INI(char *buffer)
     }
     MapBinaryVersion = Bound(MapBinaryVersion, 0, 1); // Little hack to stop arbitrary values.
 	
-    
+    // set tiberium scaling factor for megamaps
+    // megamaps smaller than 128x128 might not need a full 4x tib growth bonus
+    // set factor according to asize relative to normal 64x64 map
+    if (MapBinaryVersion == MAP_VERSION_MEGA) {
+        MegaMapTibScaleFactor = ((MapCellWidth+2) * (MapCellHeight+2))/4096;
+        if (MegaMapTibScaleFactor < 1.0f){
+            MegaMapTibScaleFactor = 1.0f;
+        }
+    }
 	
 	/*
 	** Remove any old theater specific uncompressed shapes
