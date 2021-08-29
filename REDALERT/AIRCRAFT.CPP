@@ -953,7 +953,11 @@ void AircraftClass::AI(void)
             (Ammo == Class->MaxAmmo) &&
             (Height == 0) &&
             !IsLanding &&
-            !IsTakingOff
+            !IsTakingOff &&
+            (
+                (VeterancyRank < 3) ||
+                (Strength >= Class_Of().MaxStrength)
+            )
     ){
         Recall_Navigation_List();
     }
