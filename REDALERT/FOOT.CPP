@@ -136,9 +136,11 @@ FootClass::FootClass(RTTIType rtti, int id, HousesType house) :
 	Path[0] = FACING_NONE;
 	for (int index = 0; index < ARRAY_SIZE(NavQueue); index++) {
 		NavQueue[index] = TARGET_NONE;
+        MemorizedNavQueue[index] = TARGET_NONE;
 	}
 	NavQueueOriginalHead = TARGET_NONE;
     SkipNavQueueUpdate = false;
+    HasMemorizedNavQueue = false;
 }
 
 

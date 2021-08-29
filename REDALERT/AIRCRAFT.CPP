@@ -262,10 +262,6 @@ AircraftClass::AircraftClass(AircraftType classid, HousesType house) :
 
     // Chthon CFE Note: Initialize mod stuff here
     TargetRecheckCounter = 0;
-    HasMemorizedNavQueue = false;
-    for (int index = 0; index < ARRAY_SIZE(MemorizedNavQueue); index++) {
-		MemorizedNavQueue[index] = TARGET_NONE;
-	}
 	
 }
 
