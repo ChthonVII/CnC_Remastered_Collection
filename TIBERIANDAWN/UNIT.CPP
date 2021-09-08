@@ -1516,6 +1516,13 @@ void UnitClass::Enter_Idle_Mode(bool initial)
 		Transmit_Message(RADIO_OVER_OUT);
 	}
 
+	// Chthon CFE Note: Q-Move port
+	Handle_Navigation_List();
+	if (Target_Legal(NavCom)) {
+		Assign_Mission(MISSION_MOVE);
+        return;
+	}
+	
 	if (Class->Primary == WEAPON_NONE) {
 		if (Class->IsToHarvest) {
 			if (!In_Radio_Contact() && Mission != MISSION_HARVEST) {

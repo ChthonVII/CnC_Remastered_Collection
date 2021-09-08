@@ -2750,6 +2750,21 @@ void TechnoClass::Player_Assign_Mission(MissionType mission, TARGET target, TARG
 			Response_Move();
 		}
 	}
+	
+	// Chthon CFE Note: Q-Move port
+	if (   PlayerPtr &&
+            House && 
+            (PlayerPtr == House) &&
+            PlayerPtr->IsQueuedMovementToggle
+    ) {
+        if (mission == MISSION_MOVE) {
+            mission = MISSION_QMOVE;
+        }
+        else if (mission == MISSION_ATTACKMOVE){
+            mission = MISSION_QATTACKMOVE;
+        }
+    }
+	
 	Queue_Mission(As_Target(), mission, target, destination);
 }
 

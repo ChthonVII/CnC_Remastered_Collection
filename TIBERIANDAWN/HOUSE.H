@@ -862,6 +862,12 @@ class HouseClass {
 		*/
 		unsigned IsParanoid:1;
 
+        // Chthon CFE Note: Q-Move port
+        // not taking this out of padding since we're going to break compatibility anyway
+        // (also, looks like this is a previously unused bit in a bitflagged byte anyway)
+        unsigned IsQueuedMovementToggle:1;
+        unsigned char QueuedMovementToggleTimeout = 0;
+        
 		/*
 		**	This value indicates the degree of smartness to assign to this house.
 		**	A value is zero is presumed for human controlled houses.

@@ -1930,6 +1930,10 @@ void InfantryClass::Enter_Idle_Mode(bool )
 	if (Target_Legal(TarCom)) {
 		order = MISSION_ATTACK;
 	} else {
+        
+        // Chthon CFE Note: Q-Move port
+        Handle_Navigation_List();
+        
 		if (Target_Legal(NavCom)) {
 			order = MISSION_MOVE;
 		} else {

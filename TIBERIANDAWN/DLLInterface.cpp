@@ -35,7 +35,7 @@
 #include "defines.h" // VOC_COUNT, VOX_COUNT
 #include "SidebarGlyphx.h"
 
-
+//#include "CFEDEBUG.H"
 
 
 /*
@@ -3755,11 +3755,28 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Handle_Input(InputRequestEnum 
 		}
 		  		  
 		// MBL 09.08.2020 - Mod Support
+		// Using mod command #1 for Q-moves
 		case INPUT_REQUEST_MOD_GAME_COMMAND_1_AT_POSITION:
-		case INPUT_REQUEST_MOD_GAME_COMMAND_2_AT_POSITION:
-		case INPUT_REQUEST_MOD_GAME_COMMAND_3_AT_POSITION:
-		case INPUT_REQUEST_MOD_GAME_COMMAND_4_AT_POSITION:
+		//case INPUT_REQUEST_MOD_GAME_COMMAND_2_AT_POSITION:
+		//case INPUT_REQUEST_MOD_GAME_COMMAND_3_AT_POSITION:
+		//case INPUT_REQUEST_MOD_GAME_COMMAND_4_AT_POSITION:
 		{
+            //CFE_Debug_Printf("Got mod command 1");
+            //break;
+            if (ActiveCFEPatchConfig.EnableQMove){
+                if (PlayerPtr != NULL){
+                    if (PlayerPtr->IsQueuedMovementToggle){
+                        PlayerPtr->IsQueuedMovementToggle = false;
+                        PlayerPtr->QueuedMovementToggleTimeout = 0;
+                    }
+                    else {
+                        PlayerPtr->IsQueuedMovementToggle = true;
+                        PlayerPtr->QueuedMovementToggleTimeout = 45;
+                    }
+                }
+            }
+            
+            /*
 			DLLExportClass::Adjust_Internal_View();
 			DLLForceMouseX = x1;
 			DLLForceMouseY = y1;
@@ -3774,14 +3791,41 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Handle_Input(InputRequestEnum 
 				// TBD: For our ever-awesome Community Modders!
 				//
 				// PlayerPtr->Handle_Mod_Game_Command(cell, input_event - INPUT_REQUEST_MOD_GAME_COMMAND_1_AT_POSITION);
+                
+                if (PlayerPtr != NULL){
+                    // simulate modifier key being held down
+                    PlayerPtr->IsQueuedMovementToggle = true;
+                    // same as a left click
+                    KeyNumType key = (KeyNumType)(KN_LMOUSE | KN_RLSE_BIT);
+                    //DisplayClass::TacButton.Clicked_On(key, GadgetClass::LEFTRELEASE, 100, 100);
+                    DisplayClass::TacButton.Command_Object(GadgetClass::LEFTRELEASE, key);
+                    // simulate modifier key being released
+                    PlayerPtr->IsQueuedMovementToggle = false;
+                }
 			}
+			*/
 
 			break;
 		}
+		
+		case INPUT_REQUEST_MOD_GAME_COMMAND_2_AT_POSITION:
+		case INPUT_REQUEST_MOD_GAME_COMMAND_3_AT_POSITION:
+		case INPUT_REQUEST_MOD_GAME_COMMAND_4_AT_POSITION:
+            break;
 		  		  
 		default:
 			break;
 	}
+	
+	if (   (PlayerPtr != NULL) &&
+            (input_event != INPUT_REQUEST_MOUSE_MOVE) &&
+            (input_event != INPUT_REQUEST_MOD_GAME_COMMAND_1_AT_POSITION) &&
+            (input_event != INPUT_REQUEST_SPECIAL_KEYS)
+        ){
+        PlayerPtr->IsQueuedMovementToggle = false;
+        PlayerPtr->QueuedMovementToggleTimeout = 0;
+    }
+	
 }			
 
 
@@ -3806,6 +3850,11 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Handle_Structure_Request(Struc
 		return;
 	}
 
+	if (PlayerPtr != NULL){
+        PlayerPtr->IsQueuedMovementToggle = false;
+        PlayerPtr->QueuedMovementToggleTimeout = 0;
+    }
+	
 	switch (request_type) 
 	{
 	case INPUT_STRUCTURE_REPAIR_START: 
@@ -3847,6 +3896,15 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Handle_Unit_Request(UnitReques
 	if (!DLLExportClass::Set_Player_Context(player_id)) {
 		return;
 	}
+	
+	if (   (PlayerPtr != NULL) &&
+            (request_type != INPUT_UNIT_FORMATION_TOGGLE) &&
+            (request_type != INPUT_UNIT_QUEUED_MOVEMENT_ON) &&
+            (request_type != INPUT_UNIT_QUEUED_MOVEMENT_OFF)
+    ){
+        PlayerPtr->IsQueuedMovementToggle = false;
+        PlayerPtr->QueuedMovementToggleTimeout = 0;
+    }
 
 	switch (request_type)
 	{
@@ -3870,10 +3928,14 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Handle_Unit_Request(UnitReques
 			break;
 		case INPUT_UNIT_QUEUED_MOVEMENT_ON:
 			// Red Alert Only
+            //CFE_Debug_Printf("CNC_Handle_Unit_Request() got INPUT_UNIT_QUEUED_MOVEMENT_ON");
+            // GlyphX client is never sending these, so we can't use them.
 			DLLExportClass::Units_Queued_Movement_Toggle(player_id, true);
 			break;
 		case INPUT_UNIT_QUEUED_MOVEMENT_OFF:
 			// Red Alert Only
+            //CFE_Debug_Printf("CNC_Handle_Unit_Request() got INPUT_UNIT_QUEUED_MOVEMENT_OFF");
+            // GlyphX client is never sending these, so we can't use them.
 			DLLExportClass::Units_Queued_Movement_Toggle(player_id, false);
 			break;
 		default:
@@ -3900,6 +3962,11 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Handle_Sidebar_Request(Sidebar
 	if (!DLLExportClass::Set_Player_Context(player_id)) {
 		return;
 	}
+	
+    if (PlayerPtr != NULL){
+        PlayerPtr->IsQueuedMovementToggle = false;
+        PlayerPtr->QueuedMovementToggleTimeout = 0;
+    }
 	
 	switch (request_type) {
 		
@@ -3953,6 +4020,11 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Handle_SuperWeapon_Request(Sup
 	if (!DLLExportClass::Set_Player_Context(player_id)) {
 		return;
 	}
+	
+    if (PlayerPtr != NULL){
+        PlayerPtr->IsQueuedMovementToggle = false;
+        PlayerPtr->QueuedMovementToggleTimeout = 0;
+    }
 
 	switch (request_type)
 	{
@@ -3979,6 +4051,11 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Handle_ControlGroup_Request(Co
 	if (!DLLExportClass::Set_Player_Context(player_id)) {
 		return;
 	}
+	
+    if (PlayerPtr != NULL){
+        PlayerPtr->IsQueuedMovementToggle = false;
+        PlayerPtr->QueuedMovementToggleTimeout = 0;
+    }
 
 	switch (request_type)
 	{
@@ -6899,9 +6976,24 @@ void DLLExportClass::Selected_Stop(uint64 player_id)
 *
 * History: 03.03.2020 MBL
 **************************************************************************************************/
-void DLLExportClass::Units_Queued_Movement_Toggle(uint64 /*player_id*/, bool /*toggle*/)
+void DLLExportClass::Units_Queued_Movement_Toggle(uint64 player_id, bool toggle)
 {
 	// Currently Red Alert only but stubbed in support in case we add to Tiberian Dawn later
+    // Chthon CFE Note: Q-Move port
+    // (Some of this is gated behind ifdef USE_RA_AI, but I'm too lazy to carry that forward. Don't try to compile without it.)
+    // actually pointless, this never gets called b/c GlyphX client isn't passing the keypresses for this. :(
+    
+    /*
+	** Get the player for this...
+	*/
+	if (!DLLExportClass::Set_Player_Context(player_id)) {
+		return;
+	}
+
+	if (PlayerPtr != NULL) 
+	{
+		PlayerPtr->IsQueuedMovementToggle = toggle;
+	}
 }
 
 /**************************************************************************************************

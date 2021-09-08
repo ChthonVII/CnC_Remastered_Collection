@@ -282,6 +282,15 @@ class FootClass :	public TechnoClass
 		// Chthon CFE Note: make  public so harvester optimizations and queue jumping can use it
 		int Find_Path_AStar(PathType* const resultPath, const CELL source, CELL dest, const int maxLen, const MoveType threshhold, const int threat) const;
         //int Passable_Cell(CELL cell, FacingType face, int threat, MoveType threshhold) const;
+        
+        // Chthon CFE Note: Q-Move port
+        void Handle_Navigation_List(void);
+		void Queue_Navigation_List(TARGET target);
+		void Clear_Navigation_List(void);
+        void Memorize_Navigation_List();
+        void Recall_Navigation_List();
+        void Clear_Memorized_Navigation_List();
+        
 	private:
 		int Passable_Cell(CELL cell, FacingType face, int threat, MoveType threshhold) const;
 		PathType * Find_Path(CELL dest, FacingType *final_moves, int maxlen, MoveType threshhold);
@@ -305,6 +314,24 @@ class FootClass :	public TechnoClass
         // Chthon CFE Note: Port per-unit speed bias from RA
 public:
         float SpeedBias = 1.0;
+        
+        
+        // Q-Move port stuff. Not offsetting this from padding b/c it's too big, so we just have to break savegame compatibility
+        TARGET NavQueueOriginalHead = TARGET_NONE;
+        mutable TARGET UnmodifiedNavCom = TARGET_NONE;
+        TARGET NavQueue[10];
+        TARGET MemorizedNavQueue[10];
+        union{
+			mutable unsigned char CFEPatchNavQFlags = 0;
+			struct{
+				mutable unsigned int SkipNavQueueUpdate : 1;
+                mutable unsigned int IsNavQueueLoop : 1;
+                mutable unsigned int HasMemorizedNavQueue : 1;
+                mutable unsigned int JustModifiedNavCom : 1;
+				mutable unsigned int CFEPatchNavQFlagsPadding : 4; //round out to 1 byte, we can use this space later.
+			};
+		};
+        
 private:
         
 		/*

@@ -519,6 +519,9 @@ HouseClass::HouseClass(HousesType house) :
 	OldBScan = 0;
 
 	Assign_Handicap(DIFF_NORMAL);
+    
+    // Chthon CFE Note: Q-Move port
+    IsQueuedMovementToggle = false;
 
 #endif
 
@@ -1655,6 +1658,14 @@ void HouseClass::AI(void)
 
 		Recalculate_Placement_Distances();
 	}
+	
+	// Chthon CFE Note: countdown timeout for q-move key
+	if (QueuedMovementToggleTimeout){
+        QueuedMovementToggleTimeout--;
+        if (QueuedMovementToggleTimeout == 0){
+            IsQueuedMovementToggle = false;
+        }
+    }
 }
 
 

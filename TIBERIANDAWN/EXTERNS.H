@@ -94,6 +94,7 @@ struct CFEPatchConfig
 	bool DisableCommandoAirstrikes = false;
 	bool WallsAlwaysHaveFullCost = true;
 	bool EnableAttackMove = false;
+    bool EnableQMove = false;
 	bool EnableCommandoGuard = false;
 	bool EnableSafeSabotage = false;
     bool EnableSmarterAircraft = false;

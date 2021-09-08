@@ -521,6 +521,9 @@ typedef enum MissionType : char {
 	MISSION_RESCUE,
 	MISSION_MISSILE,
     MISSION_ATTACKMOVE,     // Attack Move rework by ChthonVII -- new mission type so the fact that we're attack-moving can go into the multiplayer communication queue
+    // Chthon CFE Note: Q-Move port
+    MISSION_QMOVE,
+    MISSION_QATTACKMOVE,
 
 	MISSION_COUNT,
 	MISSION_FIRST=0

@@ -68,6 +68,7 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
 	GetSetting(ActiveCFEPatchConfig.EnableHarvySelfRepair     , "FEATURES", "HARVY_SELF_REPAIR");
 	GetSetting(ActiveCFEPatchConfig.DisableCommandoAirstrikes , "FEATURES", "DISABLE_COMMANDO_AIRSTRIKES");
 	GetSetting(ActiveCFEPatchConfig.EnableAttackMove          , "FEATURES", "ATTACK_MOVE");
+    GetSetting(ActiveCFEPatchConfig.EnableQMove          , "FEATURES", "Q_MOVE");
 	GetSetting(ActiveCFEPatchConfig.EnableCommandoGuard       , "FEATURES", "COMMANDO_GUARD");
 	GetSetting(ActiveCFEPatchConfig.EnableSafeSabotage        , "FEATURES", "SAFE_SABOTAGE");
     GetSetting(ActiveCFEPatchConfig.EnableSmarterAircraft      , "FEATURES", "SMARTER_AIRCRAFT");

@@ -626,15 +626,38 @@ CCDebugString ("C&C95 - Primary building packet received\n");
 					}
 				}
                 
+                
+                // Chthon CFE Note: Q-Move port
+                bool q = ((Data.MegaMission.Mission == MISSION_QMOVE) || (Data.MegaMission.Mission == MISSION_QATTACKMOVE));
+                
                 // Attack Move rework by ChthonVII -- now that we are on the back side of the multiplayer communications, swap MISSION_ATTACKMOVE back to MISSION_MOVE and set flag and target
                 if (ActiveCFEPatchConfig.EnableAttackMove){
-                    if (Data.MegaMission.Mission == MISSION_ATTACKMOVE){
+                    if ((Data.MegaMission.Mission == MISSION_ATTACKMOVE) || (Data.MegaMission.Mission == MISSION_QATTACKMOVE)){
                         techno->Assign_Mission(MISSION_MOVE);
                         techno->AttackMove = 1;
-                        techno->RememberedNavCom = Data.MegaMission.Destination;
+                        //techno->RememberedNavCom = Data.MegaMission.Destination;
+                        if (Data.MegaMission.Mission == MISSION_ATTACKMOVE){
+                            techno->RememberedNavCom = Data.MegaMission.Destination;
+                        }
+                        // if this is queue attack move, don't set RememberedNavCom if it's already set
+                        else if (!Target_Legal(techno->RememberedNavCom)){
+                            // if we're already moving towards a destination, make that our RememberedNavCom (this command must be adding to an existing queue)
+                            if ((techno->What_Am_I() == RTTI_INFANTRY || techno->What_Am_I() == RTTI_UNIT || techno->What_Am_I() == RTTI_AIRCRAFT) && Target_Legal(((FootClass*)techno)->NavCom)){
+                                techno->RememberedNavCom = ((FootClass*)techno)->NavCom;
+                            }
+                            // otherwise, this must be the first destination, so make it our RememberedNavCom
+                            else {
+                                techno->RememberedNavCom = Data.MegaMission.Destination;
+                            }
+                        }
                     }
                     // if we assigned any other mission, terminate attack-move
                     else {
+                        // if we're in the middle of an attack phase of q-attack-move and get a regular q-move order, set the reset the current destination before terminating attack move
+                        if (techno->AttackMove && (techno->Mission == MISSION_ATTACK) && (techno->What_Am_I() == RTTI_INFANTRY || techno->What_Am_I() == RTTI_UNIT || techno->What_Am_I() == RTTI_AIRCRAFT) && Target_Legal(((FootClass*)techno)->NavCom) && (Data.MegaMission.Mission == MISSION_QMOVE) && Target_Legal(techno->RememberedNavCom)){
+                            techno->Assign_Destination(techno->RememberedNavCom);
+                        }
+                        
                         techno->Assign_Mission(Data.MegaMission.Mission);
                         techno->ResetAttackMove();
                     }
@@ -663,10 +686,25 @@ CCDebugString ("C&C95 - Primary building packet received\n");
 					techno->Transmit_Message(RADIO_HELLO, (BuildingClass*)object);
 					techno->Assign_Destination(TARGET_NONE);
 				} else {
-					techno->Assign_Target(Data.MegaMission.Target);
-					techno->Assign_Destination(Data.MegaMission.Destination);
+                    // Chthon CFE Note: Q-Move port
+                    if (q && (techno->What_Am_I() == RTTI_INFANTRY || techno->What_Am_I() == RTTI_UNIT || techno->What_Am_I() == RTTI_AIRCRAFT)) {
+						((FootClass *)techno)->Queue_Navigation_List(Data.MegaMission.Destination);
+					} else {
+                        if (techno->What_Am_I() == RTTI_INFANTRY || techno->What_Am_I() == RTTI_UNIT || techno->What_Am_I() == RTTI_AIRCRAFT) {
+							((FootClass *)techno)->Clear_Navigation_List();
+						}
+                        techno->Assign_Target(Data.MegaMission.Target);
+                        techno->Assign_Destination(Data.MegaMission.Destination);
+                    }
 				}
 
+				// Chthon CFE Note: Q-Move port
+				// always clear the memorized nav list when receiving a new order from the player
+				if (techno->What_Am_I() == RTTI_INFANTRY || techno->What_Am_I() == RTTI_UNIT || techno->What_Am_I() == RTTI_AIRCRAFT) {
+                    ((FootClass *)techno)->Clear_Memorized_Navigation_List();
+                }
+				
+				
 #ifdef NEVER
 				if ((techno->What_Am_I() == RTTI_UNIT || techno->What_Am_I() == RTTI_INFANTRY) &&
 						Data.MegaMission.Mission == MISSION_GUARD_AREA) {
@@ -682,18 +720,24 @@ CCDebugString ("C&C95 - Primary building packet received\n");
 		*/
 		case IDLE:
 			techno = As_Techno(Data.Target.Whom);
-            // Attack Move rework by ChthonVII -- exit attack-move because we got a new order
-            if (techno && ActiveCFEPatchConfig.EnableAttackMove){
-                techno->ResetAttackMove();
+            if (techno && techno->IsActive && !techno->IsInLimbo) {
+                // Attack Move rework by ChthonVII -- exit attack-move because we got a new order
+                if (techno && ActiveCFEPatchConfig.EnableAttackMove){
+                    techno->ResetAttackMove();
+                }
+                if (!techno->IsTethered) {
+                    techno->Assign_Destination(TARGET_NONE);
+                    techno->Assign_Target(TARGET_NONE);
+                    // Chthon CFE Note: Q-Move port
+                    if (techno->What_Am_I() == RTTI_INFANTRY || techno->What_Am_I() == RTTI_UNIT || techno->What_Am_I() == RTTI_AIRCRAFT) {
+                        ((FootClass *)techno)->Clear_Navigation_List();
+                    }
+                    techno->Enter_Idle_Mode();
+                }
+                if (CFE_Patch_Can_Have_Rally_Point(*techno)) {
+                    techno->Assign_Target(TARGET_NONE);
+                }
             }
-			if (techno && techno->IsActive && !techno->IsInLimbo && !techno->IsTethered) {
-                techno->Assign_Destination(TARGET_NONE);
-				techno->Assign_Target(TARGET_NONE);
-				techno->Enter_Idle_Mode();
-			}
-			else if (techno && CFE_Patch_Can_Have_Rally_Point(*techno)) {
-				techno->Assign_Target(TARGET_NONE);
-			}
 			break;
 
 		/*

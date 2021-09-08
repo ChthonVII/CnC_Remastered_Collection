@@ -740,6 +740,22 @@ void AircraftClass::AI(void)
         }
     }
     
+    // Chthon CFE Note: If we have a memorized nav list and our ammo is reloaded, then reload the nav list and take off
+    if (   HasMemorizedNavQueue && 
+            (Techno_Type_Class()->Primary != NULL) && 
+            (Class->MaxAmmo > 0) &&
+            (Ammo == Class->MaxAmmo) &&
+            (Altitude == 0) &&
+            !IsLanding &&
+            !IsTakingOff &&
+            (
+                (VeterancyRank < 3) ||
+                (Strength >= Class_Of().MaxStrength)
+            )
+    ){
+        Recall_Navigation_List();
+    }
+    
     
 	/*
 	**	A Mission change can always occur if the aircraft is landed or flying.
@@ -1773,6 +1789,7 @@ int AircraftClass::Mission_Move(void)
 			// Attack Move rework by ChthonVII -- If "smarter aircraft" mode is also enabled, don't attack move if you don't have any ammo to start with
             if (AttackMove && ActiveCFEPatchConfig.EnableSmarterAircraft && !IsALoaner && !Ammo){
                 ResetAttackMove();
+                Clear_Navigation_List();
                 Enter_Idle_Mode();
             }
 			else if (!Target_Legal(NavCom)) {
@@ -1816,6 +1833,21 @@ int AircraftClass::Mission_Move(void)
 				int distance = Process_Fly_To(true);
 
 				if (distance < 0x0080) {
+                    
+                    // Chthon CFE Note: Q-Move port
+                    if (Target_Legal(NavQueue[0])){
+                        if (AttackMove && !Ammo){
+                            //Memorize_Navigation_List();
+                            Clear_Navigation_List();
+                        } else {
+                            Assign_Destination(TARGET_NONE);
+                            Assign_Target(TARGET_NONE);
+                            Enter_Idle_Mode();
+                            return(1);
+                        }
+                    }
+                    
+                    
                     // Attack Move rework by ChthonVII -- helicopters should go home at the end of an attack-move rather than landing
                     if (AttackMove){
                         Assign_Target(TARGET_NONE);
@@ -1885,6 +1917,15 @@ void AircraftClass::Enter_Idle_Mode(bool )
 {
 	Validate();
     
+    // Chthon CFE Note: Q-Move port
+    bool isoldnavcomgood = Target_Legal(NavCom);
+    Handle_Navigation_List();
+    if (Target_Legal(NavCom) && !isoldnavcomgood){
+        Assign_Mission(MISSION_MOVE);
+        Commence();
+        return;
+    }
+    
     // Attack Move rework by ChthonVII -- If we would go idle, but we still have ammo, continue on towards destination instead
     if (AttackMove){
        if (Ammo){
@@ -1892,7 +1933,9 @@ void AircraftClass::Enter_Idle_Mode(bool )
             return;
         }
         else {
+            Memorize_Navigation_List();
             ResetAttackMove();
+            Clear_Navigation_List();
         }
     }
     
@@ -2195,6 +2238,23 @@ void AircraftClass::Player_Assign_Mission(MissionType mission, TARGET target, TA
 			Response_Move();
 		}
 	}
+	
+	// Chthon CFE Note: Q-Move port
+	if (   PlayerPtr &&
+            House && 
+            (PlayerPtr == House) &&
+            PlayerPtr->IsQueuedMovementToggle
+    ) {
+        if (mission == MISSION_MOVE) {
+            mission = MISSION_QMOVE;
+        }
+        else if (mission == MISSION_ATTACKMOVE){
+            // probably need to block certain units with special attack move logic from this as it may lead to odd behavior
+            mission = MISSION_QATTACKMOVE;
+        }
+    }
+	
+	
 	Queue_Mission(As_Target(), mission, target, destination);
 }
 
@@ -2567,6 +2627,13 @@ TARGET AircraftClass::New_LZ(TARGET oldlz, bool stable) const
 					TARGET newtarget = ::As_Target(newcell);
 
 					if (newcell != lastcell && Is_LZ_Clear(newtarget) && Cell_Seems_Ok(newcell)) {
+                        // Chthon CFE Note: stuff for attack-move & Q-move (doing this here is only OK because this function is ALWAYS called in conjuction with Assign_Destination() on its output) 
+                        JustModifiedNavCom = true; // tell AssignDestination() not to update UnmodifiedNavCom
+                        UnmodifiedNavCom = oldlz;
+                        // modify RememberedNavCom too, otherwise the mismatch may cause trouble with proximity checks
+                        if ((RememberedNavCom != TARGET_NONE) && ( RememberedNavCom == oldlz)){
+                            RememberedNavCom = newtarget;
+                        }
 						return(newtarget);
 					}
 					lastcell = newcell;
