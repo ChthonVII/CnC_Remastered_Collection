@@ -425,12 +425,11 @@ void UnitClass::AI(void)
 				Ammo++;
 				if (Ammo < Class->MaxAmmo) {
                     // Chthon CFE Note: veteran SSM should reload faster too, or RoF bonus is kinda pointless, then rank 3 should get even faster reload
-                    float localROFBias = 1.0 / (1.0 + (0.05 * VeterancyRank)); // to multiply the *rate* of fire we need to multiply the *time per shot* by the inverse of the rate we want.
                     if (VeterancyRank == 3){
-                        Reload = (TICKS_PER_SECOND*20)*localROFBias;
+                        Reload = (TICKS_PER_SECOND*20)*LocalROFBias;
                     }
                     else {
-                        Reload = (TICKS_PER_SECOND*30)*localROFBias;
+                        Reload = (TICKS_PER_SECOND*30)*LocalROFBias;
                     }
 				}
 				Mark(MARK_CHANGE);

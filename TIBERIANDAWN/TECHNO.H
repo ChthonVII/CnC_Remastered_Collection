@@ -213,10 +213,10 @@ class TechnoClass :	public RadioClass,
         //Chthon CFE Note: Port per-unit firepower and armor biases from RA so we can use them for vetrancy and stuff
         float ArmorBias = 1.0;
 		float FirepowerBias = 1.0;
-        // we don't have space for ROFBias, but it's only use din one place, so we'll compute it there
+        float LocalROFBias = 1.0;
         
         // Attack Move rework by ChthonVII --  Remember the intial destination in case of appearing enemies during an attack move
-		mutable TARGET RememberedNavCom; //this is unsigned short in TD, so only 2 bytes
+		mutable TARGET RememberedNavCom; //this is unsigned short in TD, so only 2 bytes (now 4 bytes b/c megamaps)
 		
 		// Veterancy by ChthonVII
 		unsigned short int VeterancyXP = 0;

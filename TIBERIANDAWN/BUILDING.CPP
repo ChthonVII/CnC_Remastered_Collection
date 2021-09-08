@@ -4965,7 +4965,6 @@ int BuildingClass::Mission_Attack(void)
 							if (error == FIRE_OK) {
 								Fire_At(TarCom, 0);
 								Status = SAM_LOCKING;
-                                float localROFBias = 1.0 / (1.0 + (0.05 * VeterancyRank)); // Chthon CFE Note: need to convert ROF multiplier into delay reduction
                                 int adjusteddelay;
                                 // Chthon CFE Note: Smarter SAM behavior inspired by screamingchicken
                                 if (ActiveCFEPatchConfig.EnableSmarterSAMs || (VeterancyRank == 3)){
@@ -4998,14 +4997,14 @@ int BuildingClass::Mission_Attack(void)
                                         if (ActiveCFEPatchConfig.EnableSmarterSAMs){
                                             adjustment = ActiveCFEPatchConfig.SmarterSAMBalanceDelay;
                                         }
-                                        adjusteddelay = ((TICKS_PER_SECOND*3) + adjustment) * localROFBias;
+                                        adjusteddelay = ((TICKS_PER_SECOND*3) + adjustment) * LocalROFBias;
                                         if (adjusteddelay < 1){
                                             adjusteddelay = 1;
                                         }
                                         return adjusteddelay;
                                     }
                                 }
-                                adjusteddelay = ((TICKS_PER_SECOND*3) * localROFBias);
+                                adjusteddelay = ((TICKS_PER_SECOND*3) * LocalROFBias);
                                 if (adjusteddelay < 1){
                                     adjusteddelay = 1;
                                 }

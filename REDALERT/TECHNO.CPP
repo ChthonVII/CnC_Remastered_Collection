@@ -667,6 +667,7 @@ TechnoClass::TechnoClass(RTTIType rtti, int id, HousesType house) :
     VeterancyXP = 0;
     AttackMoveBoatClock = 0;
     SecondaryElectricZapTarget = NULL;
+    LocalROFBias = 1.0;
     
 }
 
@@ -3339,11 +3340,9 @@ int TechnoClass::Rearm_Delay(bool second, int which) const
 	WeaponTypeClass const * weapon = (which == 0) ? Techno_Type_Class()->PrimaryWeapon : Techno_Type_Class()->SecondaryWeapon;
 	if (second && weapon != NULL) {
         
-        // Chthon CFE Note: Staying consistent with TD (which lacked room for another float), and this is the only place it's used (aside from some AI suff that probably shouldn't know about veterancy), just compute here
-        float localROFBias = 1.0 / (1.0 + (0.05 * VeterancyRank)); // to multiply the *rate* of fire we need to multiply the *time per shot* by the inverse of the rate we want.
-        
+        // Chthon CFE Note: Include LocalROFBias for unit veterancy speedup
         // Chthon CFE Note: need to convert WW's fixed point type to float to make it multiply with float.
-		return(weapon->ROF * localROFBias * FixedToFloat(House->ROFBias));
+		return(weapon->ROF * LocalROFBias * FixedToFloat(House->ROFBias));
 	}
 	return(3);
 }
@@ -7967,7 +7966,7 @@ void TechnoClass::GainVeterancyXP(unsigned short int XP){
                 //((FootClass*)this)->SpeedBias += fixed(0.1); // + 10%
                 ((FootClass*)this)->SpeedBias += ten_percent; // + 10%
             }
-            // ROFBias is handled in TechnoClass::Rearm_Delay() using VeterancyRank
+            LocalROFBias = 1.0 / (1.0 + (0.05 * VeterancyRank)); // to multiply the *rate* of fire we need to multiply the *time per shot* by the inverse of the rate we want.
             // Regen beginning at rank 2 is handled in TechnoClass::AI()
         }
         

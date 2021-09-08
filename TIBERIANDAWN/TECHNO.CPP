@@ -2412,9 +2412,8 @@ void TechnoClass::Assign_Target(TARGET target)
 int TechnoClass::Rearm_Delay(bool second) const
 {
 	if (second) {
-        //float localROFBias = 1.0 - (0.1 * VeterancyRank); // Chthon CFE Note: Since we lack room for another float, and this is the only place it's used, just compute here
-        float localROFBias = 1.0 / (1.0 + (0.05 * VeterancyRank)); // to multiply the *rate* of fire we need to multiply the *time per shot* by the inverse of the rate we want.
-        return(((int)Weapons[Techno_Type_Class()->Primary].ROF * localROFBias * House->ROFBias) + 3);
+        // Chthon CFE Note: Include LocalROFBias for unit veterancy speedup
+        return(((int)Weapons[Techno_Type_Class()->Primary].ROF * LocalROFBias * House->ROFBias) + 3);
 	}
 	return(9);
 }
@@ -5423,7 +5422,7 @@ void TechnoClass::GainVeterancyXP(unsigned short int XP){
             if (What_Am_I() == RTTI_INFANTRY || What_Am_I() == RTTI_UNIT || What_Am_I() == RTTI_AIRCRAFT){
                 ((FootClass*)this)->SpeedBias += 0.1f;
             }
-            // ROFBias is handled in TechnoClass::Rearm_Delay() using VeterancyRank
+            LocalROFBias = 1.0 / (1.0 + (0.05 * VeterancyRank)); // to multiply the *rate* of fire we need to multiply the *time per shot* by the inverse of the rate we want.
             // Regen beginning at rank 2 is handled in TechnoClass::AI()
         }
         
