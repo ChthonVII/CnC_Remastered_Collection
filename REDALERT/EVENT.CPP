@@ -881,21 +881,32 @@ void EventClass::Execute(void)
 		case IDLE:
 			techno = Data.Target.Whom.As_Techno();
 			// Attack Move rework by ChthonVII -- exit attack-move because we got a new order
-            if (techno && ActiveCFEPatchConfig.EnableAttackMove){
-                techno->ResetAttackMove(2);
+            if (techno && techno->IsActive && !techno->IsInLimbo){
+                if (ActiveCFEPatchConfig.EnableAttackMove){
+                    techno->ResetAttackMove(2);
+                }
+                if (!techno->IsTethered && techno->What_Am_I() != RTTI_BUILDING) {
+                    techno->Transmit_Message(RADIO_OVER_OUT);
+                    techno->Assign_Destination(TARGET_NONE);
+                    techno->Assign_Target(TARGET_NONE);
+                    // Chthon CFE Note: vanilla bugfix -- clear the nav queue BEFORE entering idle mode so the unit stops right away
+                    if (ActiveCFEPatchConfig.EnableQMoveLoops){
+                        if (techno->Is_Foot()) {
+                            ((FootClass *)techno)->Clear_Navigation_List();
+                        }
+                        techno->Enter_Idle_Mode();
+                    }
+                    else {
+                        techno->Enter_Idle_Mode();
+                        if (techno->Is_Foot()) {
+                            ((FootClass *)techno)->Clear_Navigation_List();
+                        }
+                    }
+                }
+                else if (CFE_Patch_Can_Have_Rally_Point(*techno)) {
+                    techno->Assign_Target(TARGET_NONE);
+                }
             }
-            if (techno != NULL && techno->IsActive && !techno->IsInLimbo && !techno->IsTethered && techno->What_Am_I() != RTTI_BUILDING) {
-				techno->Transmit_Message(RADIO_OVER_OUT);
-				techno->Assign_Destination(TARGET_NONE);
-				techno->Assign_Target(TARGET_NONE);
-				techno->Enter_Idle_Mode();
-				if (techno->Is_Foot()) {
-					((FootClass *)techno)->Clear_Navigation_List();
-				}
-			}
-			else if (techno && CFE_Patch_Can_Have_Rally_Point(*techno)) {
-				techno->Assign_Target(TARGET_NONE);
-			}
 			break;
 
 		/*
