@@ -1933,7 +1933,7 @@ void MapClass::CFELogic(void){
     if (MapBinaryVersion == MAP_VERSION_MEGA) {
         //growthstrength *= 4;
         // Since megamaps might not use the full 4x size, use a sliding scale factor based on how big they are relative to 64x64.
-        float megagrowstrength = (growstrength * MegaMapTibScaleFactor) + 0.5f;
+        float megagrowstrength = (growthstrength * MegaMapTibScaleFactor) + 0.5f;
         growthstrength = megagrowstrength;
     }
     
