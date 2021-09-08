@@ -263,7 +263,9 @@ class TechnoClass :	public RadioClass,
 				mutable unsigned int AttackMove : 1;
                 mutable unsigned int VeterancyRank : 2;
                 mutable unsigned int ReadyQuadShot : 1;
-				mutable unsigned int CFEPatchFlagsPadding : 4; //round out to 1 byte, we can use this space later.
+                mutable unsigned int VeteranTwoShooter: 1;
+                mutable unsigned int VeteranQuadShooter: 1;
+				mutable unsigned int CFEPatchFlagsPadding : 2; //round out to 1 byte, we can use this space later.
 			};
 		};
         mutable unsigned char AttackMoveBoatClock; // There is a real-deal timer class available, but I don't want to spend that many bytes for boats.

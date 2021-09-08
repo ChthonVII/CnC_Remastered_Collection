@@ -3658,42 +3658,10 @@ BulletClass * TechnoClass::Fire_At(TARGET target, int which)
 		Arm = Rearm_Delay(IsSecondShot, which);
         
         // Chthon CFE Note: light and medium tanks and turrets become two-shooters at rank 3 veterancy
-        bool veterantwoshooter = (
-            (VeterancyRank == 3) &&
-            (
-                (   What_Am_I() == RTTI_UNIT &&
-                    (
-                        (*((UnitClass*)this) == UNIT_LTANK) ||
-                        (*((UnitClass*)this) == UNIT_MTANK2)
-                    )
-                ) ||
-                (   What_Am_I() == RTTI_VESSEL &&
-                    (
-                        (*((VesselClass*)this) == VESSEL_SS) ||
-                        (*((VesselClass*)this) == VESSEL_PT)
-                    )
-                ) ||
-                (   What_Am_I() == RTTI_BUILDING &&
-                    (
-                        (*((BuildingClass*)this) == STRUCT_TURRET) /*||
-                        (*((BuildingClass*)this) == STRUCT_SAM)*/
-                    )
-                )
-            )
-        );
-        
-		if (tclass.Is_Two_Shooter() || veterantwoshooter) {
+		if (tclass.Is_Two_Shooter() || VeteranTwoShooter) {
 			IsSecondShot = (IsSecondShot == false);
             // quad shot for rank 3 veteran cruisers
-            if (    (VeterancyRank == 3) &&
-                    !IsSecondShot &&
-                    (
-                        ((What_Am_I() == RTTI_VESSEL) && (*((VesselClass*)this) == VESSEL_CA)) ||
-                        (   (What_Am_I() == RTTI_UNIT) && 
-                            ((*((UnitClass*)this) == UNIT_MTANK) || (*((UnitClass*)this) == UNIT_HTANK))
-                        )
-                    )
-                ){
+            if (VeteranQuadShooter && !IsSecondShot){
                 if (ReadyQuadShot){
                     Arm = 6;
                     ReadyQuadShot = false;
@@ -7872,11 +7840,13 @@ void TechnoClass::GainVeterancyXP(unsigned short int XP){
             }
             */
             if ((*((UnitClass*)this) == UNIT_MTANK) || (*((UnitClass*)this) == UNIT_HTANK)){
+                VeteranQuadShooter = true;
                 ReadyQuadShot = true; // prepare to fire quad shot on next volley
             }
             
             // Light and Medium Tank become two-shooters (mostly handled in TechnoClass::Fire_At())
             else if ((*((UnitClass*)this) == UNIT_LTANK) || (*((UnitClass*)this) == UNIT_MTANK2)){
+                VeteranTwoShooter = true;
                 IsSecondShot = false; //reset so that next volley will be double
             }
             
@@ -7934,10 +7904,12 @@ void TechnoClass::GainVeterancyXP(unsigned short int XP){
             */
             
             if ((*((VesselClass*)this) == VESSEL_SS) || (*((VesselClass*)this) == VESSEL_PT)){
+                VeteranTwoShooter = true;
                 IsSecondShot = false; //reset so that next volley will be double
             }
             
             if (*((VesselClass*)this) == VESSEL_CA){
+                VeteranQuadShooter = true;
                 ReadyQuadShot = true; // prepare to fire quad shot on next volley
             }
         }
@@ -7954,6 +7926,7 @@ void TechnoClass::GainVeterancyXP(unsigned short int XP){
             STRUCT_SAM -- +1 range (handled in TechnoClass::Weapon_Range()) (originally wanted to make this a 2-shooter for variety vs AA gun, but rate of fire is already so fast it would be quite overpowered)
             */
             if ((*((BuildingClass*)this) == STRUCT_TURRET) /*|| (*((BuildingClass*)this) == STRUCT_SAM)*/){
+                VeteranTwoShooter = true;
                 IsSecondShot = false; //reset so that next volley will be double
             }
        }

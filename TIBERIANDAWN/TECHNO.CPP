@@ -2575,24 +2575,12 @@ BulletClass * TechnoClass::Fire_At(TARGET target, int which)
 		}
 		Arm = Rearm_Delay(IsSecondShot);
         // Chthon CFE Note: light and medium tanks and turrets become two-shooters at rank 3 veterancy
-        bool veterantwoshooter = (  (VeterancyRank == 3) &&
-                                                     (  (What_Am_I() == RTTI_UNIT && ((*((UnitClass*)this) == UNIT_LTANK) || (*((UnitClass*)this) == UNIT_MTANK))) ||
-                                                        (What_Am_I() == RTTI_BUILDING && (*((BuildingClass*)this) == STRUCT_TURRET))
-                                                     )
-                                                  );
-        
-		if (tclass.IsTwoShooter || veterantwoshooter) {
+		if (tclass.IsTwoShooter || VeteranTwoShooter) {
 			IsSecondShot = (IsSecondShot == false);
             // Mammoth Tanks and Adv. Guard Towers become quad-shooter at rank 3 veterancy
-            if (    (VeterancyRank == 3) &&
-                    !IsSecondShot &&
-                    (
-                        (   (What_Am_I() == RTTI_UNIT) && (*((UnitClass*)this) == UNIT_HTANK)  ) ||
-                        (   (What_Am_I() == RTTI_BUILDING) && (*((BuildingClass*)this) == STRUCT_ATOWER)    )
-                    )
-            ){
+            if (VeteranQuadShooter && !IsSecondShot){
                 if (ReadyQuadShot){
-                    Arm = 6;
+                    Arm = 12; // this should be 12 in TD so it's a bit slower than the normal 2-shooter delay (9)
                     ReadyQuadShot = false;
                 }
                 else {
@@ -5339,11 +5327,13 @@ void TechnoClass::GainVeterancyXP(unsigned short int XP){
             // This was lame. Changed to quad shooter instead
             if (*((UnitClass*)this) == UNIT_HTANK){
                 //((FootClass*)this)->SpeedBias += 0.62f;
+                VeteranQuadShooter = true;
                 ReadyQuadShot = true; // prepare to fire quad shot on next volley
             }
             
             // Light and Medium Tank become two-shooters (mostly handled in TechnoClass::Fire_At())
             else if ((*((UnitClass*)this) == UNIT_MTANK) || (*((UnitClass*)this) == UNIT_LTANK)){
+                VeteranTwoShooter = true;
                 IsSecondShot = false; //reset so that next volley will be double
             }
             
@@ -5401,9 +5391,11 @@ void TechnoClass::GainVeterancyXP(unsigned short int XP){
         // Turret becomes a two-shooter (mostly handled in TechnoClass::Fire_At())
         else if (What_Am_I() == RTTI_BUILDING){
             if  (*((BuildingClass*)this) == STRUCT_TURRET){
+                VeteranTwoShooter = true;
                 IsSecondShot = false; //reset so that next volley will be double
             }
             else if (*((BuildingClass*)this) == STRUCT_ATOWER){
+                VeteranQuadShooter = true;
                 ReadyQuadShot = true; // prepare to fire quad shot on next volley
             }
        }
