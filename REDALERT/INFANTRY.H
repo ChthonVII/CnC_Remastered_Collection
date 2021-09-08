@@ -243,7 +243,6 @@ class InfantryClass : public FootClass
     // Chthon CFE Note: extra variables for mod use
     //public:
         // moved to FootClass
-        //unsigned char DogSkipNavQueueUpdate; // could make this a bitfield if we need more space someday
         
     private:
         
@@ -251,7 +250,6 @@ class InfantryClass : public FootClass
 		** Some additional padding in case we need to add data to the class and maintain backwards compatibility for save/load
 		*/
         // Chthon CFE Note: original padding was 32
-        // DogSkipNavQueueUpdate ate one byte -- nope, moved to FootClass
 		unsigned char SaveLoadPadding[32];
 };
 
