@@ -139,8 +139,8 @@ FootClass::FootClass(RTTIType rtti, int id, HousesType house) :
         MemorizedNavQueue[index] = TARGET_NONE;
 	}
 	NavQueueOriginalHead = TARGET_NONE;
-    SkipNavQueueUpdate = false;
-    HasMemorizedNavQueue = false;
+    UnmodifiedNavCom = TAGET_NONE;
+    CFEPatchNavQFlags = 0;
 }
 
 
@@ -1871,6 +1871,14 @@ void FootClass::Assign_Destination(TARGET target)
 
 	NavCom = target;
 
+    // Chthon CFE Note: helicopters need to this for Q-move input
+    if (JustModifiedNavCom){
+        JustModifiedNavCom = false;
+    }
+    else {
+        UnmodifiedNavCom = target;
+    }
+    
 	/*
 	**	Presume that the easiest path is tried first. As the findpath proceeds, when
 	**	a failure occurs, this threshhold will be increased until path failure
@@ -2182,6 +2190,9 @@ void FootClass::Detach(TARGET target, bool all)
 		}
 	}
 	
+	if (UnmodifiedNavCom == target){
+        UnmodifiedNavCom = TARGET_NONE;
+    }
 	
 	
 	/*
@@ -2543,7 +2554,7 @@ void FootClass::Queue_Navigation_List(TARGET target)
         CELL tcell = As_Cell(target);
         
         // if the immediate target was just just popped off the queue, count a click here as a loop mode request anyway
-        if (ActiveCFEPatchConfig.EnableQMoveLoops && (target == NavCom)){
+        if (ActiveCFEPatchConfig.EnableQMoveLoops && ((target == NavCom) || (target == UnmodifiedNavCom))){
             //CFE_Debug_Printf("unit %i got loop request via navcom match", this);
             is_loop_request = true;
         }
@@ -2745,6 +2756,7 @@ void FootClass::Clear_Navigation_List(void)
 	}
 	IsNavQueueLoop = false;
     NavQueueOriginalHead = TARGET_NONE;
+    UnmodifiedNavCom = TARGET_NONE;
     SkipNavQueueUpdate = false;
 }
 

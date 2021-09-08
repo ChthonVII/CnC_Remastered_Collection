@@ -2904,6 +2904,15 @@ TARGET AircraftClass::New_LZ(TARGET oldlz) const
 					TARGET newtarget = ::As_Target(newcell);
 
 					if (newcell != lastcell && Is_LZ_Clear(newtarget) && Cell_Seems_Ok(newcell)) {
+                        
+                        // Chthon CFE Note: stuff for attack-move & Q-move (doing this here is only OK because this function is ALWAYS called in conjuction with Assign_Destination() on its output) 
+                        JustModifiedNavCom = true; // tell AssignDestination() not to update UnmodifiedNavCom
+                        UnmodifiedNavCom = oldlz;
+                        // modify RememberedNavCom too, otherwise the mismatch may cause trouble with proximity checks
+                        if ((RememberedNavCom != TARGET_NONE) && ( RememberedNavCom == oldlz)){
+                            RememberedNavCom = newtarget;
+                        }
+                        
 						return(newtarget);
 					}
 					lastcell = newcell;

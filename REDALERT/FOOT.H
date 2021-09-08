@@ -396,12 +396,20 @@ class FootClass :	public TechnoClass
     // Chthon CFE Note: Additional variables for mod
     public:
         TARGET NavQueueOriginalHead;
-        unsigned char SkipNavQueueUpdate; // could make this a bitfield if we need more space someday
         
         // Stuff for memorizing nav list
         // This won't fit in the available padding, so we're just going to have to break savegame compatibility
-        bool HasMemorizedNavQueue;
         TARGET MemorizedNavQueue[10];
+        mutable TARGET UnmodifiedNavCom;
+        union{
+			mutable unsigned char CFEPatchNavQFlags;
+			struct{
+				mutable unsigned int SkipNavQueueUpdate : 1;
+                mutable unsigned int HasMemorizedNavQueue : 1;
+                mutable unsigned int JustModifiedNavCom : 1;
+				mutable unsigned int CFEPatchNavQFlagsPadding : 5; //round out to 1 byte, we can use this space later.
+			};
+        }
         
     private:
         
