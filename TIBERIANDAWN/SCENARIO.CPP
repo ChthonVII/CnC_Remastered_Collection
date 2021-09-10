@@ -911,5 +911,10 @@ void Fixup_Scenario(void)
         ((UnitTypeClass&)UnitTypeClass::As_Reference(UNIT_NUKE_TANK)).Level = 99;
         ((UnitTypeClass&)UnitTypeClass::As_Reference(UNIT_NUKE_TANK)).Scenario = 99;
     }
+    
+    // meaner visceroid buffs
+    if (ActiveCFEPatchConfig.MeanerVisceroids){
+        ((UnitTypeClass&)UnitTypeClass::As_Reference(UNIT_VICE)).MaxStrength *= 1.0 + (0.25 * ActiveCFEPatchConfig.MeanerVisceroids);
+    }
 	
 }

@@ -459,7 +459,7 @@ void UnitClass::AI(void)
 	else if (*this == UNIT_VICE && Map[Coord_Cell(Coord)].Land_Type() == LAND_TIBERIUM && Health_Ratio() < 0x0100 && (Frame % 16) == 0) {
 		Strength++;
         if (ActiveCFEPatchConfig.MeanerVisceroids){
-            Strength+=3; //total of 4
+            Strength+=ActiveCFEPatchConfig.MeanerVisceroids; // up to total of 4
             if (Strength > Class->MaxStrength){
                 Strength = Class->MaxStrength;
             }
@@ -490,8 +490,8 @@ void UnitClass::AI(void)
         }
     }
 	// Chthon CFE Note: Additional base heal for meaner visceroids
-	if (ActiveCFEPatchConfig.MeanerVisceroids && *this == UNIT_VICE  && (Frame % 16) == 0 && Health_Ratio() < 0x0100) {
-		Strength+=2;
+	if ((ActiveCFEPatchConfig.MeanerVisceroids > 1) && *this == UNIT_VICE  && (Frame % 16) == 0 && Health_Ratio() < 0x0100) {
+		Strength = Strength + ActiveCFEPatchConfig.MeanerVisceroids - 1;
         if (Strength > Class->MaxStrength){
             Strength = Class->MaxStrength;
         }
@@ -931,9 +931,10 @@ bool UnitClass::Unlimbo(COORDINATE coord, DirType dir)
 		
 		// Chthon CFE Note: make meaner visceroids... meaner
 		if (ActiveCFEPatchConfig.MeanerVisceroids && *this == UNIT_VICE){
-            FirepowerBias = 1.5f;
-            ArmorBias = 0.5f;
-            SpeedBias = 1.1f;
+            FirepowerBias = 1.0 + (0.2 * ActiveCFEPatchConfig.MeanerVisceroids);
+            ArmorBias = 1.0 - (0.1 * ActiveCFEPatchConfig.MeanerVisceroids);
+            SpeedBias = 1.025 + (0.025 * ActiveCFEPatchConfig.MeanerVisceroids);
+            // HP bonus handled in scenario.cpp
             Assign_Mission(MISSION_HUNT);
         }
 		
