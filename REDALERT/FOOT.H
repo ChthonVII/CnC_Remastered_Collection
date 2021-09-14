@@ -409,7 +409,7 @@ class FootClass :	public TechnoClass
                 mutable unsigned int JustModifiedNavCom : 1;
 				mutable unsigned int CFEPatchNavQFlagsPadding : 5; //round out to 1 byte, we can use this space later.
 			};
-        }
+        };
         
     private:
         

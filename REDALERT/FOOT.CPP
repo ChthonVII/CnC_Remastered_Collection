@@ -139,7 +139,7 @@ FootClass::FootClass(RTTIType rtti, int id, HousesType house) :
         MemorizedNavQueue[index] = TARGET_NONE;
 	}
 	NavQueueOriginalHead = TARGET_NONE;
-    UnmodifiedNavCom = TAGET_NONE;
+    UnmodifiedNavCom = TARGET_NONE;
     CFEPatchNavQFlags = 0;
 }
 

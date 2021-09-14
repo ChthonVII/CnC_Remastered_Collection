@@ -2186,7 +2186,7 @@ void BuildingClass::Drop_Debris(TARGET source)
     
     if (   Target_Legal(WhomToRepay) &&
             (
-                ((ActiveCFEPatchConfig.SafeSabotage == 1) && (GameToPlay == GAME_NORMAL)) ||
+                ((ActiveCFEPatchConfig.SafeSabotage == 1) && (Session.Type == GAME_NORMAL)) ||
                 (ActiveCFEPatchConfig.SafeSabotage == 2)
             )
     ){
