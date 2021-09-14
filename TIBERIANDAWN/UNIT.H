@@ -220,7 +220,8 @@ private:
 		*/
         // Chthon CFE Note: original padding was 28 bytes
         //  SquidgySpawningTimer ate 1 byte
-		unsigned char SaveLoadPadding[27];
+        // RESET PADDING in v1.8 b/c we're breaking save compatibility anyway
+		unsigned char SaveLoadPadding[28];
 
 		/*
 		** This contains the value of the Virtual Function Table Pointer

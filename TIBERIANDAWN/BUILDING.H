@@ -322,7 +322,8 @@ class BuildingClass : public TechnoClass
         // megamaps -> TARGET type for rally pointnow takes 4 bytes
         // Smarter SAMS eat 3 bytes
         // ShowInverseWallPreviewMarkers eats 1 byte
-		unsigned char SaveLoadPadding[24];
+        // RESET PADDING in v1.8 b/c we're breaking save compatibility anyway
+		unsigned char SaveLoadPadding[32];
 
 		static COORDINATE const CenterOffset[BSIZE_COUNT];
 

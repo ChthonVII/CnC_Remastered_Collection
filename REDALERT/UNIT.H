@@ -136,7 +136,8 @@ class UnitClass :	public DriveClass
         // 
         // PersonalIronCurtainCooldown ate 2 bytes
         // minelayer stuff eats 5 bytes
-		unsigned char SaveLoadPadding[21];
+        // RESET PADDING in v1.8 b/c we're breaking save compatibility anyway
+		unsigned char SaveLoadPadding[28];
 
 		/*---------------------------------------------------------------------
 		**	Constructors, Destructors, and overloaded operators.

@@ -212,7 +212,8 @@ class MapClass: public GScreenClass
         // Chthon CFE Note: original padding was 1024
         // used 1 byte for TS visceroid spawning
         // used 1 byte for better tiberium growth (the part that spawns a visceroid)
-		unsigned char SaveLoadPadding[1022];
+        // RESET PADDING in v1.8 b/c we're breaking save compatibility anyway
+		unsigned char SaveLoadPadding[1024];
 };
 
 #endif

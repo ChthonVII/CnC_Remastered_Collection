@@ -198,7 +198,8 @@ class MapClass: public GScreenClass
 		*/
         // Chthon CFE Note: original padding was 1024
         // timelinedamage ate 8 bytes
-		unsigned char SaveLoadPadding[1016];
+        // RESET PADDING in v1.8 b/c we're breaking save compatibility anyway
+		unsigned char SaveLoadPadding[1024];
 
 };
 

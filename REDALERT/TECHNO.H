@@ -277,7 +277,8 @@ class TechnoClass :	public RadioClass,
         // Chthon CFE Note: Original padding was 16
         // Attack Move rework by ChthonVII eats 6 bytes
         // Veterancy eats 6 bytes (not including CFEPatchFlags since that's counted with attack move, including SecondaryElectricZapTarget)
-		unsigned char SaveLoadPadding[4];
+        // RESET PADDING in v1.8 b/c we're breaking save compatibility anyway
+		unsigned char SaveLoadPadding[16];
 
 
 		/*---------------------------------------------------------------------

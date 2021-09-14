@@ -419,7 +419,8 @@ class FootClass :	public TechnoClass
         // Chthon CFE Note: original padding was 16 bytes
         // NavQueueOriginalHead ate 4 bytes
         //  SkipNavQueueUpdate ate 1 byte
-        unsigned char SaveLoadPadding[11]; 
+        // RESET PADDING in v1.8 b/c we're breaking save compatibility anyway
+        unsigned char SaveLoadPadding[16]; 
 };
 
 #endif

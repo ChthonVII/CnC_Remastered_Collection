@@ -261,7 +261,8 @@ class AircraftClass : public FootClass, public FlyClass
 		*/
         // Chthon CFE note: original padding was 28 bytes
         // TargetRecheckCounter eats 2 bytes
-		unsigned char SaveLoadPadding[26];
+        // RESET PADDING in v1.8 b/c we're breaking save compatibility anyway
+		unsigned char SaveLoadPadding[28];
 
 		/*
 		** This contains the value of the Virtual Function Table Pointer

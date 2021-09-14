@@ -386,7 +386,8 @@ class BuildingClass : public TechnoClass
         // Rally Point eats 4  bytes -- The TARGET type changed to 4 bytes in RA (see DEFINES.H), so you need to steal 4 bytes of padding, not just 2. (original padding was 32)
         // WhoLaidMe eats 4 bytes
         // Inverse wall preview markers eat 1 byte
-		unsigned char SaveLoadPadding[23];
+        // RESET PADDING in v1.8 b/c we're breaking save compatibility anyway
+		unsigned char SaveLoadPadding[32];
 
 		static COORDINATE const CenterOffset[BSIZE_COUNT];
 };

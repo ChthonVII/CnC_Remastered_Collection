@@ -261,7 +261,8 @@ private:
 		*/
         //  Chthon CFE Note: original padding was 32 bytes
         // TargetRecheckCounter eats 2 bytes
-		unsigned char SaveLoadPadding[30];
+        // RESET PADDING in v1.8 b/c we're breaking save compatibility anyway
+		unsigned char SaveLoadPadding[32];
 };
 
 #endif

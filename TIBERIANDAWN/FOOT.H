@@ -339,7 +339,8 @@ private:
 		*/
         // Chthon CFE Note: Original padding was 16 bytes
         // speed bias eats 4 bytes
-		unsigned char SaveLoadPadding[12];
+        // RESET PADDING in v1.8 b/c we're breaking save compatibility anyway
+		unsigned char SaveLoadPadding[16];
 };
 
 #endif

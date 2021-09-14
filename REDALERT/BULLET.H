@@ -159,7 +159,8 @@ class BulletClass :	public ObjectClass,
 		*/
         // Chthon CFE Note: original padding was 32 bytes
         // SpecialArmorPen ate 1 byte
-		unsigned char SaveLoadPadding[31];
+        // RESET PADDING in v1.8 b/c we're breaking save compatibility anyway
+		unsigned char SaveLoadPadding[32];
 };
 
 #endif
