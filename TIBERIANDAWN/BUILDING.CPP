@@ -2456,8 +2456,14 @@ void BuildingClass::Drop_Debris(TARGET source)
 	if (Target_Legal(WhomToRepay)) odds -= 1;
 	if (IsCaptured) odds += 6;
 
-	if (Target_Legal(WhomToRepay) && ActiveCFEPatchConfig.EnableSafeSabotage)
+	if (   Target_Legal(WhomToRepay) &&
+            (
+                ((ActiveCFEPatchConfig.SafeSabotage == 1) && (GameToPlay == GAME_NORMAL)) ||
+                (ActiveCFEPatchConfig.SafeSabotage == 2)
+            )
+    ){
 		IsSurvivorless = true;
+    }
 
 	while (*offset != REFRESH_EOL) {
 		CELL	newcell;

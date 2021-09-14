@@ -96,7 +96,6 @@ struct CFEPatchConfig
 	bool EnableAttackMove = false;
     bool EnableQMove = false;
 	bool EnableCommandoGuard = false;
-	bool EnableSafeSabotage = false;
     bool EnableSmarterAircraft = false;
     bool EnableSmarterSAMs = false;
     bool EnableSmarterRepairBays = false;
@@ -123,6 +122,7 @@ struct CFEPatchConfig
     bool ApplyMPBalanceToSP = false;
     bool MPUnitsInSP = false;
     
+    int SafeSabotage = 0;
 	int  InfantryTiberiumAversion = 0;
     int  BuildingGap = 2;
 	int  HarvyQueueJumpCutoff = 4;

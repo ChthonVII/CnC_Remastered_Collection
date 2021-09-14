@@ -2184,8 +2184,14 @@ void BuildingClass::Drop_Debris(TARGET source)
 	if (Target_Legal(WhomToRepay)) odds -= 1;
 	if (IsCaptured) odds += 6;
     
-    if (Target_Legal(WhomToRepay) && ActiveCFEPatchConfig.EnableSafeSabotage)
-        IsSurvivorless = true;
+    if (   Target_Legal(WhomToRepay) &&
+            (
+                ((ActiveCFEPatchConfig.SafeSabotage == 1) && (GameToPlay == GAME_NORMAL)) ||
+                (ActiveCFEPatchConfig.SafeSabotage == 2)
+            )
+    ){
+		IsSurvivorless = true;
+    }
 
     int count = How_Many_Survivors();
     while (*offset != REFRESH_EOL) {

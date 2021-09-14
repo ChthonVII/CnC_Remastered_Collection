@@ -70,7 +70,6 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
 	GetSetting(ActiveCFEPatchConfig.EnableAttackMove          , "FEATURES", "ATTACK_MOVE");
     GetSetting(ActiveCFEPatchConfig.EnableQMove          , "FEATURES", "Q_MOVE");
 	GetSetting(ActiveCFEPatchConfig.EnableCommandoGuard       , "FEATURES", "COMMANDO_GUARD");
-	GetSetting(ActiveCFEPatchConfig.EnableSafeSabotage        , "FEATURES", "SAFE_SABOTAGE");
     GetSetting(ActiveCFEPatchConfig.EnableSmarterAircraft      , "FEATURES", "SMARTER_AIRCRAFT");
     GetSetting(ActiveCFEPatchConfig.EnableSmarterSAMs      , "FEATURES", "SMARTER_SAMS");
     GetSetting(ActiveCFEPatchConfig.EnableSmarterRepairBays , "FEATURES", "SMARTER_REPAIRBAY");
@@ -82,6 +81,7 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     GetSetting(ActiveCFEPatchConfig.EnableNukeTank      , "FEATURES", "NUKE_TANK");
     
 	//Settings
+    GetSetting(ActiveCFEPatchConfig.SafeSabotage        , "SETTINGS", "SAFE_SABOTAGE");
     GetSetting(ActiveCFEPatchConfig.InfantryTiberiumAversion               , "SETTINGS", "INFANTRY_TIBERIUM_AVERSION");
 	GetSetting(ActiveCFEPatchConfig.BuildingGap               , "SETTINGS", "BUILDING_GAP");
 	GetSetting(ActiveCFEPatchConfig.HarvyQueueJumpCutoff      , "SETTINGS", "QUEUE_JUMP_CUTOFF");
@@ -137,6 +137,9 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     
     // Clamp visceriod difficulty at 0-3
     ActiveCFEPatchConfig.MeanerVisceroids = (std::max)(0, (std::min)(ActiveCFEPatchConfig.MeanerVisceroids, 3));
+    
+    // Clamp safe sabotage at 0-2
+    ActiveCFEPatchConfig.SafeSabotage = (std::max)(0, (std::min)(ActiveCFEPatchConfig.SafeSabotage, 2));
     
     
     // If A-Star isn't enabled, distance constants will be compared against leptons rather than cells, so convert here

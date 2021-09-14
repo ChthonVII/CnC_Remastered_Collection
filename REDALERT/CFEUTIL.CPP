@@ -60,7 +60,6 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     GetSetting(ActiveCFEPatchConfig.EnableAirQMove		, "FEATURES", "AIR_QMOVE");
     GetSetting(ActiveCFEPatchConfig.EnableAirQAMLRecall		, "FEATURES", "AIR_QAML_RECALL");
 	GetSetting(ActiveCFEPatchConfig.EnableTanyaGuard		, "FEATURES", "TANYA_GUARD");
-	GetSetting(ActiveCFEPatchConfig.EnableSafeSabotage      , "FEATURES", "SAFE_SABOTAGE");
     GetSetting(ActiveCFEPatchConfig.EnableSmarterAircraft      , "FEATURES", "SMARTER_AIRCRAFT");
     GetSetting(ActiveCFEPatchConfig.EnableSmarterRepairBays     , "FEATURES", "SMARTER_REPAIRBAY");
     GetSetting(ActiveCFEPatchConfig.BetterOreGrowth      , "FEATURES", "BETTER_ORE_GROWTH");
@@ -76,7 +75,8 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     GetSetting(ActiveCFEPatchConfig.EnableMIGAmmoFudge      , "FEATURES", "MIG_AMMO_FUDGE");
 
 	//Settings
-	GetSetting(ActiveCFEPatchConfig.HarvyQueueJumpCutoff	, "SETTINGS", "QUEUE_JUMP_CUTOFF");
+	GetSetting(ActiveCFEPatchConfig.SafeSabotage      , "SETTINGS", "SAFE_SABOTAGE");
+    GetSetting(ActiveCFEPatchConfig.HarvyQueueJumpCutoff	, "SETTINGS", "QUEUE_JUMP_CUTOFF");
     GetSetting(ActiveCFEPatchConfig.HarvyOptimizeUnloadWaitWeight      , "SETTINGS", "HARVY_OPTIMIZE_UNLOAD_WAIT_WEIGHT");
     GetSetting(ActiveCFEPatchConfig.HarvyOptimizeThrashingCutoff      , "SETTINGS", "HARVY_OPTIMIZE_THRASHING_CUTOFF");
     GetSetting(ActiveCFEPatchConfig.HarvyOptimizeThrashingNumerator      , "SETTINGS", "HARVY_OPTIMIZE_THRASHING_NUMERATOR");
@@ -96,6 +96,9 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     
     // Clamp inverse preview mode to legal values (0-2)
     ActiveCFEPatchConfig.InverseBuildingPreviewMode = (std::max)(0, (std::min)(ActiveCFEPatchConfig.InverseBuildingPreviewMode, 2));
+    
+    // Clamp safe sabotage at 0-2
+    ActiveCFEPatchConfig.SafeSabotage = (std::max)(0, (std::min)(ActiveCFEPatchConfig.SafeSabotage, 2));
     
     // If A-Star isn't enabled, distance constants will be compared against leptons rather than cells, so convert here
     if (!ActiveCFEPatchConfig.EnableASPathing){
