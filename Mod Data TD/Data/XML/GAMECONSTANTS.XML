@@ -3447,7 +3447,7 @@
 
 		<!-- MBL 09.08.2020: Community-requested Mod option so that players can have customized mod hotkey commands -->
 		<!-- If True, also need to set GAME_COMMAND_CNC_MOD_COMMAND_1 -> GAME_COMMAND_CNC_MOD_COMMAND_4 entries in InputTranslatorConfigurations.xml -->
-		<CNCEnableModHotKeyGameCommands network="client"> False </CNCEnableModHotKeyGameCommands> <!-- Default is always False -->
+		<CNCEnableModHotKeyGameCommands network="client" overwrite="true"> True </CNCEnableModHotKeyGameCommands> <!-- Default is always False -->
 
 		<!-- Community-requested Mod option to allow more than 6 players in skirmish/LAN for TD if a modded DLL is present that supports it -->
 		<CNCTDMaxPlayers network="client" overwrite="true"> 8 </CNCTDMaxPlayers>
