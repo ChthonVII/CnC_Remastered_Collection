@@ -1487,13 +1487,16 @@ int CellClass::Reduce_Tiberium(int levels)
 	Validate();
 	int reducer = 0;
 
+    // Chthon CFE Note: Fix tiberium level index offset bug
+    int bugfixoffset = (ActiveCFEPatchConfig.TibIndexBugfix) ? 1 : 0;
+    
 	if (levels && Land == LAND_TIBERIUM) {
-		if (OverlayData > levels) {
+		if (OverlayData + bugfixoffset > levels) {
 			OverlayData -= levels;
 			reducer = levels;
 		} else {
 			Overlay = OVERLAY_NONE;
-			reducer = OverlayData;
+			reducer = OverlayData + bugfixoffset;
 			OverlayData = 0;
 			Recalc_Attributes();
 		}

@@ -101,6 +101,7 @@ struct CFEPatchConfig
     bool EnableSmarterRepairBays = false;
     bool EnableSmarterMammoths = false;
     bool BetterTibGrowth = false;
+    bool TibIndexBugfix = false;
     bool TreeVisceroidSpawnAnyway = false;
     bool TSVisceroidSpawn = false;
     bool EnableVeterancy = false;

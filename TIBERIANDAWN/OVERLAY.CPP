@@ -275,6 +275,7 @@ bool OverlayClass::Mark(MarkType mark)
 						}
 						cellptr->Redraw_Objects();
 						if (Class->Land == LAND_TIBERIUM) {
+                            // Chthon CFE Note: would bugfix tiberium levels index error here, but doesn't matter b/c Tiberium_Adjust() will overwrite whatever we set for OverlayData
 							cellptr->OverlayData = 1;
 							cellptr->Tiberium_Adjust();
 						} else {

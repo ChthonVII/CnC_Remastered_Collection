@@ -1109,8 +1109,9 @@ void MapClass::Logic(void)
 		**	Heavy Tiberium growth can spread.
 		*/
 		TerrainClass * terrain = ptr->Cell_Terrain();
+        const int spreadthreshhold = ActiveCFEPatchConfig.TibIndexBugfix ? 5 : 6;
 		if (Special.IsTSpread &&
-			(ptr->Land_Type() == LAND_TIBERIUM && ptr->OverlayData > 6) ||
+			(ptr->Land_Type() == LAND_TIBERIUM && ptr->OverlayData > spreadthreshhold) ||
 			(terrain && terrain->Class->IsTiberiumSpawn)) {
 
 			int tries = 1;
@@ -1210,7 +1211,8 @@ void MapClass::Logic(void)
 								default:
 									found = true;
 									new OverlayClass(Random_Pick(OVERLAY_TIBERIUM1, OVERLAY_TIBERIUM12), newcell->Cell_Number());
-									newcell->OverlayData = 1;
+                                    //Chthon CFE Note: bugfix tiberium level index error
+									newcell->OverlayData = ActiveCFEPatchConfig.TibIndexBugfix ? 0 : 1;
 									break;
 
 							}
@@ -1894,7 +1896,9 @@ void MapClass::CFELogic(void){
             cangrowlist[growlistsize] = cell;
             growlistsize++;
         }
-        if (Special.IsTSpread && ptr->Land_Type() == LAND_TIBERIUM && ptr->OverlayData > 6 && spreadlistsize < MAP_CELL_TOTAL){
+        // bugfix tiberium level index --> change spreader threshhold from 6 to 5
+        const int spreadthreshhold = ActiveCFEPatchConfig.TibIndexBugfix ? 5 : 6;
+        if (Special.IsTSpread && ptr->Land_Type() == LAND_TIBERIUM && ptr->OverlayData > spreadthreshhold && spreadlistsize < MAP_CELL_TOTAL){
             canspreadlist[spreadlistsize] = cell;
             spreadlistsize++;
         }
@@ -1965,13 +1969,7 @@ void MapClass::CFELogic(void){
                 FacingType offset = Random_Pick(FACING_N, FACING_NW); // 0 to 7
                 // starting from a random direction, iterate through the possible directions and check the adjacent cells
                 for (FacingType j = FACING_N; j < FACING_COUNT; j++) {
-                    FacingType facingindex = j + offset;
-                    // the old logic had a bug where it seemed to think Adjacent_Cell() would do the modular math; but it doesn't -- it just returns NULL if you go over 7
-                    // fixing this is going to increase the spread rate above vanilla, but it is necessary to remove bias
-                    //if (facingindex >= FACING_COUNT){
-                    //    facingindex -= FACING_COUNT;
-                    //}
-                    // i was wrong; they do loop
+                    FacingType facingindex = j + offset; // FacingType + operator has been redefined as modulo! (so this is OK)
                     newcell = (*this)[cell].Adjacent_Cell(facingindex);
                     // we win if we find an empty cell
                     if (
@@ -2002,8 +2000,9 @@ void MapClass::CFELogic(void){
                 }
                 // if we found an empty adjacent cell, spread tiberium to it
                 if (foundideal){
+                     // bugfix tiberium level index --> cells now start at 0
                     new OverlayClass(Random_Pick(OVERLAY_TIBERIUM1, OVERLAY_TIBERIUM12), newcell->Cell_Number());
-                    newcell->OverlayData = 1;
+                    newcell->OverlayData = ActiveCFEPatchConfig.TibIndexBugfix ? 0 : 1;
                 }
                 // the old logic had you SOL if you rolled a spreader cell that had no open adjacent cells (or the bug above made it miss them)
                 // instead let's fall back to making an adjacent cell grow if we can

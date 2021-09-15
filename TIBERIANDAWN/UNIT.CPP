@@ -1198,7 +1198,13 @@ ResultType UnitClass::Take_Damage(int & damage, int distance, WarheadType warhea
                             newcell->TType != TEMPLATE_BRIDGE4
                         ){
                             new OverlayClass(Random_Pick(OVERLAY_TIBERIUM1, OVERLAY_TIBERIUM12), newcell->Cell_Number());
-                            newcell->OverlayData = Random_Pick(1,6);
+                            // Chthon CFE Note: Fix tiberium level index offset bug
+                            if (ActiveCFEPatchConfig.TibIndexBugfix){
+                                newcell->OverlayData = Random_Pick(0,5);
+                            }
+                            else {
+                                newcell->OverlayData = Random_Pick(1,6);
+                            }
                         }
                     }
                 }
@@ -2872,7 +2878,15 @@ bool UnitClass::Harvesting(void)
 		**	is a partial level, then lift that instead. Never lift more
 		**	than the harvester can carry.
 		*/
-		int reducer = (ptr->OverlayData % 6) + 1;
+        // Chthon CFE Note: What this really does is trim the tiberium down to 0 or 5.
+        // The comment isn't super clear, but I think this change better fits the expressed intent.
+		int reducer;
+        if (ActiveCFEPatchConfig.TibIndexBugfix){
+            reducer = (ptr->OverlayData > 4) ? 6 : ptr->OverlayData + 1;
+        }
+        else {
+            reducer = (ptr->OverlayData % 6) + 1;
+        }
 		reducer = ptr->Reduce_Tiberium(MIN(reducer, UnitTypeClass::STEP_COUNT-Tiberium));
 		Tiberium += reducer;
 		Set_Stage(0);

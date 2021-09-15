@@ -75,6 +75,7 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     GetSetting(ActiveCFEPatchConfig.EnableSmarterRepairBays , "FEATURES", "SMARTER_REPAIRBAY");
     GetSetting(ActiveCFEPatchConfig.EnableSmarterMammoths      , "FEATURES", "SMARTER_MAMMOTHS");
     GetSetting(ActiveCFEPatchConfig.BetterTibGrowth      , "FEATURES", "BETTER_TIB_GROWTH");
+    GetSetting(ActiveCFEPatchConfig.TibIndexBugfix      , "FEATURES", "TIB_INDEX_BUGFIX");
     GetSetting(ActiveCFEPatchConfig.TreeVisceroidSpawnAnyway      , "FEATURES", "TREE_VISCEROID_SPAWN_OVERRIDE");
     GetSetting(ActiveCFEPatchConfig.TSVisceroidSpawn      , "FEATURES", "TS_VISCEROID_SPAWN");
     GetSetting(ActiveCFEPatchConfig.EnableVeterancy      , "FEATURES", "VETERANCY");
