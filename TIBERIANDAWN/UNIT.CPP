@@ -2880,14 +2880,24 @@ bool UnitClass::Harvesting(void)
 		*/
         // Chthon CFE Note: What this really does is trim the tiberium down to 0 or 5.
         // The comment isn't super clear, but I think this change better fits the expressed intent.
+        // On further thought:
+        // 1. This rarely makes a difference b/c the cell is cleared in 2 scoops in either case
+        // 2. I suppose the idea is that level 5 looks cooler for the second scoop animation?
+        // 3. One case where it matters is if the harvester could fill up in a single scoop. So let's fix that.
+        // 4. The other case is when the harv is ordered to move beteen scoops.
+        // This is a trade-off between a fuller harvester and leaving a cell capable of of spreading. Let's respect the original design decision here.
+        // 5. There's no harm in requesting more tiberium than the cell has, since Reduce_Tiberium() will deal with it.
 		int reducer;
-        if (ActiveCFEPatchConfig.TibIndexBugfix){
-            reducer = (ptr->OverlayData > 4) ? 6 : ptr->OverlayData + 1;
+        const int emptyspace = UnitTypeClass::STEP_COUNT - Tiberium;
+        if (ActiveCFEPatchConfig.TibIndexBugfix && (emptyspace <= 6)){
+            //reducer = (ptr->OverlayData > 4) ? 6 : ptr->OverlayData + 1;
+            reducer = ptr->Reduce_Tiberium(emptyspace);
         }
         else {
             reducer = (ptr->OverlayData % 6) + 1;
+            reducer = ptr->Reduce_Tiberium(MIN(reducer, emptyspace));
         }
-		reducer = ptr->Reduce_Tiberium(MIN(reducer, UnitTypeClass::STEP_COUNT-Tiberium));
+		//reducer = ptr->Reduce_Tiberium(MIN(reducer, UnitTypeClass::STEP_COUNT-Tiberium));
 		Tiberium += reducer;
 		Set_Stage(0);
 		Set_Rate(2);
