@@ -2563,8 +2563,11 @@ bool UnitClass::Harvesting(void)
 			case OVERLAY_GEMS4:
 				Gems += reducer;
 				if (Rule.BailCount > Tiberium) {Gems++;Tiberium++;}
+				else if (ActiveCFEPatchConfig.GemOverloadFix && Gold){Gems++; Gold--; ptr->DumpOreHere();} // if out of space, dump ore for gems
 				if (Rule.BailCount > Tiberium) {Gems++;Tiberium++;}
+				else if (ActiveCFEPatchConfig.GemOverloadFix && Gold){Gems++; Gold--; ptr->DumpOreHere();} // if out of space, dump ore for gems
 				if (Rule.BailCount > Tiberium) {Gems++;Tiberium++;}
+				else if (ActiveCFEPatchConfig.GemOverloadFix && Gold){Gems++; Gold--; ptr->DumpOreHere();} // if out of space, dump ore for gems
 				break;
 
 			default:

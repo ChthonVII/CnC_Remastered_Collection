@@ -1704,6 +1704,12 @@ int CellClass::Reduce_Tiberium(int levels)
 		} else {
 			Overlay = OVERLAY_NONE;
 			reducer = OverlayData;
+            // Chthon CFE Note: Vanilla bugfix. OverlayData is zero-indexed. The spread routine creates ore at OverlayData == 0, and there's a graphic for level 0 ore.
+            // Therefore, removing the 0th level of ore should count as removing 1 level.
+            // Otherwise the harvester gets no value at all from harvesting level 0 cells. See UnitClass::Harvesting()
+            if (ActiveCFEPatchConfig.OreIndexBugfix){
+                reducer++;
+            }
 			OverlayData = 0;
 			Recalc_Attributes();
 		}
@@ -3206,6 +3212,7 @@ bool CellClass::CFESpread_Tiberium(bool forced)
         return(true);
     }
     // fall back to maybe turning into gems (%1 chance)
+    /*
     if (Random_Pick(0, 99) < 1){ 
         
         OverlayData = Random_Pick(0,2);
@@ -3214,6 +3221,20 @@ bool CellClass::CFESpread_Tiberium(bool forced)
         Redraw_Objects(true);
         
         return(true);
+    }
+    */
+    // changed odds so that chance to change * value of change  = 25 credits (see comments in CFEOreMineSpread_Tiberium())
+    const int bugfixoffset = ActiveCFEPatchConfig.OreIndexBugfix ? 1 : 0;
+    int maxroll = (((((Rule.GemValue * 4 * (3 + (3 * bugfixoffset))) / 3) - (Rule.GoldValue * (11 + bugfixoffset))) * ActiveCFEPatchConfig.OreToGemPromotionSlowFactor) / Rule.GoldValue) - 1;
+    if (maxroll < 1){
+        maxroll = 99; // fall back to 1% if gems are worth *less* on average than fully grown ore. (which is the case without OreIndexBugfix)
+    }
+    if (Random_Pick(0, maxroll) < 1){
+        OverlayData = Random_Pick(0,2);
+        Overlay = Random_Pick(OVERLAY_GEMS1, OVERLAY_GEMS4);
+        Recalc_Attributes();
+        Redraw_Objects(true);
+        return true;
     }
     
 	
@@ -3273,12 +3294,27 @@ bool CellClass:: CFEOreMineSpread_Tiberium(){
         return(true);
     }
     // fall back to maybe promoting a neighbor to gems (1% chance)
-    if (foundgembackup && (Random_Pick(0, 99) < 1)){
-        gembackupcell->OverlayData = Random_Pick(0,2);
-        gembackupcell->Overlay = Random_Pick(OVERLAY_GEMS1, OVERLAY_GEMS4);
-        gembackupcell->Recalc_Attributes();
-        gembackupcell->Redraw_Objects(true);
-        return true;
+    // Thought: Maybe instead of 1%, this should be based on adding the same value on average of 1 level of ore
+    // 1 level of ore is 25 credits. After fixing the zero-index bug, max cell value is 300.
+    // 1 level of gems is worth 50, but with 3 extra bails if the harv has space, so effectively 200. So cell values are 200, 400, 600
+    // Let's remove level gems 0 as a possiblity, since it's worth less than level 11 ore.
+    // So 50/50 for +100 or +300, average is +200. Which is 8x the 25 credits we meant to add, so should be 1/8 odds.
+    // If that happens too much, then lock level at 2 and 1/12 odds? Yeah, let's do that.
+    // Two problems with the above: (1) gems look to uniformwithout the samll ones, (2) way too many gems.
+    // So added a fudge factor to slow it down, and used odds for average case and then picked 0-2 gem level.
+    if (foundgembackup){
+        const int bugfixoffset = ActiveCFEPatchConfig.OreIndexBugfix ? 1 : 0;
+        int maxroll = (((((Rule.GemValue * 4 * (3 + (3 * bugfixoffset))) / 3) - (Rule.GoldValue * (11 + bugfixoffset))) * ActiveCFEPatchConfig.OreToGemPromotionSlowFactor) / Rule.GoldValue) - 1;
+        if (maxroll < 1){
+            maxroll = 99; // fall back to 1% if gems are worth *less* on average than fully grown ore. (which is the case without OreIndexBugfix)
+        }
+        if (Random_Pick(0, maxroll) < 1){
+            gembackupcell->OverlayData = Random_Pick(0,2);
+            gembackupcell->Overlay = Random_Pick(OVERLAY_GEMS1, OVERLAY_GEMS4);
+            gembackupcell->Recalc_Attributes();
+            gembackupcell->Redraw_Objects(true);
+            return true;
+        }
     }
     // fall back to maybe spawning some ants for the hell of it
     /*
@@ -3506,4 +3542,22 @@ bool CellClass::Is_Jamming(HouseClass *player) const
 void CellClass::Override_Land_Type(LandType type)
 {
 	OverrideLand = type;
+}
+
+
+// harvester dumps ore into the cell (to make room for gems)
+bool CellClass::DumpOreHere(){
+    if (Can_Tiberium_Germinate()){
+        OverlayData = 0;
+        Overlay = Random_Pick(OVERLAY_GOLD1, OVERLAY_GOLD4);
+        Recalc_Attributes();
+        Redraw_Objects();
+        return true;
+    }
+    else if (Can_Tiberium_Grow()){
+        Grow_Tiberium();
+        return true;
+    }
+    
+    return false;
 }

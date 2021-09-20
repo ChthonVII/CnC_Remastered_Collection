@@ -63,6 +63,8 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     GetSetting(ActiveCFEPatchConfig.EnableSmarterAircraft      , "FEATURES", "SMARTER_AIRCRAFT");
     GetSetting(ActiveCFEPatchConfig.EnableSmarterRepairBays     , "FEATURES", "SMARTER_REPAIRBAY");
     GetSetting(ActiveCFEPatchConfig.BetterOreGrowth      , "FEATURES", "BETTER_ORE_GROWTH");
+    GetSetting(ActiveCFEPatchConfig.OreIndexBugfix       , "FEATURES", "ORE_INDEX_BUGFIX");
+    GetSetting(ActiveCFEPatchConfig.GemOverloadFix       , "FEATURES", "GEM_OVERLOAD_FIX");
     GetSetting(ActiveCFEPatchConfig.EnableInaccuracyBugfix      , "FEATURES", "INACCURACY_BUGFIX");
     GetSetting(ActiveCFEPatchConfig.EnableVeterancy      , "FEATURES", "VETERANCY");
     GetSetting(ActiveCFEPatchConfig.EnableWideSupers      , "FEATURES", "OPENRA_WIDE_SUPERS");
@@ -84,6 +86,7 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     GetSetting(ActiveCFEPatchConfig.HarvyOptimizeCommunalismNumerator      , "SETTINGS", "HARVY_OPTIMIZE_COMMUNALISM_NUMERATOR");
     GetSetting(ActiveCFEPatchConfig.HarvyOptimizeCommunalismDenominator      , "SETTINGS", "HARVY_OPTIMIZE_COMMUNALISM_DENOMINATOR");
 	GetSetting(ActiveCFEPatchConfig.OreGrowthScale			, "SETTINGS", "ORE_GROWTH_SCALE");
+    GetSetting(ActiveCFEPatchConfig.OreToGemPromotionSlowFactor			, "SETTINGS", "ORE_TO_GEM_SLOW_FACTOR");
 	GetSetting(ActiveCFEPatchConfig.WallBuildLength			, "SETTINGS", "WALL_BUILD_LENGTH");
 	GetSetting(ActiveCFEPatchConfig.BuildingGapOffset		, "SETTINGS", "BUILDING_GAP_OFFSET");
 	GetSetting(ActiveCFEPatchConfig.OreCapacityOffset		, "SETTINGS", "ORE_CAPACITY_OFFSET");
@@ -118,6 +121,10 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
       //growth can't be negative
     if (ActiveCFEPatchConfig.OreGrowthScale < 0){
         ActiveCFEPatchConfig.OreGrowthScale = 0;
+    }
+    // don't multiply by 0
+    if (ActiveCFEPatchConfig.OreToGemPromotionSlowFactor < 1){
+        ActiveCFEPatchConfig.OreToGemPromotionSlowFactor = 1;
     }
     
     // Compute complex weights here so they only have to be computed once

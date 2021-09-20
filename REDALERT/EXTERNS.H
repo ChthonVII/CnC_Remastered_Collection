@@ -110,6 +110,8 @@ struct CFEPatchConfig
     bool EnableSmarterAircraft = false;
     bool EnableSmarterRepairBays = false;
     bool BetterOreGrowth = false;
+    bool OreIndexBugfix = false;
+    bool GemOverloadFix = false;
     bool EnableInaccuracyBugfix = false;
     bool EnableVeterancy = false;
     bool EnableWideSupers = false;
@@ -132,6 +134,7 @@ struct CFEPatchConfig
     int  HarvyOptimizeCommunalismDenominator = 4;
     int  HarvyOptimizeCommunalismWeight = 13;
 	int  OreGrowthScale = 1;
+    int OreToGemPromotionSlowFactor = 8;
 	int  WallBuildLength = 5;
     int InverseBuildingPreviewMode = 0; // 0=off; 1= MP only; 2 = all game modes
 	int  BuildingGapOffset = 0;

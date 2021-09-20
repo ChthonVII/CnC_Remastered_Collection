@@ -290,6 +290,7 @@ class CellClass
 		bool Spread_Tiberium(bool forced=false);
         bool CFESpread_Tiberium(bool forced=false); //Chthon CFE Note: for better ore growth
         bool CFEOreMineSpread_Tiberium(); //Chthon CFE Note: for better ore growth, special function for ore mines
+        bool DumpOreHere(); // Chthon CFE Note: harvester dumps ore into the cell (to make room for gems)
 		long Tiberium_Adjust(bool pregame=false);
 		void Wall_Update(void);
 		void Concrete_Calc(void);

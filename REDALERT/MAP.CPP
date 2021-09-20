@@ -2354,7 +2354,7 @@ int MapClass::Scan_For_Overlay(const CELL origin, const FacingType dir, const Ov
 
 // Chthon CFE Note: Alternative logic for better tiberium growth.
 void MapClass::CFELogic(void){
-
+    
     if (Debug_Force_Crash) { *((int *)0) = 1; }
 
     /*
