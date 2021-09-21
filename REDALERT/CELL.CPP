@@ -2112,6 +2112,7 @@ long CellClass::Tiberium_Adjust(bool pregame)
 		if (OverlayTypeClass::As_Reference(Overlay).Land == LAND_TIBERIUM) {
 			static int _adj[9] = {0,1,3,4,6,7,8,10,11};
 			static int _adjgem[9] = {0,0,0,1,1,1,2,2,2};
+            static int better_adj[24] = {0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11};
 			int	count = 0;
 
 			/*
@@ -2163,7 +2164,18 @@ long CellClass::Tiberium_Adjust(bool pregame)
 				OverlayData = _adjgem[count];
 				OverlayData = min(OverlayData, 2);
 			} else {
-				OverlayData = _adj[count];
+				//OverlayData = _adj[count];
+                if (ActiveCFEPatchConfig.OreIndexBugfix){
+                    if (count == 0){
+                        OverlayData = better_adj[Random_Pick(0,2)];
+                    }
+                    else {
+                        OverlayData = better_adj[(3*(count-1))+Random_Pick(0,2)];
+                    }
+                }
+                else {
+                    OverlayData = _adj[count];
+                }
 			}
 			return((OverlayData+1) * value);
 		}
@@ -3084,7 +3096,9 @@ bool CellClass::Can_Tiberium_Spread(void) const
 
 	if (Land_Type() != LAND_TIBERIUM) return(false);
 
-	if (OverlayData <= 6) return(false);
+	//if (OverlayData <= 6) return(false);
+    const int spreadthreshhold = ActiveCFEPatchConfig.OreIndexBugfix ? 5 : 6;
+    if (OverlayData <= spreadthreshhold) return(false);
 
 	if (Overlay != OVERLAY_GOLD1 && Overlay != OVERLAY_GOLD2 && Overlay != OVERLAY_GOLD3 && Overlay != OVERLAY_GOLD4) return(false);
 
