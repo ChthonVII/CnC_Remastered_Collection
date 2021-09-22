@@ -2308,6 +2308,16 @@ FireErrorType TechnoClass::Can_Fire(TARGET target, int which) const
 	**	If cloaked, then firing is disabled.
 	*/
 	if (Cloak != UNCLOAKED) {
+        
+        // Allowed cloaked veteran rank 3 commando to fire once they reach VISUAL_DARKEN
+        if (    (VeterancyRank == 3) &&
+                (What_Am_I() == RTTI_INFANTRY) &&
+                (*((InfantryClass*)this) == INFANTRY_RAMBO) &&
+                ((const_cast<TechnoClass*>(this))->Visual_Character(true) <= VISUAL_DARKEN) // cast away const-ness
+        ){
+            return FIRE_OK;
+        }
+        
 		return(FIRE_CLOAKED);
 	}
 

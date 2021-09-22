@@ -3874,7 +3874,12 @@ void InfantryClass::Firing_AI(void)
 
 				case FIRE_CLOAKED:
 					Do_Uncloak();
-					break;
+                    // Chthon CFE Note: If stealth Tanya, accelerate the decloak
+                    if ((*this == INFANTRY_TANYA) && (VeterancyRank == 3)) {
+                        CloakingDevice.Graphic_Logic();
+                        CloakingDevice.Graphic_Logic();
+                    }
+                    break;
 
 				case FIRE_OK:
 					/*

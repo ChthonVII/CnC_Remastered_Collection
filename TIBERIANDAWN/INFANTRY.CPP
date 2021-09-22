@@ -1167,7 +1167,12 @@ void InfantryClass::AI(void)
 	switch (Can_Fire(TarCom, 0)) {
 		case FIRE_CLOAKED:
 			Do_Uncloak();
-			break;
+            // Chthon CFE Note: If stealth commando, accelerate the decloak
+            if ((*this == INFANTRY_RAMBO) && (VeterancyRank == 3)) {
+                CloakingDevice.Graphic_Logic();
+                CloakingDevice.Graphic_Logic();
+            }
+            break;
 
 		case FIRE_OK:
 #ifdef BOXING

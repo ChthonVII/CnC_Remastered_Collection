@@ -3224,6 +3224,16 @@ FireErrorType TechnoClass::Can_Fire(TARGET target, int which) const
 			return(FIRE_OK);
 		}
 #endif
+        
+        // Allowed cloaked veteran rank 3 tanya to fire once they reach VISUAL_DARKEN
+        if (    (VeterancyRank == 3) &&
+                (What_Am_I() == RTTI_INFANTRY) &&
+                (*((InfantryClass*)this) == INFANTRY_TANYA) &&
+                ((const_cast<TechnoClass*>(this))->Visual_Character(true) <= VISUAL_DARKEN) // cast away const-ness
+        ){
+            return FIRE_OK;
+        }
+
 		return(FIRE_CLOAKED);
 	}
 
