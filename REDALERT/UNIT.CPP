@@ -99,7 +99,7 @@
 
 #include	"function.h"
 #include "COORDA.h"
-#include "CFEDEBUG.H"
+//#include "CFEDEBUG.H"
 
 extern void Logic_Switch_Player_Context(ObjectClass *object);
 extern void Logic_Switch_Player_Context(HouseClass *object);
