@@ -2642,6 +2642,15 @@ BulletClass * TechnoClass::Fire_At(TARGET target, int which)
 		** For multiplayer games, only reveal the unit if the target is the
 		** local player.
 		*/
+
+// Chthon CFE Note: Petroglyph did this wrong. In SP shroud is supposed to reveal when one non-player side fires on another non-player side. The Covert Ops mission Deceit depends on this, as do some player-made missions.
+// See: https://steamcommunity.com/app/1213210/discussions/0/3096760955424607213/#c3096760955427531022
+// Same deal as RA bugfix for Monster Tank Madness 
+if (    (GameToPlay == GAME_NORMAL) &&
+         ((!IsOwnedByPlayer && !IsDiscoveredByPlayer) || !Map[Coord_Cell(Center_Coord())].IsMapped)
+) {
+    Map.Sight_From(Coord_Cell(Center_Coord()), 1, false);
+}
 #if (0)
 		if ((!IsOwnedByPlayer && !IsDiscoveredByPlayer) || !Map[Coord_Cell(Center_Coord())].IsMapped) {
 			if (GameToPlay == GAME_NORMAL) {
