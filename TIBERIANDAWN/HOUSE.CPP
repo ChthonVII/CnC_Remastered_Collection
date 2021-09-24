@@ -5464,7 +5464,9 @@ int HouseClass::Expert_AI(void)
 		int maxbuilding = 0;
 		int enemycount = 0;
 
-		for (HousesType house = HOUSE_FIRST; house < HOUSE_COUNT; house++) {
+        // Chthon CFE Note: Vanilla bugfix -- don't count HOUSE_JP and HOUSE_NEUTRAL when MP AI player is picking its "enemy" 
+		//for (HousesType house = HOUSE_FIRST; house < HOUSE_COUNT; house++) {
+        for (HousesType house = HOUSE_MULTI1; house < HOUSE_COUNT; house++) {
 			HouseClass * h = HouseClass::As_Pointer(house);
 			if (h != NULL && h->IsActive && !h->IsDefeated && !Is_Ally(h)) {
 
