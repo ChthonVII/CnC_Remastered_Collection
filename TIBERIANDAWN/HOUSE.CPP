@@ -1440,7 +1440,8 @@ void HouseClass::AI(void)
 	}
 #endif
 
-	if (GameToPlay != GAME_NORMAL && Class->House != HOUSE_JP) {
+    // Chthon CFE Note: bugfix for Cactus Valley, HOUSE_NEUTRAL also shouldn't die for lack of stuctures 
+	if ((GameToPlay != GAME_NORMAL) && (Class->House != HOUSE_JP) && (Class->House != HOUSE_NEUTRAL)) {
 		Check_Pertinent_Structures();
 	}
 
