@@ -6336,6 +6336,8 @@ int HouseClass::AI_Building(void)
 		/*
 		**	Don't suggest anything to build if the base is already big enough.
 		*/
+        // Chthon CFE Note: Remove dead code -- this does nothing b/c quant's only use is commented out
+        /*
 		unsigned int quant = 0;
 		for (HousesType h = HOUSE_FIRST; h < HOUSE_COUNT; h++) {
 			HouseClass const * hptr = HouseClass::As_Pointer(h);
@@ -6345,6 +6347,7 @@ int HouseClass::AI_Building(void)
 			}
 		}
 		quant += Rule.BaseSizeAdd;
+        */
 
 // TCTC -- Should multiply largest player base by some rational number.
 //		if (CurBuildings >= quant) return(TICKS_PER_SECOND);
