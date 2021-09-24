@@ -2115,7 +2115,8 @@ void HouseClass::Make_Ally(HousesType house)
 		**	If in normal game play but the house is defeated, then don't allow the ally
 		**	key to work.
 		*/
-		if (!ScenarioInit && (IsDefeated || house == HOUSE_JP)) return;
+        // Chthon CFE Note: Also don't allow allying with HOUSE_NEUTRAL in MP
+		if (!ScenarioInit && (IsDefeated || (house == HOUSE_JP) || ((house == HOUSE_NEUTRAL) && (GameToPlay != GAME_NORMAL)))) return;
 
 		Allies |= (1 << house);
 
