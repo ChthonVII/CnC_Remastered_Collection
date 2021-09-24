@@ -1564,7 +1564,7 @@ void UnitClass::Enter_Idle_Mode(bool initial)
                     
                     	// Chthon CFE Note: Meaner Visercoids go back to mission_hunt since that's where their custom AI is
                         if (ActiveCFEPatchConfig.MeanerVisceroids && *this == UNIT_VICE){
-                            order = MISSION_HUNT;
+                            Assign_Mission(MISSION_HUNT);
                             return;
                         }
                     
