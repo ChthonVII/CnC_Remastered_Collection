@@ -80,6 +80,12 @@
 
 #include	"function.h"
 
+#ifndef ARRAY_SIZE
+#define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
+#endif
+
+extern void On_Sound_Effect(const HouseClass* player_ptr, int sound_effect_index, const char* extension, int variation, COORDINATE coord);
+
 
 int const InfantryClass::HumanShape[32] = {0,0,7,7,7,7,6,6,6,6,5,5,5,5,5,4,4,4,3,3,3,3,2,2,2,2,1,1,1,1,1,0};
 
@@ -774,7 +780,9 @@ void InfantryClass::Per_Cell_Process(bool center)
 		**	Rambo types give a gung-ho comment when unloaded.
 		*/
 		if (*this == INFANTRY_RAMBO) {
-			Sound_Effect(VOC_RAMBO_ROCK, Coord);
+            // Chthon CFE Note: vanilla bigfix, this should be audible to all players
+			//Sound_Effect(VOC_RAMBO_ROCK, Coord);
+            CFE_Patch_Sound_Effect_For_All_Humans(VOC_RAMBO_ROCK, Coord);
 		}
 
 		/*
@@ -1156,7 +1164,9 @@ void InfantryClass::AI(void)
 				VOC_RAMBO_COMIN,
 				VOC_RAMBO_TUFF
 			};
-			Sound_Effect(_response[Sim_Random_Pick(0, (int)(sizeof(_response) / sizeof(_response[0]))-1)], Coord);
+            // Chthon CFE Note: Vanilla bugfix - this should be audible to all players
+			//Sound_Effect(_response[Sim_Random_Pick(0, (int)(sizeof(_response) / sizeof(_response[0]))-1)], Coord);
+            CFE_Patch_Random_Sound_Effect_For_All_Humans(_response, ARRAY_SIZE(_response), Coord);
 		}
 	}
 
@@ -2067,7 +2077,10 @@ void InfantryClass::Random_Animate(void)
 			case 1:
 				Do_Action(DO_IDLE1);
 				PrimaryFacing.Set(Facing_Dir(Random_Pick(FACING_N, FACING_NW)));
-				if (Sim_Random_Pick(1,20) == 1 && !Is_Selected_By_Player() && *this == INFANTRY_MOEBIUS && IsDiscoveredByPlayer) {
+                // Chthon CFE Note: This no longer works as intended due to Petroglyph's PlayerPtr shenanigans
+                // Though you won't notice unless he appears in a custom MP map
+				/*
+                if (Sim_Random_Pick(1,20) == 1 && !Is_Selected_By_Player() && *this == INFANTRY_MOEBIUS && IsDiscoveredByPlayer) {
 					static VocType _response[] = {
 //						VOC_EXCELLENT1,
 //						VOC_EXCELLENT2,
@@ -2079,14 +2092,39 @@ void InfantryClass::Random_Animate(void)
 					};
 					Sound_Effect(_response[Sim_Random_Pick(0, (int)(sizeof(_response) / sizeof(_response[0]))-1)], Coord);
 				}
+				*/
+				if ((*this == INFANTRY_MOEBIUS) && !Is_Selected_By_Player(House) && Is_Discovered_By_Player(House) && (Random_Pick(0,19) == 0)){
+                    // reenable VOC_QUIP2 since Nyerguds extracted it from N64 port
+                    if ((Random_Pick(0,4) < 2) && IsNearATree()){
+                        On_Sound_Effect(House, (int)VOC_QUIP2, "", 1, Coord);
+                    }
+                    else {
+                        static VocType _response[] = {
+    //						VOC_EXCELLENT1,
+    //						VOC_EXCELLENT2,
+                            VOC_EXCELLENT3,
+    //						VOC_EXCELLENT4,
+    //						VOC_EXCELLENT5,
+                            VOC_QUIP1,
+    //						VOC_QUIP2
+                        };
+                        On_Sound_Effect(House, (int)_response[Random_Pick(0, (int)(ARRAY_SIZE(_response) -1))], "", 1, Coord);
+                    }
+                }
 				break;
 
 			case 2:
 				Do_Action(DO_IDLE2);
 				PrimaryFacing.Set(Facing_Dir(Random_Pick(FACING_N, FACING_NW)));
-				if (!Is_Selected_By_Player() && IsOwnedByPlayer && *this == INFANTRY_RAMBO && Sim_Random_Pick(0, 2) == 0) {
+				// Chthon CFE Note: This no longer works as intended due to Petroglyph's PlayerPtr shenanigans
+                /*
+                if (!Is_Selected_By_Player() && IsOwnedByPlayer && *this == INFANTRY_RAMBO && Sim_Random_Pick(0, 2) == 0) {
 					Sound_Effect(VOC_RAMBO_CMON, Coord);
 				}
+				*/
+				if ((*this == INFANTRY_RAMBO) && !Is_Selected_By_Player(House) && (Random_Pick(0,2) == 0)){
+                    On_Sound_Effect(House, (int)VOC_RAMBO_CMON, "", 1, Coord);
+                }
 				break;
 
 			/*
@@ -2805,6 +2843,16 @@ void InfantryClass::Response_Attack(void)
 	}
 }
 
+// Chthon CFE Note: unit response for sabtotage
+void InfantryClass::Response_Sabotage(void)
+{
+    Validate();
+    if ((*this == INFANTRY_RAMBO) && AllowVoice) {
+        Sound_Effect(VOC_RAMBO_PRESENT, 0, Infantry.ID(this) + 1);
+    }
+}
+
+
 
 /***********************************************************************************************
  * InfantryClass::Fire_Coord -- Calculates the origin point for projectiles fired.             *
@@ -2949,7 +2997,10 @@ void InfantryClass::Assign_Mission(MissionType order)
 {
 	Validate();
 	if (order == MISSION_SABOTAGE) {
-		Sound_Effect(VOC_RAMBO_PRESENT, Coord);
+        // Chthon CFE Note: vanilla bigfix -- this should be audible to all players, except the owner, who already got the sound played when they clicked
+        // (Don't really need to do it this way for Remastered, but it's cleaner if anyone is going to use this code for vanilla conquer et al.)
+		//Sound_Effect(VOC_RAMBO_PRESENT, Coord);
+        CFE_Patch_Sound_Effect_For_All_Humans(VOC_RAMBO_PRESENT, Coord, 1, House);
 	}
 
 	IsBoxing = false;

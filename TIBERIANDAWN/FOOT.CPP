@@ -78,6 +78,7 @@
 
 #define ARRAY_SIZE(a)    (sizeof(a)/sizeof(a[0]))
 
+extern void On_Sound_Effect(const HouseClass* player_ptr, int sound_effect_index, const char* extension, int variation, COORDINATE coord);
 
 /***********************************************************************************************
  * FootClass::FootClass -- Default constructor for foot class objects.                         *
@@ -2192,9 +2193,14 @@ bool FootClass::Can_Demolish(void) const
 void FootClass::Sell_Back(int control)
 {
 	if (control != 0) {
-		if (House == PlayerPtr) {
-			Sound_Effect(VOC_CASHTURN);
-		}
+        // Chthon CFE Note: bugfix - should play for owner, not server 
+        // also, put sound at Coord
+		//On_Sound_Effect(House, (int)VOC_CASHTURN, "", 1, Coord);
+        // better idea, port from Petroglyph's change in BuildingClass::Mission_Deconstruction()  -- playing positionally for everyone is an improvement
+        Sound_Effect(VOC_CASHTURN, Coord);
+        //if (House == PlayerPtr) {
+		//	Sound_Effect(VOC_CASHTURN);
+		//}
 		House->Refund_Money(Refund_Amount());
 		Stun();
 		Limbo();

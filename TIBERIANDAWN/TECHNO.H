@@ -291,6 +291,7 @@ class TechnoClass :	public RadioClass,
 		virtual void Response_Select(void);
 		virtual void Response_Move(void);
 		virtual void Response_Attack(void);
+        virtual void Response_Sabotage(void); // Chthon CFE Note: added so that sabotage can have its own response
 		virtual void Player_Assign_Mission(MissionType order, TARGET target=TARGET_NONE, TARGET destination=TARGET_NONE);
 
 		/*
@@ -409,6 +410,8 @@ void AttackMoveEnterMoveMode();
 void AttackMoveEnterAttackMode();
 
 void GainVeterancyXP(unsigned short int XP);
+
+bool IsNearATree();
 
 };
 

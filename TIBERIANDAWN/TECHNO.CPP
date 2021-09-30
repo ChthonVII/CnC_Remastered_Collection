@@ -2649,7 +2649,7 @@ BulletClass * TechnoClass::Fire_At(TARGET target, int which)
 if (    (GameToPlay == GAME_NORMAL) &&
          ((!IsOwnedByPlayer && !IsDiscoveredByPlayer) || !Map[Coord_Cell(Center_Coord())].IsMapped)
 ) {
-    Map.Sight_From(Coord_Cell(Center_Coord()), 1, false);
+    Map.Sight_From(PlayerPtr, Coord_Cell(Center_Coord()), 1, false);
 }
 #if (0)
 		if ((!IsOwnedByPlayer && !IsDiscoveredByPlayer) || !Map[Coord_Cell(Center_Coord())].IsMapped) {
@@ -2752,6 +2752,9 @@ void TechnoClass::Player_Assign_Mission(MissionType mission, TARGET target, TARG
 	if (AllowVoice) {
 		if (mission == MISSION_ATTACK) {
 			Response_Attack();
+        // Chthon CFE Note: Add sperate response for sabotage
+        } else if (mission == MISSION_SABOTAGE) {
+            Response_Sabotage();
 		} else {
 			Response_Move();
 		}
@@ -4588,6 +4591,10 @@ void TechnoClass::Response_Attack(void)
 }
 
 
+void TechnoClass::Response_Sabotage(void)
+{
+}
+
 /***********************************************************************************************
  * TechnoClass::Target_Something_Nearby -- Handles finding and assigning a nearby target.      *
  *                                                                                             *
@@ -5464,4 +5471,59 @@ void TechnoClass::GainVeterancyXP(unsigned short int XP){
     }
     
     return;
+}
+
+// Is this unit near a tree?
+// Used for Moebius remarking, "A most remarkable  Metasequoia Glyptostroboides."
+bool TechnoClass::IsNearATree(){
+
+    const CELL cell = Coord_Cell(Coord);
+    const int cellx = Cell_X(cell);
+    const int celly = Cell_Y(cell);
+    int scanx;
+    int scany;
+
+    // scan a box of cells around the primary_target_coord
+    for (int i=-2; i<=2; i++){
+        scanx = cellx + i;
+        
+        // skip if out of bounds
+        if (scanx <0 ){
+            continue;
+        }
+        if (scanx > MAP_CELL_W){
+            continue;
+        }
+
+        for (int j=-2; j<=2; j++){
+            scany = celly + j;
+            
+            // skip if out of bounds
+            if (scany < 0){
+                continue;
+            }
+            if (scany > MAP_CELL_H){
+                continue;
+            }
+            
+            CELL newcell = XY_Cell(scanx, scany);
+            
+            // skip if off playable map
+            if (!Map.In_Radar(newcell)){
+                continue;
+            }
+            
+            CellClass* cellptr = &Map[newcell];
+            TerrainClass* terrain = cellptr->Cell_Terrain();
+            // all the trees are contiguous, so we can do this
+            if (    terrain &&
+                    (terrain->Class->Type >= TERRAIN_TREE1) &&
+                    (terrain->Class->Type <= TERRAIN_BLOSSOMTREE2)
+            ){
+                return true;
+            }
+            
+        } //end for j
+    } // end for i
+    return false;
 }

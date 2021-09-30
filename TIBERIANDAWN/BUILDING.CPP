@@ -103,6 +103,7 @@
 
 //#include "CFEDEBUG.H"
 
+extern void On_Sound_Effect(const HouseClass* player_ptr, int sound_effect_index, const char* extension, int variation, COORDINATE coord);
 
 enum SAMState {
 	SAM_NONE=-1,					// Used for non SAM site buildings.
@@ -1348,7 +1349,8 @@ bool BuildingClass::Unlimbo_Wall(COORDINATE coord)
 							//FluffyQuack 14/06/2020: If WallsAlwaysHaveFullCost is true then we charge the player for each extra piece. Abort with "insufficient funds" if player can't afford it
 							if (ActiveCFEPatchConfig.WallsAlwaysHaveFullCost && House->Available_Money() < Class->Cost_Of())
 							{
-								Speak(VOX_NO_CASH);
+								// Chthon CFE Note: Play sound for owner
+                                Speak(VOX_NO_CASH, House);
 								break;
 							}
 
@@ -3513,7 +3515,8 @@ void BuildingClass::Repair(int control)
 			sound = VOC_SCOLD;
 		} else {
 			sound = VOC_BUTTON;
-			// Chthon CFE Note: This is wrong in LAN multiplayer. PlayerPtr points to the server, not necessarily the building owner 
+			// Chthon CFE Note: This is wrong in LAN multiplayer. PlayerPtr points to the server, not necessarily the building owner
+            // actually OK since this function is called with correct PlayerPtr. see DLLExportClass::Repair()
             //Clicked_As_Target(PlayerPtr->Class->House); // 2019/09/20 JAS - Added record of who clicked on the object
             Clicked_As_Target(Owner());
 			IsWrenchVisible = true;
@@ -4145,15 +4148,36 @@ bool BuildingClass::Captured(HouseClass * newowner)
 {
 	Validate();
 	if (Can_Capture() && newowner != House) {
-		switch (Owner()) {
-			case HOUSE_GOOD:
-				Speak(VOX_GDI_CAPTURED);
-				break;
+        // Chthon CFE Note: Bugfix sound for MP
+		if (GameToPlay == GAME_NORMAL){
+            switch (Owner()) {
+                case HOUSE_GOOD:
+                    Speak(VOX_GDI_CAPTURED);
+                    break;
 
-			case HOUSE_BAD:
-				Speak(VOX_NOD_CAPTURED);
-				break;
-		}
+                case HOUSE_BAD:
+                    Speak(VOX_NOD_CAPTURED);
+                    break;
+            }
+        }
+        else {
+            // play our new generic captured sound for the original owner
+            if (House->IsHuman){
+                Speak(VOX_GEN_CAPTURED, House);
+            }
+            // play the appropriate capture sound for the new owner
+            if (newowner->IsHuman){
+                switch (House->ActLike) {
+                    case HOUSE_GOOD:
+                        Speak(VOX_GDI_CAPTURED, newowner);
+                        break;
+
+                    case HOUSE_BAD:
+                        Speak(VOX_NOD_CAPTURED, newowner);
+                        break;
+                }
+            }
+        }
 
 		if (House == PlayerPtr) {
 			Map.PowerClass::IsToRedraw = true;
@@ -4702,7 +4726,10 @@ int BuildingClass::Mission_Deconstruction(void)
 						Sound_Effect(VOC_CASHTURN, Coord);
 					}
 				#else
+                    // Chthon CFE Note: Bugfix, player for owner only
+                    // revert -- playing positionally for everyone is an improvement
 					Sound_Effect(VOC_CASHTURN, Coord);
+					//On_Sound_Effect(House, (int)VOC_CASHTURN, "", 1, Coord);
 				#endif
 				
 				/*
@@ -5467,7 +5494,11 @@ int BuildingClass::Mission_Missile(void)
 							// MBL 03.27.2020 This is never getting triggered for any player in multiplayer, so removing the check (https://jaas.ea.com/browse/TDRA-5458)
 							// if (House == PlayerPtr) 
 							{
-								Speak(VOX_NUKE_LAUNCHED); // "NUKLNCH1" - "Nuclear Weapon Launched"
+                                // Chthon CFE Note: bugfix -- this should be audible to the temple's owner, not the server
+                                // turns out this particular sound is hardcoded to play for everyone somewhere in GlyphX Client, so we need to change the sound file name
+								// Speak(VOX_NUKE_LAUNCHED); // "NUKLNCH1" - "Nuclear Weapon Launched"
+                                Speak(VOX_NUKE_LAUNCHED2, House); // "NUKLNCH1" - "Nuclear Weapon Launched"
+                                // House parameter is getting ignored... is this file hardcoded to play for all in GlyphX somewhere?
 							}
 						}
 					}
@@ -5505,7 +5536,10 @@ int BuildingClass::Mission_Missile(void)
 						} else {
 							bullet->PrimaryFacing.Set_Current(DIR_S);
 						}
+						// Chthon CFE Note: bugfix - this should be audible to everyone in MP
+						// turns out change isn't necessary -- this particular sound is hardcoded to play for everyone somewhere in GlyphX Client
 						Speak(VOX_INCOMING_NUKE); // "Nuclear Warhead Approaching" - "NUKE1"
+						//CFE_Patch_Speak_For_All_Humans(VOX_INCOMING_NUKE); // "Nuclear Warhead Approaching" - "NUKE1"
 						Sound_Effect(VOC_NUKE_FIRE, start);
 					}
 					if (bullet) {

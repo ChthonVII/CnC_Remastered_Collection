@@ -54,6 +54,7 @@
 
 #include	"function.h"
 
+extern void On_Sound_Effect(const HouseClass* player_ptr, int sound_effect_index, const char* extension, int variation, COORDINATE coord);
 
 DriveClass::DriveClass(void) : Class(0), SimLeptonX(0), SimLeptonY(0) {};			// Added SimLeptonX and Y. ST - 4/30/2019 8:06AM
 
@@ -1143,7 +1144,9 @@ bool DriveClass::Start_Of_Move(void)
 					}
 				}
 			} else {
-				if (IsNewNavCom) Sound_Effect(VOC_SCOLD);
+				// Chthon CFE Note: bugfix - play for owner, not server, also add coord
+                //if (IsNewNavCom) Sound_Effect(VOC_SCOLD);
+                if (IsNewNavCom) On_Sound_Effect(House, (int)VOC_SCOLD, "", 1, Coord);
 			}
 			IsNewNavCom = false;
 			TrackNumber = -1;

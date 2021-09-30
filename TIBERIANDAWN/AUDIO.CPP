@@ -245,7 +245,8 @@ struct SoundEffectNameStruct {
 	{"MCOURSE1", 	10,	IN_NOVAR},	// VOC_OF_COURSE		"Of course."
 	{"MYESYES1", 	10,	IN_NOVAR},	// VOC_YESYES			"Yes yes yes."
 	{"MTIBER1", 	10,	IN_NOVAR},	//	VOC_QUIP1			"Mind the Tiberium."
-//	{"MMG1", 		10,	IN_NOVAR},	//	VOC_QUIP2			"A most remarkable  Metasequoia Glyptostroboides."
+    // Chthon CFE Note: VOC_QUIP2 re-enabled since nyerguds extracted it from N64 port
+	{"MMG1", 		10,	IN_NOVAR},	//	VOC_QUIP2			"A most remarkable  Metasequoia Glyptostroboides."
 	{"MTHANKS1", 	10,	IN_NOVAR},	//	VOC_THANKS			"Thank you."
 
 	{"CASHTURN", 	1,		IN_NOVAR},	//	VOC_CASHTURN		Sound of money being piled up.
@@ -506,6 +507,9 @@ char const * Speech[VOX_COUNT] =  {
 //	"BLEFT1",		//	blue player has departed
 //	"BLUEKILT",		//	blue player destroyed
 //	"BLUEWIN"		//	blue player is victorious
+    "GENCAPT1",     // Chthon CFE Note: VOX_GEN_CAPTURED trimmed version of captured message for use when the your own build is lost to capture in MP 
+    "NUKLNCH2",     // Chthon CFE Note: VOX_NUKE_LAUNCHED2 -- duplicate of VOX_NUKE_LAUNCHED to work around hardcoding in GlyphX
+    
 };
 static VoxType CurrentVoice = VOX_NONE;
 

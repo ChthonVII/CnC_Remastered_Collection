@@ -158,6 +158,7 @@ class InfantryClass : public FootClass
 		virtual void Response_Select(void);
 		virtual void Response_Move(void);
 		virtual void Response_Attack(void);
+        virtual void Response_Sabotage(void); // Chthon CFE Note: added so that sabotage can have its own response
 		virtual void Active_Click_With(ActionType action, ObjectClass * object);
 
 		/*

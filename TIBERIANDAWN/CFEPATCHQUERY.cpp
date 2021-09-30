@@ -3,6 +3,8 @@
 extern bool DLL_Export_Get_Input_Key_State(KeyNumType key);
 //extern void Logic_Switch_Player_Context(HouseClass *house);
 
+extern void On_Sound_Effect(const HouseClass* player_ptr, int sound_effect_index, const char* extension, int variation, COORDINATE coord);
+
 //Disable A10s in missions if the player has no buildings
 bool CFE_Patch_A10_Override(const ObjectTypeClass& object, const HousesType house)
 {
@@ -152,6 +154,73 @@ int CFE_Patch_FullRange_Random_Pick(int min, int max){
     return (fullrangerandom % adjustedmax) + min;
 }
 
+// Play the same sound for all human players
+// used for stuff like commando voice lines that were audible to everyone in the original game,
+// but which are broken in vanilla remastered b/c of PlayerPtr shenanigans
+// skiphouse is a house to not player the sound for (b/c it was already played by other means)
+// other parameters are the same as Sound_Effect()
+void CFE_Patch_Sound_Effect_For_All_Humans(VocType voc, COORDINATE coord, int variation, HouseClass* skiphouse){
+
+    // just play the sound normally in SP
+    if (GameToPlay == GAME_NORMAL){
+        if (!skiphouse || (PlayerPtr != skiphouse)){
+            Sound_Effect(voc, coord, variation);
+        }
+        return;
+    }
+    // multiplayer:
+    for (int i=0 ; i<MPlayerCount; i++) {
+        HouseClass* someplayer = HouseClass::As_Pointer(MPlayerHouses[i]);
+        if ((someplayer->IsHuman) && (!skiphouse || (someplayer != skiphouse))) {
+            On_Sound_Effect(someplayer, (int)voc, "", variation, coord);
+        }
+    }
+    return;
+}
+
+// Play a random sound from a list for all human players
+// used for stuff that was audible to everyone in original game, and used non-syncronized random pick (which meant that different players might hear different sounds)
+// voclist is an array of sounds to choose from; listlength is the number of elements in voclist (use ARRAY_SIZE macro when calling)
+// other parameters are the same as CFE_Patch_Sound_Effect_For_All_Humans
+void CFE_Patch_Random_Sound_Effect_For_All_Humans(VocType voclist[], int listlength, COORDINATE coord, int variation, HouseClass* skiphouse){
+    
+    if (listlength < 1) return;
+    
+    if (GameToPlay == GAME_NORMAL){
+        if (!skiphouse || (PlayerPtr != skiphouse)){
+            Sound_Effect(voclist[Random_Pick(0, listlength -1)], coord, variation);
+        }
+        return;
+    }
+    // multiplayer:
+    for (int i=0 ; i<MPlayerCount; i++) {
+        HouseClass* someplayer = HouseClass::As_Pointer(MPlayerHouses[i]);
+        if ((someplayer->IsHuman) && (!skiphouse || (someplayer != skiphouse))) {
+            On_Sound_Effect(someplayer, (int)voclist[Random_Pick(0, listlength -1)], "", variation, coord);
+        }
+    }
+    return;
+}
+
+// Play EVA speech for all human players
+// used for stuff that was audible to everyone in original game, such as incoming nuke warning
+// parameters are the same as Speak()
+void  CFE_Patch_Speak_For_All_Humans(VoxType voice, COORDINATE coord){
+
+    if (GameToPlay == GAME_NORMAL){
+        Speak(voice, NULL, coord);
+        return;
+    }
+    // multiplayer
+    for (int i=0 ; i<MPlayerCount; i++) {
+        HouseClass* someplayer = HouseClass::As_Pointer(MPlayerHouses[i]);
+        if (someplayer->IsHuman) {
+            Speak(voice, someplayer, coord);
+        }
+    }
+
+    return;
+}
 
 /* // Unfortunately, this works as intended (if you give it the first 11 characters of SteamID as your name) but doesn't solve the problem.
  * // Turns out the server is doing ALL the display work for the clients.

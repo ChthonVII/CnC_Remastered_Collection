@@ -105,6 +105,7 @@
 #include "SidebarGlyphx.h"
 #include "defines.h"
 
+extern void On_Sound_Effect(const HouseClass* player_ptr, int sound_effect_index, const char* extension, int variation, COORDINATE coord);
 
 /***********************************************************************************************
  * HouseClass::Validate -- validates house pointer															  *
@@ -1444,6 +1445,9 @@ void HouseClass::AI(void)
 	if ((GameToPlay != GAME_NORMAL) && (Class->House != HOUSE_JP) && (Class->House != HOUSE_NEUTRAL)) {
 		Check_Pertinent_Structures();
 	}
+	
+	// Chthon CFE Note: todo bugfix for GDI 9
+	//if ((GameToPlay == GAME_NORMAL) && 
 
 	/*
 	** Special win/lose check for multiplayer games; by-passes the
@@ -2776,7 +2780,10 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
 						} else {
 							bullet->PrimaryFacing.Set_Current(DIR_S);
 						}
+						// Chthon CFE Note: bugfix - this should be audible to everyone in MP
+						// not necessary - this particular sound is hardcoded in GlyphX client to play for all humans
 						Speak(VOX_INCOMING_NUKE); // "Nuclear Warhead Approaching" - "NUKE1"
+						//CFE_Patch_Speak_For_All_Humans(VOX_INCOMING_NUKE); // "Nuclear Warhead Approaching" - "NUKE1"
 						Sound_Effect(VOC_NUKE_FIRE, start);
 					}
 				}
@@ -4796,9 +4803,13 @@ void HouseClass::Sell_Wall(CELL cell)
 				}
 				if (btype != NULL && !btype->IsUnsellable) {
 
-					if (PlayerPtr == this) {
-						Sound_Effect(VOC_CASHTURN);
-					}
+                    // better idea, port from Petroglyph's change in BuildingClass::Mission_Deconstruction()  -- playing positionally for everyone is an improvement
+                    Sound_Effect(VOC_CASHTURN,  Cell_Coord(cell));
+					//if (PlayerPtr == this) {
+						// Chthon CFE Note: Bugfix - player for owner, not server
+                        //Sound_Effect(VOC_CASHTURN);
+                        //On_Sound_Effect(this, (int)VOC_CASHTURN, "", 1, Cell_Coord(cell));
+					//}
 
 					//Disable wall refunds if the player has a wall build length > 1
 					//FluffyQuack 14/06/2020: Always allow refunds if walls have full cost 
@@ -5793,6 +5804,10 @@ UrgencyType HouseClass::Check_Build_Offense(void) const
 UrgencyType HouseClass::Check_Attack(void) const
 {
 	//assert(Houses.ID(this) == ID);
+    // Chthon CFE Note: ugly test fix
+    if ((Class->House == HOUSE_JP) || (Class->House == HOUSE_NEUTRAL)){
+        return(URGENCY_NONE);
+    }
 
 	if (Frame > TICKS_PER_MINUTE && Attack == 0) {
 		if (State == STATE_ATTACKED) {

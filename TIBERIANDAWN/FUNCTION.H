@@ -989,8 +989,8 @@ void WWDOS_Shutdown(void);
 
 #endif
 
-
-
+#ifndef ORPHAN_FUNCTION_STUFF
+#define ORPHAN_FUNCTION_STUFF 1
 /*
 ** Debug output. ST - 6/27/2019 10:00PM
 */
@@ -1000,6 +1000,10 @@ void GlyphX_Debug_Print(const char *debug_text);
 ** Achievement event. ST - 11/11/2019 11:39AM
 */
 void On_Achievement_Event(const HouseClass* player_ptr, const char *achievement_type, const char *achievement_reason);
+#endif
+
+#ifndef CFE_PATCH_STUFF
+#define CFE_PATCH_STUFF 1
 
 bool CFE_Patch_Is_Cell_Friendly_To_House(const HousesType house, const CELL cell);
 bool CFE_Patch_Is_Cell_In_Radius_To_Friendly_House(const HousesType house, const CELL cell, const int radius);
@@ -1011,5 +1015,12 @@ bool CFE_Patch_Can_Have_Rally_Point(const ObjectClass& object);
 bool CFE_Patch_Should_Extend_Walls();
 bool CFE_Patch_Unit_Should_Rally(const TechnoClass& object);
 int CFE_Patch_FullRange_Random_Pick(int min, int max);
+
+
+void CFE_Patch_Sound_Effect_For_All_Humans(VocType voc, COORDINATE coord=NULL, int variation=1, HouseClass* skiphouse = NULL);
+void CFE_Patch_Random_Sound_Effect_For_All_Humans(VocType voclist[], int listlength, COORDINATE coord=NULL, int variation=1, HouseClass* skiphouse = NULL);
+void  CFE_Patch_Speak_For_All_Humans(VoxType voice, COORDINATE coord=0);
+
 //void CFE_Patch_MP_Switch_Player_Context(const bool toreal);
 void Initialise_CFE_Patch_Config();
+#endif

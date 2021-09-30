@@ -2353,7 +2353,8 @@ typedef enum VocType : char{
 	VOC_OF_COURSE,		//	"Of course."
 	VOC_YESYES,			//	"Yes yes yes."
 	VOC_QUIP1,			//	"Mind the Tiberium."
-//	VOC_QUIP2,			//	"A most remarkable  Metasequoia Glyptostroboides."
+    // Chthon CFE Note: VOC_QUIP2 re-enabled since nyerguds extracted it from N64 port
+	VOC_QUIP2,			//	"A most remarkable  Metasequoia Glyptostroboides."
 	VOC_THANKS,			//	"Thank you."
 
 	VOC_CASHTURN,		// Sound of money being piled up.
@@ -2471,6 +2472,8 @@ typedef enum VoxType : char{
 //	VOX_BLUE_OFFLINE,					//	blue player has departed
 //	VOX_BLUE_LOST,						//	blue player destroyed
 //	VOX_BLUE_WON,						//	blue player is victorious
+    VOX_GEN_CAPTURED,           // Chthon CFE Note: trimmed version of captured message for use when the your own build is lost to capture in MP 
+    VOX_NUKE_LAUNCHED2,      // Chthon CFE Note: duplicate of VOX_NUKE_LAUNCHED to work around hardcoding in GlyphX Client
 
 	VOX_COUNT,
 //	VOX_MULTI_UNIT			= VOX_GOLD_UNIT,

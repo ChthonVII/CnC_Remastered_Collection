@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+
+<SFXEvents>
+
+	<SFXEvent Name="TDR_SFX_MMG1" Preset="_PRESET_UR">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> QUIP2.WAV </entry>
+		</SampleNamesList>
+		<MinVolume> 100 </MinVolume>
+		<MaxVolume> 100 </MaxVolume>
+		<Priority> 2 </Priority>
+        <!-- Override IsLocalized in preset. If changing this in the future, note that the entry syntax (and path?) for localized sounds is different -->
+        <IsLocalized> No </IsLocalized>
+	</SFXEvent>
+    
+	<SFXEvent Name="TDC_SFX_MMG1" Preset="_PRESET_UR">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> QUIP2.WAV </entry>
+		</SampleNamesList>
+		<MinVolume> 100 </MinVolume>
+		<MaxVolume> 100 </MaxVolume>
+		<Priority> 2 </Priority>
+        <!-- Override IsLocalized in preset. If changing this in the future, note that the entry syntax (and path?) for localized sounds is different -->
+        <IsLocalized> No </IsLocalized>
+	</SFXEvent>
+
+    <LocalizedSFXEvent Name="TDC_SFX_GENCAPT1" Preset="_PRESET_HUD">
+      <SampleNamesList>
+         <entry> TDR_SFX_EVA_GENCAPT1_EN-US.WAV </entry>
+      </SampleNamesList>
+      <LocalizedTextIDs>
+         <entry> TEXT_SFX_TDR_SFX_GENCAPT1 </entry>
+      </LocalizedTextIDs>
+      <MinVolume> 100 </MinVolume>
+      <MaxVolume> 100 </MaxVolume>
+      <Priority> 2 </Priority>
+      <QueueIfCantPlay> True </QueueIfCantPlay>
+   </LocalizedSFXEvent>
+   
+   <LocalizedSFXEvent Name="TDR_SFX_GENCAPT1" Preset="_PRESET_HUD">
+      <SampleNamesList>
+         <entry> TDR_SFX_EVA_GENCAPT1_EN-US.WAV </entry>
+      </SampleNamesList>
+      <LocalizedTextIDs>
+         <entry> TEXT_SFX_TDR_SFX_GENCAPT1 </entry>
+      </LocalizedTextIDs>
+      <MinVolume> 100 </MinVolume>
+      <MaxVolume> 100 </MaxVolume>
+      <Priority> 2 </Priority>
+      <QueueIfCantPlay> True </QueueIfCantPlay>
+   </LocalizedSFXEvent>
+    
+      <LocalizedSFXEvent Name="TDC_SFX_NUKLNCH2" Preset="_PRESET_HUD">
+      <SampleNamesList>
+         <entry> TDC_SFX_EVA_NUKLNCH1_EN-US.MP3 </entry>
+      </SampleNamesList>
+      <LocalizedTextIDs>
+         <entry> TEXT_SFX_TDC_SFX_NUKLNCH1 </entry>
+      </LocalizedTextIDs>
+      <MinVolume> 100 </MinVolume>
+      <MaxVolume> 100 </MaxVolume>
+      <Priority> 1 </Priority>
+      <QueueIfCantPlay> True </QueueIfCantPlay>
+   </LocalizedSFXEvent>
+   
+      <LocalizedSFXEvent Name="TDR_SFX_NUKLNCH2" Preset="_PRESET_HUD">
+      <SampleNamesList>
+         <entry> TDR_SFX_EVA_NUKLNCH1_EN-US.MP3 </entry>
+      </SampleNamesList>
+      <LocalizedTextIDs>
+         <entry> TEXT_SFX_TDR_SFX_NUKLNCH1 </entry>
+      </LocalizedTextIDs>
+      <MinVolume> 100 </MinVolume>
+      <MaxVolume> 100 </MaxVolume>
+      <Priority> 1 </Priority>
+      <QueueIfCantPlay> True </QueueIfCantPlay>
+   </LocalizedSFXEvent>
+   
+</SFXEvents>
+
+
+
+
+
+
