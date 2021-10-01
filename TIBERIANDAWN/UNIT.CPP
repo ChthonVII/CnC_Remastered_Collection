@@ -3345,8 +3345,8 @@ int UnitClass::Mission_Hunt(void)
             Approach_Target();
             return (TICKS_PER_SECOND+5);
         }
-        // if no new target, go back to our old target if it's still valid
-        else if (Target_Legal(oldtarget)){
+        // if no new target, maybe go back to our old target if it's still valid
+        else if (Target_Legal(oldtarget) && (Random_Pick(0,19) < 19)){
             Assign_Target(oldtarget);
             Approach_Target();
             return (TICKS_PER_SECOND+5);
@@ -3357,6 +3357,7 @@ int UnitClass::Mission_Hunt(void)
         // 1/12 - move to random spot anywhere
         // 1/24 - do full-map scan for a target
         else {
+            Assign_Target(TARGET_NONE);
             int choice = Random_Pick(0,63);
             // just sit there
             if (choice < 32){
