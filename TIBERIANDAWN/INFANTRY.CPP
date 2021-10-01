@@ -3184,10 +3184,16 @@ void InfantryClass::Read_INI(char *buffer)
 
 						if (!is_scb10ea_chan && infantry->Unlimbo(coord, dir)) {
 							infantry->Strength = Fixed_To_Cardinal(infantry->Class_Of().MaxStrength, strength);
-							if (GameToPlay == GAME_NORMAL || infantry->House->IsHuman) {
+                            // // Chthon CFE Note: use ini control for preplaced unit missions
+							if (GameToPlay == GAME_NORMAL || infantry->House->IsHuman || (ActiveCFEPatchConfig.MPPreplacedUnitOrderMode == 1)) {
 								infantry->Assign_Mission(mission);
 								infantry->Commence();
+                            } else if (ActiveCFEPatchConfig.MPPreplacedUnitOrderMode == 2){
+                                // original game's Enter_Idle_Mode() assigned MISSION_HUNT (different from vehicles)
+                                infantry->Assign_Mission(MISSION_HUNT);
+								infantry->Commence();
 							} else {
+                                // in Remastered, Enter_Idle_Mode() assigns MISSION_GUARD or MISSION_GUARD_AREA
 								infantry->Enter_Idle_Mode();
 							}
 						} else {

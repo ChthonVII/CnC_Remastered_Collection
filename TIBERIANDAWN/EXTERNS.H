@@ -142,6 +142,7 @@ struct CFEPatchConfig
     int InverseBuildingPreviewMode = 0; // 0=off; 1= MP only; 2 = all game modes
     int SmarterSAMAmmo = 2;
     int  SmarterSAMBalanceDelay = 0;
+    int MPPreplacedUnitOrderMode = 0; // 0=remsatered vanilla - enter idle mode (guard or guard area); 1=honor orders map file; 2=original game vanilla - hunt for infantry, timed hunt for vehicles (aircraft not affected; they DO honor orders regardless)
     
     int OverrideWarFactoryHP_Value = 520;
     int OverrideStealthTankCost_Value = 700;

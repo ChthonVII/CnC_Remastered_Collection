@@ -4450,10 +4450,20 @@ void UnitClass::Read_INI(char *buffer)
 
 						if (unit->Unlimbo(coord, dir)) {
 							unit->Strength = Fixed_To_Cardinal(unit->Class->MaxStrength, strength);
-							if (GameToPlay == GAME_NORMAL || unit->House->IsHuman) {
+                            // Chthon CFE Note: use ini control for preplaced unit missions
+                            if (ActiveCFEPatchConfig.MeanerVisceroids && (*unit == UNIT_VICE)){
+                                unit->Assign_Mission(MISSION_HUNT);
+								unit->Commence();
+                            }
+							else if (GameToPlay == GAME_NORMAL || unit->House->IsHuman || (ActiveCFEPatchConfig.MPPreplacedUnitOrderMode == 1)) {
 								unit->Assign_Mission(mission);
 								unit->Commence();
+                            } else if (ActiveCFEPatchConfig.MPPreplacedUnitOrderMode == 2){
+                                // original game's Enter_Idle_Mode() assigned MISSION_TIMED_HUNT
+                                unit->Assign_Mission(MISSION_TIMED_HUNT);
+								unit->Commence();
 							} else {
+                                // in Remastered, Enter_Idle_Mode() assigns MISSION_GUARD or MISSION_GUARD_AREA
 								unit->Enter_Idle_Mode();
 							}
 

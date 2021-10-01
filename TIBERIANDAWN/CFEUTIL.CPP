@@ -101,6 +101,7 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     GetSetting(ActiveCFEPatchConfig.InverseBuildingPreviewMode           , "SETTINGS", "INVERSE_PREVIEW_MODE");
     GetSetting(ActiveCFEPatchConfig.SmarterSAMAmmo   , "SETTINGS", "SMARTER_SAM_AMMO");
     GetSetting(ActiveCFEPatchConfig.SmarterSAMBalanceDelay   , "SETTINGS", "SMARTER_SAM_BALANCE_DELAY");
+    GetSetting(ActiveCFEPatchConfig.MPPreplacedUnitOrderMode   , "SETTINGS", "MP_PREPLACED_UNIT_ORDER_MODE");
     
     //Balance
     GetSetting(ActiveCFEPatchConfig.OverrideAPCReqs         , "BALANCE", "DO_OVERRIDE_APC_NOREQ");
@@ -143,6 +144,8 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     // Clamp safe sabotage at 0-2
     ActiveCFEPatchConfig.SafeSabotage = (std::max)(0, (std::min)(ActiveCFEPatchConfig.SafeSabotage, 2));
     
+    // Clamp MP preplaced unit orders at 0-2
+    ActiveCFEPatchConfig.MPPreplacedUnitOrderMode = (std::max)(0, (std::min)(ActiveCFEPatchConfig.MPPreplacedUnitOrderMode, 2));
     
     // If A-Star isn't enabled, distance constants will be compared against leptons rather than cells, so convert here
     if (!ActiveCFEPatchConfig.EnableASPathing){
