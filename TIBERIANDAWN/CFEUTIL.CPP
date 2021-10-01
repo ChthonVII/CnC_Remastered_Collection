@@ -81,6 +81,7 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     GetSetting(ActiveCFEPatchConfig.EnableVeterancy      , "FEATURES", "VETERANCY");
     GetSetting(ActiveCFEPatchConfig.EnableNukeTank      , "FEATURES", "NUKE_TANK");
     GetSetting(ActiveCFEPatchConfig.DisableMPNeutralAttacks      , "FEATURES", "DISABLE_MP_NEUTRAL_ATTACKS");
+    GetSetting(ActiveCFEPatchConfig.EnableGDI9Fix      , "FEATURES", "GDI9_FIX");
     
 	//Settings
     GetSetting(ActiveCFEPatchConfig.SafeSabotage        , "SETTINGS", "SAFE_SABOTAGE");

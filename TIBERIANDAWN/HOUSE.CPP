@@ -1446,8 +1446,21 @@ void HouseClass::AI(void)
 		Check_Pertinent_Structures();
 	}
 	
-	// Chthon CFE Note: todo bugfix for GDI 9
-	//if ((GameToPlay == GAME_NORMAL) && 
+	// Chthon CFE Note: fix for GDI 9
+	// CPU does self-destruct if the only things it has left are the turrents on the south bank
+	if (ActiveCFEPatchConfig.EnableGDI9Fix && (GameToPlay == GAME_NORMAL) && (PlayerPtr->Class->House == HOUSE_GOOD) && (Scenario == 9) && (Class->House == HOUSE_BAD) && !ActiveAScan && !ActiveIScan && !ActiveUScan && !(ActiveBScan & ~STRUCTF_TURRET)){
+        bool notyet = false;
+        for (int index = 0; index < Buildings.Count(); index++) {
+            BuildingClass const * building = Buildings.Ptr(index);
+            if (building && building.IsActive && !building->IsInLimbo && (building->House == this) && (Coord_Cell(building->Coord) < Confine_Old_Cell(2715))){
+                notyet = true;
+                break;
+            }        
+        }
+        if (!notyet){
+            IsToDie = true;
+        }
+    }
 
 	/*
 	** Special win/lose check for multiplayer games; by-passes the
