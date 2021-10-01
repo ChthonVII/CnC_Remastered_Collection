@@ -80,6 +80,7 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     GetSetting(ActiveCFEPatchConfig.TSVisceroidSpawn      , "FEATURES", "TS_VISCEROID_SPAWN");
     GetSetting(ActiveCFEPatchConfig.EnableVeterancy      , "FEATURES", "VETERANCY");
     GetSetting(ActiveCFEPatchConfig.EnableNukeTank      , "FEATURES", "NUKE_TANK");
+    GetSetting(ActiveCFEPatchConfig.DisableMPNeutralAttacks      , "FEATURES", "DISABLE_MP_NEUTRAL_ATTACKS");
     
 	//Settings
     GetSetting(ActiveCFEPatchConfig.SafeSabotage        , "SETTINGS", "SAFE_SABOTAGE");

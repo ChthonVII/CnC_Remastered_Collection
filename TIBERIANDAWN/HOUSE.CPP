@@ -5804,8 +5804,8 @@ UrgencyType HouseClass::Check_Build_Offense(void) const
 UrgencyType HouseClass::Check_Attack(void) const
 {
 	//assert(Houses.ID(this) == ID);
-    // Chthon CFE Note: ugly test fix
-    if ((Class->House == HOUSE_JP) || (Class->House == HOUSE_NEUTRAL)){
+    // Chthon CFE Note: having neutral houses declare an attack after 1 minute in MP is undesirable in many cases (e.g. Cactus Valley)
+    if (ActiveCFEPatchConfig.DisableMPNeutralAttacks && ((Class->House == HOUSE_JP) || (Class->House == HOUSE_NEUTRAL))){
         return(URGENCY_NONE);
     }
 

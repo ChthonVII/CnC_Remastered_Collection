@@ -107,6 +107,7 @@ struct CFEPatchConfig
     bool EnableVeterancy = false;
     bool AllowSandbagging = true;
     bool EnableNukeTank = false;
+    bool DisableMPNeutralAttacks = false;
     
     bool OverrideAPCReqs = false;
     bool OverrideWarFactoryHP = false;
