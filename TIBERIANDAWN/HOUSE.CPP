@@ -1448,17 +1448,18 @@ void HouseClass::AI(void)
 	
 	// Chthon CFE Note: fix for GDI 9
 	// CPU does self-destruct if the only things it has left are the turrents on the south bank
-	if (ActiveCFEPatchConfig.EnableGDI9Fix && (GameToPlay == GAME_NORMAL) && (PlayerPtr->Class->House == HOUSE_GOOD) && (Scenario == 9) && (Class->House == HOUSE_BAD) && !ActiveAScan && !ActiveIScan && !ActiveUScan && !(ActiveBScan & ~STRUCTF_TURRET)){
-        bool notyet = false;
+	if (ActiveCFEPatchConfig.EnableGDI9Fix && (GameToPlay == GAME_NORMAL) && (Scenario == 9) && (Class->House == HOUSE_BAD) && !IsHuman && !ActiveAScan && !ActiveIScan && !ActiveUScan && !(ActiveBScan & ~STRUCTF_TURRET)){
+        bool shouldblowup = true;
         for (int index = 0; index < Buildings.Count(); index++) {
             BuildingClass const * building = Buildings.Ptr(index);
             if (building && building.IsActive && !building->IsInLimbo && (building->House == this) && (Coord_Cell(building->Coord) < Confine_Old_Cell(2715))){
-                notyet = true;
+                shouldblowup = false;
                 break;
             }        
         }
-        if (!notyet){
+        if (shouldblowup){
             IsToDie = true;
+            BorrowedTime = TICKS_PER_SECOND * 1;
         }
     }
 
