@@ -105,6 +105,8 @@
 #include "SidebarGlyphx.h"
 #include "defines.h"
 
+//#include "CFEDEBUG.H"
+
 extern void On_Sound_Effect(const HouseClass* player_ptr, int sound_effect_index, const char* extension, int variation, COORDINATE coord);
 
 /***********************************************************************************************
@@ -1447,19 +1449,18 @@ void HouseClass::AI(void)
 	}
 	
 	// Chthon CFE Note: fix for GDI 9
-	// CPU does self-destruct if the only things it has left are the turrents on the south bank
-	if (ActiveCFEPatchConfig.EnableGDI9Fix && (GameToPlay == GAME_NORMAL) && (Scenario == 9) && (Class->House == HOUSE_BAD) && !IsHuman && !ActiveAScan && !ActiveIScan && !ActiveUScan && !(ActiveBScan & ~STRUCTF_TURRET)){
+	// CPU does self-destruct if the only things it has left are the turrents on the south bank	
+	if (ActiveCFEPatchConfig.EnableGDI9Fix && (GameToPlay == GAME_NORMAL) && (Scenario == 9) && (Class->House == HOUSE_BAD) && !IsHuman && !IsToDie && !ActiveAScan && !ActiveIScan && !ActiveUScan && !(ActiveBScan & ~STRUCTF_TURRET)){
         bool shouldblowup = true;
         for (int index = 0; index < Buildings.Count(); index++) {
             BuildingClass const * building = Buildings.Ptr(index);
-            if (building && building.IsActive && !building->IsInLimbo && (building->House == this) && (Coord_Cell(building->Coord) < Confine_Old_Cell(2715))){
+            if (building && building->IsActive && !building->IsInLimbo && (building->House == this) && (Coord_Cell(building->Coord) < Confine_Old_Cell(2715))){
                 shouldblowup = false;
                 break;
             }        
         }
         if (shouldblowup){
-            IsToDie = true;
-            BorrowedTime = TICKS_PER_SECOND * 1;
+            Flag_To_Die();
         }
     }
 
@@ -2981,6 +2982,7 @@ bool HouseClass::Place_Object(RTTIType type, CELL cell)
 							}
 							return(true);
 						} else {
+                            // Chthon CFE Note: OK to use PlayerPtr b/c only ever called in context of DLLExportClass::Place(), which temporarily sets PlayerPtr to local house
 							if (this == PlayerPtr) {
 								Speak(VOX_DEPLOY);
 							}
