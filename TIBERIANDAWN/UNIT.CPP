@@ -1917,9 +1917,13 @@ bool UnitClass::Try_To_Deploy(void)
 			*/
 			Mark(MARK_UP);
 			if (!BuildingTypeClass::As_Reference(STRUCT_CONST).Legal_Placement(Coord_Cell(Adjacent_Cell(Center_Coord(), FACING_NW)))) {
-				if (PlayerPtr == House) {
-					Speak(VOX_DEPLOY);
-				}
+                // Chthon CFE Note: make sure it plays for correct player in MP
+				//if (PlayerPtr == House) {
+				//	Speak(VOX_DEPLOY);
+				//}
+				if (House->IsHuman) {
+                    Speak(VOX_DEPLOY, House);
+                }
 				Mark(MARK_DOWN);
 				IsDeploying = false;
 				return(false);

@@ -462,8 +462,13 @@ bool Do_Reinforcements(TeamTypeClass *teamtype)
 	/*
 	**	Announce when the reinforcements have arrived.
 	*/
-	if (okvoice && teamtype->House == PlayerPtr->Class->House) {
-		Speak(VOX_REINFORCEMENTS, NULL, cell ? Cell_Coord(cell) : 0);
+    // Chthon CFE Note: Fix for MP
+	//if (okvoice && teamtype->House == PlayerPtr->Class->House) {
+	//	Speak(VOX_REINFORCEMENTS, NULL, cell ? Cell_Coord(cell) : 0);
+	//}
+	HouseClass* thishouse = HouseClass::As_Pointer(teamtype->House);
+	if (okvoice && thishouse->IsHuman) {
+		Speak(VOX_REINFORCEMENTS, thishouse, cell ? Cell_Coord(cell) : 0);
 	}
 
 	return(true);

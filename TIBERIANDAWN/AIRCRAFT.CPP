@@ -1178,8 +1178,12 @@ int AircraftClass::Mission_Unload(void)
 									**	Cargo planes announce reinforcements when they unload
 									**	their cargo.
 									*/
-									if (*this == AIRCRAFT_CARGO && House == PlayerPtr) {
-										Speak(VOX_REINFORCEMENTS, NULL, Cell_Coord(cell));
+                                    // Chthon CFE Note: Fix for MP
+									//if (*this == AIRCRAFT_CARGO && House == PlayerPtr) {
+									//	Speak(VOX_REINFORCEMENTS, NULL, Cell_Coord(cell));
+									//}
+									if (*this == AIRCRAFT_CARGO && House->IsHuman) {
+										Speak(VOX_REINFORCEMENTS, House, Cell_Coord(cell));
 									}
 									unit->IsALoaner = false;
 									unit->IsLocked = true;

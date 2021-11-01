@@ -2001,6 +2001,12 @@ ResultType BuildingClass::Take_Damage(int & damage, int distance, WarheadType wa
 				}
 
 				Sound_Effect(VOC_XPLOBIG4, Coord);
+                
+                // Chthon CFE Note: Restore the death announcements
+                if (ActiveCFEPatchConfig.BuildingDeathAnnounceMode >= 1){
+                    Death_Announcement();
+                }
+                
 				while (*offset != REFRESH_EOL) {
 					CELL cell = Coord_Cell(Coord) + *offset++;
 
@@ -5497,8 +5503,9 @@ int BuildingClass::Mission_Missile(void)
                                 // Chthon CFE Note: bugfix -- this should be audible to the temple's owner, not the server
                                 // turns out this particular sound is hardcoded to play for everyone somewhere in GlyphX Client, so we need to change the sound file name
 								// Speak(VOX_NUKE_LAUNCHED); // "NUKLNCH1" - "Nuclear Weapon Launched"
-                                Speak(VOX_NUKE_LAUNCHED2, House); // "NUKLNCH1" - "Nuclear Weapon Launched"
-                                // House parameter is getting ignored... is this file hardcoded to play for all in GlyphX somewhere?
+                                if (House->IsHuman){
+                                    Speak(VOX_NUKE_LAUNCHED2, House); // "NUKLNCH1" - "Nuclear Weapon Launched"
+                                }
 							}
 						}
 					}
@@ -5704,8 +5711,12 @@ int BuildingClass::Pip_Count(void) const
  *=============================================================================================*/
 void BuildingClass::Death_Announcement(TechnoClass const * ) const
 {
-	Validate();
+    Validate();
 	//Changed for multiplayer ST - 3/13/2019 5:31PM
+    // Chthon CFE Note: This function is completely wrong for MP.
+    // Petroglyph probably didn't notice because IT'S NEVER CALLED
+    // So I'm going to gate it behind an ini and do a full rewrite
+    /*
 	if (Is_Discovered_By_Player() || Is_Owned_By_Player()) {
 	//if (IsDiscoveredByPlayer || IsOwnedByPlayer) {
 		if (House != PlayerPtr && GameToPlay != GAME_NORMAL) {
@@ -5731,6 +5742,62 @@ void BuildingClass::Death_Announcement(TechnoClass const * ) const
 			}
 		}
 	}
+	*/
+	
+	// play for owner
+	if (House->IsHuman){
+        if ((ActiveCFEPatchConfig.BuildingDeathAnnounceMode == 4) || ((ActiveCFEPatchConfig.BuildingDeathAnnounceMode >= 3) && (GameToPlay == GAME_NORMAL))){
+            switch (House->ActLike) {
+                case HOUSE_GOOD:
+                    Speak(VOX_GDI_STRUCTURE, House);
+                    break;
+                case HOUSE_BAD:
+                    Speak(VOX_NOD_STRUCTURE, House);
+                    break;
+                default:
+                    break;
+            }
+        }
+        else {
+            Speak(VOX_STRUCTURE_LOST, House);
+        }
+    }
+    
+    // play for everyone else
+    // only annouce for GDI or NOD stuff, not neutral
+    if ((ActiveCFEPatchConfig.BuildingDeathAnnounceMode > 1) && ((House->ActLike == HOUSE_GOOD) || (House->ActLike == HOUSE_BAD))){
+        // figure out what sound to play
+        VoxType whatdied = VOX_ENEMY_STRUCTURE;
+        if ((ActiveCFEPatchConfig.BuildingDeathAnnounceMode == 4) || ((ActiveCFEPatchConfig.BuildingDeathAnnounceMode >= 3) && (GameToPlay == GAME_NORMAL))){
+            switch (House->ActLike) {
+                case HOUSE_GOOD:
+                    whatdied = VOX_GDI_STRUCTURE;
+                    break;
+                case HOUSE_BAD:
+                    whatdied = VOX_NOD_STRUCTURE;
+                    break;
+                default:
+                    return; // neutral structure, so don't play a sound
+            }
+        }
+        // singleplayer
+        if (GameToPlay == GAME_NORMAL){
+            if ((House != PlayerPtr) && Is_Discovered_By_Player()){
+                Speak(whatdied);
+            }
+        }
+        // multiplayer (we need to loop b/c remastered only runs this in one context)
+        else {
+            for (int i=0 ; i<MPlayerCount; i++) {
+                HouseClass* someplayer = HouseClass::As_Pointer(MPlayerHouses[i]);
+                if ((someplayer != House) && (someplayer->IsHuman) && Is_Discovered_By_Player(someplayer)) {
+                     Speak(whatdied, someplayer);
+                }
+            }
+        }
+    }
+    
+	return;
 }
 
 

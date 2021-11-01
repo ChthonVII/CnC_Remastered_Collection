@@ -205,16 +205,18 @@ void CFE_Patch_Random_Sound_Effect_For_All_Humans(VocType voclist[], int listlen
 // Play EVA speech for all human players
 // used for stuff that was audible to everyone in original game, such as incoming nuke warning
 // parameters are the same as Speak()
-void  CFE_Patch_Speak_For_All_Humans(VoxType voice, COORDINATE coord){
+void  CFE_Patch_Speak_For_All_Humans(VoxType voice, COORDINATE coord, HouseClass* skiphouse){
 
     if (GameToPlay == GAME_NORMAL){
-        Speak(voice, NULL, coord);
+        if (!skiphouse || (PlayerPtr != skiphouse)){
+            Speak(voice, NULL, coord);
+        }
         return;
     }
     // multiplayer
     for (int i=0 ; i<MPlayerCount; i++) {
         HouseClass* someplayer = HouseClass::As_Pointer(MPlayerHouses[i]);
-        if (someplayer->IsHuman) {
+        if ((someplayer->IsHuman) && (!skiphouse || (someplayer != skiphouse))) {
             Speak(voice, someplayer, coord);
         }
     }
