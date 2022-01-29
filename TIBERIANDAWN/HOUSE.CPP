@@ -105,7 +105,7 @@
 #include "SidebarGlyphx.h"
 #include "defines.h"
 
-#include "CFEDEBUG.H"
+//#include "CFEDEBUG.H"
 
 extern void On_Sound_Effect(const HouseClass* player_ptr, int sound_effect_index, const char* extension, int variation, COORDINATE coord);
 
