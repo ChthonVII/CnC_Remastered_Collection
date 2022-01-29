@@ -123,6 +123,7 @@ struct CFEPatchConfig
     bool EnableLongGapFix = false;
     bool EnableMIGAmmoFudge = false;
     bool EnableBuildingCaptureAnnouncements = false;
+    bool EnableSmarterSonar = false;
 
     int SafeSabotage = 0;
 	int  HarvyQueueJumpCutoff = 4;

@@ -2746,7 +2746,7 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
 				for (int index = 0; index < Vessels.Count(); index++) {
 					VesselClass * sub = Vessels.Ptr(index);
 #ifdef FIXIT_CSII	//	checked - ajw 9/28/98
-					if (*sub == VESSEL_SS || *sub == VESSEL_MISSILESUB) {
+					if ((*sub == VESSEL_SS || *sub == VESSEL_MISSILESUB) && (!ActiveCFEPatchConfig.EnableSmarterSonar || !Is_Ally(sub))) {
 #else
 					if (*sub == VESSEL_SS) {
 #endif

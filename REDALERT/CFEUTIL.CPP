@@ -76,6 +76,7 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     GetSetting(ActiveCFEPatchConfig.EnableLongGapFix      , "FEATURES", "LONG_BGAP_BUGFIX");
     GetSetting(ActiveCFEPatchConfig.EnableMIGAmmoFudge      , "FEATURES", "MIG_AMMO_FUDGE");
     GetSetting(ActiveCFEPatchConfig.EnableBuildingCaptureAnnouncements      , "FEATURES", "BUILDING_CAPTURE_ANNOUNCE");
+    GetSetting(ActiveCFEPatchConfig.EnableSmarterSonar      , "FEATURES", "SMARTER_SONAR");
     
 
 	//Settings
