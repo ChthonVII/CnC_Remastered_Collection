@@ -75,6 +75,8 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     GetSetting(ActiveCFEPatchConfig.EnableCumulativeTimelineDamage      , "FEATURES", "CUMULATIVE_TIMELINE_DAMAGE");
     GetSetting(ActiveCFEPatchConfig.EnableLongGapFix      , "FEATURES", "LONG_BGAP_BUGFIX");
     GetSetting(ActiveCFEPatchConfig.EnableMIGAmmoFudge      , "FEATURES", "MIG_AMMO_FUDGE");
+    GetSetting(ActiveCFEPatchConfig.EnableBuildingCaptureAnnouncements      , "FEATURES", "BUILDING_CAPTURE_ANNOUNCE");
+    
 
 	//Settings
 	GetSetting(ActiveCFEPatchConfig.SafeSabotage      , "SETTINGS", "SAFE_SABOTAGE");

@@ -202,6 +202,54 @@ void CFE_Patch_Random_Sound_Effect_For_All_Humans(VocType voclist[], int listlen
     return;
 }
 
+// Play the same sound for all human players who can see a unit
+// used for constructing/selling sounds.
+// The original game only played these for the owner.
+// When not buggy, remastered plays them positionally for everyone
+// This has a better feel, but it allows you to hear things under the shroud.
+// So we need this function to play positionally, but only for people who can see the unit
+void CFE_Patch_Sound_Effect_For_Seers(VocType voc, TechnoClass* thingy, int variation){
+
+    if (!thingy){
+        return;
+    }
+    
+    // just play the sound normally in SP
+    if (GameToPlay == GAME_NORMAL){
+        if ((thingy->House == PlayerPtr) || thingy->IsDiscoveredByPlayer || Map[Coord_Cell(thingy->Center_Coord())].IsMapped){
+            Sound_Effect(voc, thingy->Center_Coord(), variation);
+        }
+        return;
+    }
+    // multiplayer:
+    for (int i=0 ; i<MPlayerCount; i++) {
+        HouseClass* someplayer = HouseClass::As_Pointer(MPlayerHouses[i]);
+        if ((someplayer->IsHuman) && ((thingy->House == someplayer) || thingy->Is_Discovered_By_Player(someplayer) || Map[Coord_Cell(thingy->Center_Coord())].Is_Mapped(someplayer))) {
+            On_Sound_Effect(someplayer, (int)voc, "", variation, thingy->Center_Coord());
+        }
+    }
+    return;
+}
+
+void CFE_Patch_Sound_Effect_For_Seers(VocType voc, CELL cell, int variation){
+    
+    // just play the sound normally in SP
+    if (GameToPlay == GAME_NORMAL){
+        if (Map[cell].IsMapped){
+            Sound_Effect(voc, Cell_Coord(cell), variation);
+        }
+        return;
+    }
+    // multiplayer:
+    for (int i=0 ; i<MPlayerCount; i++) {
+        HouseClass* someplayer = HouseClass::As_Pointer(MPlayerHouses[i]);
+        if ((someplayer->IsHuman) && Map[cell].Is_Mapped(someplayer)) {
+            On_Sound_Effect(someplayer, (int)voc, "", variation, Cell_Coord(cell));
+        }
+    }
+    return;
+}
+
 // Play EVA speech for all human players
 // used for stuff that was audible to everyone in original game, such as incoming nuke warning
 // parameters are the same as Speak()

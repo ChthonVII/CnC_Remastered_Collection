@@ -3100,8 +3100,10 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number, int x, int y, int widt
 		new_object.MaxPips = 0;
 		new_object.CanDemolish = object->Can_Demolish();
 		new_object.CanDemolishUnit = object->Can_Demolish_Unit();
-		new_object.CanRepair = object->Can_Repair();
-		memset(new_object.CanMove, false, sizeof(new_object.CanMove));
+		// Chthon CFE Note: Bugfix for missing scold sound. (Maybe.) Make GlyphX think you can repair full-health buildings so it will allow you to invoke the repair routine and get the scold sound
+        //new_object.CanRepair = object->Can_Repair();
+		new_object.CanRepair = (new_object.Type == BUILDING) && ((BuildingClass*)object)->Techno_Type_Class()->IsRepairable;
+        memset(new_object.CanMove, false, sizeof(new_object.CanMove));
 		memset(new_object.CanFire, false, sizeof(new_object.CanFire));
 		memset(new_object.ActionWithSelected, DAT_NONE, sizeof(new_object.ActionWithSelected));
 
@@ -6742,7 +6744,9 @@ void DLLExportClass::Repair(uint64 player_id, int object_id)
 				GlyphX_Debug_Print("DLLExportClass::Repair -- trying to repair a non-active building");
 			} else {
 
-				if (building && building->Can_Repair() && building->House && building->House->Class->House == PlayerPtr->Class->House)
+                // Chthon CFE Note: Bugfix missing scold sound -- This should still go through to Repair() at full health.
+				//if (building && building->Can_Repair() && building->House && building->House->Class->House == PlayerPtr->Class->House)
+                if (building && building->Techno_Type_Class()->IsRepairable && building->House && (building->House->Class->House == PlayerPtr->Class->House))
 				{
 					building->Repair(-1);
 				}

@@ -263,6 +263,12 @@ struct SoundEffectNameStruct {
     //Chthon CFE Note: add a sound for infantry stealth
     {"WINDGUST", 		10,	IN_NOVAR },
     
+    //Chthon CFE Note: clone so we can muck with xml in our own file
+    {"CONSTCLN",	10,	IN_JUV},	// VOC_CONSTRUCTION_CLONE	construction sounds
+    
+    //Chthon CFE Note: clone so we can muck with xml in our own file
+    {"CASHTCLN", 	1,		IN_NOVAR},	//	VOC_CASHTURN_CLONE		Sound of money being piled up.
+    
 #ifdef PETROGLYPH_EXAMPLE_MOD
 	{"NUKE_LOB", 	10,	IN_NOVAR}	//	VOC_NUKE_LOB		Mod expansion unit firing sound
 #endif //PETROGLYPH_EXAMPLE_MOD

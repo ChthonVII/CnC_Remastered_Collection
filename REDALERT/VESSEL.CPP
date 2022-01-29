@@ -622,9 +622,11 @@ void VesselClass::AI(void)
             if (foundone){
                 BuiltInSonarCountdown = 30 * TICKS_PER_SECOND;
                 //Sound_Effect(VOC_SONAR, Coord);
-                if (House->IsHuman) {
-                    On_Sound_Effect(House, (int)VOC_SONAR, "", 1, Coord);
-                }
+                //if (House->IsHuman) {
+                //    On_Sound_Effect(House, (int)VOC_SONAR, "", 1, Coord);
+                //}
+                // play for everyone for same reasons big sonar plays for everyone
+                CFE_Patch_Sound_Effect_For_All_Humans(VOC_SONAR, Coord);
             }
         }
     }

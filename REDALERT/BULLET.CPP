@@ -51,7 +51,7 @@
 
 #include	"function.h"
 
-#include "cfedebug.h"
+//#include "cfedebug.h"
 
 /***********************************************************************************************
  * BulletClass::BulletClass -- Bullet constructor.                                             *

@@ -91,6 +91,9 @@
 // Chthon CFE Note -- We need this for checking the shift key for attack-move
 extern bool DLL_Export_Get_Input_Key_State(KeyNumType key);
 
+// we need this playing sounds for one speciifc player
+extern void On_Sound_Effect(const HouseClass* player_ptr, int sound_effect_index, const char* extension, int variation, COORDINATE coord);
+
 int const InfantryClass::HumanShape[32] = {0,0,7,7,7,7,6,6,6,6,5,5,5,5,5,4,4,4,3,3,3,3,2,2,2,2,1,1,1,1,1,0};
 
 
@@ -692,7 +695,11 @@ void InfantryClass::Per_Cell_Process(PCPType why)
 							tech->Trigger->Spring(TEVENT_SPIED, this);
 						}
 
-						if (IsOwnedByPlayer) Speak(VOX_BUILDING_INFILTRATED);
+						// Chthon CFE Note: Fix for MP
+						//if (IsOwnedByPlayer) Speak(VOX_BUILDING_INFILTRATED);
+						if (House->IsHuman){
+                            Speak(VOX_BUILDING_INFILTRATED, House);
+                        }
 
 						tech->Mark(MARK_OVERLAP_UP);
 						tech->SpiedBy |= housespy;
@@ -753,7 +760,14 @@ void InfantryClass::Per_Cell_Process(PCPType why)
 									** then give the thief up to half the capacity of the
 									** storage facility.
 									*/
-									if (IsOwnedByPlayer || bldg->IsOwnedByPlayer) Speak(VOX_MONEY_STOLEN);
+									// Chthon CFE Note: Fix for MP
+                                    //if (IsOwnedByPlayer || bldg->IsOwnedByPlayer) Speak(VOX_MONEY_STOLEN);
+                                    if (House->IsHuman){
+                                        Speak(VOX_MONEY_STOLEN, House);
+                                    }
+                                    if (bldg->House->IsHuman){
+                                        Speak(VOX_MONEY_STOLEN, bldg->House);
+                                    }
 #ifdef OBSOLETE
 									long capacity = bldg->Class->Capacity * 256;
 									capacity /= (bldg->House->Tiberium+1);
@@ -964,7 +978,9 @@ void InfantryClass::Per_Cell_Process(PCPType why)
 			**	Special voice play.
 			*/
 			if (*this ==  INFANTRY_TANYA) {
-				Sound_Effect(VOC_TANYA_LAUGH, Coord);
+                // Chthon CFE Note: vanilla bigfix, this should be audible to all players
+				//Sound_Effect(VOC_TANYA_LAUGH, Coord);
+                CFE_Patch_Sound_Effect_For_All_Humans(VOC_TANYA_LAUGH, Coord);
 			}
 
 			/*
@@ -2015,9 +2031,16 @@ bool InfantryClass::Random_Animate(void)
 				Mark(MARK_CHANGE_REDRAW);
 				PrimaryFacing.Set(Facing_Dir(Random_Pick(FACING_N, FACING_NW)));
 				Mark(MARK_CHANGE_REDRAW);
-				if (!Is_Selected_By_Player() && IsOwnedByPlayer && *this == INFANTRY_TANYA && Sim_Random_Pick(0, 2) == 0) {
+                // Chthon CFE Note: This no longer works as intended in MP due to Petroglyph's PlayerPtr shenanigans
+				/*
+                if (!Is_Selected_By_Player() && IsOwnedByPlayer && *this == INFANTRY_TANYA && Sim_Random_Pick(0, 2) == 0) {
 					Sound_Effect(VOC_TANYA_SHAKE, Coord);
 				}
+				*/
+				if ((*this == INFANTRY_TANYA) && House->IsHuman && !Is_Selected_By_Player(House) && (Random_Pick(0,2) == 0)){
+                    On_Sound_Effect(House, (int)VOC_TANYA_SHAKE, "", 1, Coord);
+                }
+				
 				break;
 
 			/*
@@ -4189,8 +4212,10 @@ void InfantryClass::Movement_AI(void)
 								if (TryTryAgain) {
 									TryTryAgain--;
 								} else {
-									if (IsNewNavCom) Sound_Effect(VOC_SCOLD);
-									IsNewNavCom = false;
+                                    // Chthon CFE Note: fix for MP
+									//if (IsNewNavCom) Sound_Effect(VOC_SCOLD);
+									if (IsNewNavCom && House->IsHuman) On_Sound_Effect(House, (int)VOC_SCOLD, "", 1, Coord);
+                                    IsNewNavCom = false;
 
 									//If we're trying to enter a transport we need to fail so others can try to enter. - LLL 4/17/2020
 									if (Mission == MISSION_ENTER) {
@@ -4272,8 +4297,10 @@ void InfantryClass::Movement_AI(void)
 
 					Path[0] = FACING_NONE;
 					Stop_Driver();
-					if (IsNewNavCom) Sound_Effect(VOC_SCOLD);
-					IsNewNavCom = false;
+					// Chthon CFE Note: Fix for MP
+                    //if (IsNewNavCom) Sound_Effect(VOC_SCOLD);
+					if (IsNewNavCom && House->IsHuman) On_Sound_Effect(House, (int)VOC_SCOLD, "", 1, Coord);
+                    IsNewNavCom = false;
 
 				} else {
 					if (Start_Driver(acoord)) {

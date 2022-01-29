@@ -2714,7 +2714,12 @@ extern void On_Special_Weapon_Targetting(const HouseClass* player_ptr, SpecialWe
 
 bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
 {
-	assert(Houses.ID(this) == ID);
+	// Chthon CFE Note: PlayerPtr is NOT set correctly going into this function
+    // So we need to do it here or all those PlayerPtr references will be wrong.
+    HouseClass* old_player_ptr = PlayerPtr;
+    Logic_Switch_Player_Context(this);
+    
+    assert(Houses.ID(this) == ID);
 
 	// Added. ST - 12/2/2019 11:26AM
 	bool fired = false;
@@ -2731,7 +2736,10 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
 					Map.Column[1].Flag_To_Redraw();
 					Map.Activate_Pulse();
 				}
-				Sound_Effect(VOC_SONAR);
+				// Chthon CFE Note: Fix for MP. Should be audible to all players
+				// Likely intended as a warning that your subs have been surfaced / hint that other player's subs are exposed
+				//Sound_Effect(VOC_SONAR);
+				CFE_Patch_Sound_Effect_For_All_Humans(VOC_SONAR);
 				IsRecalcNeeded = true;
 				fired = true;
 				what = "SONAR";
@@ -3038,11 +3046,11 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
 	}
 	if (porthim) {
 #endif
-							HouseClass* old_player_ptr = PlayerPtr;
-							Logic_Switch_Player_Context(this);
+							//HouseClass* old_player_ptr = PlayerPtr; // Chthon CFE Note: moved to top of function
+							//Logic_Switch_Player_Context(this); // Chthon CFE Note: moved to top of function
 							Map.IsTargettingMode = SPC_CHRONO2;
 							On_Special_Weapon_Targetting(PlayerPtr, Map.IsTargettingMode);
-							Logic_Switch_Player_Context(old_player_ptr);
+							//Logic_Switch_Player_Context(old_player_ptr); // Chthon CFE Note: moved to bottom of function
 							UnitToTeleport = tech->As_Target();
 							fired = true;
 							what = "CHRONO";
@@ -3394,6 +3402,9 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
 		On_Achievement_Event(this, "SUPERWEAPON_FIRED", what);
 	}
 
+	// Chthon CFE Note: set PlayerPtr back as it was
+	Logic_Switch_Player_Context(old_player_ptr);
+	
 	return(true);
 }
 
@@ -3542,6 +3553,7 @@ bool HouseClass::Place_Object(RTTIType type, CELL cell)
 						factory->Completed();
 						Abandon_Production(type);
 
+                        // Chthon CFE Note: OK to use PlayerPtr b/c only ever called in context of DLLExportClass::Place(), which temporarily sets PlayerPtr to local house
 						if (PlayerPtr == this) {
 							Sound_Effect(VOC_PLACE_BUILDING_DOWN);
 							Map.Set_Cursor_Shape(0);
@@ -3551,6 +3563,7 @@ bool HouseClass::Place_Object(RTTIType type, CELL cell)
 						}
 						return(true);
 					} else {
+                        // Chthon CFE Note: OK to use PlayerPtr b/c only ever called in context of DLLExportClass::Place(), which temporarily sets PlayerPtr to local house
 						if (this == PlayerPtr) {
 							Speak(VOX_DEPLOY);
 						}
@@ -4802,9 +4815,14 @@ void HouseClass::Sell_Wall(CELL cell)
 				}
 				if (btype != NULL && !btype->IsUnsellable) {
 
-					if (PlayerPtr == this) {
+                    // Chthon CFE Note: port and fix from Petroglyph's change in BuildingClass::Mission_Deconstruction()  -- playing positionally for everyone who can see is an improvement
+					/*
+                    if (PlayerPtr == this) {
 						Sound_Effect(VOC_CASHTURN);
 					}
+					*/
+					//Sound_Effect(VOC_CASHTURN,  Cell_Coord(cell));
+                    CFE_Patch_Sound_Effect_For_Seers(VOC_CASHTURN_CLONE, cell);
 
 					// Disable wall refunds if the player has a wall build length > 1
 					//FluffyQuack 14/06/2020: Always allow refunds if walls have full cost 

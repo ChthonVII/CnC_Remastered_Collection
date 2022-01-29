@@ -443,7 +443,9 @@ void LogicClass::AI(void)
 		if( bAutoSonarPulse )
 		{
 			Map.Activate_Pulse();
-			Sound_Effect(VOC_SONAR);
+            // Chthon CFE Note: fix for MP
+			//Sound_Effect(VOC_SONAR);
+            CFE_Patch_Sound_Effect_For_All_Humans(VOC_SONAR);
 			bAutoSonarPulse = false;
 		}
 #define AUTOSONAR_PERIOD	TICKS_PER_SECOND * 40;

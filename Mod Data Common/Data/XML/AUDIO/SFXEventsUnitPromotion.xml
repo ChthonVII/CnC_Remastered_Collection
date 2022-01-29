@@ -54,6 +54,58 @@
         <VolumeFallOffDist>1000</VolumeFallOffDist>
         <VolumeSaturationDist>300</VolumeSaturationDist>
     </SFXEvent>
+    <SFXEvent Name="_PRESET_MD_MOBIUS_2D_LOCAL">
+        <ApplyDynamicDistancePitchShifting>False</ApplyDynamicDistancePitchShifting>
+        <AttachmentBoneName />
+        <ChainedSFXEvent />
+        <VibrationEventName />
+        <DynamicPitchCloseDist>0</DynamicPitchCloseDist>
+        <DynamicPitchCloseValue>1</DynamicPitchCloseValue>
+        <DynamicPitchFarDist>0</DynamicPitchFarDist>
+        <DynamicPitchFarValue>1</DynamicPitchFarValue>
+        <Is2D>True</Is2D>
+        <Is3D>False</Is3D>
+        <IsAmbientVO>False</IsAmbientVO>
+        <IsGUI>False</IsGUI>
+        <IsHUDVO>False</IsHUDVO>
+        <IsLocalized>False</IsLocalized>
+        <IsPreset>True</IsPreset>
+        <IsUnitResponseVO>True</IsUnitResponseVO>
+        <KillsPreviousObjectSFX>False</KillsPreviousObjectSFX>
+        <QueueIfCantPlay>False</QueueIfCantPlay>
+        <AudibleInFogOfWar>False</AudibleInFogOfWar>
+        <LoopFadeInSeconds>0</LoopFadeInSeconds>
+        <LoopFadeOutSeconds>0</LoopFadeOutSeconds>
+        <NonLoopFadeInSeconds>0</NonLoopFadeInSeconds>
+        <NonLoopFadeOutSeconds>0</NonLoopFadeOutSeconds>
+        <LowPassFilterMaxDist>0</LowPassFilterMaxDist>
+        <LowPassFilterMinDist>0</LowPassFilterMinDist>
+        <Max2DInstances>8</Max2DInstances>
+        <Max3DNonLoopInstances>-1</Max3DNonLoopInstances>
+        <MaxAudible3DLoopInstances>0</MaxAudible3DLoopInstances>
+        <MaxFBPan2D>50</MaxFBPan2D>
+        <MaxLRPan2D>50</MaxLRPan2D>
+        <MaxPitch>105</MaxPitch>
+        <MaxPostdelay>0</MaxPostdelay>
+        <MaxPredelay>0</MaxPredelay>
+        <MaxVolume>40</MaxVolume>
+        <MinFBPan2D>50</MinFBPan2D>
+        <MinLRPan2D>50</MinLRPan2D>
+        <MinPitch>95</MinPitch>
+        <MinPostdelay>0</MinPostdelay>
+        <MinPredelay>0</MinPredelay>
+        <MinVolume>40</MinVolume>
+        <OverlapTestName />
+        <VolumeSlider>Volume_Slider_SFX_Gameplay</VolumeSlider>
+        <PlayCount>1</PlayCount>
+        <PlayCountDurationSeconds>0</PlayCountDurationSeconds>
+        <CooldownReplaySeconds>0</CooldownReplaySeconds>
+        <PlaySequentially>False</PlaySequentially>
+        <Priority>4</Priority>
+        <Probability>1</Probability>
+        <VolumeFallOffDist>3000</VolumeFallOffDist>
+        <VolumeSaturationDist>1000</VolumeSaturationDist>
+  </SFXEvent>
 	<SFXEvent Name="TDR_SFX_PROMOTED" Preset="_PRESET_MOD">
 		<IsPreset> False </IsPreset>
 		<SampleNamesList>
@@ -118,10 +170,63 @@
 		</SampleNamesList>
 	</SFXEvent>
     
+    <SFXEvent Name="RAR_SFX_CASHTCLN" Preset="_PRESET_MD_MOBIUS_2D_LOCAL">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> RAR_SFX_cashturn.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
+    
+    <SFXEvent Name="RAC_SFX_CASHTCLN" Preset="_PRESET_MD_MOBIUS_2D_LOCAL">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> RAC_SFX_cashturn.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
+    
+    <SFXEvent Name="TDR_SFX_CASHTCLN" Preset="_PRESET_MD_MOBIUS_2D_LOCAL">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> TDR_SFX_CASHTURN.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
+    
+    <SFXEvent Name="TDC_SFX_CASHTCLN" Preset="_PRESET_MD_MOBIUS_2D_LOCAL">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> TDC_SFX_CASHTURN.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
+    
+    <SFXEvent Name="RAR_SFX_CONSTCLN" Preset="_PRESET_MD_MOBIUS_2D_LOCAL">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> RAR_SFX_build5.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
+    
+    <SFXEvent Name="RAC_SFX_CONSTCLN" Preset="_PRESET_MD_MOBIUS_2D_LOCAL">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> RAC_SFX_build5.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
+    
+    <SFXEvent Name="TDR_SFX_CONSTCLN" Preset="_PRESET_MD_MOBIUS_2D_LOCAL">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> TDR_SFX_CONSTRU2.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
+    
+    <SFXEvent Name="TDC_SFX_CONSTCLN" Preset="_PRESET_MD_MOBIUS_2D_LOCAL">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> TDC_SFX_CONSTRU2.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
+    
 </SFXEvents>
-
-
-
 
 
 

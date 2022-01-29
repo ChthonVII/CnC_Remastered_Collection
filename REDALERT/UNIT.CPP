@@ -109,6 +109,9 @@ extern bool Is_Legacy_Render_Enabled(void);
 // Chthon CFE Note -- We need this for checking the shift key for attack-move
 extern bool DLL_Export_Get_Input_Key_State(KeyNumType key);
 
+// need this to play sounds for only one player
+extern void On_Sound_Effect(const HouseClass* player_ptr, int sound_effect_index, const char* extension, int variation, COORDINATE coord);
+
 static int _GapShroudXTable[]={
 		-1, 0, 1,
 	-2,-1, 0, 1, 2,
@@ -1690,9 +1693,13 @@ bool UnitClass::Try_To_Deploy(void)
 			Mark(MARK_UP);
 			CELL cell = Coord_Cell(Adjacent_Cell(Center_Coord(), FACING_NW));
 			if (!BuildingTypeClass::As_Reference(STRUCT_CONST).Legal_Placement(cell)) {
-				if (PlayerPtr == House) {
-					Speak(VOX_DEPLOY);
-				}
+				// Chthon CFE Note: make sure it plays for correct player in MP
+                //if (PlayerPtr == House) {
+				//	Speak(VOX_DEPLOY);
+				//}
+                if (House->IsHuman) {
+                    Speak(VOX_DEPLOY, House);
+                }
 				if (!House->IsHuman) {
 					BuildingTypeClass::As_Reference(STRUCT_CONST).Flush_For_Placement(cell, House);
 				}
@@ -1728,12 +1735,24 @@ bool UnitClass::Try_To_Deploy(void)
 					**	Play the buildup sound for the player if this is the players
 					**	MCV.
 					*/
+                    
+                    // Chthon CFE Note: buggy for MP
+                    /*
 					if (building->House == PlayerPtr) {
 						Sound_Effect(VOC_PLACE_BUILDING_DOWN, Center_Coord());
 					} else {
 						building->IsToRebuild = true;
 						building->IsToRepair = true;
 					}
+					*/
+                    if (House->IsHuman){
+                        On_Sound_Effect(House, (int)VOC_PLACE_BUILDING_DOWN, "", 1, Center_Coord());
+                    }
+                    // set these for CPU players only, not other humans (this was a (harmless?) sync bug in legacy RA)
+                    else {
+                        building->IsToRebuild = true;
+						building->IsToRepair = true;
+                    }
 
 					/*
 					**	Always reveal the construction yard to the player that owned the
@@ -2947,7 +2966,9 @@ int UnitClass::Mission_Unload(void)
 				Gold = 0;
 				Arm = QuakeDelay * House->ROFBias;
 #ifdef ENGLISH
-				Speak(VOX_MADTANK_DEPLOYED);	// this voice only exists in English
+                // Chthon CFE Note: fix for MP - should be audible to everyone
+				//Speak(VOX_MADTANK_DEPLOYED);	// this voice only exists in English
+                CFE_Patch_Speak_For_All_Humans(VOX_MADTANK_DEPLOYED);
 #else
 				Sound_Effect(VOC_BUZZY1,Center_Coord());
 #endif
@@ -3207,8 +3228,12 @@ int UnitClass::Mission_Harvest(void)
                         if (Transmit_Message(RADIO_HELLO, nearest) == RADIO_ROGER) {
                             Status = HEADINGHOME;
                             //CFE_Debug_Printf("Harvester %i got RADIO_ROGER. Should be first in line.", this);
-                            if (nearest->House == PlayerPtr && (PlayerPtr->Capacity - PlayerPtr->Tiberium) < 300 && PlayerPtr->Capacity > 500 && (PlayerPtr->ActiveBScan & (STRUCTF_REFINERY | STRUCTF_CONST))) {
-                                Speak(VOX_NEED_MO_CAPACITY);
+                            // Chthon CFE Note: Fix for multiplayer
+                            //if (nearest->House == PlayerPtr && (PlayerPtr->Capacity - PlayerPtr->Tiberium) < 300 && PlayerPtr->Capacity > 500 && (PlayerPtr->ActiveBScan & (STRUCTF_REFINERY | STRUCTF_CONST))) {
+                                //Speak(VOX_NEED_MO_CAPACITY);
+                            //}
+                            if (House->IsHuman && (nearest->House == House) && ((House->Capacity - House->Tiberium) < 300) && (House->Capacity > 500) && ((House->ActiveBScan & (STRUCTF_REFINERY | STRUCTF_CONST)))) {
+                                Speak(VOX_NEED_MO_CAPACITY, House);
                             }
                         } else {
                             //Assign_Destination(::As_Target(nearest->Nearby_Location(this)));
@@ -3229,8 +3254,12 @@ int UnitClass::Mission_Harvest(void)
                     */
                     if (nearest != NULL && Transmit_Message(RADIO_HELLO, nearest) == RADIO_ROGER) {
                         Status = HEADINGHOME;
-                        if (nearest->House == PlayerPtr && (PlayerPtr->Capacity - PlayerPtr->Tiberium) < 300 && PlayerPtr->Capacity > 500 && (PlayerPtr->ActiveBScan & (STRUCTF_REFINERY | STRUCTF_CONST))) {
-                            Speak(VOX_NEED_MO_CAPACITY);
+                        // Chthon CFE Note: Fix for multiplayer
+                        //if (nearest->House == PlayerPtr && (PlayerPtr->Capacity - PlayerPtr->Tiberium) < 300 && PlayerPtr->Capacity > 500 && (PlayerPtr->ActiveBScan & (STRUCTF_REFINERY | STRUCTF_CONST))) {
+                            //Speak(VOX_NEED_MO_CAPACITY);
+                        //}
+                        if (House->IsHuman && (nearest->House == House) && ((House->Capacity - House->Tiberium) < 300) && (House->Capacity > 500) && ((House->ActiveBScan & (STRUCTF_REFINERY | STRUCTF_CONST)))) {
+                                Speak(VOX_NEED_MO_CAPACITY, House);
                         }
                     } else {
                         ScenarioInit++;

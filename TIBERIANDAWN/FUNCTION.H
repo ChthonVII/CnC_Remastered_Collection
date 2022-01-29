@@ -1019,6 +1019,8 @@ int CFE_Patch_FullRange_Random_Pick(int min, int max);
 
 void CFE_Patch_Sound_Effect_For_All_Humans(VocType voc, COORDINATE coord=NULL, int variation=1, HouseClass* skiphouse = NULL);
 void CFE_Patch_Random_Sound_Effect_For_All_Humans(VocType voclist[], int listlength, COORDINATE coord=NULL, int variation=1, HouseClass* skiphouse = NULL);
+void CFE_Patch_Sound_Effect_For_Seers(VocType voc, TechnoClass* thingy, int variation=1);
+void CFE_Patch_Sound_Effect_For_Seers(VocType voc, CELL cell, int variation=1);
 void  CFE_Patch_Speak_For_All_Humans(VoxType voice, COORDINATE coord=0, HouseClass* skiphouse=NULL);
 
 //void CFE_Patch_MP_Switch_Player_Context(const bool toreal);

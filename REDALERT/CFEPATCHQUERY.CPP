@@ -2,6 +2,8 @@
 
 extern bool DLL_Export_Get_Input_Key_State(KeyNumType key);
 
+extern void On_Sound_Effect(const HouseClass* player_ptr, int sound_effect_index, const char* extension, int variation, COORDINATE coord);
+
 bool CFE_Patch_Is_Wall(const ObjectTypeClass& object)
 {
 	return object.What_Am_I() == RTTI_BUILDINGTYPE && static_cast<const BuildingTypeClass&>(object).IsWall;
@@ -114,3 +116,98 @@ int CFE_Patch_FullRange_Random_Pick(int min, int max){
     } while (fullrangerandom > ceiling);
     return (fullrangerandom % adjustedmax) + min;
 }
+
+// Play the same sound for all human players
+// used for stuff like commando voice lines that were audible to everyone in the original game,
+// but which are broken in vanilla remastered b/c of PlayerPtr shenanigans
+// skiphouse is a house to not player the sound for (b/c it was already played by other means)
+// other parameters are the same as Sound_Effect()
+void CFE_Patch_Sound_Effect_For_All_Humans(VocType voc, COORDINATE coord, int variation, HouseClass* skiphouse){
+
+    // just play the sound normally in SP
+    if (Session.Type == GAME_NORMAL){
+        if (!skiphouse || (PlayerPtr != skiphouse)){
+            Sound_Effect(voc, coord, variation);
+        }
+        return;
+    }
+    // multiplayer:
+    for (int i=0 ; i<Session.Players.Count() ; i++) {
+        HouseClass* someplayer = HouseClass::As_Pointer(Session.Players[i]->Player.ID);
+        if (someplayer && (someplayer->IsHuman) && (!skiphouse || (someplayer != skiphouse))) {
+            On_Sound_Effect(someplayer, (int)voc, "", variation, coord);
+        }
+    }
+    return;
+}
+
+// Play the same sound for all human players who can see a unit
+// used for constructing/selling sounds.
+// The original game only played these for the owner.
+// When not buggy, remastered plays them positionally for everyone
+// This has a better feel, but it allows you to hear things under the shroud.
+// So we need this function to play positionally, but only for people who can see the unit
+void CFE_Patch_Sound_Effect_For_Seers(VocType voc, TechnoClass* thingy, int variation){
+
+    if (!thingy){
+        return;
+    }
+    
+    // just play the sound normally in SP
+    if (Session.Type == GAME_NORMAL){
+        if ((thingy->House == PlayerPtr) || thingy->IsDiscoveredByPlayer || Map[Coord_Cell(thingy->Center_Coord())].IsMapped){
+            Sound_Effect(voc, thingy->Center_Coord(), variation);
+        }
+        return;
+    }
+    // multiplayer:
+    for (int i=0 ; i<Session.Players.Count() ; i++) {
+        HouseClass* someplayer = HouseClass::As_Pointer(Session.Players[i]->Player.ID);
+        if (someplayer && (someplayer->IsHuman) && ((thingy->House == someplayer) || thingy->Is_Discovered_By_Player(someplayer) || Map[Coord_Cell(thingy->Center_Coord())].Is_Mapped(someplayer))) {
+            On_Sound_Effect(someplayer, (int)voc, "", variation, thingy->Center_Coord());
+        }
+    }
+    return;
+}
+
+void CFE_Patch_Sound_Effect_For_Seers(VocType voc, CELL cell, int variation){
+    
+    // just play the sound normally in SP
+    if (Session.Type == GAME_NORMAL){
+        if (Map[cell].IsMapped){
+            Sound_Effect(voc, Cell_Coord(cell), variation);
+        }
+        return;
+    }
+    // multiplayer:
+    for (int i=0 ; i<Session.Players.Count() ; i++) {
+        HouseClass* someplayer = HouseClass::As_Pointer(Session.Players[i]->Player.ID);
+        if (someplayer && (someplayer->IsHuman) && Map[cell].Is_Mapped(someplayer)) {
+            On_Sound_Effect(someplayer, (int)voc, "", variation, Cell_Coord(cell));
+        }
+    }
+    return;
+}
+
+// Play EVA speech for all human players
+// used for stuff that was audible to everyone in original game, such as incoming nuke warning
+// parameters are the same as Speak()
+void  CFE_Patch_Speak_For_All_Humans(VoxType voice, COORDINATE coord, HouseClass* skiphouse){
+
+    if (Session.Type == GAME_NORMAL){
+        if (!skiphouse || (PlayerPtr != skiphouse)){
+            Speak(voice, NULL, coord);
+        }
+        return;
+    }
+    // multiplayer
+    for (int i=0 ; i<Session.Players.Count() ; i++) {
+        HouseClass* someplayer = HouseClass::As_Pointer(Session.Players[i]->Player.ID);
+        if (someplayer && (someplayer->IsHuman) && (!skiphouse || (someplayer != skiphouse))) {
+            Speak(voice, someplayer, coord);
+        }
+    }
+
+    return;
+}
+

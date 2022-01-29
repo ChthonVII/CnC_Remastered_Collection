@@ -111,7 +111,7 @@
 */
 #include "SidebarGlyphx.h"
 
-#include "cfedebug.h"
+//#include "cfedebug.h"
 
 enum SAMState {
 	SAM_READY,					// Launcher can be facing any direction tracking targets.
@@ -124,6 +124,8 @@ extern void DLL_Draw_Intercept(int shape_number, int x, int y, int width, int he
 // and need these for inverse placement preview
 extern bool Is_Legacy_Render_Enabled(void);
 extern BuildingTypeClass* GetPlacementType(unsigned int index);
+// and this for playing sounds for specific players
+extern void On_Sound_Effect(const HouseClass* player_ptr, int sound_effect_index, const char* extension, int variation, COORDINATE coord);
 
 
 /***************************************************************************
@@ -1271,7 +1273,7 @@ bool BuildingClass::Unlimbo_Wall(COORDINATE coord)
 							//FluffyQuack 14/06/2020: If WallsAlwaysHaveFullCost is true then we charge the player for each extra piece. Abort with "insufficient funds" if player can't afford it
 							if (ActiveCFEPatchConfig.WallsAlwaysHaveFullCost && House->Available_Money() < Class->Cost_Of())
 							{
-								Speak(VOX_NO_CASH);
+								Speak(VOX_NO_CASH, House);
 								break;
 							}
 
@@ -3205,6 +3207,8 @@ void BuildingClass::Repair(int control)
 	if (IsRepairing) {
 		if (Strength == Class->MaxStrength) {
 			soundid = VOC_SCOLD;
+            // Chthon CFE Note: Let's flip IsRepairing off immediately to make sure GlyphX doesn't do anything dumb.
+            IsRepairing = false;
 		} else {
 			soundid = VOC_CLICK;
 			if (House->IsPlayerControl) {
@@ -3218,9 +3222,15 @@ void BuildingClass::Repair(int control)
 		soundid = VOC_CLICK;
 	}
 	
+	// Chthon CFE Note: fix for MP
+	/*
 	if (House->IsPlayerControl) {
 		Sound_Effect(soundid, Coord);
 	}
+	*/
+    if (House->IsHuman){
+        On_Sound_Effect(House, (int)soundid, "", 1, Coord);
+    }
 }
 
 
@@ -3280,9 +3290,13 @@ void BuildingClass::Sell_Back(int control)
                 Clicked_As_Target(Owner());
 			}
 		}
-		if (House->IsPlayerControl) {
-			Sound_Effect(VOC_CLICK);
-		}
+		// Chthon CFE Note: Fix for MP
+		//if (House->IsPlayerControl) {
+		//	Sound_Effect(VOC_CLICK);
+		//}
+		if (House->IsHuman){
+            On_Sound_Effect(House, VOC_CLICK, "", 1, Coord);
+        }
 	}
 }
 
@@ -3710,6 +3724,15 @@ bool BuildingClass::Captured(HouseClass * newowner)
 				break;
 		}
 #endif
+        // Chthon CFE Note: Use the generic "structure captured" sound file to complete the above TOFIX
+        if (ActiveCFEPatchConfig.EnableBuildingCaptureAnnouncements){
+            if (House->IsHuman){
+                Speak(VOX_BUILDING_CAPTURE, House);
+            }
+            if (newowner->IsHuman){
+                Speak(VOX_BUILDING_CAPTURE, newowner);
+            }
+        }
 
 		/*
 		** Maybe trigger an achivement. ST - 11/14/2019 1:53PM
@@ -4165,9 +4188,11 @@ int BuildingClass::Mission_Construction(void)
 		case INITIAL:
 			Begin_Mode(BSTATE_CONSTRUCTION);
 			Transmit_Message(RADIO_BUILDING);
-			if (House->IsPlayerControl) {
-				Sound_Effect(VOC_CONSTRUCTION, Coord);
-			}
+			// Chthon CFE Note: better to play these positionally for everyone who can see this building
+            //if (House->IsPlayerControl) {
+			//	Sound_Effect(VOC_CONSTRUCTION, Coord);
+			//}
+            CFE_Patch_Sound_Effect_For_Seers(VOC_CONSTRUCTION_CLONE, this);
 			Status = DURING;
 			break;
 
@@ -4239,8 +4264,12 @@ int BuildingClass::Mission_Deconstruction(void)
 			if (Can_Demolish_Unit() && Transmit_Message(RADIO_NEED_TO_MOVE) == RADIO_ROGER) {
 				TechnoClass * tech = Contact_With_Whom();
 				Transmit_Message(RADIO_OVER_OUT);
-				if (IsOwnedByPlayer) Speak(VOX_UNIT_SOLD);
-				tech->Sell_Back(1);
+				// Chthon CFE Note: Fix for MP
+                //if (IsOwnedByPlayer) Speak(VOX_UNIT_SOLD);
+				if (House->IsHuman){
+                    Speak(VOX_UNIT_SOLD, House);
+                }
+                tech->Sell_Back(1);
 				Assign_Mission(MISSION_GUARD);
 				return(1);
 			}
@@ -4323,7 +4352,9 @@ int BuildingClass::Mission_Deconstruction(void)
 						Sound_Effect(VOC_CASHTURN, Coord);
 					}
 				#else
-					Sound_Effect(VOC_CASHTURN, Coord);
+                    // Chthon CFE Note: Making it so all players here it positionally, IF THEY CAN SEE this spot
+					//Sound_Effect(VOC_CASHTURN, Coord);
+					CFE_Patch_Sound_Effect_For_Seers(VOC_CASHTURN_CLONE, this);
 				#endif
 				
 				/*
@@ -4449,8 +4480,12 @@ int BuildingClass::Mission_Deconstruction(void)
 				if (!mcv_redeployed) 
 				{
 					if (IsOwnedByPlayer) {
-						if ((HouseClass *)House == PlayerPtr) {
-							Speak(VOX_STRUCTURE_SOLD);
+                        // Chthon CFE note: properly fix for MP
+						//if ((HouseClass *)House == PlayerPtr) {
+						//	Speak(VOX_STRUCTURE_SOLD);
+						//}
+                        if (House->IsHuman) {
+							Speak(VOX_STRUCTURE_SOLD, House);
 						}
 					}
 				}
@@ -4841,7 +4876,11 @@ int BuildingClass::Mission_Repair(void)
 						**	that the reason is because of low cash.
 						*/
 						case RADIO_CANT:
-							if (IsOwnedByPlayer) Speak(VOX_NO_CASH);
+							// Chthon CFE Note: Fix for MP
+                            //if (IsOwnedByPlayer) Speak(VOX_NO_CASH);
+                            if (House->IsHuman){
+                                Speak(VOX_NO_CASH, House);
+                            }
 							Begin_Mode(BSTATE_IDLE);
 							Status = IDLE;
 							break;
@@ -5305,9 +5344,17 @@ void BuildingClass::Death_Announcement(TechnoClass const * source) const
 	assert(Buildings.ID(this) == ID);
 	assert(IsActive);
 
-	if (source != NULL && House->IsPlayerControl) {
-		Speak(VOX_STRUCTURE_DESTROYED);
-	}
+    // Chthon CFE Note: fix for MP
+    if (Session.Type == GAME_NORMAL){
+        if (source != NULL && House->IsPlayerControl) {
+            Speak(VOX_STRUCTURE_DESTROYED);
+        }
+    }
+    else {
+        if ((source != NULL) && House->IsHuman){
+            Speak(VOX_STRUCTURE_DESTROYED, House);
+        }
+    }
 }
 
 

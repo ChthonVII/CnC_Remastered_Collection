@@ -105,7 +105,7 @@
 #include "SidebarGlyphx.h"
 #include "defines.h"
 
-//#include "CFEDEBUG.H"
+#include "CFEDEBUG.H"
 
 extern void On_Sound_Effect(const HouseClass* player_ptr, int sound_effect_index, const char* extension, int variation, COORDINATE coord);
 
@@ -2709,7 +2709,15 @@ void HouseClass::Special_Weapon_AI(SpecialWeaponType id)
  *=============================================================================================*/
 bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
 {
-	Validate();
+	// verify PlayerPtr is getting set right on the way here
+    // CFE_Debug_Printf("Place_Special_Blast PlayerPtr is %i", PlayerPtr);
+    // it's not :(
+    // Sounds in MP will be messed up
+    // Let's set it here, then unset it later
+    HouseClass* old_player_ptr = PlayerPtr;
+    Logic_Switch_Player_Context(this);
+    
+    Validate();
 	BuildingClass * launchsite = 0;
 	AnimClass * anim = 0;
 	
@@ -2778,7 +2786,11 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
 					**	Only in the multiplayer version can the nuclear bomb be
 					**	sent from some off screen source.
 					*/
-					if (GameToPlay == GAME_NORMAL) return(false);
+					if (GameToPlay == GAME_NORMAL){
+                        // Chthon CFE Note: set PlayerPtr back as it was
+                        Logic_Switch_Player_Context(old_player_ptr);
+                        return(false);
+                    }
 
 					/*
 					**	Since no launch site was found, just bring the missile in
@@ -2838,6 +2850,9 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
 	if (IsHuman && fired && what) {
 		On_Achievement_Event(this, "SUPERWEAPON_FIRED", what);
 	}
+	
+	// Chthon CFE Note: set PlayerPtr back as it was
+	Logic_Switch_Player_Context(old_player_ptr);
 
 	return(true);
 }
@@ -4820,7 +4835,9 @@ void HouseClass::Sell_Wall(CELL cell)
 				if (btype != NULL && !btype->IsUnsellable) {
 
                     // better idea, port from Petroglyph's change in BuildingClass::Mission_Deconstruction()  -- playing positionally for everyone is an improvement
-                    Sound_Effect(VOC_CASHTURN,  Cell_Coord(cell));
+                    // better, better idea: must be limited to people who can see it to prevent spying under shroud
+                    CFE_Patch_Sound_Effect_For_Seers(VOC_CASHTURN_CLONE, cell);
+                    //Sound_Effect(VOC_CASHTURN,  Cell_Coord(cell));
 					//if (PlayerPtr == this) {
 						// Chthon CFE Note: Bugfix - player for owner, not server
                         //Sound_Effect(VOC_CASHTURN);

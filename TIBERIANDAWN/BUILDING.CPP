@@ -3517,8 +3517,10 @@ void BuildingClass::Repair(int control)
 	*/
 	VocType sound = VOC_NONE;
 	if (IsRepairing) {
-		if (Strength == Class->MaxStrength) {
+		if (Strength >= Class->MaxStrength) {
 			sound = VOC_SCOLD;
+            // Chthon CFE Note: Let's flip IsRepairing off immediately to make sure GlyphX doesn't do anything dumb.
+            IsRepairing = false;
 		} else {
 			sound = VOC_BUTTON;
 			// Chthon CFE Note: This is wrong in LAN multiplayer. PlayerPtr points to the server, not necessarily the building owner
@@ -3531,10 +3533,16 @@ void BuildingClass::Repair(int control)
 		sound = VOC_BUTTON;
 	}
 	//Changed for multiplayer ST - 3/13/2019 5:31PM
+	// Chthon CFE Note: properly changed for MP
+	/*
 	if (Is_Owned_By_Player()) {
 	//if (IsOwnedByPlayer) {
 		Sound_Effect(sound, Coord);
 	}
+	*/
+    if (House->IsHuman){
+        On_Sound_Effect(House, (int)sound, "", 1, Coord);
+    }
 }
 
 
@@ -4588,10 +4596,12 @@ int BuildingClass::Mission_Construction(void)
 			Begin_Mode(BSTATE_CONSTRUCTION);
 			Transmit_Message(RADIO_BUILDING);
 			//Changed for multiplayer ST - 3/13/2019 5:31PM
-			if (Is_Owned_By_Player()) {
-			//if (IsOwnedByPlayer) {
-				Sound_Effect(VOC_CONSTRUCTION, Coord);
-			}
+			// Chthon CFE Note: better to play positionally for anyone who can see this building
+            //if (Is_Owned_By_Player()) {
+			//if (IsOwnedByPlayer) { // was commented out by ST
+			//	Sound_Effect(VOC_CONSTRUCTION, Coord);
+			//}
+            CFE_Patch_Sound_Effect_For_Seers(VOC_CONSTRUCTION_CLONE, this);
 			Status = DURING;
 			break;
 
@@ -4732,10 +4742,9 @@ int BuildingClass::Mission_Deconstruction(void)
 						Sound_Effect(VOC_CASHTURN, Coord);
 					}
 				#else
-                    // Chthon CFE Note: Bugfix, player for owner only
-                    // revert -- playing positionally for everyone is an improvement
-					Sound_Effect(VOC_CASHTURN, Coord);
-					//On_Sound_Effect(House, (int)VOC_CASHTURN, "", 1, Coord);
+                    // Chthon CFE Note: Limit to owner + people who can see it
+					//Sound_Effect(VOC_CASHTURN, Coord);
+					CFE_Patch_Sound_Effect_For_Seers(VOC_CASHTURN_CLONE, this);
 				#endif
 				
 				/*

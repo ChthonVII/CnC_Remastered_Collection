@@ -1403,7 +1403,9 @@ void InfantryClass::AI(void)
 							if (TryTryAgain) {
 								TryTryAgain--;
 							} else {
-								if (IsNewNavCom) Sound_Effect(VOC_SCOLD);
+								// Chthon CFE Note: fix for MP
+                                //if (IsNewNavCom) Sound_Effect(VOC_SCOLD);
+                                if (IsNewNavCom && House->IsHuman) On_Sound_Effect(House, (int)VOC_SCOLD, "", 1, Coord);
 								IsNewNavCom = false;
 
 								//If we're trying to enter a transport we need to fail so others can try to enter. - LLL 4/17/2020
@@ -1453,8 +1455,10 @@ void InfantryClass::AI(void)
 
 					Path[0] = FACING_NONE;
 					Stop_Driver();
-					if (IsNewNavCom) Sound_Effect(VOC_SCOLD);
-					IsNewNavCom = false;
+					// Chthon CFE Note: Fix for MP
+                    //if (IsNewNavCom) Sound_Effect(VOC_SCOLD);
+					if (IsNewNavCom && House->IsHuman) On_Sound_Effect(House, (int)VOC_SCOLD, "", 1, Coord);
+                    IsNewNavCom = false;
 
 				} else {
 					if (Start_Driver(acoord)) {
@@ -2093,7 +2097,7 @@ void InfantryClass::Random_Animate(void)
 					Sound_Effect(_response[Sim_Random_Pick(0, (int)(sizeof(_response) / sizeof(_response[0]))-1)], Coord);
 				}
 				*/
-				if ((*this == INFANTRY_MOEBIUS) && !Is_Selected_By_Player(House) && Is_Discovered_By_Player(House) && (Random_Pick(0,19) == 0)){
+				if ((*this == INFANTRY_MOEBIUS) && House->IsHuman && !Is_Selected_By_Player(House) && Is_Discovered_By_Player(House) && (Random_Pick(0,19) == 0)){
                     // reenable VOC_QUIP2 since Nyerguds extracted it from N64 port
                     if ((Random_Pick(0,4) < 2) && IsNearATree()){
                         On_Sound_Effect(House, (int)VOC_QUIP2, "", 1, Coord);
@@ -2122,7 +2126,7 @@ void InfantryClass::Random_Animate(void)
 					Sound_Effect(VOC_RAMBO_CMON, Coord);
 				}
 				*/
-				if ((*this == INFANTRY_RAMBO) && !Is_Selected_By_Player(House) && (Random_Pick(0,2) == 0)){
+				if ((*this == INFANTRY_RAMBO) &&  House->IsHuman && !Is_Selected_By_Player(House) && (Random_Pick(0,2) == 0)){
                     On_Sound_Effect(House, (int)VOC_RAMBO_CMON, "", 1, Coord);
                 }
 				break;

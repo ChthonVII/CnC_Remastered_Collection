@@ -3347,6 +3347,8 @@ typedef enum VocType : short {
     
     VOC_PROMOTED, //Chthon CFE Note: add a sound for veterancy promotions
     VOC_WIND_GUST, //Chthon CFE Note: add a sound for infantry stealth (mechanical sound sounds weird)
+    VOC_CONSTRUCTION_CLONE, //Chthon CFE Note: clone so we can muck with xml in our own file
+    VOC_CASHTURN_CLONE, //Chthon CFE Note: clone so we can muck with xml in our own file
     
 	VOC_COUNT,
 	VOC_FIRST=0
@@ -3478,6 +3480,8 @@ typedef enum VoxType : char {
 	VOX_SAVE1,
 	VOX_LOAD1,
 
+    VOX_BUILDING_CAPTURE, //Chthon CFE Note: add the generic "building captured" voice that has a sound file but WW never finished adding to the game
+    
 	VOX_COUNT,
 	VOX_FIRST=0
 } VoxType;

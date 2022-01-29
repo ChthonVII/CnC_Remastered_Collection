@@ -2369,6 +2369,8 @@ typedef enum VocType : char{
 
     VOC_PROMOTED, //Chthon CFE Note: add a sound for veterancy promotions
     VOC_WIND_GUST, //Chthon CFE Note: add a sound for infantry stealth (mechanical sound sounds weird)
+    VOC_CONSTRUCTION_CLONE, //Chthon CFE Note: clone so we can muck with xml in our own file
+    VOC_CASHTURN_CLONE, //Chthon CFE Note: clone so we can muck with xml in our own file
     
 #ifdef PETROGLYPH_EXAMPLE_MOD
 	VOC_NUKE_LOB,		// Modded unit firing sound

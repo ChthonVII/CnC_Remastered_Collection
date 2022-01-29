@@ -57,6 +57,8 @@
 
 #include	"function.h"
 
+// we need this playing sounds for one speciifc player
+extern void On_Sound_Effect(const HouseClass* player_ptr, int sound_effect_index, const char* extension, int variation, COORDINATE coord);
 
 #ifdef NEVER
 void test(void)
@@ -996,8 +998,10 @@ bool DriveClass::Start_Of_Move(void)
 				} else {
 					Assign_Destination(TARGET_NONE);
 					if (!IsActive) return(false);
-					if (IsNewNavCom) Sound_Effect(VOC_SCOLD);
-					IsNewNavCom = false;
+                    // Chthon CFE Note: fixed for MP
+					//if (IsNewNavCom) Sound_Effect(VOC_SCOLD);
+					if (IsNewNavCom && House->IsHuman) On_Sound_Effect(House, (int)VOC_SCOLD, "", 1, Coord);
+                    IsNewNavCom = false;
 				}
 			}
 
@@ -1130,7 +1134,9 @@ bool DriveClass::Start_Of_Move(void)
 					}
 				}
 			} else {
-				if (IsNewNavCom) Sound_Effect(VOC_SCOLD);
+				// Chthon CFE Note: foixed for MP
+                //if (IsNewNavCom) Sound_Effect(VOC_SCOLD);
+                if (IsNewNavCom && House->IsHuman) On_Sound_Effect(House, (int)VOC_SCOLD, "", 1, Coord);
 			}
 			IsNewNavCom = false;
 			TrackNumber = -1;

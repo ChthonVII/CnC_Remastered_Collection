@@ -84,6 +84,8 @@
 */
 #include "SidebarGlyphx.h"
 
+// we need this playing sounds for one speciifc player
+extern void On_Sound_Effect(const HouseClass* player_ptr, int sound_effect_index, const char* extension, int variation, COORDINATE coord);
 
 /***********************************************************************************************
  * CellClass::CellClass -- Constructor for cell objects.                                       *
@@ -2437,6 +2439,7 @@ bool CellClass::Goodie_Check(FootClass * object)
 		**	Create the effect requested.
 		*/
 		bool tospeak = false;
+        int speakers = 0; // Chthon CFE Note: for MP fixes
 		switch (powerup) {
 			case CRATE_TIMEQUAKE:
 				TimeQuake = true;
@@ -2666,9 +2669,15 @@ crate_money:
 			**	All of the player's objects heal up.
 			*/
 			case CRATE_HEAL_BASE:
-				if (object->IsOwnedByPlayer) {
+				// Chthon CFE Note: fixed for MP
+                /*
+                if (object->IsOwnedByPlayer) {
 					Sound_Effect(VOC_HEAL, object->Center_Coord());
 				}
+				*/
+                if (object->House->IsHuman){
+                    On_Sound_Effect(object->House, (int)VOC_HEAL, "", 1, object->Center_Coord());
+                }
 				for (int index = 0; index < Logic.Count(); index++) {
 					ObjectClass * obj = Logic[index];
 
@@ -2702,10 +2711,32 @@ crate_money:
 					if (obj != NULL && obj->Is_Techno() && Distance(Cell_Coord(), obj->Center_Coord()) < Rule.CrateRadius && ((TechnoClass *)obj)->ArmorBias == 1) {
 						fixed val = ((TechnoClass *)obj)->ArmorBias * Inverse(fixed(CrateData[powerup], 256));
 						((TechnoClass *)obj)->ArmorBias = val;
-						if (obj->Owner() == PlayerPtr->Class->House) tospeak = true;
+						// Chthon CFE Note: fix for MP
+                        if (Session.Type == GAME_NORMAL){
+                            if (obj->Owner() == PlayerPtr->Class->House) tospeak = true;
+                        }
+                        else {
+                            if (((TechnoClass *)obj)->House->IsHuman){
+                                tospeak = true;
+                                speakers |= (1L << obj->Owner());
+                            }
+                        }
 					}
 				}
-				if (tospeak) Speak(VOX_UPGRADE_ARMOR);
+				// Chthon CFE note: fix for MP
+				//if (tospeak) Speak(VOX_UPGRADE_ARMOR);
+				if (tospeak){
+                    if (Session.Type == GAME_NORMAL){
+                        Speak(VOX_UPGRADE_ARMOR);
+                    }
+                    else{
+                        for (HousesType i=HOUSE_FIRST; i<HOUSE_COUNT; i++){
+                            if (((1L << i) & speakers) != 0){
+                                Speak(VOX_UPGRADE_ARMOR, HouseClass::As_Pointer(i));
+                            }
+                        }
+                    }
+                }
 				break;
 
 			case CRATE_SPEED:
@@ -2717,10 +2748,32 @@ crate_money:
 
 						fixed val = foot->SpeedBias * fixed(CrateData[powerup], 256);
 						foot->SpeedBias = val;
-						if (foot->IsOwnedByPlayer) tospeak = true;
+                        // Chthon CFE Note: fix for MP
+                        if (Session.Type == GAME_NORMAL){
+                            if (foot->IsOwnedByPlayer) tospeak = true;
+                        }
+                        else {
+                            if (foot->House->IsHuman){
+                                tospeak = true;
+                                speakers |= (1L << foot->Owner());
+                            }
+                        }
 					}
 				}
-				if (tospeak) Speak(VOX_UPGRADE_SPEED);
+				// Chthon CFE note: fix for MP
+				//if (tospeak) Speak(VOX_UPGRADE_SPEED);
+				if (tospeak){
+                    if (Session.Type == GAME_NORMAL){
+                        Speak(VOX_UPGRADE_SPEED);
+                    }
+                    else{
+                        for (HousesType i=HOUSE_FIRST; i<HOUSE_COUNT; i++){
+                            if (((1L << i) & speakers) != 0){
+                                Speak(VOX_UPGRADE_SPEED, HouseClass::As_Pointer(i));
+                            }
+                        }
+                    }
+                }
 				break;
 
 			case CRATE_FIREPOWER:
@@ -2731,10 +2784,32 @@ crate_money:
 
 						fixed val = ((TechnoClass *)obj)->FirepowerBias * fixed(CrateData[powerup], 256);
 						((TechnoClass *)obj)->FirepowerBias = val;
-						if (obj->Owner() == PlayerPtr->Class->House) tospeak = true;
+                        // Chthon CFE Note: fix for MP
+                        if (Session.Type == GAME_NORMAL){
+                            if (obj->Owner() == PlayerPtr->Class->House) tospeak = true;
+                        }
+                        else {
+                            if (((TechnoClass *)obj)->House->IsHuman){
+                                tospeak = true;
+                                speakers |= (1L << obj->Owner());
+                            }
+                        }
 					}
 				}
-				if (tospeak) Speak(VOX_UPGRADE_FIREPOWER);
+				// Chthon CFE note: fix for MP
+				//if (tospeak) Speak(VOX_UPGRADE_FIREPOWER);
+				if (tospeak){
+                    if (Session.Type == GAME_NORMAL){
+                        Speak(VOX_UPGRADE_FIREPOWER);
+                    }
+                    else{
+                        for (HousesType i=HOUSE_FIRST; i<HOUSE_COUNT; i++){
+                            if (((1L << i) & speakers) != 0){
+                                Speak(VOX_UPGRADE_FIREPOWER, HouseClass::As_Pointer(i));
+                            }
+                        }
+                    }
+                }
 				break;
 
 			case CRATE_INVULN:

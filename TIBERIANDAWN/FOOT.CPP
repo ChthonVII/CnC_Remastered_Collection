@@ -2197,10 +2197,12 @@ void FootClass::Sell_Back(int control)
         // also, put sound at Coord
 		//On_Sound_Effect(House, (int)VOC_CASHTURN, "", 1, Coord);
         // better idea, port from Petroglyph's change in BuildingClass::Mission_Deconstruction()  -- playing positionally for everyone is an improvement
-        Sound_Effect(VOC_CASHTURN, Coord);
+        // better, better idea: must be limited to people who can see it to prevent spying under shroud
+        //Sound_Effect(VOC_CASHTURN, Coord);
         //if (House == PlayerPtr) {
 		//	Sound_Effect(VOC_CASHTURN);
 		//}
+        CFE_Patch_Sound_Effect_For_Seers(VOC_CASHTURN_CLONE, this);
 		House->Refund_Money(Refund_Amount());
 		Stun();
 		Limbo();

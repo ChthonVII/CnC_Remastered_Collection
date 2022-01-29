@@ -2328,10 +2328,17 @@ void FootClass::Sell_Back(int control)
 	assert(IsActive);
 
 	if (control != 0) {
-		if (House == PlayerPtr) {
-			Speak(VOX_UNIT_SOLD);
-			Sound_Effect(VOC_CASHTURN);
-		}
+        // Chthon CFE Note: fix for MP, play voice for owner, play sound effect positionally for everyone
+		//if (House == PlayerPtr) {
+		//	Speak(VOX_UNIT_SOLD);
+		//	Sound_Effect(VOC_CASHTURN);
+		//}
+        if (House->IsHuman) {
+			Speak(VOX_UNIT_SOLD, House);
+        }
+        CFE_Patch_Sound_Effect_For_Seers(VOC_CASHTURN_CLONE, this);
+		
+        
 		House->Refund_Money(Refund_Amount());
 		Stun();
 		Limbo();

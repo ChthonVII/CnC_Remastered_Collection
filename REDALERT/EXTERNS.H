@@ -122,6 +122,7 @@ struct CFEPatchConfig
     bool EnableCumulativeTimelineDamage = false;
     bool EnableLongGapFix = false;
     bool EnableMIGAmmoFudge = false;
+    bool EnableBuildingCaptureAnnouncements = false;
 
     int SafeSabotage = 0;
 	int  HarvyQueueJumpCutoff = 4;
