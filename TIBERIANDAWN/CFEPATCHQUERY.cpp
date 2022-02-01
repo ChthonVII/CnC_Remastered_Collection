@@ -171,7 +171,7 @@ void CFE_Patch_Sound_Effect_For_All_Humans(VocType voc, COORDINATE coord, int va
     // multiplayer:
     for (int i=0 ; i<MPlayerCount; i++) {
         HouseClass* someplayer = HouseClass::As_Pointer(MPlayerHouses[i]);
-        if ((someplayer->IsHuman) && (!skiphouse || (someplayer != skiphouse))) {
+        if (someplayer && (someplayer->IsHuman) && (!skiphouse || (someplayer != skiphouse))) {
             On_Sound_Effect(someplayer, (int)voc, "", variation, coord);
         }
     }
@@ -195,7 +195,7 @@ void CFE_Patch_Random_Sound_Effect_For_All_Humans(VocType voclist[], int listlen
     // multiplayer:
     for (int i=0 ; i<MPlayerCount; i++) {
         HouseClass* someplayer = HouseClass::As_Pointer(MPlayerHouses[i]);
-        if ((someplayer->IsHuman) && (!skiphouse || (someplayer != skiphouse))) {
+        if (someplayer && (someplayer->IsHuman) && (!skiphouse || (someplayer != skiphouse))) {
             On_Sound_Effect(someplayer, (int)voclist[Random_Pick(0, listlength -1)], "", variation, coord);
         }
     }
@@ -224,7 +224,7 @@ void CFE_Patch_Sound_Effect_For_Seers(VocType voc, TechnoClass* thingy, int vari
     // multiplayer:
     for (int i=0 ; i<MPlayerCount; i++) {
         HouseClass* someplayer = HouseClass::As_Pointer(MPlayerHouses[i]);
-        if ((someplayer->IsHuman) && ((thingy->House == someplayer) || thingy->Is_Discovered_By_Player(someplayer) || Map[Coord_Cell(thingy->Center_Coord())].Is_Mapped(someplayer))) {
+        if (someplayer && (someplayer->IsHuman) && ((thingy->House == someplayer) || thingy->Is_Discovered_By_Player(someplayer) || Map[Coord_Cell(thingy->Center_Coord())].Is_Mapped(someplayer))) {
             On_Sound_Effect(someplayer, (int)voc, "", variation, thingy->Center_Coord());
         }
     }
@@ -243,7 +243,7 @@ void CFE_Patch_Sound_Effect_For_Seers(VocType voc, CELL cell, int variation){
     // multiplayer:
     for (int i=0 ; i<MPlayerCount; i++) {
         HouseClass* someplayer = HouseClass::As_Pointer(MPlayerHouses[i]);
-        if ((someplayer->IsHuman) && Map[cell].Is_Mapped(someplayer)) {
+        if (someplayer && (someplayer->IsHuman) && Map[cell].Is_Mapped(someplayer)) {
             On_Sound_Effect(someplayer, (int)voc, "", variation, Cell_Coord(cell));
         }
     }
@@ -264,7 +264,7 @@ void  CFE_Patch_Speak_For_All_Humans(VoxType voice, COORDINATE coord, HouseClass
     // multiplayer
     for (int i=0 ; i<MPlayerCount; i++) {
         HouseClass* someplayer = HouseClass::As_Pointer(MPlayerHouses[i]);
-        if ((someplayer->IsHuman) && (!skiphouse || (someplayer != skiphouse))) {
+        if (someplayer && (someplayer->IsHuman) && (!skiphouse || (someplayer != skiphouse))) {
             Speak(voice, someplayer, coord);
         }
     }
