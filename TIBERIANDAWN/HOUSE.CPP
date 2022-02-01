@@ -5541,7 +5541,9 @@ int HouseClass::Expert_AI(void)
 				**	candidate base. The higher the value, the better the candidate house
 				**	is to becoming the preferred enemy for this house.
 				*/
-				int value = ((MAP_CELL_W*2)-Distance(Center, h->Center));
+                // Chthon CFE Note: borrow bugfix from screamingchicken -- use cells, not leptons
+				//int value = ((MAP_CELL_W*2)-Distance(Center, h->Center));
+                int value = ((MAP_CELL_W*2)-Lepton_To_Cell(Distance(Center, h->Center)));
 				value *= 2;
 
 				/*
