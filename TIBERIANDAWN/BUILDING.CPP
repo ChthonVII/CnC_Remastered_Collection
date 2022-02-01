@@ -5799,7 +5799,7 @@ void BuildingClass::Death_Announcement(TechnoClass const * ) const
         else {
             for (int i=0 ; i<MPlayerCount; i++) {
                 HouseClass* someplayer = HouseClass::As_Pointer(MPlayerHouses[i]);
-                if ((someplayer != House) && (someplayer->IsHuman) && Is_Discovered_By_Player(someplayer)) {
+                if (someplayer && (someplayer != House) && (someplayer->IsHuman) && Is_Discovered_By_Player(someplayer)) {
                      Speak(whatdied, someplayer);
                 }
             }
