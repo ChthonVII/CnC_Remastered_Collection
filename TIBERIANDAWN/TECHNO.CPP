@@ -524,6 +524,8 @@ TechnoClass::TechnoClass(void) :
 	// Added for multiplayer changes. ST - 3/6/2019 11:34AM
 	IsDiscoveredByPlayerMask = 0;
     
+    IsKnownToExistByPlayerMask = 0;
+    
 }
 
 
@@ -558,11 +560,17 @@ bool TechnoClass::Revealed(HouseClass * house)
 		return false;
 	}
 
+	// Chthon CFE Note: New skirmish AI will not treat all CPU players as sharing sight
+	/*
 	if (house->IsHuman == false) {
 		if (IsDiscoveredByComputer) {
 			return false;
 		}
 	}
+	*/
+	if (((GameToPlay == GAME_NORMAL) || !ActiveCFEPatchConfig.EnableNewSkirmishAI) && !house->IsHuman && IsDiscoveredByComputer){
+        return false;
+    }
 
 	if (RadioClass::Revealed(house)) {
 
@@ -570,7 +578,8 @@ bool TechnoClass::Revealed(HouseClass * house)
 		**	An enemy object that is discovered will go into hunt mode if
 		**	its current mission is to ambush.
 		*/
-		if (!house->IsHuman && Mission == MISSION_AMBUSH) {
+        // Chthon CFE Note: Steal bugfix from screamingchicken
+		if (!House->IsHuman && (Mission == MISSION_AMBUSH)) {
 			Assign_Mission(MISSION_HUNT);
 		}
 
@@ -610,9 +619,11 @@ bool TechnoClass::Revealed(HouseClass * house)
 			}
 		} else {
 			
-			if (house->IsHuman) {
+            // Chthon CFE Note: new skirmish AI is going to care about sight
+			if (house->IsHuman || ActiveCFEPatchConfig.EnableNewSkirmishAI) {
 				Set_Discovered_By_Player(house);
-			} else {
+			}
+			if (!house->IsHuman) {
 				IsDiscoveredByComputer = true;
 			}
 			
@@ -712,7 +723,11 @@ bool TechnoClass::Revealed(HouseClass * house)
  *=============================================================================================*/
 void TechnoClass::Hidden(void)
 {
-	// ST - 3/13/2019 4:56PM
+	// Chthon CFE Note: Totally wrong; needs rewrite.
+    //Would be even more wrong if the comment was correct about shroud, but in fact it's only ever called by Limbo().
+    
+    /*
+    // ST - 3/13/2019 4:56PM
 	if (!Is_Discovered_By_Player()) {
 		return;
 	}
@@ -720,6 +735,25 @@ void TechnoClass::Hidden(void)
 	if (!House->IsHuman) {
 		Clear_Discovered_By_Players();
 	}
+	*/
+	
+	// Only skip if discovered by *NO* players at all
+	if ((IsDiscoveredByPlayerMask == 0) && !IsDiscoveredByPlayer){
+        return;
+    }
+    // To stay consistent with prior version, retain discovery for the owner
+    if (House->IsHuman || ActiveCFEPatchConfig.EnableNewSkirmishAI){
+		IsDiscoveredByPlayerMask = (1 <<  (int)(House->Class->House));
+    }
+    else {
+        IsDiscoveredByPlayerMask = 0;
+    }
+    if (!House->IsHuman){
+        IsDiscoveredByPlayer = false;
+    }
+    return;
+	
+	
 }
 
 
@@ -997,12 +1031,43 @@ void TechnoClass::Per_Cell_Process(bool )
 	**	If this object somehow moves into mapped terrain, but is not yet
 	**	discovered, then flag it to be discovered.
 	*/
+    // Chthon CFE Note: Totally wrong; needs rewrite.
+    /*
 	// ST - 3/13/2019 4:56PM
 	if (!Is_Discovered_By_Player() && Map[cell].Is_Visible(House)) {
 	//if (!IsDiscoveredByPlayer && Map[cell].IsVisible) {
 		//Revealed(PlayerPtr);
 		Revealed(House);		// ST - 8/7/2019 11:20AM
 	}
+	*/
+	if (GameToPlay == GAME_NORMAL){
+        if (!Is_Discovered_By_Player(PlayerPtr) && Map[cell].Is_Visible(PlayerPtr)) {
+            Revealed(PlayerPtr);	
+        }
+        // we also need the reverse functionality to hide the unit if it goes back under the shroud
+        // (It appears that things that check for discovery really mean "is it shrouded from me" not "do I know it exists," so this may fix some issues with units not "discovering" the second time you see them.)
+        else if ((House != PlayerPtr) && Is_Discovered_By_Player(PlayerPtr) && !Map[cell].Is_Visible(PlayerPtr)){
+            Hidden();
+        }
+    }
+    else {
+        for (int i=0 ; i<MPlayerCount; i++) {
+            HouseClass* someplayer = HouseClass::As_Pointer(MPlayerHouses[i]);
+            if (someplayer && (someplayer->IsHuman || ActiveCFEPatchConfig.EnableNewSkirmishAI)){
+                if (!Is_Discovered_By_Player(someplayer) && Map[cell].Is_Visible(someplayer)) {
+                    Revealed(someplayer);
+                }
+                // we also need the reverse functionality to hide the unit if it goes back under the shroud
+                // (It appears that things that check for discovery really mean "is it shrouded from me" not "do I know it exists," so this may fix some issues with units not "discovering" the second time you see them.)
+                else if ((someplayer != House) && Is_Discovered_By_Player(someplayer) && !Map[cell].Is_Visible(someplayer) && someplayer->Class){
+                    IsDiscoveredByPlayerMask &= ~(1 <<  (int)(someplayer->Class->House));
+                }
+            }
+        }
+    }
+    
+    
+	
 }
 
 
@@ -2676,8 +2741,10 @@ if (    (GameToPlay == GAME_NORMAL) &&
 			HousesType tgt_owner = obj->Owner();
 
 			HouseClass *player = HouseClass::As_Pointer(tgt_owner);
+            // Chthon CFE Note: fix copy/paste bug
 			if (player != nullptr && (player->IsHuman || GameToPlay != GAME_NORMAL)) {
-				if ((!Is_Owned_By_Player(player) && !Is_Discovered_By_Player(player)) || !Map[Coord_Cell(Center_Coord())].Is_Mapped(House)) {
+				//if ((!Is_Owned_By_Player(player) && !Is_Discovered_By_Player(player)) || !Map[Coord_Cell(Center_Coord())].Is_Mapped(House)) {
+                if ((!Is_Owned_By_Player(player) && !Is_Discovered_By_Player(player)) || !Map[Coord_Cell(Center_Coord())].Is_Mapped(player)) {
 					Map.Sight_From(player, Coord_Cell(Center_Coord()), 1, false);
 				}
 			}
@@ -5004,6 +5071,8 @@ void TechnoClass::Set_Discovered_By_Player(HouseClass *player)
 		shift = (int)PlayerPtr->Class->House;
 	}	
 	IsDiscoveredByPlayerMask |= (1 << shift);
+    // Chthon CFE Note: Since I'm making it possible for units to get "undiscovered" by returning under the shroud, I'm also adding a concept of "is known to exist" as a one-way function that replicates the current behavior
+    IsKnownToExistByPlayerMask |= (1 << shift);
 
 	if (GameToPlay == GAME_NORMAL && player == PlayerPtr) {
 		IsDiscoveredByPlayer = true;
