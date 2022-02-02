@@ -1684,9 +1684,15 @@ void BuildingClass::AI(void)
 		/*
 		**	Possibly start repair process if the building is below half strength.
 		*/
-		int ratio = 0x0040;
-		if (Scenario > 6) ratio = 0x0080;
-		if (Scenario > 10) ratio = 0x00C0;
+        // Chthon CFE Note: borrow & tweak screamchicken's fix
+		int ratio = 0x00C0; // custom missions  - use 75% like endgame missions
+        if (Scenario <= 6) ratio = 0x0040;	// 64 aka 25%
+		if (Scenario > 6) ratio = 0x0080; // 50%
+		if (Scenario > 10) ratio = 0x00C0; //75%
+		if (GameToPlay != GAME_NORMAL && ActiveCFEPatchConfig.EnableNewSkirmishAI){
+            // TODO: figure out how to get UI knob input for AI smartness to make it actually do something
+            ratio = 0x00E6; //90%
+        }
 		if (Class->IsRepairable && Health_Ratio() <= (unsigned) ratio) {
 			if (House->Available_Money() >= REPAIR_THRESHHOLD) {
 				Repair(1);
