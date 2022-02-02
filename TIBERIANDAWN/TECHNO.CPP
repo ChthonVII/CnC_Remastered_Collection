@@ -578,7 +578,7 @@ bool TechnoClass::Revealed(HouseClass * house)
 		**	An enemy object that is discovered will go into hunt mode if
 		**	its current mission is to ambush.
 		*/
-        // Chthon CFE Note: Steal bugfix from screamingchicken
+        // Chthon CFE Note: Steal bugfix from screamingchicken (should be House not house)
 		if (!House->IsHuman && (Mission == MISSION_AMBUSH)) {
 			Assign_Mission(MISSION_HUNT);
 		}
