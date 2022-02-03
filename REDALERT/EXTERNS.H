@@ -124,6 +124,7 @@ struct CFEPatchConfig
     bool EnableMIGAmmoFudge = false;
     bool EnableBuildingCaptureAnnouncements = false;
     bool EnableSmarterSonar = false;
+    bool EnableNewSkirmishAI = false;
 
     int SafeSabotage = 0;
 	int  HarvyQueueJumpCutoff = 4;

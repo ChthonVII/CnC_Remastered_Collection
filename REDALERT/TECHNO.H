@@ -271,6 +271,8 @@ class TechnoClass :	public RadioClass,
         mutable unsigned char AttackMoveBoatClock; // There is a real-deal timer class available, but I don't want to spend that many bytes for boats.
         COORDINATE SecondaryElectricZapTarget; // Target coord for chain lightning for rank3 veteran tesla units (COORDINATE type is unsigned long)
         float LocalROFBias;
+        unsigned int IsKnownToExistByPlayerMask;
+        
 		/*
 		** Some additional padding in case we need to add data to the class and maintain backwards compatibility for save/load
 		*/
