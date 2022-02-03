@@ -2184,6 +2184,15 @@ bool CellClass::Goodie_Check(FootClass * object, bool check_steel)
 					
 					new AnimClass(ANIM_CRATE_EMPULSE, Cell_Coord());
 					object->House->IsVisionary = true;
+                    // Chthon CFE Note: make allies visionary too, since they now see whole map too
+                    if (ShareAllyVisibility && (GameToPlay == GAME_GLYPHX_MULTIPLAYER)){
+                        for (int i=0 ; i<MPlayerCount; i++) {
+                            HouseClass* someplayer = HouseClass::As_Pointer(MPlayerHouses[i]);
+                            if (someplayer && object->House->Is_Ally(someplayer)){
+                                someplayer->IsVisionary = true;
+                            }
+                        }
+                    }
 					if (reveal) {
 						for (CELL cell = 0; cell < MAP_CELL_TOTAL; cell++) {
 							Map.Map_Cell(cell, object->House, true);
