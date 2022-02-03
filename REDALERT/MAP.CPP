@@ -2227,7 +2227,7 @@ void MapClass::Shroud_The_Map(HouseClass *house)
            // Chthon CFE Note: flip units back to undiscovered
             ObjectClass* someobj = cellptr->Cell_Occupier();
             while (someobj != NULL) {
-                if (someobj->Is_Techno() && (((TechnoClass*)someobj)->House != house) && (!Rule.IsAllyReveal || !((TechnoClass*)someobj)->House->Is_Ally(house))){
+                if (someobj->Is_Techno() && (((TechnoClass*)someobj)->House != house) && (!Rule.IsAllyReveal || !((TechnoClass*)someobj)->House->Is_Ally(house) || (What_Am_I() != RTTI_BUILDING) )){
                     ((TechnoClass*)someobj)->Set_Undiscovered_By_Player(house);
                 }
                 someobj = someobj->Next;
