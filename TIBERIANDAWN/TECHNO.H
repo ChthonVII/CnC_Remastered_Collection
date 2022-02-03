@@ -415,6 +415,8 @@ void GainVeterancyXP(unsigned short int XP);
 
 bool IsNearATree();
 
+void Set_Undiscovered_By_Player(HouseClass *player = NULL);
+
 };
 
 #endif

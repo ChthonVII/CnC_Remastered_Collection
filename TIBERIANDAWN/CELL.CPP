@@ -2142,6 +2142,16 @@ bool CellClass::Goodie_Check(FootClass * object, bool check_steel)
 								cellptr->Redraw_Objects();
 								cellptr->Set_Mapped(object->House, false);
 								cellptr->Set_Visible(object->House, false);
+                                
+                                // Chthon CFE Note: flip units back to undiscovered
+                                ObjectClass* someobj = cellptr->Cell_Occupier();
+                                while (someobj != NULL) {
+                                    if (someobj->Is_Techno() && (((TechnoClass*)someobj)->House != object->House)){
+                                        ((TechnoClass*)someobj)->Set_Undiscovered_By_Player(object->House);
+                                    }
+                                    someobj = someobj->Next;
+                                }
+                                
 							}
 						}
 						HouseClass *find_house = object->House;

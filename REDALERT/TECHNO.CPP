@@ -8139,49 +8139,53 @@ TARGET TechnoClass::FindChainLightningTarget(const TARGET primarytarget, const i
             CellClass* cellptr = &Map[newcell];
 
             // check if we can shoot at something in this cell
-            TechnoClass const * tentative = (TechnoClass const *)cellptr->Cell_Occupier();
-            while (tentative != NULL) {
-                // steal applicable legality/scoring logic from Evaluate_Object()
-                if (
-                    (tentative != this) &&                       // don't target yourself
-                    (tentative != primaryobject) &&       // don't retarget the first target
-                    tentative->IsActive &&
-                    !tentative->IsInLimbo &&
-                    tentative->Is_Techno() &&
-                    !House->Is_Ally(tentative) && 
-                    !tentative->Is_Cloaked(this) &&
-                    ((tentative->Mission == MISSION_NONE) || !MissionControl[tentative->Mission].IsNoThreat) &&
-                    (((1 << tentative->What_Am_I()) & mask) != 0) &&       // acceptable unit type
-                    tentative->Techno_Type_Class()->IsLegalTarget &&      // unit type is one that can be targeted
-                    !((tentative->What_Am_I() == RTTI_INFANTRY) && (*((InfantryClass*)tentative) == INFANTRY_SPY)) &&
-                    //(primaryobject->Distance(tentative) <= range)
-                    (::Distance(primary_target_coord, tentative->Target_Coord()) <= range)
-                ) {
-                    int tentativevalue = tentative->Value(); // + tentative->Crew.Kills; // Crew.Kills appears to be part of an unimplemented veterancy system! 
-                    // Do we want to increase target priority for veterancy (both here and generally)?
-                    // I'm thinking not because it makes no sense to hide the veterancy pips from other players, but then "show" them via targeting priority 
-                    if (House->Enemy != HOUSE_NONE && House->Enemy == tentative->House->Class->House) {
-                        tentativevalue += 500;
-                        tentativevalue *= 3;
-                    }
-                    if (House->Which_Zone(tentative) != ZONE_NONE) {
-                        tentativevalue *= Rule.NervousBias;
-                    }
-                    if (tentativevalue) {
-                        // fall off with distance
-                        tentativevalue = (tentativevalue * 32000) / ((Distance(tentative)/ICON_LEPTON_W)+1);
-                        tentativevalue = max(tentativevalue, 1);
-                        // randomize a bit because this is chain lightning
-                        tentativevalue = (tentativevalue * Random_Pick(512, 1536)) / 1024;
-                        tentativevalue = max(tentativevalue, 1);
-                    }
-                    if (tentativevalue > bestval){
-                        bestval = tentativevalue;
-                        bestobject = tentative;
+            ObjectClass* someobj = cellptr->Cell_Occupier();
+            while (someobj != NULL) {
+                if (someobj->Is_Techno()){
+                    TechnoClass* tentative = (TechnoClass*)someobj;
+                    
+                    // steal applicable legality/scoring logic from Evaluate_Object()
+                    if (
+                        (tentative != this) &&                       // don't target yourself
+                        (tentative != primaryobject) &&       // don't retarget the first target
+                        tentative->IsActive &&
+                        !tentative->IsInLimbo &&
+                        //tentative->Is_Techno() &&
+                        !House->Is_Ally(tentative) && 
+                        !tentative->Is_Cloaked(this) &&
+                        ((tentative->Mission == MISSION_NONE) || !MissionControl[tentative->Mission].IsNoThreat) &&
+                        (((1 << tentative->What_Am_I()) & mask) != 0) &&       // acceptable unit type
+                        tentative->Techno_Type_Class()->IsLegalTarget &&      // unit type is one that can be targeted
+                        !((tentative->What_Am_I() == RTTI_INFANTRY) && (*((InfantryClass*)tentative) == INFANTRY_SPY)) &&
+                        //(primaryobject->Distance(tentative) <= range)
+                        (::Distance(primary_target_coord, tentative->Target_Coord()) <= range)
+                    ) {
+                        int tentativevalue = tentative->Value(); // + tentative->Crew.Kills; // Crew.Kills appears to be part of an unimplemented veterancy system! 
+                        // Do we want to increase target priority for veterancy (both here and generally)?
+                        // I'm thinking not because it makes no sense to hide the veterancy pips from other players, but then "show" them via targeting priority 
+                        if (House->Enemy != HOUSE_NONE && House->Enemy == tentative->House->Class->House) {
+                            tentativevalue += 500;
+                            tentativevalue *= 3;
+                        }
+                        if (House->Which_Zone(tentative) != ZONE_NONE) {
+                            tentativevalue *= Rule.NervousBias;
+                        }
+                        if (tentativevalue) {
+                            // fall off with distance
+                            tentativevalue = (tentativevalue * 32000) / ((Distance(tentative)/ICON_LEPTON_W)+1);
+                            tentativevalue = max(tentativevalue, 1);
+                            // randomize a bit because this is chain lightning
+                            tentativevalue = (tentativevalue * Random_Pick(512, 1536)) / 1024;
+                            tentativevalue = max(tentativevalue, 1);
+                        }
+                        if (tentativevalue > bestval){
+                            bestval = tentativevalue;
+                            bestobject = tentative;
+                        }
                     }
                 }
                 // there might be more than 1 infantry in a cell. If so, check the next one
-                tentative = (TechnoClass const *)(ObjectClass *)tentative->Next;
+                someobj = someobj->Next;
             } // end while tentative is not null
         } // end for j
     } // end for i

@@ -5596,3 +5596,17 @@ bool TechnoClass::IsNearATree(){
     } // end for i
     return false;
 }
+
+// set a unit back to undiscovered for a given player
+void TechnoClass::Set_Undiscovered_By_Player(HouseClass *player){
+    
+    if (!player || !player->Class){
+        return;
+    }
+    IsDiscoveredByPlayerMask &= ~(1 <<  (int)(player->Class->House));
+    if ((Session.Type == GAME_NORMAL) && (player == PlayerPtr)){
+        IsDiscoveredByPlayer = false;
+    }
+    return;
+    
+}

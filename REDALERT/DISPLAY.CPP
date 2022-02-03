@@ -4743,12 +4743,12 @@ void DisplayClass::Shroud_Cell(CELL cell, HouseClass * house)
 		cellptr->Redraw_Objects();
         
         // Chthon CFE Note: flip units back to undiscovered
-        TechnoClass const * sometech = (TechnoClass const *)cellptr->Cell_Occupier();
-        while (sometech != NULL) {
-            if ((sometech->House != house) && (!Rule.IsAllyReveal || !sometech->House->Is_Ally(house))){
-                sometech->Set_Undiscovered_By_Player(house);
+        ObjectClass* someobj = cellptr->Cell_Occupier();
+        while (someobj != NULL) {
+            if (someobj->Is_Techno() && (((TechnoClass*)someobj)->House != house) && (!Rule.IsAllyReveal || !((TechnoClass*)someobj)->House->Is_Ally(house))){
+                ((TechnoClass*)someobj)->Set_Undiscovered_By_Player(house);
             }
-            sometech = (TechnoClass const *)(ObjectClass *)sometech->Next;
+            someobj = someobj->Next;
         }
 
 		/*
