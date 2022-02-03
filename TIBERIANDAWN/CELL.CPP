@@ -2152,7 +2152,7 @@ bool CellClass::Goodie_Check(FootClass * object, bool check_steel)
 							}
 						}
 						Map.Flag_To_Redraw(true);
-                        object->House->IsVisionary = true;
+                        object->House->IsVisionary = false;
 					}
 					break;
 				}
