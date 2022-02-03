@@ -2472,6 +2472,7 @@ crate_money:
 				*/
 				if (object->House->IsHuman) {
 					Map.Shroud_The_Map(object->House);
+                    object->House->IsVisionary = false;
 				}
 				break;
 
