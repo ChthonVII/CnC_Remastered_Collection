@@ -2224,6 +2224,15 @@ void MapClass::Shroud_The_Map(HouseClass *house)
 		CellClass * cellptr = &Map[cell];
 		if (cellptr->Is_Mapped(house) || cellptr->Is_Visible(house)) {
 			
+            // Chthon CFE Note: flip units back to undiscovered
+            TechnoClass const * sometech = (TechnoClass const *)cellptr->Cell_Occupier();
+            while (sometech != NULL) {
+                if ((sometech->House != house) && (!Rule.IsAllyReveal || !sometech->House->Is_Ally(house))){
+                    sometech->Set_Undiscovered_By_Player(house);
+                }
+                sometech = (TechnoClass const *)(ObjectClass *)sometech->Next;
+            }
+            
 			cellptr->Redraw_Objects();
 			
 			/*
