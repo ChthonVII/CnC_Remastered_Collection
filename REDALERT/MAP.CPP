@@ -2249,7 +2249,7 @@ void MapClass::Shroud_The_Map(HouseClass *house)
 	}
 	for (int obj_index = 0; obj_index < DisplayClass::Layer[LAYER_GROUND].Count(); obj_index++) {
 		ObjectClass * layer_object = DisplayClass::Layer[LAYER_GROUND][obj_index];
-		if (layer_object && layer_object->Is_Techno() && ((TechnoClass *)layer_object)->House == house) {
+		if (layer_object && layer_object->Is_Techno() && ((((TechnoClass *)layer_object)->House == house) || (Rule.IsAllyReveal && ((TechnoClass *)layer_object)->House->Is_Ally(house)))) {
 			layer_object->Look();
 		}
 	}
