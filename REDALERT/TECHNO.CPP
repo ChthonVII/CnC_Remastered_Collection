@@ -1177,7 +1177,8 @@ void TechnoClass::Per_Cell_Process(PCPType why)
                     // we also need the reverse functionality to hide the unit if it goes back under the shroud
                     // (It appears that things that check for discovery really mean "is it shrouded from me" not "do I know it exists," so this may fix some issues with units not "discovering" the second time you see them.)
                     else if ((someplayer != House) && Is_Discovered_By_Player(someplayer) && !Map[cell].Is_Visible(someplayer) && someplayer->Class){
-                        IsDiscoveredByPlayerMask &= ~(1 <<  (int)(someplayer->Class->House));
+                        //IsDiscoveredByPlayerMask &= ~(1 <<  (int)(someplayer->Class->House));
+                        Set_Undiscovered_By_Player(someplayer);
                     }
                 }
             }
@@ -8234,4 +8235,18 @@ void TechnoClass::GainMechanicXPBoost(const int delta){
     GainVeterancyXP(basicboost);
     
     return;
+}
+
+// set a unit back to undiscovered for a given player
+void TechnoClass::Set_Undiscovered_By_Player(HouseClass *player){
+    
+    if (!player || !player->Class){
+        return;
+    }
+    IsDiscoveredByPlayerMask &= ~(1 <<  (int)(player->Class->House));
+    if ((Session.Type == GAME_NORMAL) && (player == PlayerPtr)){
+        IsDiscoveredByPlayer = false;
+    }
+    return;
+    
 }

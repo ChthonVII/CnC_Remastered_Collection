@@ -460,6 +460,8 @@ class TechnoClass :	public RadioClass,
         void GainMechanicXPBoost(const int delta);
         
         TARGET FindChainLightningTarget(const TARGET primarytarget, const int which, const float rangescalar);
+        
+        void Set_Undiscovered_By_Player(HouseClass *player = NULL);
 };
 
 #endif
