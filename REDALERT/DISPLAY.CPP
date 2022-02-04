@@ -1777,10 +1777,22 @@ bool DisplayClass::Map_Cell(CELL cell, HouseClass * house, bool check_radar_spie
 #endif
 	}
 
+	// Chthon CFE Note: bugfix. There can be more than one infantry in a cell
+	/*
 	TechnoClass * tech = (*this)[cell].Cell_Techno();
 	if (tech) {
 		tech->Revealed(house);
 	}
+	*/
+    ObjectClass* someobj =  (*this)[cell]->Cell_Occupier();
+    while (someobj != NULL) {
+        if (someobj->Is_Techno()){
+            ((TechnoClass*)someobj)->Revealed(house);
+        }
+        someobj = someobj->Next;
+    }
+	
+	
 	return(true);
 }
 

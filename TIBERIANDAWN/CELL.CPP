@@ -2146,7 +2146,7 @@ bool CellClass::Goodie_Check(FootClass * object, bool check_steel)
                                 // Chthon CFE Note: flip units back to undiscovered
                                 ObjectClass* someobj = cellptr->Cell_Occupier();
                                 while (someobj != NULL) {
-                                    if (someobj->Is_Techno() && (((TechnoClass*)someobj)->House != object->House) && (!ShareAllyVisibility || !((TechnoClass*)someobj)->House->Is_Ally(house))){
+                                    if (someobj->Is_Techno() && (((TechnoClass*)someobj)->House != object->House) && (!ShareAllyVisibility || !((TechnoClass*)someobj)->House->Is_Ally(object->House))){
                                         ((TechnoClass*)someobj)->Set_Undiscovered_By_Player(object->House);
                                     }
                                     someobj = someobj->Next;
