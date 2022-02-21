@@ -417,6 +417,8 @@ bool IsNearATree();
 
 void Set_Undiscovered_By_Player(HouseClass *player = NULL);
 
+bool Is_Known_To_Exist_By_Player(HouseClass *player = NULL) const;
+
 };
 
 #endif

@@ -4757,7 +4757,16 @@ void DisplayClass::Shroud_Cell(CELL cell, HouseClass * house)
         // Chthon CFE Note: flip units back to undiscovered
         ObjectClass* someobj = cellptr->Cell_Occupier();
         while (someobj != NULL) {
-            if (someobj->Is_Techno() && (((TechnoClass*)someobj)->House != house) && (!Rule.IsAllyReveal || !((TechnoClass*)someobj)->House->Is_Ally(house) || (((TechnoClass*)someobj)->What_Am_I() != RTTI_BUILDING))){
+            if (    someobj->Is_Techno() && 
+                    (   (((TechnoClass*)someobj)->House != house) && 
+                        (   !Rule.IsAllyReveal ||
+                            !((TechnoClass*)someobj)->House->Is_Ally(house) ||
+                            (((TechnoClass*)someobj)->What_Am_I() != RTTI_BUILDING)
+                        ) &&
+                        (   !ShareAllyVisibility ||
+                            !((TechnoClass*)someobj)->House->Is_Ally(house)
+                        )
+            ){
                 ((TechnoClass*)someobj)->Set_Undiscovered_By_Player(house);
             }
             someobj = someobj->Next;

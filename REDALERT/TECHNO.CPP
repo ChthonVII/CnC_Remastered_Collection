@@ -741,7 +741,7 @@ bool TechnoClass::Revealed(HouseClass * house)
 		return false;
 	}
 
-	if (Is_Discovered_By_Player(house)) {
+	if (Is_Discovered_By_Player(house) && Is_Known_To_Exist_By_Player(house)) {
 		return false;
 	}
 
@@ -1176,7 +1176,18 @@ void TechnoClass::Per_Cell_Process(PCPType why)
                     }
                     // we also need the reverse functionality to hide the unit if it goes back under the shroud
                     // (It appears that things that check for discovery really mean "is it shrouded from me" not "do I know it exists," so this may fix some issues with units not "discovering" the second time you see them.)
-                    else if ((someplayer != House) && (!Rule.IsAllyReveal || !someplayer->Is_Ally(House) || (What_Am_I() != RTTI_BUILDING)) && Is_Discovered_By_Player(someplayer) && !Map[cell].Is_Visible(someplayer) && someplayer->Class){
+                    else if (   (someplayer != House) && 
+                                    (   !Rule.IsAllyReveal ||
+                                        !someplayer->Is_Ally(House) ||
+                                        (What_Am_I() != RTTI_BUILDING)
+                                    ) &&
+                                    (
+                                        !ShareAllyVisibility ||
+                                        !someplayer->Is_Ally(House)
+                                    ) &&
+                                    Is_Discovered_By_Player(someplayer) &&
+                                    !Map[cell].Is_Visible(someplayer)
+                    ){
                         //IsDiscoveredByPlayerMask &= ~(1 <<  (int)(someplayer->Class->House));
                         Set_Undiscovered_By_Player(someplayer);
                     }
@@ -2994,6 +3005,23 @@ void TechnoClass::Cloaking_AI(void)
                             CloakDelay = (Rule.CloakDelay * TICKS_PER_MINUTE)/2;
                         }
 						Mark(MARK_CHANGE);
+                        // Chthon CFE Note: set visible flags -- esp the new Is_Known_To_Exist_By_Player
+                        CELL cell = Coord_Cell(Center_Coord());
+                        if (Session.Type == GAME_NORMAL){
+                            if (Map[cell].Is_Visible(PlayerPtr)) {
+                                Revealed(PlayerPtr);	
+                            }
+                        }
+                        else {
+                            for (int i=0 ; i<Session.Players.Count() ; i++) {
+                                HouseClass* someplayer = HouseClass::As_Pointer(Session.Players[i]->Player.ID);
+                                if (someplayer && (someplayer->IsHuman || ActiveCFEPatchConfig.EnableNewSkirmishAI)){
+                                    if (Map[cell].Is_Visible(someplayer)) {
+                                        Revealed(someplayer);
+                                    }
+                                }
+                            }
+                        }
 					}
 					break;
 
@@ -7639,7 +7667,10 @@ void TechnoClass::Set_Discovered_By_Player(HouseClass *player)
 	}	
 	IsDiscoveredByPlayerMask |= (1 << shift);
     // Chthon CFE Note: Since I'm making it possible for units to get "undiscovered" by returning under the shroud, I'm also adding a concept of "is known to exist" as a one-way function that replicates the current behavior
-    IsKnownToExistByPlayerMask |= (1 << shift);
+    // ugly fix for cloaked units -- they are "discovered" but not "known to exist"
+    if (!Is_Cloaked(player){
+        IsKnownToExistByPlayerMask |= (1 << shift);
+    }
 
 	if (Session.Type == GAME_NORMAL && player == PlayerPtr) {
 		IsDiscoveredByPlayer = true;
@@ -8248,9 +8279,26 @@ void TechnoClass::Set_Undiscovered_By_Player(HouseClass *player){
         return;
     }
     IsDiscoveredByPlayerMask &= ~(1 <<  (int)(player->Class->House));
+    /*
+    // don't do this. Some things assume it's one-way
     if ((Session.Type == GAME_NORMAL) && (player == PlayerPtr)){
         IsDiscoveredByPlayer = false;
     }
+    */
     return;
     
+}
+
+// does a house know this unit exists?
+// one-way substitute for Is_Discovered_By_Player() now that discovery is two-way
+bool TechnoClass::Is_Known_To_Exist_By_Player(HouseClass *player) const
+{
+	if (player && player->Class) {
+		int shift = (int) player->Class->House;
+		return (IsKnownToExistByPlayerMask & (1 << shift)) ? true : false;
+	} else {
+		int shift = (int) PlayerPtr->Class->House;
+		return (IsKnownToExistByPlayerMask & (1 << shift)) ? true : false;
+	}	
+	return false;
 }

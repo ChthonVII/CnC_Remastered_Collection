@@ -1640,8 +1640,10 @@ BulletClass * AircraftClass::Fire_At(TARGET target, int which)
 		**	Aircraft reveal when firing
 		*/
 		HouseClass *player = HouseClass::As_Pointer(Owner());
-		if (player != nullptr && player->IsHuman) {
+		if (player != nullptr && (player->IsHuman || ActiveCFEPatchConfig.EnableNewSkirmishAI)) {
 			Map.Sight_From(Coord_Cell(Center_Coord()), 1, player, false);
+            // Chthon CFE Note: It should also set its revealed flags itself to owner if it was under shroud
+            Revealed(player);
 		}
 
 		/*
@@ -2307,6 +2309,41 @@ int AircraftClass::Process_Fly_To(bool slowdown, TARGET dest)
 		}
 		distance = 0;
 	}
+	
+	// Chthon CFE Note: Since aircraft don't call Per_Cell_Process in flight, we need to set their visibility flags here
+	// Unlike everything else, aircraft can become "undiscovered" by their owner because they fly under the shroud
+	if (Frame % TICKS_PER_SECOND == 0){
+        CELL cell = Coord_Cell(Center_Coord());
+        if (Session.Type == GAME_NORMAL){
+            if (!Is_Discovered_By_Player(PlayerPtr) && Map[cell].Is_Visible(PlayerPtr)) {
+                Revealed(PlayerPtr);	
+            }
+            // we also need the reverse functionality to hide the unit if it goes back under the shroud
+            // (It appears that things that check for discovery really mean "is it shrouded from me" not "do I know it exists," so this may fix some issues with units not "discovering" the second time you see them.)
+            else if (Is_Discovered_By_Player(PlayerPtr) && !Map[cell].Is_Visible(PlayerPtr)){
+                Hidden();
+            }
+        }
+        else {
+            for (int i=0 ; i<Session.Players.Count() ; i++) {
+                HouseClass* someplayer = HouseClass::As_Pointer(Session.Players[i]->Player.ID);
+                if (someplayer && (someplayer->IsHuman || ActiveCFEPatchConfig.EnableNewSkirmishAI)){
+                    if (!Is_Discovered_By_Player(someplayer) && Map[cell].Is_Visible(someplayer)) {
+                        Revealed(someplayer);
+                    }
+                    // we also need the reverse functionality to hide the unit if it goes back under the shroud
+                    // (It appears that things that check for discovery really mean "is it shrouded from me" not "do I know it exists," so this may fix some issues with units not "discovering" the second time you see them.)
+                    else if (  Is_Discovered_By_Player(someplayer) &&
+                                   !Map[cell].Is_Visible(someplayer)
+                    ){
+                        //IsDiscoveredByPlayerMask &= ~(1 <<  (int)(someplayer->Class->House));
+                        Set_Undiscovered_By_Player(someplayer);
+                    }
+                }
+            }
+        }
+    }
+	
 	return(distance);
 }
 
