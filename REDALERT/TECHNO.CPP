@@ -1163,7 +1163,7 @@ void TechnoClass::Per_Cell_Process(PCPType why)
             }
             // we also need the reverse functionality to hide the unit if it goes back under the shroud
             // (It appears that things that check for discovery really mean "is it shrouded from me" not "do I know it exists," so this may fix some issues with units not "discovering" the second time you see them.)
-            else if ((House != PlayerPtr) && Is_Discovered_By_Player(PlayerPtr) && !Map[cell].Is_Visible(PlayerPtr)){
+            else if (((HouseClass*)House != PlayerPtr) && Is_Discovered_By_Player(PlayerPtr) && !Map[cell].Is_Visible(PlayerPtr)){
                 Hidden();
             }
         }
@@ -7668,7 +7668,7 @@ void TechnoClass::Set_Discovered_By_Player(HouseClass *player)
 	IsDiscoveredByPlayerMask |= (1 << shift);
     // Chthon CFE Note: Since I'm making it possible for units to get "undiscovered" by returning under the shroud, I'm also adding a concept of "is known to exist" as a one-way function that replicates the current behavior
     // ugly fix for cloaked units -- they are "discovered" but not "known to exist"
-    if (!Is_Cloaked(player){
+    if (!Is_Cloaked(player)){
         IsKnownToExistByPlayerMask |= (1 << shift);
     }
 

@@ -1961,7 +1961,7 @@ bool DisplayClass::Map_Cell(CELL cell, HouseClass * house, bool and_for_allies)
 		tech->Revealed(house);
 	}
 	*/
-    ObjectClass* someobj =  (*this)[cell]->Cell_Occupier();
+    ObjectClass* someobj =  (*this)[cell].Cell_Occupier();
     while (someobj != NULL) {
         if (someobj->Is_Techno()){
             ((TechnoClass*)someobj)->Revealed(house);

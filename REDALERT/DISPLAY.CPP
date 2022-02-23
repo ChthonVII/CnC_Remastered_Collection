@@ -1784,7 +1784,7 @@ bool DisplayClass::Map_Cell(CELL cell, HouseClass * house, bool check_radar_spie
 		tech->Revealed(house);
 	}
 	*/
-    ObjectClass* someobj =  (*this)[cell]->Cell_Occupier();
+    ObjectClass* someobj =  (*this)[cell].Cell_Occupier();
     while (someobj != NULL) {
         if (someobj->Is_Techno()){
             ((TechnoClass*)someobj)->Revealed(house);
@@ -4758,14 +4758,14 @@ void DisplayClass::Shroud_Cell(CELL cell, HouseClass * house)
         ObjectClass* someobj = cellptr->Cell_Occupier();
         while (someobj != NULL) {
             if (    someobj->Is_Techno() && 
-                    (   (((TechnoClass*)someobj)->House != house) && 
-                        (   !Rule.IsAllyReveal ||
+                    ((HouseClass*)(((TechnoClass*)someobj)->House) != house) && 
+                    (   !Rule.IsAllyReveal ||
                             !((TechnoClass*)someobj)->House->Is_Ally(house) ||
                             (((TechnoClass*)someobj)->What_Am_I() != RTTI_BUILDING)
-                        ) &&
-                        (   !ShareAllyVisibility ||
+                    ) &&
+                    (   !ShareAllyVisibility ||
                             !((TechnoClass*)someobj)->House->Is_Ally(house)
-                        )
+                    )
             ){
                 ((TechnoClass*)someobj)->Set_Undiscovered_By_Player(house);
             }
