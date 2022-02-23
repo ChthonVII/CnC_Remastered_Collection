@@ -1047,7 +1047,7 @@ void TechnoClass::Per_Cell_Process(bool )
         // we also need the reverse functionality to hide the unit if it goes back under the shroud
         // (It appears that things that check for discovery really mean "is it shrouded from me" not "do I know it exists," so this may fix some issues with units not "discovering" the second time you see them.)
         else if ((House != PlayerPtr) && Is_Discovered_By_Player(PlayerPtr) && !Map[cell].Is_Visible(PlayerPtr)){
-            Hidden();
+            Set_Undiscovered_By_Player(PlayerPtr);
         }
     }
     else {
