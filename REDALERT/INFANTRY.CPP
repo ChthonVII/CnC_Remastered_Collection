@@ -2574,7 +2574,7 @@ TARGET InfantryClass::Greatest_Threat(ThreatType threat) const
 	**	human player.
 	*/
 	if (*this == INFANTRY_TANYA && House->IsHuman) {
-        if (ActiveCFEPatchConfig.EnableTanyaGuard){
+        if ((ActiveCFEPatchConfig.EnableTanyaGuard == 2) || ((ActiveCFEPatchConfig.EnableTanyaGuard == 1) && (Session.Type != GAME_NORMAL))){
             // Chthon CFE Note -- only target infantry, since colts aren't meaninful against other stuff, and Tanya doesn't switch to bombs for buildings
             return(TechnoClass::Greatest_Threat((threat & (THREAT_RANGE | THREAT_AREA)) | THREAT_INFANTRY));
         }

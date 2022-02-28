@@ -106,7 +106,6 @@ struct CFEPatchConfig
     bool EnableQMoveLoops = false;
     bool EnableAirQMove = false;
     bool EnableAirQAMLRecall = false;
-	bool EnableTanyaGuard = false;
     bool EnableSmarterAircraft = false;
     bool EnableSmarterRepairBays = false;
     bool BetterOreGrowth = false;
@@ -126,6 +125,7 @@ struct CFEPatchConfig
     bool EnableNewSkirmishAI = false;
 
     int EnableVeterancy = 0;
+    int EnableTanyaGuard = 0;
     int SafeSabotage = 0;
 	int  HarvyQueueJumpCutoff = 4;
 	int  HarvyOptimizeUnloadWaitWeight = 6;

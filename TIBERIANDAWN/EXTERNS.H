@@ -95,7 +95,6 @@ struct CFEPatchConfig
 	bool WallsAlwaysHaveFullCost = true;
 	bool EnableAttackMove = false;
     bool EnableQMove = false;
-	bool EnableCommandoGuard = false;
     bool EnableSmarterAircraft = false;
     bool EnableSmarterSAMs = false;
     bool EnableSmarterRepairBays = false;
@@ -125,6 +124,7 @@ struct CFEPatchConfig
     bool MPUnitsInSP = false;
     
     int EnableVeterancy = 0;
+    int EnableCommandoGuard = 1;
     int SafeSabotage = 0;
 	int  InfantryTiberiumAversion = 0;
     int  BuildingGap = 2;

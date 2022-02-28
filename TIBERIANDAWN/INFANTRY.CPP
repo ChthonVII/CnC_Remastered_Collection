@@ -2651,7 +2651,7 @@ TARGET InfantryClass::Greatest_Threat(ThreatType threat) const
 		*/
 		case WEAPON_RIFLE:
 			if (House->IsHuman && (Mission == MISSION_GUARD || Mission == MISSION_GUARD_AREA)) {
-                if (ActiveCFEPatchConfig.EnableCommandoGuard){
+                if ((ActiveCFEPatchConfig.EnableCommandoGuard == 2) || ((ActiveCFEPatchConfig.EnableCommandoGuard == 1) && (GameToPlay != GAME_NORMAL))){
                     // Chthon CFE Note -- only target infantry, since rifle isn't meaninful against other stuff, and commando doesn't switch to bombs for buildings
                     return(TechnoClass::Greatest_Threat((threat & (THREAT_RANGE | THREAT_AREA)) | THREAT_INFANTRY));
                 }

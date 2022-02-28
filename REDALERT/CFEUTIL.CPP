@@ -59,7 +59,6 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     GetSetting(ActiveCFEPatchConfig.EnableQMoveLoops		, "FEATURES", "QMOVE_LOOPS");
     GetSetting(ActiveCFEPatchConfig.EnableAirQMove		, "FEATURES", "AIR_QMOVE");
     GetSetting(ActiveCFEPatchConfig.EnableAirQAMLRecall		, "FEATURES", "AIR_QAML_RECALL");
-	GetSetting(ActiveCFEPatchConfig.EnableTanyaGuard		, "FEATURES", "TANYA_GUARD");
     GetSetting(ActiveCFEPatchConfig.EnableSmarterAircraft      , "FEATURES", "SMARTER_AIRCRAFT");
     GetSetting(ActiveCFEPatchConfig.EnableSmarterRepairBays     , "FEATURES", "SMARTER_REPAIRBAY");
     GetSetting(ActiveCFEPatchConfig.BetterOreGrowth      , "FEATURES", "BETTER_ORE_GROWTH");
@@ -80,6 +79,7 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
 
 	//Settings
     GetSetting(ActiveCFEPatchConfig.EnableVeterancy      , "SETTINGS", "VETERANCY");
+    GetSetting(ActiveCFEPatchConfig.EnableTanyaGuard		, "SETTINGS", "TANYA_GUARD");
 	GetSetting(ActiveCFEPatchConfig.SafeSabotage      , "SETTINGS", "SAFE_SABOTAGE");
     GetSetting(ActiveCFEPatchConfig.HarvyQueueJumpCutoff	, "SETTINGS", "QUEUE_JUMP_CUTOFF");
     GetSetting(ActiveCFEPatchConfig.HarvyOptimizeUnloadWaitWeight      , "SETTINGS", "HARVY_OPTIMIZE_UNLOAD_WAIT_WEIGHT");
