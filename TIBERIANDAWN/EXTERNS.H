@@ -104,7 +104,6 @@ struct CFEPatchConfig
     bool TibIndexBugfix = false;
     bool TreeVisceroidSpawnAnyway = false;
     bool TSVisceroidSpawn = false;
-    bool EnableVeterancy = false;
     bool AllowSandbagging = true;
     bool EnableNukeTank = false;
     bool DisableMPNeutralAttacks = false;
@@ -125,6 +124,7 @@ struct CFEPatchConfig
     bool ApplyMPBalanceToSP = false;
     bool MPUnitsInSP = false;
     
+    int EnableVeterancy = 0;
     int SafeSabotage = 0;
 	int  InfantryTiberiumAversion = 0;
     int  BuildingGap = 2;

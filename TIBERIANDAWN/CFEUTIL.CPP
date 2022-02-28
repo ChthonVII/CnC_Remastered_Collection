@@ -78,12 +78,12 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     GetSetting(ActiveCFEPatchConfig.TibIndexBugfix      , "FEATURES", "TIB_INDEX_BUGFIX");
     GetSetting(ActiveCFEPatchConfig.TreeVisceroidSpawnAnyway      , "FEATURES", "TREE_VISCEROID_SPAWN_OVERRIDE");
     GetSetting(ActiveCFEPatchConfig.TSVisceroidSpawn      , "FEATURES", "TS_VISCEROID_SPAWN");
-    GetSetting(ActiveCFEPatchConfig.EnableVeterancy      , "FEATURES", "VETERANCY");
     GetSetting(ActiveCFEPatchConfig.EnableNukeTank      , "FEATURES", "NUKE_TANK");
     GetSetting(ActiveCFEPatchConfig.DisableMPNeutralAttacks      , "FEATURES", "DISABLE_MP_NEUTRAL_ATTACKS");
     GetSetting(ActiveCFEPatchConfig.EnableGDI9Fix      , "FEATURES", "GDI9_FIX");
     
 	//Settings
+    GetSetting(ActiveCFEPatchConfig.EnableVeterancy      , "SETTINGS", "VETERANCY");
     GetSetting(ActiveCFEPatchConfig.SafeSabotage        , "SETTINGS", "SAFE_SABOTAGE");
     GetSetting(ActiveCFEPatchConfig.InfantryTiberiumAversion               , "SETTINGS", "INFANTRY_TIBERIUM_AVERSION");
 	GetSetting(ActiveCFEPatchConfig.BuildingGap               , "SETTINGS", "BUILDING_GAP");

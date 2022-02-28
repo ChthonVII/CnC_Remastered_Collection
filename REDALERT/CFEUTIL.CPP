@@ -66,7 +66,6 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     GetSetting(ActiveCFEPatchConfig.OreIndexBugfix       , "FEATURES", "ORE_INDEX_BUGFIX");
     GetSetting(ActiveCFEPatchConfig.GemOverloadFix       , "FEATURES", "GEM_OVERLOAD_FIX");
     GetSetting(ActiveCFEPatchConfig.EnableInaccuracyBugfix      , "FEATURES", "INACCURACY_BUGFIX");
-    GetSetting(ActiveCFEPatchConfig.EnableVeterancy      , "FEATURES", "VETERANCY");
     GetSetting(ActiveCFEPatchConfig.EnableWideSupers      , "FEATURES", "OPENRA_WIDE_SUPERS");
     GetSetting(ActiveCFEPatchConfig.EnableQuickSupers      , "FEATURES", "OPENRA_QUICK_SUPERS");
     GetSetting(ActiveCFEPatchConfig.EnableSmarterChrono      , "FEATURES", "SMARTER_CHRONO");
@@ -80,6 +79,7 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     
 
 	//Settings
+    GetSetting(ActiveCFEPatchConfig.EnableVeterancy      , "SETTINGS", "VETERANCY");
 	GetSetting(ActiveCFEPatchConfig.SafeSabotage      , "SETTINGS", "SAFE_SABOTAGE");
     GetSetting(ActiveCFEPatchConfig.HarvyQueueJumpCutoff	, "SETTINGS", "QUEUE_JUMP_CUTOFF");
     GetSetting(ActiveCFEPatchConfig.HarvyOptimizeUnloadWaitWeight      , "SETTINGS", "HARVY_OPTIMIZE_UNLOAD_WAIT_WEIGHT");

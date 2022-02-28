@@ -3535,7 +3535,7 @@ ResultType TechnoClass::Take_Damage(int & damage, int distance, WarheadType warh
 	}
 	
 	// Chthon CFE Note -- give XP when damaged by a non-ally
-	if (ActiveCFEPatchConfig.EnableVeterancy && source &&  source->IsActive && !House->Is_Ally(source)){
+	if (((ActiveCFEPatchConfig.EnableVeterancy == 2) || (ActiveCFEPatchConfig.EnableVeterancy == 1) && (GameToPlay != GAME_NORMAL)) && source &&  source->IsActive && !House->Is_Ally(source)){
         // pretend visceroids cost 5k so they give a bunch of xp
         if (What_Am_I() == RTTI_UNIT && *((UnitClass*)this) == UNIT_VICE){
             source->GainVeterancyXP(((oldstrength - Strength)*5000)/Class_Of().MaxStrength);
@@ -4111,7 +4111,7 @@ void TechnoClass::Kill_Cargo(TechnoClass * source)
 		FootClass * foot = Detach_Object();
 		if (foot) {
             // Chthon CFE Note: Give XP for any passengers killed too
-            if (ActiveCFEPatchConfig.EnableVeterancy && source && source->IsActive && !House->Is_Ally(source)){
+            if (((ActiveCFEPatchConfig.EnableVeterancy == 2) || (ActiveCFEPatchConfig.EnableVeterancy == 1) && (GameToPlay != GAME_NORMAL)) && source && source->IsActive && !House->Is_Ally(source)){
                 source->GainVeterancyXP((foot->Strength * foot->Class_Of().Cost_Of())/foot->Class_Of().MaxStrength);
             }
 			foot->Record_The_Kill(source);
@@ -5388,6 +5388,9 @@ void TechnoClass::AttackMoveEnterAttackMode(){
 void TechnoClass::GainVeterancyXP(unsigned short int XP){
     // bail if veterancy disabled
     if (!ActiveCFEPatchConfig.EnableVeterancy){
+        return;
+    }
+    if ((ActiveCFEPatchConfig.EnableVeterancy < 2) && (GameToPlay == GAME_NORMAL)){
         return;
     }
     // bail if rank is already maxed (avoid possibility of integer overflow on VeterancyXP)

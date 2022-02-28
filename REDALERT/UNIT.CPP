@@ -1255,7 +1255,7 @@ ResultType UnitClass::Take_Damage(int & damage, int distance, WarheadType warhea
 					object->Scatter(0, true);
 					if (select) object->Select();
 				} else {
-                    if (ActiveCFEPatchConfig.EnableVeterancy && XPsource && XPsource->IsActive && !House->Is_Ally(XPsource)){
+                    if (((ActiveCFEPatchConfig.EnableVeterancy == 2) || (ActiveCFEPatchConfig.EnableVeterancy == 1) && (Session.Type != GAME_NORMAL)) && XPsource && XPsource->IsActive && !House->Is_Ally(XPsource)){
                         XPsource->GainVeterancyXP((object->Strength * object->Class_Of().Cost_Of())/object->Class_Of().MaxStrength);
                     }
 					object->Record_The_Kill(source);
@@ -5107,7 +5107,7 @@ void UnitClass::Overrun_Square(CELL cell, bool threaten)
 						crushed = true;
 
                         // Chthon CFE Note -- get XP for squishing a non-ally
-                        if (ActiveCFEPatchConfig.EnableVeterancy && object->IsActive && object->What_Am_I() == RTTI_INFANTRY){
+                        if (((ActiveCFEPatchConfig.EnableVeterancy == 2) || (ActiveCFEPatchConfig.EnableVeterancy == 1) && (Session.Type != GAME_NORMAL)) && object->IsActive && object->What_Am_I() == RTTI_INFANTRY){
                             GainVeterancyXP((object->Strength * object->Class_Of().Cost_Of()) / object->Class_Of().MaxStrength);
                         }
                         

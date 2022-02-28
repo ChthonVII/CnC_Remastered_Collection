@@ -1042,7 +1042,7 @@ ResultType VesselClass::Take_Damage(int & damage, int distance, WarheadType warh
 			**	Only infantry can run from a destroyed vehicle. Even then, it is not a sure
 			**	thing.
 			*/
-            if (ActiveCFEPatchConfig.EnableVeterancy && XPsource && XPsource->IsActive && !House->Is_Ally(XPsource)){
+            if (((ActiveCFEPatchConfig.EnableVeterancy == 2) || (ActiveCFEPatchConfig.EnableVeterancy == 1) && (Session.Type != GAME_NORMAL)) && XPsource && XPsource->IsActive && !House->Is_Ally(XPsource)){
                 XPsource->GainVeterancyXP((object->Strength * object->Class_Of().Cost_Of())/object->Class_Of().MaxStrength);
             }
             

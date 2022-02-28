@@ -4820,7 +4820,7 @@ ResultType TechnoClass::Take_Damage(int & damage, int distance, WarheadType warh
     }
     
     bool gothealed = (Strength > oldstrength);
-	if (ActiveCFEPatchConfig.EnableVeterancy && XPsource && XPsource->IsActive && (gothealed || !House->Is_Ally(XPsource))){
+	if (((ActiveCFEPatchConfig.EnableVeterancy == 2) || (ActiveCFEPatchConfig.EnableVeterancy == 1) && (Session.Type != GAME_NORMAL)) && XPsource && XPsource->IsActive && (gothealed || !House->Is_Ally(XPsource))){
         int delta = oldstrength - Strength;
         if (gothealed){
             delta = Strength - oldstrength;
@@ -5549,7 +5549,7 @@ void TechnoClass::Kill_Cargo(TechnoClass * source)
 		FootClass * foot = Detach_Object();
 		if (foot != NULL) {
             // Chthon CFE Note: Give XP for any passengers killed too
-            if (ActiveCFEPatchConfig.EnableVeterancy && source && source->IsActive && !House->Is_Ally(source)){
+            if (((ActiveCFEPatchConfig.EnableVeterancy == 2) || (ActiveCFEPatchConfig.EnableVeterancy == 1) && (Session.Type != GAME_NORMAL)) && source && source->IsActive && !House->Is_Ally(source)){
                 source->GainVeterancyXP((foot->Strength * foot->Class_Of().Cost_Of())/foot->Class_Of().MaxStrength);
             }
 			foot->Record_The_Kill(source);
@@ -7824,6 +7824,9 @@ void TechnoClass::AttackMoveEnterAttackMode(){
 void TechnoClass::GainVeterancyXP(unsigned short int XP){
     // bail if veterancy disabled
     if (!ActiveCFEPatchConfig.EnableVeterancy){
+        return;
+    }
+    if ((ActiveCFEPatchConfig.EnableVeterancy < 2) && (Session.Type == GAME_NORMAL)){
         return;
     }
     // bail if rank is already maxed (avoid possibility of integer overflow on VeterancyXP)

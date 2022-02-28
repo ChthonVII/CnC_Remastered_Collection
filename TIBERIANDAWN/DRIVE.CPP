@@ -264,7 +264,7 @@ void DriveClass::Overrun_Square(CELL cell, bool threaten)
 					crushed = true;
                     
                     // Chthon CFE Note -- get XP for squishing a non-ally
-                    if (ActiveCFEPatchConfig.EnableVeterancy && object->IsActive && object->What_Am_I() == RTTI_INFANTRY){
+                    if (((ActiveCFEPatchConfig.EnableVeterancy == 2) || (ActiveCFEPatchConfig.EnableVeterancy == 1) && (GameToPlay != GAME_NORMAL)) && object->IsActive && object->What_Am_I() == RTTI_INFANTRY){
                         GainVeterancyXP((object->Strength * object->Class_Of().Cost_Of()) / object->Class_Of().MaxStrength);
                     }
 

@@ -113,7 +113,6 @@ struct CFEPatchConfig
     bool OreIndexBugfix = false;
     bool GemOverloadFix = false;
     bool EnableInaccuracyBugfix = false;
-    bool EnableVeterancy = false;
     bool EnableWideSupers = false;
     bool EnableQuickSupers = false;
     bool EnableSmarterChrono = false;
@@ -126,6 +125,7 @@ struct CFEPatchConfig
     bool EnableSmarterSonar = false;
     bool EnableNewSkirmishAI = false;
 
+    int EnableVeterancy = 0;
     int SafeSabotage = 0;
 	int  HarvyQueueJumpCutoff = 4;
 	int  HarvyOptimizeUnloadWaitWeight = 6;

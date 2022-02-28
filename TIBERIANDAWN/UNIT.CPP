@@ -1120,7 +1120,7 @@ ResultType UnitClass::Take_Damage(int & damage, int distance, WarheadType warhea
 						if (select) object->Select();
 					} else {
                         // Chthon CFE Note: Give XP for any passengers killed too
-                        if (ActiveCFEPatchConfig.EnableVeterancy && source && source->IsActive && !House->Is_Ally(source)){
+                        if (((ActiveCFEPatchConfig.EnableVeterancy == 2) || (ActiveCFEPatchConfig.EnableVeterancy == 1) && (GameToPlay != GAME_NORMAL)) && source && source->IsActive && !House->Is_Ally(source)){
                             source->GainVeterancyXP((object->Strength * object->Class_Of().Cost_Of())/object->Class_Of().MaxStrength);
                         }
 						object->Record_The_Kill(source);
