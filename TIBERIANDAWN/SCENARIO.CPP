@@ -778,7 +778,7 @@ bool Restate_Mission(char const * name, int button1, int button2)
 	return(false);
 }
 
-void Fixup_Scenario(void)
+void Fixup_Scenario(bool issavedgameload) // Chthon CFE Note: added parameter so we know if this is initial load or savegame load
 {
 	/*
 	** "Fraidycat" civilians avoid wandering into Tiberium for SCG08EB, since they're mission-critical.
@@ -800,6 +800,14 @@ void Fixup_Scenario(void)
 		((AircraftTypeClass&)AircraftTypeClass::As_Reference(AIRCRAFT_ORCA)).Primary = WEAPON_DRAGON;
 	}
 
+	// Chthon CFE Note: Since this is called *after* units in the map file are created,
+	// their currentHP is already set *before* we change they maxHP.
+	// So we need to set their maxHP too!
+	int oldWarFactoryMaxHP = ((BuildingTypeClass&)BuildingTypeClass::As_Reference(STRUCT_WEAP)).MaxStrength;
+    int oldMLRSMaxHP = ((UnitTypeClass&)UnitTypeClass::As_Reference(UNIT_MLRS)).MaxStrength;
+	int oldRocketGuyMaxHP = ((InfantryTypeClass&)InfantryTypeClass::As_Reference(INFANTRY_E3)).MaxStrength;
+    int oldVisceroidMaxHP = ((UnitTypeClass&)UnitTypeClass::As_Reference(UNIT_VICE)).MaxStrength;
+    
 	/*
 	** Modern Balance
 	*/
@@ -880,6 +888,7 @@ void Fixup_Scenario(void)
         
     } // end of balance mods
     
+
     // Chthon CFE Note: Make MP units available in SP
     if ((GameToPlay == GAME_NORMAL) && ActiveCFEPatchConfig.MPUnitsInSP){
         
@@ -915,6 +924,36 @@ void Fixup_Scenario(void)
     // meaner visceroid buffs
     if (ActiveCFEPatchConfig.MeanerVisceroids){
         ((UnitTypeClass&)UnitTypeClass::As_Reference(UNIT_VICE)).MaxStrength *= 1.0 + (0.25 * ActiveCFEPatchConfig.MeanerVisceroids);
+    }
+    
+    // now go update the currentHP on stuff where maxHP might have changed after pre-placed units were created
+    if (!issavedgameload){
+        for (int index = 0; index < Buildings.Count(); index++) {
+            BuildingClass* building = Buildings.Ptr(index);
+            if ((building != NULL) && (*building == STRUCT_WEAP) && (building->Strength >= oldWarFactoryMaxHP)) {
+                building->Strength = building->Class_Of().MaxStrength;
+            }
+        }
+        for (int index = 0; index < Units.Count(); index++) {
+            UnitClass* unit = Units.Ptr(index);
+            if (    (unit != NULL) && 
+                    (   (   (*unit == UNIT_MLRS) && 
+                            (unit->Strength >= oldMLRSMaxHP)
+                        ) ||
+                        (   (*unit == UNIT_VICE) && 
+                            (unit->Strength >= oldVisceroidMaxHP)
+                        )
+                    )
+            ) {
+                unit->Strength = unit->Class_Of().MaxStrength;
+            }
+        }
+        for (int index = 0; index < Infantry.Count(); index++) {
+            InfantryClass* guy = Infantry.Ptr(index);
+            if ((guy != NULL) && (*guy == INFANTRY_E3) && (guy->Strength >= oldRocketGuyMaxHP)) {
+                guy->Strength = guy->Class_Of().MaxStrength;
+            }
+        }
     }
 	
 }
