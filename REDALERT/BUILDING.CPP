@@ -4391,6 +4391,9 @@ int BuildingClass::Mission_Deconstruction(void)
 					}
 				}
 				#endif
+				// Chthon CFE Note: Since this got moved, we need to save the House value here to avoid use-after-free later
+				HouseClass* memohouse = House;
+                bool wasownedbyplayer = IsOwnedByPlayer;
 				bool mcv_redeployed = false;
 
 				/*
@@ -4479,13 +4482,15 @@ int BuildingClass::Mission_Deconstruction(void)
 				#if 1
 				if (!mcv_redeployed) 
 				{
-					if (IsOwnedByPlayer) {
+					//if (IsOwnedByPlayer) {
+                    if (wasownedbyplayer) {
                         // Chthon CFE note: properly fix for MP
+                        // also, this is totally use-after-free and Petroglyph just got lucky it wasn't blowing up on them
 						//if ((HouseClass *)House == PlayerPtr) {
 						//	Speak(VOX_STRUCTURE_SOLD);
 						//}
-                        if (House->IsHuman) {
-							Speak(VOX_STRUCTURE_SOLD, House);
+                        if (memohouse->IsHuman) {
+							Speak(VOX_STRUCTURE_SOLD, memohouse);
 						}
 					}
 				}
