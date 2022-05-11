@@ -54,14 +54,24 @@ The following features can be controlled via the INI file located at "My Documen
 - Smarter Chrono (RA only)  -- Several chronoshift-related improvements: (1) Units shifted by the Chronosphere are deselected for all players upon shifting in either direction. This prevents accidentally issuing orders to/at a unit that's now in a radically different spot. (2) Chronoshifted units are removed from other units' targeting systems upon shifting in either direction. This prevents other units from trying to chase a chronoshifted unit across the map. (3) Chronoshifted units are removed from bullets' targeting systems upon shifting in either direction. This prevents funky stuff with bullet physics. (4) Some miscellaneous cleanup to make chronoshift visuals and sound effects more consistent.
 - Chrono Disaster Overhaul (RA only) -- Three options relating to chrono disasters: (1) "Timequake Fix" fixes the vanilla bug that prevented timequakes from working. (2) "Shared Chrono Odds" uses a single random roll for whether to spawn a chrono disaster, potentially followed by a second roll to pick vortex or timequake. (3) "Cumulative Timeline Damage" starts chrono disaster odds a a fraction of normal and increases them each time the Chronosphere is used. Odds reset after a chrono disaster happens, but to a higher starting point.
 - Long Building Gap Bugfix (RA only) -- Forces the use of the same logic across all functions that test for building placement proximity, fixes related bugs.
-- MIG Ammo Fudge -- Gives certain planes 1 extra ammo to preserve original unit balance that depended on now-fixed buggy behavior.
-- TD Balance Patch -- Balance Patch based on CnCNet's Community Balance Patch. See the [settings chart on the wiki](https://github.com/ChthonVII/CnC_Remastered_Collection/wiki/Features-and-INI-Settings-Charts) for details. 
-- Nuke Tank -- Enables the Nuke Tank from the example mod. (Disabled by default because it is very, very imbalanced.)
-
+- MIG Ammo Fudge (RA only) -- Gives certain planes 1 extra ammo to preserve original unit balance that depended on now-fixed buggy behavior.
+- TD Balance Patch (TD only) -- Balance Patch based on CnCNet's Community Balance Patch. See the [settings chart on the wiki](https://github.com/ChthonVII/CnC_Remastered_Collection/wiki/Features-and-INI-Settings-Charts) for details. 
+- Nuke Tank (TD only) -- Enables the Nuke Tank from the example mod. (Disabled by default because it is very, very imbalanced.)
+- Q-Move Overhaul -- Significant enhancements to RA's Q-move system, also ported to TD. See [this page on the wiki](https://github.com/ChthonVII/CnC_Remastered_Collection/wiki/Q-Move-Overhaul) for full details.
+- Tiberium/Ore Index Bugfix -- Enables fixes for a cluster of vanilla bugs concerning inconsistency over whether tiberium/ore level is 0-indexed or 1-indexed, which manifests as harvesters sometimes scooping but not gaining bails of tiberium/ore and TD almost never using the art assets for the smallest level of tiberium. This bugfix is made optional because it impacts in-game economics.
+- Gem Overload Fix (RA only) -- Enables better behavior when an ore truck harvests a scoop of gems when it doesn't have enough space to hold all 4 resulting bails. The vanilla behavior is that the excess gem bails simply vanish. The fixed behavior is that the ore truck dumps enough ore back into the cell to make room for the gems.
+- GDI9 Fix (TD only) -- If enabled, the CPU will surrender in GDI mission 9 if it has no buildings or units left except for the turrets on the south bank of the river.
+- MP Preplaced Unit Order Mode (TD only) -- Controls behavior of preplaced (usually neutral) units on multiplayer maps. Options are to use the Remastered behavior (aircraft follow orders in the map file; everything else does Enter_Idle_Mode(), which results in "guard area" at the only playable AI intelligence level), to always follow the orders in the map file, or to use the legacy C&C behavior (infantry do "hunt"; ground vehicles do "timed hunt"; aircraft follow orders in the map file). The only official map to which this applies is Cactus Valley.
+- Disable MP Neutral Attacks (TD only) -- Controls behavior of neutral houses in multiplayer maps. If enabled, prevents neutral houses from declaring an attack 1 minute into the match, as they otherwise would. The only official map to which this applies is Cactus Valley.
+- Building Death Announcements (TD only) -- Implements unfinished building death announcements in TD. Various modes for whether the announcement is generic of faction-based, and who can hear it.
+- Building Capture Announcements (RA only) -- Implements unfinished building capture announcements in RA.
+- Smarter Sonar (RA only) -- If enabled, the sonar ping superweapon only reveals subs unfriendly to the user. (Vanilla behavior reveals friendly subs too.)
 
 # LAN Multiplayer
 ------------------
 This mod is fully compatible with LAN multiplayer. The only mod feature that doesn't work perfectly in LAN multiplayer is the visual preview for TS-style wall building. This is an unfixable consequence of the way the GlyphX client/server handles LAN multiplayer. The "Inverse Wall Placement Preview" feature is provided as a substitute of sorts.
+
+Additionally, this mod includes a large number of bugfixes for issues with Remastered's LAN multiplayer.
 
 # Megamap and 8-Player Support in TD
 ------------------
@@ -90,7 +100,7 @@ As per original CFE Patch notes:
 
 Root-Core -- original RA port of CFE patch.
 
-screaming_chicken -- smarter aircraft fly-in tweak, inspiration for smarter SAMs.
+screaming_chicken -- smarter aircraft fly-in tweak, inspiration for smarter SAMs, several bugfixes.
 
 eksmad -- "Red USSR Flag for all Soviet Barracks"
 
@@ -106,9 +116,11 @@ The vanilla-conquer developers -- numerous vanilla bugfixes.
 
 Petroglyph -- nuke tank.
 
-ChthonVII -- Merge official patches since cfehunter and Root-Core abandoned project, harvester refinery selection optimization, infantry tiberium aversion, complete rewrite of attack-move code, better tiberium/ore growth, helicopter flightpath updating, TS-style visceroid spawns, meaner visceroids, veterancy system, TS-style wall building overhaul, LAN multiplayer compatibility overhaul, backport megamap for TD support from vanilla-conquer, 8-player support for TD, TD color rearrangment, smarter repair bays, TD balance patch, visceroid spawn animation, infantry stealth sound, OpenRA-style supers, smarter chrono, chrono distaster overhaul, MIG ammo fudge, assorted bugfixes.
+ChthonVII -- Merge official patches since cfehunter and Root-Core abandoned project, harvester refinery selection optimization, infantry tiberium aversion, complete rewrite of attack-move code, better tiberium/ore growth, helicopter flightpath updating, TS-style visceroid spawns, meaner visceroids, veterancy system, TS-style wall building overhaul, LAN multiplayer compatibility overhaul, backport megamap for TD support from vanilla-conquer, 8-player support for TD, TD color rearrangment, smarter repair bays, TD balance patch, visceroid spawn animation, infantry stealth sound, OpenRA-style supers, smarter chrono, chrono distaster overhaul, MIG ammo fudge, Q-move overhaul, tiberium/ore index fix, gem overload fix, GDI9 fix, MP preplaced order mode, disable neutral attacks, TD building death announcement, RA building capture announcement, smarter sonar, many assorted bugfixes.
 
 Noddynod443 -- LAN multiplayer testing.
+
+Nyerguds -- "A most remarkable Metasequoia Glyptostroboides, " explanation of several little-known bugs from legacy C&C.
 
 
 # A Reminder About the GPL
