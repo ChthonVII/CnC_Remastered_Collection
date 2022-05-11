@@ -2,7 +2,7 @@
 ------------------
 This mod updates the original CFE Patch mod by cfehunter and its RA port by Root-Core to the official 9/24/2020 hotfix patch (supposedly the final official patch) and adds new features.
 
-The current version is 1.7.
+The current version is 1.8.
 
 The Tiberian Dawn mod is available on Steam Workshop here: [link](https://steamcommunity.com/sharedfiles/filedetails/?id=2239875646)
 
