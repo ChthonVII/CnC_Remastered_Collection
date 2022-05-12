@@ -1,0 +1,59 @@
+Version 1.8
+
+1. Q-Moves Overhaul
+    * Overhauled the Q-move system in RA and ported it to TD.
+    * Attack-move now works with Q-move.
+    * Fixed and enabled Q-move loops. (This was an unfinished feature that WW cut.)
+    * Added ability for aircraft to Q-move (and Q-move-loop).
+    * Added ability for aircraft in attack-Q-move-loop to remember their navigation queue and return to it after reloading. (Allows for aerial base defenders kind of like Emperor: Battle for Dune.)
+    * Note that TD uses a different input method than RA due to GlyphX limitations.
+    * See the "Q-Move Overhaul" page on the wiki for input hotkey commands, ini entries, and full details.
+    
+2. Changed tiberium growth on megamaps to scale according to the size relative to a normal 64x64 map. (Previously assumed 4x was appropriate, which is not true if a map is only slightly bigger than 64x64.) 
+
+3. VETERANCY is moved from ini file's "FEATURES" section to "SETTINGS" section and now accepts 0 (off), 1 (MP only), or 2 (SP & MP). Default is 2.
+
+4. MEANER_VISCEROIDS is moved from ini file's "FEATURES" section to "SETTINGS" section and now accepts a range from 0 (off) to 3 (very mean). Default is 3.
+
+5. Meaner visceroids now have a chance to lose aggro once their target is out of range so that they won't chase a unit forever.
+
+6. COMMANDO_GUARD is moved from ini file's "FEATURES" section to "SETTINGS" section and now accepts 0 (off), 1 (MP only), or 2 (SP & MP). New default is 1 because this was trivializing too many SP missions.
+
+7. SAFE_SABOTAGE is moved from ini file's "FEATURES" section to "SETTINGS" section and now accepts 0 (off), 1 (SP only), or 2 (SP & MP). New default is 1 because bombing multiple buildings with a single commando/Tanya with no risk was overpowered in MP.
+
+8. New feature TIB_INDEX_BUGFIX enables fixes for a cluster of vanilla bugs concerning inconsistency over whether tiberium level is 0-indexed or 1-indexed, which manifests as harvesters sometimes scooping but not gaining bails of tiberium and TD almost never using the art assets for the smallest level of tiberium. This bugfix is made optional because it impacts in-game economics.
+
+9. Changed cloaking for veteran rank 3 commando to decloak faster and allow firing halfway through decloak process. (The delay imposed by decloaking was so problematic in some situations as to constitute a nerf rather than a buff.)
+
+10. Dr. Moebius now has a chance to say "A most remarkable  Metasequoia Glyptostroboides" as an idle quote if he is standing near a tree (or tiberium tree). Thanks to Nyerguds for extracting the sound file from the N64 port.
+
+11. New feature GDI9_FIX. If enabled, the CPU will surrender in GDI mission 9 if it has no buildings or units left except for the turrets on the south bank of the river.
+
+12. New feature MP_PREPLACED_UNIT_ORDER_MODE controls behavior of preplaced (usually neutral) units on MP maps. 0=remastered vanilla - enter idle mode (results in guard area); 1=honor orders in map file; 2=original game vanilla - hunt for infantry, timed hunt for vehicles (aircraft not affected; they DO honor orders in map file regardless)
+
+13. New feature DISABLE_MP_NEUTRAL_ATTACKS controls behavior of neutral houses in MP maps. If enabled, prevents neutral houses from declaring an attack 1 minute into the match (which is quite undesirable in Cactus Valley, for instance).
+
+14. New feature BUILDING_DEATH_ANNOUNCE_MODE implements unfinished building death announcements. Modes: 0=off, 1=owner notice only, 2=generic global notice, 3=faction-based global notice in SP and generic global notice in MP, 4=faction-based global notice in SP & MP.
+
+15. Changed default setting for DO_OVERRIDE_WFACTORY_HP to 1 so that War Factory will have 520 HP in single player if APPLY_BALANCE_TO_SINGLE_PLAYER==1.
+
+16. Bugfixes
+    * Fixed a crash bug with A-Star pathfinding when the shortest path was more than 200 cells long.
+    * Bugfix for units that gained stealth through veterancy failing to trip mission triggers.
+    * Bugfix vanilla remastered bug in SP missions in TD where a non-player unit firing on another non-player unit is supposed to reveal the map. (Same bugfix was previously applied to RA only.)
+    * Bugfix vanilla remastered bug in Cactus Valley map where neutral visceroids would die immediately upon starting a match with a "kill structures" objective because HOUSE_NEUTRAL had no structures.
+    * Bugfix vanilla bug that allowed a player to ally with visceroids in Cactus Valley map. (They wouldn't ally back, but you'd be unable to attack them until you figured out what you'd done.)
+    * Bugfix vanilla bug that allowed AI houses to consider HOUSE_NEUTRAL and HOUSE_JP when selecting which opposing house to fixate on in MP games in TD.
+    * Fixed vanilla remastered bug that caused AI houses to give far too much weight to proximity when selecting which opposing house to fixate on in MP games in TD. (Thanks to screaming_chicken)
+    * Fixed a HUGE number of vanilla remastered bugs with sounds playing for the wrong player(s) and/or not playing for the right player(s) in MP games.
+    * Fixed vanilla bug with commando saying two things at once when ordered to bomb a building.
+    * Fixed vanilla bug with gunboats failing to retarget when turning around in TD. (Thanks to screaming_chicken)
+    * Fixed vanilla bug with custom missions using the wrong threshhold for the AI to begin repairing buildings. (The AI in custom mission now uses the same threshhold as late-game missions.) (Thanks to screaming_chicken)
+    * Completely overhauled the system for flagging units as "discovered" by a given house. This was barely working in classic C&C and totally broken in remastered MP. This should fix some issues with units firing from under the shroud not always causing a shroud reveal. This is also important foundational work for eventually making the skirmish AI "play fair" and respect the shroud.
+    * Fixed vanilla bug that caused MISSION_AMBUSH to do nothing. (Thanks to screaming_chicken)
+    * Fixed vanilla bug that prevented a player from getting another reveal crate after previously getting a reveal crate followed by a darkness crate.
+    * Fixed vanilla bug in TD that allowed a player to still reveal get crates after having the full map revealed via sight sharing when an ally picked up a reveal crate.
+    * Fixed bug that caused units preplaced on map not getting their current HP changed when balance patch settings or "modern balance" multiplayer lobby toggle changes their max HP.
+    
+17. Version 1.8 is NOT compatible with old save files. Sorry!
+Optimized several things that were previously done inefficiently in order to maintain save file compatibility.

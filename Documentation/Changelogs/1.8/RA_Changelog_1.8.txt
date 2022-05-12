@@ -1,0 +1,46 @@
+Version 1.8
+
+1. Q-Moves Overhaul
+    * Overhauled the Q-move system in RA and ported it to TD.
+    * Attack-move now works with Q-move.
+    * Added option to enable Q-move loops. (This was an unfinished feature that WW cut.)
+    * Added option to enable aircraft to Q-move (and Q-move-loop).
+    * Added option for aircraft in attack-Q-move-loop to remember their navigation queue and return to it after reloading. (Allows for aerial base defenders kind of like Emperor: Battle for Dune.)
+    * Changed behavior when a unit's navigation queue is overfilled (now evicts oldest entry to make space instead of evicting newest entry). (This fix is only active in RA if Q-move-loops are enabled.)
+    * Changed behavior so that 'S' key fully stops a unit instead of merely making it skip the next destination in its navigation queue. (This fix is only active in RA if Q-move-loops are enabled.)
+    * Numerous bugfixes to Q-move system.
+    * See the "Q-Move Overhaul" page on the wiki for input hotkey commands, ini entries, and full details.
+    
+2. VETERANCY is moved from ini file's "FEATURES" section to "SETTINGS" section and now accepts 0 (off), 1 (MP only), or 2 (SP & MP). Default is 2.
+
+3. TANYA_GUARD is moved from ini file's "FEATURES" section to "SETTINGS" section and now accepts 0 (off), 1 (MP only), or 2 (SP & MP). New default is 1 because this was trivializing too many SP missions.
+
+4. SAFE_SABOTAGE is moved from ini file's "FEATURES" section to "SETTINGS" section and now accepts 0 (off), 1 (SP only), or 2 (SP & MP). New default is 1 because bombing multiple buildings with a single commando/Tanya with no risk was overpowered in MP.
+
+5. New feature ORE_INDEX_BUGFIX enables fixes for a cluster of vanilla bugs concerning inconsistency over whether ore level is 0-indexed or 1-indexed, which manifests as harvesters sometimes scooping but not gaining bails of ore. This bugfix is made optional because it impacts in-game economics.
+
+6. New feature GEM_OVERLOAD_FIX enables better behavior when an ore truck harvests a scoop of gems when it doesn't have enough space to hold all 4 resulting bails. The vanilla behavior is that the excess gem bails simply vanish. The fixed behavior is that the ore truck dumps enough ore back into the cell to make room for the gems.
+
+7. Changed the rules for ore that has nowhere to grow or spread sometimes promoting to gems when "Better Ore Growth" is enabled. The odds of promotion are now set so the average credits added to the map by an attempted promotion equals the number of credits that would be added by a regular grow/spread, divided by a fudge factor set in ORE_TO_GEM_SLOW_FACTOR to prevent gems from overrunning the map.
+
+8. Changed cloaking for veteran rank 3 Tanya to decloak faster and allow firing halfway through decloak process. (The delay imposed by decloaking was so problematic in some situations as to constitute a nerf rather than a buff.)
+
+9. New feature BUILDING_CAPTURE_ANNOUNCE (RA only) implements unfinished "building captured" announcments in RA.
+
+10. New feature SMARTER_SONAR. If enabled, the sonar ping superweapon only reveals subs unfriendly to the user. (Vanilla behavior reveals friendly subs too.)
+
+11. Bugfixes
+    * Fixed a crash bug with A-Star pathfinding when the shortest path was more than 200 cells long.
+    * Fixed veterancy and other mod variables being reset to 0 when loading a saved game in RA.
+    * Bugfix vanilla bug that counted helipads towards fixed-wing aircraft limit in RA.
+    * Bugfix veterancy pips no longer turn red when iron curtain is applied.
+    * Bugfix for units that gained stealth through veterancy failing to trip mission triggers.
+    * Fixed a HUGE number of vanilla remastered bugs with sounds playing for the wrong player(s) and/or not playing for the right player(s) in MP games.
+    * Fixed vanilla bug with custom missions using the wrong threshhold for the AI to begin repairing buildings. (The AI in custom mission now uses the same threshhold as late-game missions.) (Thanks to screaming_chicken)
+    * Completely overhauled the system for flagging units as "discovered" by a given house. This was barely working in classic C&C and totally broken in remastered MP. This should fix some issues with units firing from under the shroud not always causing a shroud reveal. This is also important foundational work for eventually making the skirmish AI "play fair" and respect the shroud.
+    * Fixed vanilla bug that caused MISSION_AMBUSH to do nothing. (Thanks to screaming_chicken)
+    * Fixed vanilla bug in RA that caused darkness crate to hide allied units despite IsAllyReveal setting.
+    * Fixed vanilla bug that prevented a player from getting another reveal crate after previously getting a reveal crate followed by a darkness crate.
+    
+12. Version 1.8 is NOT compatible with old save files. Sorry!
+Optimized several things that were previously done inefficiently in order to maintain save file compatibility.
