@@ -3257,8 +3257,9 @@ bool CellClass::CFESpread_Tiberium(bool forced)
         if (newcell != NULL){
             
             // added check for mine head to (hopefully) fix issue where ore sometimes spawns over mine head
+            // expanded -- don't let ore spawn over any terrain object
             TerrainClass * terrainptr = newcell->Cell_Terrain();
-            if (terrainptr && (*terrainptr == TERRAIN_MINE)){
+            if (terrainptr && (*terrainptr != TERRAIN_NONE)){
                 continue;
             }
         
@@ -3292,8 +3293,9 @@ bool CellClass::CFESpread_Tiberium(bool forced)
         return(true);
     }
     // die here if we're a mine head so we don't try to spawn ore there
+    // or any other kind of terrain
     TerrainClass * terrainptr = Cell_Terrain();
-    if (terrainptr && (*terrainptr == TERRAIN_MINE)){
+    if (terrainptr && (*terrainptr != TERRAIN_NONE)){
         return false;
     }
     // fall back to growing yourself
@@ -3465,8 +3467,9 @@ bool CellClass::Can_Tiberium_Germinate(void) const
 	if (Overlay != OVERLAY_NONE) return(false);
 
     // Chthon CFE Note: Don't spawn ore over a mine head!
+    // Actually, don't spawn ore over ANY terrain object.
     TerrainClass * terrainptr = Cell_Terrain();
-    if (terrainptr && (*terrainptr == TERRAIN_MINE)) return false;
+    if (terrainptr && (*terrainptr != TERRAIN_NONE)) return false;
     
 	return(true);
 }
