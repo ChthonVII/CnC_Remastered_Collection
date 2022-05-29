@@ -177,10 +177,19 @@ void BaseClass::Read_INI(char *buffer)
         /*
         ** Convert the normal cell position to a new big map position.
         */
+        /*
+        Chthon CFE Note: No, this is wrong.
+        COORDINATE types are NOT changed by the megamaps update.
+        They already dedicate 1 byte each for x cell component and y cell component.
+        (Though the use of atol here makes using the high bit of the y cell component dicey. (Lucky we only need 7 for megamaps.))
+        Correct behavior is to do NO TRANSLATION and use the coords as is.
         if (Map.MapBinaryVersion == MAP_VERSION_NORMAL) {
+            Also this line would be buggy even if it wasn't wrong.
+            Likely meant to use Coord_XCell and Coord_YCell. As written, the result of XY_Cell() is nonsense.
             CELL cell = Confine_Old_Cell(XY_Cell(Coord_X(node.Coord), Coord_Y(node.Coord)));
             node.Coord = Cell_Coord(cell);
         }
+        */
         
 		/*
 		** Add this node to the Base's list
