@@ -282,6 +282,8 @@ class FootClass :	public TechnoClass
 		// Chthon CFE Note: make  public so harvester optimizations and queue jumping can use it
 		int Find_Path_AStar(PathType* const resultPath, const CELL source, CELL dest, const int maxLen, const MoveType threshhold, const int threat) const;
         //int Passable_Cell(CELL cell, FacingType face, int threat, MoveType threshhold) const;
+        float CFE_Passable_Cell(CELL cell, FacingType face, int depth, float currentprice, int threat, MoveType threshhold, CELL oneback, CELL twoback, int myleptonspertick) const;
+        int LeptonsPerTickSpeed(LandType landtype=LAND_CLEAR) const;
         
         // Chthon CFE Note: Q-Move port
         void Handle_Navigation_List(void);
@@ -315,6 +317,10 @@ class FootClass :	public TechnoClass
 public:
         float SpeedBias = 1.0;
         
+        // periodic repathing
+        unsigned int RepathDelay = 4;
+        CELL NextGoToCell;
+        CELL NextNextGoToCell;
         
         // Q-Move port stuff. Not offsetting this from padding b/c it's too big, so we just have to break savegame compatibility
         TARGET NavQueueOriginalHead = TARGET_NONE;

@@ -948,6 +948,94 @@ bool DriveClass::Start_Of_Move(void)
 	}
 #endif
 
+    // Chthon CFE Note: We can afford to repath periodically
+    // Fixes issues with path going stale because path got blocked or unblocked after it was computed
+    bool freerepath = false;
+    TCountDownTimerClass OldPathDelay = PathDelay;
+    if (ActiveCFEPatchConfig.EnableASPathing && !RepathDelay && PathDelay.Expired() && Target_Legal(NavCom) && (Distance(As_Cell(NavCom)) > 4)){
+        Path[0] = FACING_NONE;	
+        facing = FACING_NONE;
+        freerepath = true;
+    }
+    // repath immediately if next move would cut off an ally
+    /*
+    doesn't really work since Path[] gets advanced once movement towards a cell starts, putting it out of sync
+    if (ActiveCFEPatchConfig.EnableASPathing && Target_Legal(NavCom) && (facing != FACING_NONE) && (Distance(As_Cell(NavCom)) > 4)){
+        CELL checkcell = Adjacent_Cell(Coord_Cell(Center_Coord()), facing);
+        for (FacingType otherfacing = FACING_FIRST; otherfacing < FACING_COUNT; otherfacing++) {
+            // skip yourself
+            if (facing == (otherfacing ^ 4)){
+                continue;
+            }
+            const CELL othercell = Adjacent_Cell(checkcell, otherfacing);
+            CellClass const * othercellptr = &Map[othercell];
+            const TechnoClass* sometechno = othercellptr->Cell_Techno();
+            if (    sometechno &&
+                    sometechno->IsActive &&
+                    !sometechno->IsInLimbo &&
+                    sometechno->Strength &&
+                    House->Is_Ally(sometechno) &&
+                    (   (sometechno->What_Am_I() == RTTI_UNIT) ||
+                        (sometechno->What_Am_I() == RTTI_INFANTRY)
+                    ) &&
+                    Target_Legal(((FootClass*)sometechno)->NavCom) &&
+                    (((FootClass*)sometechno)->Path[0] != FACING_NONE) &&
+                    (otherfacing == (((FootClass*)sometechno)->Path[0] ^ 4))
+            ){
+                Path[0] = FACING_NONE;	
+                facing = FACING_NONE;
+                freerepath = true;
+                break;
+            }
+        }
+        
+    }
+    */
+    if (ActiveCFEPatchConfig.EnableASPathing && (facing != FACING_NONE) && PathDelay.Expired()){
+        CELL checkcell = Adjacent_Cell(Coord_Cell(Center_Coord()), facing);
+        bool iscutoff = false;
+        for (int i = 0; i < Units.Count(); i++) {
+            UnitClass* unit = Units.Ptr(i);
+            if (    unit &&
+                    (   (What_Am_I() != RTTI_UNIT) ||   
+                        (unit != (UnitClass*)this)
+                    ) &&
+                    unit->IsActive &&
+                    !unit->IsInLimbo &&
+                    unit->Strength &&
+                    House->Is_Ally(unit) &&
+                    (   (unit->NextGoToCell && (checkcell == unit->NextGoToCell)) ||
+                        (unit->NextNextGoToCell && (checkcell == unit->NextNextGoToCell))
+                    )
+            ){
+                iscutoff = true;
+                break;
+            }
+        }
+        if (!iscutoff){
+            for (int i = 0; i < Infantry.Count(); i++) {
+                InfantryClass* someguy = Infantry.Ptr(i);
+                if (    someguy &&
+                        someguy->IsActive &&
+                        !someguy->IsInLimbo &&
+                        someguy->Strength &&
+                        House->Is_Ally(someguy) &&
+                        (   (someguy->NextGoToCell && (checkcell == someguy->NextGoToCell)) ||
+                            (someguy->NextNextGoToCell && (checkcell == someguy->NextNextGoToCell))
+                        )
+                ){
+                    iscutoff = true;
+                    break;
+                }
+            }
+        }
+        if (iscutoff){
+            Path[0] = FACING_NONE;	
+            facing = FACING_NONE;
+            freerepath = true;
+        }
+    }
+
 	/*
 	**	Reduce the path length if the target is a unit and the
 	**	range to the unit is less than the precalculated path steps.
@@ -1053,6 +1141,9 @@ bool DriveClass::Start_Of_Move(void)
 
 		TryTryAgain = PATH_RETRY;
 		facing = Path[0];
+        if (freerepath){
+            PathDelay = OldPathDelay;
+        }
 	}
 
 	if (Class->IsLockTurret || !Class->IsTurretEquipped) {
@@ -1076,6 +1167,15 @@ bool DriveClass::Start_Of_Move(void)
 	dest = Adjacent_Cell(Coord, facing);
 	dir = Facing_Dir(facing);
 
+    // Chthon CFE Note: Since we've got a path, note the next two cells we'll be entering so other allied units can pathfind around them to avoid cutting us off
+    NextGoToCell = dest;
+    if (Path[1] != FACING_NONE){
+        NextNextGoToCell = Adjacent_Cell(dest, Path[1]);
+    }
+    else {
+        NextNextGoToCell = 0;
+    }
+    
 	/*
 	**	Set the facing correctly if it isn't already correct. This
 	**	means starting a rotation track if necessary.
@@ -1378,6 +1478,11 @@ void DriveClass::AI(void)
 			}
 		}
 	}
+	// Chthon CFE Note: Flush the remembered next cells if we've stopped moving
+	if(!Target_Legal(NavCom) /*|| ((Path[0] == FACING_NONE) && !IsDriving)*/){
+        NextGoToCell = 0;
+        NextNextGoToCell = 0;
+    }
 }
 
 

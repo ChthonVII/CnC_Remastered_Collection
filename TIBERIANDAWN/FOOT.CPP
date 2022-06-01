@@ -123,6 +123,9 @@ FootClass::FootClass(void) : Speed(0)
 		NavQueue[index] = TARGET_NONE;
         MemorizedNavQueue[index] = TARGET_NONE;
 	}
+	RepathDelay = 4;
+    NextGoToCell = 0;
+    NextNextGoToCell = 0;
 }
 
 
@@ -185,6 +188,15 @@ FootClass::FootClass(HousesType house) :
 	Group = -1;
 	TryTryAgain = PATH_RETRY;
 	House->CurUnits++;
+    
+    // Chthon CFE Note: Q-Move port
+    for (int index = 0; index < ARRAY_SIZE(NavQueue); index++) {
+		NavQueue[index] = TARGET_NONE;
+        MemorizedNavQueue[index] = TARGET_NONE;
+	}
+    RepathDelay = 4;
+    NextGoToCell = 0;
+    NextNextGoToCell = 0;
 }
 
 
@@ -457,29 +469,33 @@ bool FootClass::Basic_Path(void)
 				memcpy(&path1, path, sizeof(path1));
 				found1 = true;
 
-				/*
-				**	Scan for the best path possible. If this succeeds, then do a simple
-				**	comparison with the most agressive path. If they are very close, then
-				**	go with the best (easiest) path method.
-				*/
-				path = Find_Path(cell, &workpath2[0], sizeof(workpath2), MOVE_CLOAK);
-				if (path && path->Cost && path->Cost < MAX((path1.Cost + (path1.Cost/2)), 3)) {
-					memcpy(&path1, path, sizeof(path1));
-					memcpy(workpath1, workpath2, sizeof(workpath1));
-				} else {
+                // Chthon CFE Note: Skip this when using A*. The path should already be optimal.
+                // All this is going to do is to encourage non-optimal paths that go around instead of wait out a block. 
+                if (!ActiveCFEPatchConfig.EnableASPathing){
+                    /*
+                    **	Scan for the best path possible. If this succeeds, then do a simple
+                    **	comparison with the most agressive path. If they are very close, then
+                    **	go with the best (easiest) path method.
+                    */
+                    path = Find_Path(cell, &workpath2[0], sizeof(workpath2), MOVE_CLOAK);
+                    if (path && path->Cost && path->Cost < MAX((path1.Cost + (path1.Cost/2)), 3)) {
+                        memcpy(&path1, path, sizeof(path1));
+                        memcpy(workpath1, workpath2, sizeof(workpath1));
+                    } else {
 
-					/*
-					**	The easiest path method didn't result in a satisfactory path. Scan through
-					**	the rest of the path options, looking for the best one.
-					*/
-					for (MoveType move = MOVE_MOVING_BLOCK; move < maxtype; move++) {
-						path = Find_Path(cell, &workpath2[0], sizeof(workpath2), move);
-						if (path && path->Cost && path->Cost < MAX((path1.Cost + (path1.Cost/2)), 3)) {
-							memcpy(&path1, path, sizeof(path1));
-							memcpy(workpath1, workpath2, sizeof(workpath1));
-						}
-					}
-				}
+                        /*
+                        **	The easiest path method didn't result in a satisfactory path. Scan through
+                        **	the rest of the path options, looking for the best one.
+                        */
+                        for (MoveType move = MOVE_MOVING_BLOCK; move < maxtype; move++) {
+                            path = Find_Path(cell, &workpath2[0], sizeof(workpath2), move);
+                            if (path && path->Cost && path->Cost < MAX((path1.Cost + (path1.Cost/2)), 3)) {
+                                memcpy(&path1, path, sizeof(path1));
+                                memcpy(workpath1, workpath2, sizeof(workpath1));
+                            }
+                        }
+                    }
+                }
 			}
 
 #ifdef OBSOLETE
@@ -532,7 +548,8 @@ bool FootClass::Basic_Path(void)
 #endif
 
 		PathDelay = PATH_DELAY;
-		if (Path[0] != FACING_NONE) return(true);
+		RepathDelay = Random_Pick(2, 4);
+        if (Path[0] != FACING_NONE) return(true);
 
 		/*
 		**	If a basic path couldn't be determined, then abort the navigation process.
@@ -1517,6 +1534,11 @@ void FootClass::Per_Cell_Process(bool center)
 
 	Map[Coord_Cell(Coord)].Goodie_Check(this, true);
 
+    // Chthon CFE Note: count down to repathing
+    if (RepathDelay){
+        RepathDelay--;
+    }
+    
 	TechnoClass::Per_Cell_Process(center);
 }
 
@@ -1773,6 +1795,10 @@ void FootClass::Assign_Destination(TARGET target)
     else {
         UnmodifiedNavCom = target;
     }
+    
+    // Chthon CFE Note: Flush the remembered next cells since we'll need to repath
+    NextGoToCell = 0;
+    NextNextGoToCell = 0;    
 }
 
 
@@ -2669,3 +2695,53 @@ void FootClass::Clear_Memorized_Navigation_List(){
     return;
 }
 
+// Chthon CFE Note: This unit's actual move speed in leptons per tick
+int FootClass::LeptonsPerTickSpeed(LandType landtype) const{
+    
+    bool iaminfantry = (What_Am_I() == RTTI_INFANTRY);
+    bool iamunit = (What_Am_I() == RTTI_UNIT);
+    bool iamaircraft = (What_Am_I() == RTTI_AIRCRAFT);
+    
+    if (!iaminfantry && !iamunit && !iamaircraft){
+        return 0;
+    }
+    
+    InfantryClass* meguy = nullptr;
+    UnitClass* meunit = nullptr;
+    AircraftClass* meair = nullptr;
+    if (iaminfantry){
+        meguy = (InfantryClass*)this;
+    }
+    if (iamunit){
+        meunit = (UnitClass*)this;
+    }
+    if (iamaircraft){
+        meair = (AircraftClass*)this;
+    }
+        
+    int mythrottle = 0xFF; // from InfantryClass::AI() / various points in Aircraft.CPP
+    MPHType myMPH = (MPHType)1;
+    if (iaminfantry){
+        if (meguy->IsProne) {
+            if (meguy->Class->IsFraidyCat && !meguy->Class->IsCrawling) {
+                mythrottle *= 2;
+            } else {
+                mythrottle /= 2;
+            }
+        }
+        myMPH = MPHType(min((int)(meguy->Class->MaxSpeed * SpeedBias * House->GroundspeedBias), (int)MPH_LIGHT_SPEED)); //from InfantryClass::AI()
+    }
+    else if (iamunit){
+        mythrottle = Ground[landtype].Cost[meunit->Class->Speed]; // from DriveClass::Start_Of_Move()
+        if (Health_Ratio() < 0x0080){
+            mythrottle *= 0.75;
+        }
+        myMPH = MPHType(min((int)(meunit->Class->MaxSpeed * SpeedBias * House->GroundspeedBias), (int)MPH_LIGHT_SPEED)); //from DriveClass::While_Moving()
+    }
+    else if (iamaircraft){
+        myMPH = MPHType(min((unsigned)(meair->Class->MaxSpeed * SpeedBias * House->AirspeedBias), MPH_LIGHT_SPEED)); // from AircraftClass::Set_Speed()
+    }
+        
+    return Fixed_To_Cardinal(myMPH, mythrottle); //from DriveClass::While_Moving() / InfantryClass::AI() / FlyClass::Physics()
+    
+}
