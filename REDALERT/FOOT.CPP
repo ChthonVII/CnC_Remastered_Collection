@@ -2165,7 +2165,7 @@ void FootClass::Detach(TARGET target, bool all)
 		** Extra safety check
 		*/
 		loop_count++;
-		if (loop_count > ARRAY_SIZE(NavQueue)) {
+		if (loop_count >= ARRAY_SIZE(NavQueue)) {
 			break;
 		}
 	}
@@ -2190,7 +2190,7 @@ void FootClass::Detach(TARGET target, bool all)
 		** Extra safety check
 		*/
 		loop_count++;
-		if (loop_count > ARRAY_SIZE(MemorizedNavQueue)) {
+		if (loop_count >= ARRAY_SIZE(MemorizedNavQueue)) {
 			break;
 		}
 	}
