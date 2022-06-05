@@ -3082,6 +3082,7 @@ void FootClass::Memorize_Navigation_List(){
     HasMemorizedNavQueue = true;
 
     // roll the list around until the original head is at the front of the list
+    int safety = 0;
     while (MemorizedNavQueue[0] != NavQueueOriginalHead){
         TARGET target = MemorizedNavQueue[0];
         memmove(&MemorizedNavQueue[0], &MemorizedNavQueue[1], sizeof(MemorizedNavQueue)-sizeof(MemorizedNavQueue[0]));
@@ -3091,6 +3092,12 @@ void FootClass::Memorize_Navigation_List(){
                 MemorizedNavQueue[index] = target;
                 break;
             }
+        }
+        safety++;
+        if (safety >= ARRAY_SIZE(MemorizedNavQueue)){
+            // give up if we've somehow lost the head
+            Clear_Memorized_Navigation_List();
+            break;
         }
     }
     
