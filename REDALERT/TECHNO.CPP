@@ -2682,7 +2682,7 @@ void TechnoClass::AI(void)
                 ((UnitClass*)this)->MoebiusCountDown = ChronoTankDuration * TICKS_PER_MINUTE;
                 Scen.Do_BW_Fade();
                 Sound_Effect(VOC_CHRONO, Coord);
-                if (!Target_Legal(((UnitClass*)this)->NavQueue[0])){
+                if (!((UnitClass*)this)->HasNavQueue()){
                     ResetAttackMove();
                 }
             }

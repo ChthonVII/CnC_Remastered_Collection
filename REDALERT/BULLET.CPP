@@ -172,7 +172,7 @@ BulletClass::~BulletClass(void)
                             dog->AttackMove = 1;
                             dog->RememberedNavCom = resumerememberednavcom;
                             dog->AttackMoveEnterMoveMode();
-                            dog->SkipNavQueueUpdate = false;;
+                            dog->SkipNavQueueUpdate = false;
                         }
 						break;
 					}

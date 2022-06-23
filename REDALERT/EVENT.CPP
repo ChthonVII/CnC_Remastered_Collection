@@ -893,6 +893,7 @@ void EventClass::Execute(void)
                     if (ActiveCFEPatchConfig.EnableQMoveLoops){
                         if (techno->Is_Foot()) {
                             ((FootClass *)techno)->Clear_Navigation_List();
+                            ((FootClass *)techno)->Clear_Memorized_Navigation_List();
                         }
                         techno->Enter_Idle_Mode();
                     }

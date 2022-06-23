@@ -188,7 +188,7 @@ class FootClass :	public TechnoClass
 		**	stores as an array of movement targets. The list is terminated with a
 		**	TARGET_NONE.
 		*/
-		TARGET NavQueue[10];
+		TARGET NavQueue[MAX_NAVQUEUE];
 
 		/*
 		**	This points to the team that "owns" this object. This pointer is used to
@@ -339,7 +339,8 @@ class FootClass :	public TechnoClass
 		/*
 		**	Movement and animation.
 		*/
-		void Handle_Navigation_List(void);
+		//void Handle_Navigation_List(void);
+		bool Handle_Navigation_List(void); // Chthon CFE Note: made bool so we can know whether we got something
 		void Queue_Navigation_List(TARGET target);
 		void Clear_Navigation_List(void);
 		virtual void Per_Cell_Process(PCPType why);
@@ -395,11 +396,14 @@ class FootClass :	public TechnoClass
 
     // Chthon CFE Note: Additional variables for mod
     public:
-        TARGET NavQueueOriginalHead;
+        //TARGET NavQueueOriginalHead;
+        unsigned char NavQueueIndex;
+        unsigned char NavQueueSize;
+        unsigned char MemorizedNavQueueSize;
         
         // Stuff for memorizing nav list
         // This won't fit in the available padding, so we're just going to have to break savegame compatibility
-        TARGET MemorizedNavQueue[10];
+        TARGET MemorizedNavQueue[MAX_NAVQUEUE];
         mutable TARGET UnmodifiedNavCom;
         union{
 			mutable unsigned char CFEPatchNavQFlags;
@@ -410,6 +414,8 @@ class FootClass :	public TechnoClass
 				mutable unsigned int CFEPatchNavQFlagsPadding : 5; //round out to 1 byte, we can use this space later.
 			};
         };
+        
+        bool HasNavQueue(){return (NavQueueSize > 0);};
         
     private:
         

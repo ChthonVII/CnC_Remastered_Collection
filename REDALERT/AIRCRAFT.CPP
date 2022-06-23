@@ -1806,7 +1806,7 @@ int AircraftClass::Mission_Move(void)
 
 				if (distance < 0x00C0) {
                     // Make q-moves work
-                    if (Target_Legal(NavQueue[0])){
+                    if (HasNavQueue()){
                         if (AttackMove && !Ammo){
                             //Memorize_Navigation_List();
                             Clear_Navigation_List();
@@ -1961,7 +1961,7 @@ int AircraftClass::Mission_Move(void)
 				if (distance < 0x0080) {
                     
                     // Make q-moves work
-                    if (Target_Legal(NavQueue[0])){
+                    if (HasNavQueue()){
                         if (AttackMove && !Ammo){
                             //Memorize_Navigation_List();
                             Clear_Navigation_List();
@@ -2055,12 +2055,20 @@ void AircraftClass::Enter_Idle_Mode(bool )
 	assert(IsActive);
     
     // Chthon CFE Note: Since we're allowing aircraft to have q-moves issued to them, we'd better handle them
-    bool isoldnavcomgood = Target_Legal(NavCom);
+    /*bool isoldnavcomgood = Target_Legal(NavCom);
     Handle_Navigation_List();
     if (Target_Legal(NavCom) && !isoldnavcomgood){
         Assign_Mission(MISSION_MOVE);
         Commence();
         return;
+    }
+    */
+    if (!Target_Legal(NavCom)){
+        if (Handle_Navigation_List()){
+            Assign_Mission(MISSION_MOVE);
+            Commence();
+            return;
+        }
     }
     
     // Attack Move rework by ChthonVII -- If we would go idle, but we still have ammo, continue on towards destination instead
