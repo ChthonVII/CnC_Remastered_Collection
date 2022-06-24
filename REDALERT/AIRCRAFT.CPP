@@ -793,7 +793,7 @@ int AircraftClass::Mission_Hunt(void)
 						}
 						Fire_At(targ, 0);
                         
-                        // Chthon CFE Note: rank 3 MIGS/Yals fire two missiles per ammo pip (fudge this by restoring 1 ammo between shots) (check for two-shooter in case it's removed via rules.ini edit)
+                        // Chthon CFE Note: rank 3 MIGS/Yaks fire two missiles per ammo pip (fudge this by restoring 1 ammo between shots) (check for two-shooter in case it's removed via rules.ini edit)
                         if ((VeterancyRank == 3) && ((*this == AIRCRAFT_MIG) || (*this == AIRCRAFT_YAK)) && Class->Is_Two_Shooter()){
                             Ammo++;
                         }
@@ -1807,16 +1807,16 @@ int AircraftClass::Mission_Move(void)
 				if (distance < 0x00C0) {
                     // Make q-moves work
                     if (HasNavQueue()){
-                        if (AttackMove && !Ammo){
-                            //Memorize_Navigation_List();
-                            Clear_Navigation_List();
-                        }
-                        else {
+                        //if (AttackMove && !Ammo){
+                            ////Memorize_Navigation_List();
+                            //Clear_Navigation_List();
+                        //}
+                        //else {
                             Assign_Destination(TARGET_NONE);
                             Assign_Target(TARGET_NONE);
                             Enter_Idle_Mode();
                             return(1);
-                        }
+                        //}
                     }
                     
                     // Attack Move rework by ChthonVII -- If we're reached the destination, exit attack move and go home
@@ -1909,7 +1909,7 @@ int AircraftClass::Mission_Move(void)
 		case VALIDATE_LZ:
 			// Attack Move rework by ChthonVII -- If "smarter aircraft" mode is also enabled, don't attack move if you don't have any ammo to start with
             if (AttackMove && ActiveCFEPatchConfig.EnableSmarterAircraft && !IsALoaner && !Ammo){
-                //Memorize_Navigation_List();
+                Memorize_Navigation_List();
                 ResetAttackMove();
                 Clear_Navigation_List();
                 Enter_Idle_Mode();
@@ -1962,15 +1962,15 @@ int AircraftClass::Mission_Move(void)
                     
                     // Make q-moves work
                     if (HasNavQueue()){
-                        if (AttackMove && !Ammo){
-                            //Memorize_Navigation_List();
-                            Clear_Navigation_List();
-                        } else {
+                        //if (AttackMove && !Ammo){
+                            ////Memorize_Navigation_List();
+                            //Clear_Navigation_List();
+                        //} else {
                             Assign_Destination(TARGET_NONE);
                             Assign_Target(TARGET_NONE);
                             Enter_Idle_Mode();
                             return(1);
-                        }
+                        //}
                     }
                     
                     // Attack Move rework by ChthonVII -- helicopters should go home at the end of an attack-move rather than landing
@@ -2064,10 +2064,23 @@ void AircraftClass::Enter_Idle_Mode(bool )
     }
     */
     if (!Target_Legal(NavCom)){
-        if (Handle_Navigation_List()){
-            Assign_Mission(MISSION_MOVE);
-            Commence();
-            return;
+        if (!AttackMove || Ammo){ // if attackmove but no ammo, then fall through to next block to memorize and clear queue
+            if (Handle_Navigation_List()){
+                Assign_Mission(MISSION_MOVE);
+                if (!IsLanding && !IsTakingOff){
+                    Commence();
+                    // if already airborn, change status to skip takeoff
+                    if (Height == FLIGHT_LEVEL){
+                        if (Class->IsFixedWing){
+                            Status = 1; //FLY_TOWARD_TARGET
+                        }
+                        //else { // helicopters still need to validate LZ
+                        //    Status = 2; //FLY_TO_LZ
+                        //}
+                    }
+                }
+                return;
+            }
         }
     }
     

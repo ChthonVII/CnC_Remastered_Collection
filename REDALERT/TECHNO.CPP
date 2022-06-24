@@ -7799,6 +7799,23 @@ void TechnoClass::AttackMoveEnterMoveMode(){
     //if (Is_Foot()){
         //((FootClass*)this)->SkipNavQueueUpdate = false; // OK to process the nav queue when we go idle because move mode ends .
     //}
+    // aircraft can commence though -- and should so we can skip status ahead past takeoff
+    if (What_Am_I() == RTTI_AIRCRAFT){
+        AircraftClass* meplane = (AircraftClass*)this;
+        if (!meplane->IsLanding && !meplane->IsTakingOff){
+            Commence();
+            if (meplane->Height == FLIGHT_LEVEL){
+                if (meplane->Class->IsFixedWing){
+                    Status = 1; //FLY_TOWARD_TARGET
+                }
+                //else { // helicopters still need to validate LZ
+                //    Status = 2; //FLY_TO_LZ
+                //}
+            }
+        }
+    }
+    
+    return;
 }
 
 void TechnoClass::AttackMoveEnterAttackMode(){
