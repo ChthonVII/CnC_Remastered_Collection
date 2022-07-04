@@ -2495,7 +2495,9 @@ bool FootClass::Handle_Navigation_List(void)
                     coord = As_Coord(target);
                 }
                 int distance = Distance(coord);
-                int threshhold = (((AircraftClass*)this)->Class->IsFixedWing) ? 0x00C0 : 0x0080; // from AircraftClass::Mission_Move
+                // on second thought, let's use Rule.CloseEnoughDistance to be consistent
+                //int threshhold = (((AircraftClass*)this)->Class->IsFixedWing) ? 0x00C0 : 0x0080; // from AircraftClass::Mission_Move
+                int threshhold = Rule.CloseEnoughDistance;
                 if (distance >= threshhold){
                     isgood = true;
                 }
