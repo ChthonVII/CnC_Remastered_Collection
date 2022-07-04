@@ -4339,8 +4339,10 @@ FireErrorType AircraftClass::Can_Fire(TARGET target, int which) const
 		**	temporarily postponed.
 		*/
 		if (Class->IsFixedWing) {
-
-			int diff = PrimaryFacing.Difference(Direction(TarCom));
+            
+            // Chthon CFE Note: TarCom isn't necessarily the target, and it hasn't been checked for Target_Legal()
+			//int diff = PrimaryFacing.Difference(Direction(TarCom));
+            int diff = PrimaryFacing.Difference(Direction(target));
 			if (ABS(diff) > (fudge ? 16 : 8)) {
 				return(FIRE_FACING);
 			}
