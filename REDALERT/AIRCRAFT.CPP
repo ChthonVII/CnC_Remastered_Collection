@@ -836,20 +836,32 @@ int AircraftClass::Mission_Hunt(void)
 			**	Pull away to regroup for possibly another attack or a retreat.
 			*/
 			case REGROUP:
+                // Chthon CFE Note: This is totally buggy. When Ammo == 0 it may call Enter_Idle_Mode twice,
+                // or call Enter_Idle_Mode then change Status despite the mission no longer being Mission_Hunt,
+                // or call Enter_Idle_Mode then change the mission to Mission_Retreat.
+                // We're going to fix it by elminating the first Enter_Idle_Mode call and instead set a flag for later.
+                bool forceidle = false;
 				if (Ammo == 0) {
 					AttacksRemaining = 0;
 					if (Team.Is_Valid()) Team->Remove(this);
-					Enter_Idle_Mode();
+					//Enter_Idle_Mode();
+                    forceidle = true;
 				}
+				// if in attackmove and our target died, we want to go idle so we get back on track to our destination,
+				// rather than loop around to LOOK_FOR_TARGET
+				// (though it likely makes little difference since attackmove logic will search a new target anyway)
+				else if (AttackMove && !Target_Legal(TarCom)){
+                    forceidle = true;
+                }
 
-				if (Mission == MISSION_ATTACK || (Class->PrimaryWeapon != NULL && Class->PrimaryWeapon->IsCamera) || (!AttacksRemaining && !Is_Something_Attached())) {
+				if (forceidle || Mission == MISSION_ATTACK || (Class->PrimaryWeapon != NULL && Class->PrimaryWeapon->IsCamera) || (!AttacksRemaining && !Is_Something_Attached())) {
 
 					if (IsALoaner)  {
 						if (Team) Team->Remove(this);
 						Assign_Mission(MISSION_RETREAT);
-						Commence();
+						//Commence(); // Chthon CFE Note: redundant
 					} else {
-						if (!Team.Is_Valid()) Enter_Idle_Mode();
+						if (forceidle || !Team.Is_Valid()) Enter_Idle_Mode();
 					}
 					Commence();
 				} else {
