@@ -4305,6 +4305,11 @@ FireErrorType AircraftClass::Can_Fire(TARGET target, int which) const
 	if (camera || (fudge && Passenger && Is_Something_Attached()))  {
 		if (Arm != 0) return(FIRE_REARM);
 
+        // Chthon CFE Note: Bugfix checking distance on potentially invalid target
+        if (!Target_Legal(target)) {
+            return(FIRE_ILLEGAL);
+        }
+        
 		if (Distance(target) < (camera ? 0x0380 : 0x0200) && Map.In_Radar(Coord_Cell(Center_Coord()))) {
 //		if (Distance(target) < (camera ? 0x0380 : 0x0280) && Map.In_Radar(Coord_Cell(Center_Coord()))) {
 			return(FIRE_OK);
