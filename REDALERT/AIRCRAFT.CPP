@@ -836,6 +836,7 @@ int AircraftClass::Mission_Hunt(void)
 			**	Pull away to regroup for possibly another attack or a retreat.
 			*/
 			case REGROUP:
+            {   
                 // Chthon CFE Note: This is totally buggy. When Ammo == 0 it may call Enter_Idle_Mode twice,
                 // or call Enter_Idle_Mode then change Status despite the mission no longer being Mission_Hunt,
                 // or call Enter_Idle_Mode then change the mission to Mission_Retreat.
@@ -868,6 +869,7 @@ int AircraftClass::Mission_Hunt(void)
 					Status = LOOK_FOR_TARGET;
 				}
 				break;
+            }
 
 			default:
 				break;
