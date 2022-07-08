@@ -7780,7 +7780,7 @@ void TechnoClass::ResetAttackMove(int minelayercommand)
 void TechnoClass::AttackMoveEnterMoveMode(){
     
     // If we somehow lost the destination, abort attack move
-    if (!RememberedNavCom){
+    if (!Target_Legal(RememberedNavCom)){
         ResetAttackMove();
         Enter_Idle_Mode();
         return;
