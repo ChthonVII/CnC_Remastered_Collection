@@ -2565,6 +2565,10 @@ void FootClass::Queue_Navigation_List(TARGET target)
     // If there are expired entries, shuffle the queue back to maximize open space
     if (!IsNavQueueLoop && (NavQueueIndex > 0)){
         memmove(&NavQueue[0], &NavQueue[NavQueueIndex], sizeof(NavQueue[0]) * (MAX_NAVQUEUE - NavQueueIndex) );
+        // fill the now unused back end of the array with TARGET_NONE to keep it tidy
+        for (int i=0; i<NavQueueIndex; i++){
+            NavQueue[MAX_NAVQUEUE_INDEX - i] = TARGET_NONE;
+        }
         NavQueueSize -= NavQueueIndex;
         NavQueueIndex = 0;
     }
