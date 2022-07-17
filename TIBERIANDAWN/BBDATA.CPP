@@ -41,7 +41,7 @@
 **	Detailed information about each class of bullet (projectile) in the game.
 */
 static BulletTypeClass const ClassSniper(
-	BULLET_BULLET,
+	BULLET_SNIPER,
 	"50cal",						// NAME:			Text name of this unit type.
 		false,					// Flies over tall walls?
 		false,					// Homes in on target?
