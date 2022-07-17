@@ -169,7 +169,7 @@ class FootClass :	public TechnoClass
 		**	that a findpath won't be calculated until this timer expires.
 		*/
 		TCountDownTimerClass PathDelay;
-		enum {PATH_DELAY=15,PATH_RETRY=10};
+		enum {PATH_DELAY=15,PATH_RETRY=10, CFE_PATH_DELAY=3, CFE_PATH_RETRY=50}; // Chthon CFE Note: Added alternate values
 		int TryTryAgain;		// Number of retry attempts remaining.
 
 		/*
@@ -282,7 +282,7 @@ class FootClass :	public TechnoClass
 		// Chthon CFE Note: make  public so harvester optimizations and queue jumping can use it
 		int Find_Path_AStar(PathType* const resultPath, const CELL source, CELL dest, const int maxLen, const MoveType threshhold, const int threat) const;
         //int Passable_Cell(CELL cell, FacingType face, int threat, MoveType threshhold) const;
-        float CFE_Passable_Cell(CELL cell, FacingType face, int depth, float currentprice, int threat, MoveType threshhold, CELL oneback, CELL twoback, int myleptonspertick) const;
+        float CFE_Passable_Cell(CELL cell, FacingType face, int depth, float currentprice, int threat, MoveType threshhold, CELL oneback, CELL twoback, int myleptonspertick, bool doflowcontrol) const;
         int LeptonsPerTickSpeed(LandType landtype=LAND_CLEAR) const;
         
         // Chthon CFE Note: Q-Move port
@@ -319,8 +319,8 @@ public:
         
         // periodic repathing
         unsigned int RepathDelay = 4;
-        CELL NextGoToCell;
-        CELL NextNextGoToCell;
+        WallHugType GapTwoPreference;
+        WallHugType GapThreePreference;
         
         // Q-Move port stuff. Not offsetting this from padding b/c it's too big, so we just have to break savegame compatibility
         TARGET NavQueueOriginalHead = TARGET_NONE;

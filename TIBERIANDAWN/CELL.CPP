@@ -2817,3 +2817,28 @@ bool CellClass::Is_Clear_To_Move(bool ignoreinfantry, bool ignorevehicles) const
 }
 
 #endif //USE_RA_AI
+
+// Chthon CFE Note:
+// 0 if passable
+// 1 if natural blockage
+// 2 if building/wall blockage
+int CellClass::LongtermBlockage() const {
+
+    if (Flag.Occupy.Building){
+        return 2;
+    }
+    if (Overlay != OVERLAY_NONE) {
+        OverlayTypeClass const * overlay = &OverlayTypeClass::As_Reference(Overlay);
+        if (overlay && overlay->IsWall){
+            return 2;
+        }
+    }
+    
+    LandType myland = Land_Type();
+    
+    // TODO: RA version will need a parameter to switch between analyzing land and water passability
+    if ((myland == LAND_WATER) || (myland == LAND_ROCK) || (myland == LAND_WALL) || Flag.Occupy.Monolith){
+        return 1;
+    }
+    return 0;
+}

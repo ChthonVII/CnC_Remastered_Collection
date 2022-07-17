@@ -652,6 +652,22 @@ int FootClass::Find_Path_AStar(PathType* const resultPath, const CELL source, CE
 	
 	// precompute our speed value so CFE_Passable_Cell doesn't need to do it repeatedly
 	int myleptonspertick = LeptonsPerTickSpeed();
+    
+    // check now whether this is a group move so CFE_Passable_Cell doesn't need to do it repeatedly
+    bool isgroupmove = false;
+    // only ground vehicles need this (add boats for RA)
+    // harvesters should never do this; it tends to get them stuck
+    // only count as a group move if there's another unit nearby (frequent repaths will make this true when needed)
+    // don't count extremely short moves as group moves
+    if ((What_Am_I() == RTTI_UNIT) && (*((UnitClass*)this) != UNIT_HARVESTER) && Target_Legal(NavCom) && (::Distance(source, dest) > 5)){
+        for (int i = 0; i < Units.Count(); i++) {
+            UnitClass* unit = Units.Ptr(i);
+            if (unit && (unit != this) && unit->IsActive && !unit->IsInLimbo && unit->Strength && (House == unit->House) && (unit->NavCom == NavCom) && (Lepton_To_Cell(Distance(unit)) < 5)){
+                isgroupmove = true;
+                break;
+            }
+        }
+    }
 
 	std::unordered_map<CELL, AStarCell> visited_cells;
 	static std::vector<AStarCell*> open_list;
@@ -703,7 +719,7 @@ int FootClass::Find_Path_AStar(PathType* const resultPath, const CELL source, CE
             }
             */
             CELL twoback = (prev_cell.prev) ? prev_cell.prev->position : 0;
-            float cell_cost = CFE_Passable_Cell(adjacent_cell_id, facing, prev_cell.cell_distance_from_start, prev_cell.cost_from_start, threat, threshhold, prev_cell.position, twoback, myleptonspertick);
+            float cell_cost = CFE_Passable_Cell(adjacent_cell_id, facing, prev_cell.cell_distance_from_start, prev_cell.cost_from_start, threat, threshhold, prev_cell.position, twoback, myleptonspertick, isgroupmove);
             
 			if (cell_cost > 0)
 			{
@@ -1800,7 +1816,11 @@ int FootClass::Passable_Cell(CELL cell, FacingType face, int threat, MoveType th
 // currentprice: current price of the path up to this point
 // threat: some level of threat the AI considers too great to enter the cell (not used much/often, I believe)
 // threshhold: the worst grade of passable type acceptable
-float FootClass::CFE_Passable_Cell(CELL cell, FacingType face, int depth, float currentprice, int threat, MoveType threshhold, CELL oneback, CELL twoback, int myleptonspertick) const{
+// oneback: prior cell in path
+// twoback: two cells back in path
+// myleptonspertick: how may leptons per tick to I move on clear ground?
+// doflowcontrol: should I use the flow control logic to reduce traffic jams?
+float FootClass::CFE_Passable_Cell(CELL cell, FacingType face, int depth, float currentprice, int threat, MoveType threshhold, CELL oneback, CELL twoback, int myleptonspertick, bool doflowcontrol) const{
 
     // in case we somehow got called by an infantry in death animation
     if (!IsActive || IsInLimbo || !Strength){
@@ -1843,13 +1863,226 @@ float FootClass::CFE_Passable_Cell(CELL cell, FacingType face, int depth, float 
         retval -= 0.05f;
     }
     
+    // if flow control is activated, check for bottleneck or corner
+    // then apply unit's preference to hug right or left (or middle)
+    float flowcost = 0;
+    if (doflowcontrol){
+        // originally I wanted to detect both bottlenecks and corners, while leaving everything else alone.
+        // unfortunately, there's no good way to detect every step of the way around a corner
+        // So I've decided to apply the preferred wall distance globally, except where a bottleneck is too tight
+        
+        // since we might be approaching a bottleneck diagonally, we need to check 3 pairs of directions
+        // +/- are overriden for FacingType to use modulo math, so this should wrap around as needed
+        FacingType flowdirs[3][2] = {
+            {
+                face + (FacingType)2,
+                face - (FacingType)2
+            },
+            {
+                face + (FacingType)1,
+                face - (FacingType)3
+            },
+            {
+                face + (FacingType)3,
+                face - (FacingType)1
+            }
+        };
+        
+        bool yeswall[3][2] = {{false, false}, {false, false}, {false, false}};
+        int clearance[3][2] = {{10, 10}, {10, 10}, {10, 10}};
+        
+        for (int i=0; i<3; i++){
+            for (int j=0; j<2; j++){
+                CELL lastflowcell = cell;
+                CELL thisflowcell = cell;
+                CellClass const * flowcellptr;
+                for (int k=0; k<3; k++){
+                    thisflowcell = Adjacent_Cell(lastflowcell, flowdirs[i][j]);
+                    if (Map.In_Radar(thisflowcell)){
+                        flowcellptr = &Map[thisflowcell];
+                        if (flowcellptr->LongtermBlockage() != 0){
+                            yeswall[i][j] = true;
+                            clearance[i][j] = k;
+                            break;
+                        }
+                    }
+                    else {
+                        yeswall[i][j] = true;
+                        clearance[i][j] = k;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        // find the direction pair with the tightest gap 
+        bool isrightwall = false;
+        bool isleftwall = false;
+        bool tightright = false;
+        bool tightleft = false;
+        int gapsize = 100;
+        int tempgapsize = 0;
+        int rightclearance = 0;
+        int leftclearance = 0;
+        for (int i=0; i<3; i++){
+            if (yeswall[i][0] || yeswall[i][1]){
+                tempgapsize = clearance[i][0] + clearance[i][1] + 1;
+                if (tempgapsize < gapsize){
+                    gapsize = tempgapsize;
+                    isrightwall = yeswall[i][0];
+                    isleftwall = yeswall[i][1];
+                    rightclearance = clearance[i][0];
+                    leftclearance = clearance[i][1];
+                    if (i == 1){
+                        tightleft = true;
+                    }
+                    else {
+                        tightleft =false;
+                    }
+                    if (i == 2){
+                        tightright = true;
+                    }
+                    else {
+                        tightright = false;
+                    }
+                }
+            }
+        }
+        
+        // if driving in this cell would violate this unit's wall hugging preference,
+        // then penalize it enough that going out from the wall is cheaper
+        // direction of go-around may not equal the face parameter if we're entering the gap diagonally
+        // if we are square to the gap
+            // if direction is straight, extra cost to go around is 2 diagonals, minus 2 straight ~= 0.828
+            // if direction is diagonal, extra cost to go around is 2 straight minus 1 diagonal ~= 0.586
+            // going around by 2 cells costs 2x
+        // if we are diagonal to the gap,
+            // if going around means going wide of angle of approach cost increases by another diagonal
+            // if going around means going inside angle of approach, then cost falls to zero
+        // pad those by a little bit to break ties.
+        if (isrightwall || isleftwall){
+            float singleflowpenalty = (isdiagonal) ? 0.586f : 0.828f;
+            if (gapsize == 2){
+                if ((rightclearance == 0) && (GapTwoPreference == HUG_LEFT)){
+                    if (!tightleft){
+                        flowcost  += singleflowpenalty;
+                    }
+                    if (tightright){
+                        flowcost  += 1.414f;
+                    }
+                    flowcost  += 0.01f; //padding to break ties in favor of going around
+                }
+                else if ((leftclearance == 0) && (GapTwoPreference == HUG_RIGHT)){
+                    if (!tightright){
+                        flowcost  += singleflowpenalty;
+                    }
+                    if (tightleft){
+                        flowcost  += 1.414f;
+                    }
+                    flowcost  += 0.01f; //padding to break ties in favor of going around
+                }
+            }
+            else if (gapsize == 3){
+                if ((rightclearance == 0) && ((GapThreePreference == HUG_LEFT) || (GapThreePreference == HUG_MIDDLE))){
+                    if (!tightleft){
+                        flowcost  += singleflowpenalty;
+                    }
+                    // double cost if we want to go around by 2 cells
+                    if (GapThreePreference == HUG_LEFT){
+                        flowcost  += singleflowpenalty;
+                    }
+                    if (tightright){
+                        flowcost  += 1.414f;
+                    }
+                    flowcost  += 0.01f; //padding to break ties in favor of going around
+                }
+                else if ((leftclearance == 0) && ((GapThreePreference == HUG_RIGHT) || (GapThreePreference == HUG_MIDDLE))){
+                    if (!tightright){
+                        flowcost  += singleflowpenalty;
+                    }
+                    // double cost if we want to go around by 2 cells
+                    if (GapThreePreference == HUG_RIGHT){
+                        flowcost  += singleflowpenalty;
+                    }
+                    if (tightleft){
+                        flowcost  += 1.414f;
+                    }
+                    flowcost  += 0.01f; //padding to break ties in favor of going around
+                }
+                else if ((rightclearance == 1) && ((GapThreePreference == HUG_LEFT) || (GapThreePreference == HUG_RIGHT))){
+                    if (
+                        (!tightleft && (GapThreePreference == HUG_LEFT)) ||
+                        (!tightright && (GapThreePreference == HUG_RIGHT))
+                    ){
+                        flowcost  += singleflowpenalty;
+                    }
+                    if (
+                        (tightright && (GapThreePreference == HUG_LEFT)) ||
+                        (tightleft && (GapThreePreference == HUG_RIGHT))
+                    ){
+                        flowcost  += 1.414f;
+                    }
+                    flowcost  += 0.01f; //padding to break ties in favor of going around
+                }
+            }
+            else if (isrightwall && (gapsize > 10)){
+                if ((rightclearance == 0) && ((GapThreePreference == HUG_LEFT) || (GapThreePreference == HUG_MIDDLE))){
+                    if (!tightleft){
+                        flowcost  += singleflowpenalty;
+                    }
+                    // double cost if we want to go around by 2 cells
+                    if (GapThreePreference == HUG_LEFT){
+                        flowcost  += singleflowpenalty;
+                    }
+                    if (tightright){
+                        flowcost  += 1.414f;
+                    }
+                    flowcost  += 0.01f; //padding to break ties in favor of going around
+                }
+                else if ((rightclearance == 1) && (GapThreePreference == HUG_LEFT)){
+                    if (!tightleft){
+                        flowcost  += singleflowpenalty;
+                    }
+                    if (tightright){
+                        flowcost  += 1.414f;
+                    }
+                    flowcost  += 0.01f; //padding to break ties in favor of going around
+                }
+            }
+            else if (isleftwall && (gapsize > 10)){
+                if ((leftclearance == 0) && ((GapThreePreference == HUG_RIGHT) || (GapThreePreference == HUG_MIDDLE))){
+                    if (!tightright){
+                        flowcost  += singleflowpenalty;
+                    }
+                    // double cost if we want to go around by 2 cells
+                    if (GapThreePreference == HUG_RIGHT){
+                        flowcost  += singleflowpenalty;
+                    }
+                    if (tightleft){
+                        flowcost  += 1.414f;
+                    }
+                    flowcost  += 0.01f; //padding to break ties in favor of going around
+                }
+                else if ((leftclearance == 1) && (GapThreePreference == HUG_RIGHT)){
+                    if (!tightright){
+                        flowcost  += singleflowpenalty;
+                    }
+                    if (tightleft){
+                        flowcost  += 1.414f;
+                    }
+                    flowcost += 0.01f; //padding to break ties in favor of going around
+                }
+            }
+        }
+    } // end of flow control
+    
     CellClass const * cellptr = &Map[cell];
     LandType celllandtype = Map[cell].Land_Type();
     
     // how fast am I?
     if (myleptonspertick < 1){
-            myleptonspertick = 1;
-        }
+        myleptonspertick = 1;
+    }
     float mytickspercell = 256.0/myleptonspertick;
     if (mytickspercell < 1.0){
         mytickspercell = 1.0;
@@ -1862,13 +2095,11 @@ float FootClass::CFE_Passable_Cell(CELL cell, FacingType face, int depth, float 
     
     // if we're stuck, we will increase the penalties for blockages to encourage going around. 
     float roadrage = 1.0f;
-    if (/*(depth < 5) &&*/ (TryTryAgain < PATH_RETRY)){
-        roadrage += (0.5f * (PATH_RETRY - TryTryAgain));
+    if (/*(depth < 5) &&*/ (TryTryAgain < CFE_PATH_RETRY)){
+        roadrage += (0.1f * (CFE_PATH_RETRY - TryTryAgain));
     }
     
-    // do we have to pass a slower moving unit?
-    //bool beepbeep = false;
-    
+    // There is a blockage, so we need to figure out how much delay it will cause
 	if ((move == MOVE_MOVING_BLOCK) || (move == MOVE_TEMP) || (move == MOVE_DESTROYABLE) ){
         
         // we need to know some things about the blocking unit to figure out how big the delay is
@@ -1879,10 +2110,6 @@ float FootClass::CFE_Passable_Cell(CELL cell, FacingType face, int depth, float 
         bool offsetmoveticks = true;
         bool offsetshootticks = true;
         bool wallthere = false;
-        
-        
-        
-        
         
         // handle the case where the blockage is a wall
         if (cellptr->Overlay != OVERLAY_NONE) {
@@ -1895,203 +2122,244 @@ float FootClass::CFE_Passable_Cell(CELL cell, FacingType face, int depth, float 
                     offsetshootticks = false; // can't shoot it until we get there
                 }
         }
+        
         // handle the case where the blockage is some TechnoClass thing
         if (!wallthere){
-            TechnoClass* tobj = cellptr->Cell_Techno();
+            
+            ObjectClass* uobject = cellptr->Cell_Occupier();
+            if (uobject){
+                // or it could be a tree a stupid flame tank wants to light on fire... let's prevent that
+                if (uobject->What_Am_I() == RTTI_TERRAIN){
+                    return 0;
+                }
+                else if (uobject->Is_Techno()){
+                    TechnoClass* tobj = (TechnoClass*)uobject;
         
-            // safety check that the blocker isn't an infantry doing death animation or something
-            if (tobj && tobj->IsActive && !tobj->IsInLimbo && tobj->Strength){
+                    // safety check that the blocker isn't an infantry doing death animation or something
+                    if (/*tobj &&*/ tobj->IsActive && !tobj->IsInLimbo && tobj->Strength){
 
-                bool blockerisinfantry = (tobj->What_Am_I() == RTTI_INFANTRY);
-                bool blockerisunit = (tobj->What_Am_I() == RTTI_UNIT);
-                bool blockerisfoot = (blockerisinfantry || blockerisunit);
-                InfantryClass* thatguy = nullptr;
-                UnitClass* thatunit = nullptr;
-                FootClass* thatfoot = nullptr;
-                if (blockerisinfantry){
-                    thatguy = (InfantryClass*)tobj;
-                }
-                if (blockerisunit){
-                    thatunit = (UnitClass*)tobj;
-                }
-                if (blockerisfoot){
-                    thatfoot = (FootClass*)tobj;
-                }
+                        bool blockerisinfantry = (tobj->What_Am_I() == RTTI_INFANTRY);
+                        bool blockerisunit = (tobj->What_Am_I() == RTTI_UNIT);
+                        bool blockerisfoot = (blockerisinfantry || blockerisunit);
+                        InfantryClass* thatguy = nullptr;
+                        UnitClass* thatunit = nullptr;
+                        FootClass* thatfoot = nullptr;
+                        if (blockerisinfantry){
+                            thatguy = (InfantryClass*)tobj;
+                        }
+                        if (blockerisunit){
+                            thatunit = (UnitClass*)tobj;
+                        }
+                        if (blockerisfoot){
+                            thatfoot = (FootClass*)tobj;
+                        }
+                                
+                        int blockerleptonspertick = 0;
+                        float blockertickspercell = 1.0f;
+                        bool blockisdiagonal = false;
+                        bool headon = false;
+                        bool goingmyway = false;
+                        bool movingenemy = false;
+                        bool reallymoving = true;
+                        bool mustscatter = false;
                         
-                
-                int blockerleptonspertick = 0;
-                float blockertickspercell = 1.0f;
-                bool blockisdiagonal = false;
-                bool headon = false;
-                bool goingmyway = false;
-                bool movingenemy = false;
-                bool reallymoving = true;
-                bool mustscatter = false;
-                
-                if (blockerisfoot){
+                        if (blockerisfoot){
 
-                    blockerleptonspertick = thatfoot->LeptonsPerTickSpeed(celllandtype);
-                    if (blockerleptonspertick < 1){
-                        blockerleptonspertick = 1;
-                    }
-                    blockertickspercell = 256.0/blockerleptonspertick;
-                    blockisdiagonal = ((Dir_Facing(thatfoot->PrimaryFacing) == FACING_NE) || (Dir_Facing(thatfoot->PrimaryFacing) == FACING_SE) || (Dir_Facing(thatfoot->PrimaryFacing) == FACING_NW) || (Dir_Facing(thatfoot->PrimaryFacing) == FACING_SW));
-                    headon = (face == (Dir_Facing(thatfoot->PrimaryFacing) ^4));
-                    goingmyway = (face == Dir_Facing(thatfoot->PrimaryFacing));
-                    if ((move == MOVE_DESTROYABLE) && Target_Legal(thatfoot->NavCom)){
-                        movingenemy = true;
-                    }
-                    reallymoving = (thatfoot->Speed > 0);
-                }
-                
-                // figure out if the blockage must rotate b/c we're going to run into it then ask it to scatter
-                if (    blockerisfoot && 
-                        (
-                            ((move == MOVE_MOVING_BLOCK) && headon) ||
-                            (move == MOVE_TEMP)
-                        )
-                ){
-                    mustscatter = true;
-                    if (blockerisunit){
-                        // we have no idea which way it will scatter,
-                        // so take the average rotation needed for each of the 7 directions that aren't straight at us
-                        int rotatespeed = thatunit->Class->ROT; // TODO: apply veteran bonus to ROT
-                        if (rotatespeed){
-                            rotateticks = 720.0f / (7.0f * rotatespeed);
-                            rotateticks = ceil(rotateticks);
-                            rotateticks *= roadrage;
+                            blockerleptonspertick = thatfoot->LeptonsPerTickSpeed(celllandtype);
+                            if (blockerleptonspertick < 1){
+                                blockerleptonspertick = 1;
+                            }
+                            blockertickspercell = 256.0/blockerleptonspertick;
+                            blockisdiagonal = ((Dir_Facing(thatfoot->PrimaryFacing) == FACING_NE) || (Dir_Facing(thatfoot->PrimaryFacing) == FACING_SE) || (Dir_Facing(thatfoot->PrimaryFacing) == FACING_NW) || (Dir_Facing(thatfoot->PrimaryFacing) == FACING_SW));
+                            headon = (face == (Dir_Facing(thatfoot->PrimaryFacing) ^4));
+                            // consider up to 45 degrees off as "going my way"
+                            // FacingType's have modular math, so difference should always be positive
+                            if ((int)(face - Dir_Facing(thatfoot->PrimaryFacing)) < 2){
+                                goingmyway = true;
+                            }
+                            // Also cheat and just check if the destination is the same
+                            if (!goingmyway && Target_Legal(TarCom) && (TarCom == thatfoot->TarCom)){
+                                goingmyway = true;
+                            }
+                            if ((move == MOVE_DESTROYABLE) && Target_Legal(thatfoot->NavCom)){
+                                movingenemy = true;
+                            }
+                            reallymoving = (thatfoot->Speed > 0);
                         }
-                        if (move == MOVE_TEMP){
-                            offsetrotateticks = false; // it won't scatter until we get there
+                        
+                        // figure out if the blockage must rotate b/c we're going to run into it then ask it to scatter
+                        if (    blockerisfoot && 
+                                (
+                                    ((move == MOVE_MOVING_BLOCK) && headon) ||
+                                    (move == MOVE_TEMP)
+                                )
+                        ){
+                            mustscatter = true;
+                            if (blockerisunit){
+                                // we have no idea which way it will scatter,
+                                // so take the average rotation needed for each of the 7 directions that aren't straight at us
+                                int rotatespeed = thatunit->Class->ROT; // TODO: apply veteran bonus to ROT
+                                if (rotatespeed){
+                                    rotateticks = 720.0f / (7.0f * rotatespeed);
+                                    rotateticks = ceil(rotateticks);
+                                    rotateticks *= roadrage;
+                                }
+                                if (move == MOVE_TEMP){
+                                    offsetrotateticks = false; // it won't scatter until we get there
+                                }
+                            } 
                         }
-                    } 
-                }
-                
-                // figure out time for the blockage to move one cell
-                if (    blockerisfoot &&
-                        (
-                            (move == MOVE_MOVING_BLOCK) ||
-                            (move == MOVE_TEMP) ||
-                            movingenemy
-                        )
-                ){
-                    moveticks = blockertickspercell;
-                    if (mustscatter){
-                        // we don't know if the scatter will be diagonal or not, so take the average.
-                        moveticks *= 1.207f;
-                    }
-                    else if (blockisdiagonal){
-                        moveticks *= 1.414f;
-                    }
-                    moveticks = ceil(moveticks);
-                    // if the blocker isn't presently moving, assume that it is itself blocked and will take longer
-                    if (!reallymoving){
-                        moveticks *= 2.0f; // arbitrary factor - sorta assumes the blocker's blocker moves at same speed as blocker
-                    }
-                    if ( (move == MOVE_MOVING_BLOCK) || (move == MOVE_TEMP) ){
-                        moveticks *= roadrage;
-                    }
-                    if (move == MOVE_TEMP){
-                        offsetmoveticks = false;  // it won't scatter until we get there
-                    }
-                    // we may have to pass slower units or we'll keep bumping into them
-                    // also "pass" same-speed units if we're only 1 cell behind them so we don't bumper bump when lepton values don't exactly match up 
-                    if (goingmyway && 
-                        (
-                            (myleptonspertick > blockerleptonspertick) ||
-                            (   (myleptonspertick == blockerleptonspertick) &&
-                                (depth == 0)
-                            )
-                        )
-                    ){
-                        //beepbeep = true;
-                        // if we need to pass a slower unit, then increase the cost so that going around on open ground is cheaper
-                        // if direction is straight, cost must exceed 2 diagonals, minus 1 straight ~= 1.828
-                        // if direction is diagonal, cost must exceed 2 straight plus 1 diagonal, minus 1 diagonal = 2
-                        // pad those values a bit to make passing multiple slowpokes appealing
-                        //float threshhold = (isdiagonal) ? 2.328f : 2.5f;
-                        float threshhold = (isdiagonal) ? 2.828f : 3.0f; //bigger
-                        if (moveticks < threshhold){
-                            moveticks = threshhold;
-                        }
-                        offsetmoveticks = false; // we will have to pass this unit sooner or later -- distance won't help
-                    }
-                }
-                
-                // figure out shooting time for blocking allies
-                // they won't be ready to move out of the way until their target is dead
-                if (move == MOVE_TEMP){
-                    TARGET blockerTarCom = tobj->TarCom;
-                    if (Target_Legal(blockerTarCom)){
-                        TechnoClass* blockertarget = As_Techno(blockerTarCom);
-                        if (blockertarget && blockertarget->IsActive && !blockertarget->IsInLimbo && blockertarget->Strength){
-                            // assume things take 1.5 ticks per hp to destroy (very rough estimate)
-                            shootticks = blockertarget->Strength * 1.5f;
-                            // divide by number of people shooting at it
-                            int shooters = 0;
-                            for (int i = 0; i < Aircraft.Count(); i++) {
-                                AircraftClass* plane = Aircraft.Ptr(i);
-                                if (plane && plane->IsActive && !plane->IsInLimbo && plane->Strength && (plane->TarCom == blockerTarCom)){
-                                    shooters++;
+                        
+                        // figure out time for the blockage to move one cell
+                        if (    blockerisfoot &&
+                                (
+                                    (move == MOVE_MOVING_BLOCK) ||
+                                    (move == MOVE_TEMP) ||
+                                    movingenemy
+                                )
+                        ){
+                            moveticks = blockertickspercell;
+                            if (mustscatter){
+                                // we don't know if the scatter will be diagonal or not, so take the average.
+                                moveticks *= 1.207f;
+                            }
+                            else if (blockisdiagonal){
+                                moveticks *= 1.414f;
+                            }
+                            moveticks = ceil(moveticks);
+                            // if the blocker isn't presently moving, assume that it is itself blocked and will take longer
+                            if (!reallymoving){
+                                moveticks *= 2.5f; // arbitrary factor - sorta assumes the blocker's blocker moves at same speed as blocker, and then a bit worse for starting/stopping/traffic jamming
+                            }
+                            if ( (move == MOVE_MOVING_BLOCK) || (move == MOVE_TEMP) ){
+                                moveticks *= roadrage;
+                            }
+                            if (move == MOVE_TEMP){
+                                offsetmoveticks = false;  // it won't scatter until we get there
+                            }
+                            // we may have to pass slower units or we'll keep bumping into them
+                            // also "pass" same-speed units if we're only 1 cell behind them so we don't bumper bump when lepton values don't exactly match up 
+                            if (goingmyway && 
+                                (
+                                    (myleptonspertick > blockerleptonspertick) ||
+                                    (   (myleptonspertick == blockerleptonspertick) &&
+                                        (depth == 0)
+                                    )
+                                )
+                            ){
+                                // if direction is straight, extra cost to go around is 2 diagonals, minus 2 straight ~= 0.828
+                                // if direction is diagonal, extra cost to go around is 2 straight minus 1 diagonal ~= 0.586
+                                // pad those by an extra 1 to strongly encourage going around
+                                float goaroundcost = (isdiagonal) ? 1.586 : 1.828;
+                                // multiply by speed ratio so faster units really want to go around
+                                goaroundcost *= (myleptonspertick/blockerleptonspertick);
+                                // apply road rage
+                                goaroundcost *= roadrage;
+                                // this goes straight to retval b/c it's cost in cell units, not ticks
+                                retval += goaroundcost;
+                                // to the extent the go around cost is already more than the blockage move cost, ignore the latter
+                                moveticks -= (blockertickspercell * goaroundcost);
+                                if (moveticks < 0){
+                                    moveticks = 0;
+                                }
+                                // to the extent the go around cost is more than the flow cost, ignore the latter
+                                flowcost -= goaroundcost;
+                                if (flowcost < 0){
+                                    flowcost = 0;
                                 }
                             }
+                        }
+                        
+                        // figure out shooting time for blocking allies
+                        // they won't be ready to move out of the way until their target is dead
+                        if (move == MOVE_TEMP){
+                            TARGET blockerTarCom = tobj->TarCom;
+                            if (Target_Legal(blockerTarCom)){
+                                TechnoClass* blockertarget = As_Techno(blockerTarCom);
+                                if (blockertarget && blockertarget->IsActive && !blockertarget->IsInLimbo && blockertarget->Strength){
+                                    // special case: If the blocker's target is also our target and the the blocker is in firing range,
+                                    // or the blocker isn't moving (presumably b/c it's blocked too) and we're reasonably close to the target,
+                                    // then it never makes sense to wait for the target to be destroyed -- we'd miss the battle!
+                                    // In this case, add 10 (borrowed from original function) straight on to retval
+                                    if ((TarCom == blockerTarCom) && ((tobj->Can_Fire(blockerTarCom, 0) < FIRE_ILLEGAL) || (tobj->Can_Fire(blockerTarCom, 1) < FIRE_ILLEGAL) || (!reallymoving && (Distance(TarCom) < Weapon_Range(0)*2)))){
+                                        retval += 10.0;
+                                    }
+                                    // normal case: estimate how long it will take for the blocker to kill its target and move on
+                                    else {
+                                        // assume things take 1.5 ticks per hp to destroy (very rough estimate)
+                                        shootticks = blockertarget->Strength * 1.5f;
+                                        // divide by number of people shooting at it
+                                        int shooters = 0;
+                                        for (int i = 0; i < Aircraft.Count(); i++) {
+                                            AircraftClass* plane = Aircraft.Ptr(i);
+                                            if (plane && plane->IsActive && !plane->IsInLimbo && plane->Strength && (plane->TarCom == blockerTarCom)){
+                                                shooters++;
+                                            }
+                                        }
+                                        for (int i = 0; i < Units.Count(); i++) {
+                                            UnitClass* unit = Units.Ptr(i);
+                                            if (unit && unit->IsActive && !unit->IsInLimbo && unit->Strength && (unit->TarCom == blockerTarCom)){
+                                                shooters++;
+                                            }
+                                        }
+                                        for (int i = 0; i < Infantry.Count(); i++) {
+                                            InfantryClass* guy = Infantry.Ptr(i);
+                                            if (guy && guy->IsActive && !guy->IsInLimbo && guy->Strength && (guy->TarCom == blockerTarCom)){
+                                                shooters++;
+                                            }
+                                        }
+                                        for (int i = 0; i < Buildings.Count(); i++) {
+                                            BuildingClass* building = Buildings.Ptr(i);
+                                            if (building && building->IsActive && !building->IsInLimbo && building->Strength && (building->TarCom == blockerTarCom)){
+                                                shooters++;
+                                            }
+                                        }
+                                        if (shooters){
+                                            shootticks /= shooters;
+                                        }
+                                        shootticks *= roadrage;
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // figure out time to shoot the blockage to death
+                        if ((move == MOVE_DESTROYABLE) && !movingenemy){
+                            shootticks = tobj->Strength * 1.5f;
+                            // there may be multiple infantry in the same cell; they all need to die to make the cell enterable
+                            ObjectClass* bob = tobj->Next;
+                            while (bob){
+                                if (bob && bob->IsActive && !bob->IsInLimbo && bob->Is_Techno() && bob->Strength){
+                                    shootticks += (((TechnoClass*)bob)->Strength * 1.5f);
+                                }
+                                bob = bob->Next;
+                            }
+                            // assume everyone else with the same destination is going to shoot at it too
+                            int shooters = 0;
                             for (int i = 0; i < Units.Count(); i++) {
                                 UnitClass* unit = Units.Ptr(i);
-                                if (unit && unit->IsActive && !unit->IsInLimbo && unit->Strength && (unit->TarCom == blockerTarCom)){
+                                if (unit && unit->IsActive && !unit->IsInLimbo && unit->Strength && House->Is_Ally(unit) && (NavCom == unit->NavCom)){
                                     shooters++;
                                 }
                             }
                             for (int i = 0; i < Infantry.Count(); i++) {
                                 InfantryClass* guy = Infantry.Ptr(i);
-                                if (guy && guy->IsActive && !guy->IsInLimbo && guy->Strength && (guy->TarCom == blockerTarCom)){
-                                    shooters++;
-                                }
-                            }
-                            for (int i = 0; i < Buildings.Count(); i++) {
-                                BuildingClass* building = Buildings.Ptr(i);
-                                if (building && building->IsActive && !building->IsInLimbo && building->Strength && (building->TarCom == blockerTarCom)){
+                                if (guy && guy->IsActive && !guy->IsInLimbo && guy->Strength && House->Is_Ally(guy) && (NavCom == guy->NavCom)){
                                     shooters++;
                                 }
                             }
                             if (shooters){
                                 shootticks /= shooters;
                             }
-                            shootticks *= roadrage;
+                            shootticks *= roadrage; // keep proportion with other blockages, or road rage may direct us into MOVE_DESTROYABLE to get around other blockages that are actually less permanent
+                            offsetshootticks = false; // can't shoot it until we get there
                         }
-                    }
-                }
-                
-                // figure out time to shoot the blockage to death
-                if ((move == MOVE_DESTROYABLE) && !movingenemy){
-                    shootticks = tobj->Strength * 1.5f;
-                    // there may be multiple infantry in the same cell; they all need to die to make the cell enterable
-                    ObjectClass* bob = tobj->Next;
-                    while (bob){
-                        if (bob && bob->IsActive && !bob->IsInLimbo && bob->Is_Techno() && bob->Strength){
-                            shootticks += (((TechnoClass*)bob)->Strength * 1.5f);
-                        }
-                        bob = bob->Next;
-                    }
-                    // assume everyone else with the same destination is going to shoot at it too
-                    int shooters = 0;
-                    for (int i = 0; i < Units.Count(); i++) {
-                        UnitClass* unit = Units.Ptr(i);
-                        if (unit && unit->IsActive && !unit->IsInLimbo && unit->Strength && House->Is_Ally(unit) && (NavCom == unit->NavCom)){
-                            shooters++;
-                        }
-                    }
-                    for (int i = 0; i < Infantry.Count(); i++) {
-                        InfantryClass* guy = Infantry.Ptr(i);
-                        if (guy && guy->IsActive && !guy->IsInLimbo && guy->Strength && House->Is_Ally(guy) && (NavCom == guy->NavCom)){
-                            shooters++;
-                        }
-                    }
-                    if (shooters){
-                        shootticks /= shooters;
-                    }
-                    offsetshootticks = false; // can't shoot it until we get there
-                }
-            } // end safety check
+                    } // end safety check
+                    
+                } // end if IsTechno()
+            } // end if object isn't nullptr
+            
+            
         } // end if !wallthere
         
         if (offsetrotateticks){
@@ -2116,113 +2384,18 @@ float FootClass::CFE_Passable_Cell(CELL cell, FacingType face, int depth, float 
         
     } // end if moving_block/move_temp/move_destroyable
         
-	// avoid cutting off allied units
-	/*
-	if ((depth < 5) && (roadrage <= 3.5)){
-        for (FacingType otherfacing = FACING_FIRST; otherfacing < FACING_COUNT; otherfacing++) {
-            // skip the previous cell in the path
-            if (face == (otherfacing ^ 4)){
-                continue;
-            }
-            const CELL othercell = Adjacent_Cell(cell, otherfacing);
-            CellClass const * othercellptr = &Map[othercell];
-            const TechnoClass* sometechno = othercellptr->Cell_Techno();
-            if (    sometechno &&
-                    sometechno->IsActive &&
-                    !sometechno->IsInLimbo &&
-                    sometechno->Strength &&
-                    House->Is_Ally(sometechno) &&
-                    (   (sometechno->What_Am_I() == RTTI_UNIT) ||
-                        ((sometechno->What_Am_I() == RTTI_INFANTRY) && (What_Am_I() == RTTI_UNIT))
-                    ) &&
-                    Target_Legal(((FootClass*)sometechno)->NavCom) &&
-                    (((FootClass*)sometechno)->Path[0] != FACING_NONE) &&
-                    (otherfacing == (((FootClass*)sometechno)->Path[0] ^ 4))
-            ){
-                int someleptonspertick = ((FootClass*)sometechno)->LeptonsPerTickSpeed(celllandtype);
-                // increase our cost for this cell by the average go-around value (see the beepbeep clause above)
-                // add +1.5 to make units more likely to swing wide around a corner 
-                // then scale according to who is faster
-                retval += (3.514f * (someleptonspertick/myleptonspertick));
-            }
-        }
-    }
-    */
-    if (depth < 5){
-        for (int i = 0; i < Units.Count(); i++) {
-            UnitClass* unit = Units.Ptr(i);
-            if (    unit &&
-                    (   (What_Am_I() != RTTI_UNIT) ||
-                        (unit != (UnitClass*)this)
-                    )   &&
-                    unit->IsActive &&
-                    !unit->IsInLimbo &&
-                    unit->Strength &&
-                    House->Is_Ally(unit)
-            ){
-                if (unit->NextGoToCell && (cell == unit->NextGoToCell)){
-                    //float cutoffpenalty = (isdiagonal) ? 2.328f : 2.5f;
-                    float cutoffpenalty = (isdiagonal) ? 3.328f : 3.5f; // bigger
-                    if (!unit->Speed){
-                        cutoffpenalty *= 2.0; // especially don't cut off units that are stuck in traffic
-                    }
-                    // reduce by road rage, rather than increase
-                    cutoffpenalty /= roadrage;
-                    offsetable += cutoffpenalty;
-                }
-                else if (unit->NextNextGoToCell && (cell == unit->NextNextGoToCell)){
-                    //float cutoffpenalty = (isdiagonal) ? 1.164f : 1.25f;
-                    float cutoffpenalty = (isdiagonal) ? 2.328f : 2.5f; // bigger
-                    if (!unit->Speed){
-                        cutoffpenalty *= 2.0; // especially don't cut off units that are stuck in traffic
-                    }
-                    // reduce by road rage, rather than increase
-                    cutoffpenalty /= roadrage;
-                    offsetable += cutoffpenalty;
-                }
-            }
-        }
-        if (What_Am_I() == RTTI_UNIT){
-            for (int i = 0; i < Infantry.Count(); i++) {
-                InfantryClass* someguy = Infantry.Ptr(i);
-                if (    someguy &&
-                        someguy->IsActive &&
-                        !someguy->IsInLimbo &&
-                        someguy->Strength &&
-                        House->Is_Ally(someguy)
-                ){
-                    if (someguy->NextGoToCell && (cell == someguy->NextGoToCell)){
-                        //float cutoffpenalty = (isdiagonal) ? 2.328f : 2.5f;
-                        float cutoffpenalty = (isdiagonal) ? 3.328f : 3.5f; // bigger
-                        if (!someguy->Speed){
-                            cutoffpenalty *= 2.0; // especially don't cut off units that are stuck in traffic
-                        }
-                        // reduce by road rage, rather than increase
-                        cutoffpenalty /= roadrage;
-                        offsetable += cutoffpenalty;
-                    }
-                    else if (someguy->NextNextGoToCell && (cell == someguy->NextNextGoToCell)){
-                        //float cutoffpenalty = (isdiagonal) ? 1.164f : 1.25f;
-                        float cutoffpenalty = (isdiagonal) ? 2.328f : 2.5f; // bigger
-                        if (!someguy->Speed){
-                            cutoffpenalty *= 2.0; // especially don't cut off units that are stuck in traffic
-                        }
-                        // reduce by road rage, rather than increase
-                        cutoffpenalty /= roadrage;
-                        offsetable += cutoffpenalty;
-                    }
-                }
-            }
-        }
-    }
-    
+        
     // offset time to get there for things that are happening while we travel
-    offsetable -= ceil(currentprice * mytickspercell);
+    // add a fudge factor of 0.9 to compensate for overly optimisitc estimates
+    offsetable -= (0.9f * ceil(currentprice * mytickspercell));
     if (offsetable < 0.0f){
         offsetable = 0.0f;
     }
     retval += ((offsetable + nonoffsetable)/mytickspercell); // convert ticks into cells
-
+    
+    // add the flow cost
+    retval += flowcost;
+    
     
 	// Infantry don't really want to walk through tiberium if there's a reasonable detour (except chem soldiers)
     if (   (What_Am_I() == RTTI_INFANTRY) &&

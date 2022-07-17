@@ -295,6 +295,46 @@ class CellClass
 		*/
 		AnimClass* CTFFlag;
 
+        // Chthon CFE Note: Extra flags for bottleneck info
+        
+    
+    public:
+        /* // don't need these yet
+        
+        // We need the anonymous union & struct so we can force the zero initialization.
+		// Compatibility note: MSVC is happy with this, but apparently gcc needs extensions for it.
+        // mutable makes them modifiable from inside const functions (the inability to do this greatly complicated Butch's attack move implementation)
+        union{
+			unsigned char BottleNeckHFlags = 0;
+			struct{
+				unsigned int Bottleneck_leftblockage : 1;
+                unsigned int Bottleneck_rightblockage : 1;
+                unsigned int Bottleneck_Hone : 1;
+                unsigned int Bottleneck_two_left : 1;
+                unsigned int Bottleneck_two_right : 1;
+                unsigned int Bottleneck_three_left: 1;
+                unsigned int Bottleneck_three_Hmid: 1;
+				unsigned int Bottleneck_three_right: 1;
+			};
+		};
+        union{
+			unsigned char BottleNeckVFlags = 0;
+			struct{
+				unsigned int Bottleneck_topblockage : 1;
+                unsigned int Bottleneck_bottomblockage : 1;
+                unsigned int Bottleneck_Vone : 1;
+                unsigned int Bottleneck_two_up : 1;
+                unsigned int Bottleneck_two_down : 1;
+                unsigned int Bottleneck_three_up: 1;
+                unsigned int Bottleneck_three_Vmid: 1;
+				unsigned int Bottleneck_three_down: 1;
+			};
+		};
+        */
+        int LongtermBlockage() const;
+        
+    private:
+    
 		/*
 		** Some additional padding in case we need to add data to the class and maintain backwards compatibility for save/load
 		*/

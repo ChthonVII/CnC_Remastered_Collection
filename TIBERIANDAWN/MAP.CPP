@@ -2123,3 +2123,208 @@ bool MapClass::ProcessTiberiumDeath(CELL where, COORDINATE specifically_where, u
     
     return false;
 }
+
+// Chthon CFE Note: Scan the map for bottlenecks and flag those cells appropriately
+// guardpoints = also scan for points to put guard towers near natural bottlenecks
+// don't need this yet
+// also, needs to be redone -- use a sliding window horizontally, then vertically (the diagonally if we must)
+/*
+void MapClass::BottleneckScan(guardpoints){
+
+        // clear all flags
+        for (CELL cell=0; cell<MAP_CELL_TOTAL; cell++){
+            if (!In_Radar(cell)){
+                continue;
+            }
+            CellClass* cellptr = &(*this)[cell];
+            cellptr->BottleNeckHFlags = 0;
+            cellptr->BottleNeckVFlags = 0;
+        }
+    
+        // scan through and find blockages
+        for (CELL cell=0; cell<MAP_CELL_TOTAL; cell++){
+            if (!In_Radar(cell)){
+                continue;
+            }
+            CellClass* cellptr = &(*this)[cell];
+            int longtermblockage = cellptr->LongtermBlockage();
+            // skip ahead until we find a blockage to scan from
+            if (longtermblockage == 0){
+                continue;
+            }
+            for (FacingType dir : FacingCardinals){ //FACING_N, FACING_E, FACING_S, FACING_W
+                //don't scan left or up if this cell was already marked by scanning right or down
+                if ((dir == FACING_N) && cellptr->Bottleneck_topblockage){
+                    continue;
+                }
+                if ((dir == FACING_W) && Bottleneck_rightblockage){
+                    continue;
+                }
+                int opencells = 0;
+                CELL nextcell = cell;
+                CellClass* nextptr = nullptr;
+                for (int i=0; i<4; i++){
+                    nextcell = Adjacent_Cell(nextcell, dir);
+                    bool blocked = false;
+                    bool offmap = false;
+                    if (!In_Radar(nextcell)){
+                        blocked = true;
+                        offmap = true;
+                    }
+                    else { 
+                        nextptr = &(*this)[nextcell];
+                        if (nextptr->LongtermBlockage() > 0){
+                            blocked = true;
+                        }
+                    }
+                    if (blocked){
+                        if (opencells > 0){
+                            // mark stuff
+                            CELL fillcell = cell;
+                            CellClass* fillptr = nullptr;
+                            switch (dir) {
+                                case FACING_N:
+                                    cellptr->Bottleneck_bottomblockage = 1;
+                                    if (!offmap){
+                                        nextptr->Bottleneck_topblockage = 1;
+                                    }
+                                    for (int j=0; j<opencells; j++){
+                                        fillcell = Adjacent_Cell(fillcell, dir);
+                                        fillptr = &(*this)[fillcell];
+                                        if (opencells == 1){
+                                            fillptr->Bottleneck_Vone = 1;
+                                        }
+                                        else if (opencells == 2){
+                                            if (j == 0){
+                                                fillptr->Bottleneck_two_down = 1;
+                                            }
+                                            else {
+                                                fillptr->Bottleneck_two_up = 1;
+                                            }
+                                        }
+                                        else {
+                                            if (j == 0){
+                                                fillptr->Bottleneck_three_down = 1;
+                                            }
+                                            else if (j == 1){
+                                                fillptr->Bottleneck_three_Vmid = 1;
+                                            }
+                                            else {
+                                                fillptr->Bottleneck_three_up = 1;
+                                            }
+                                        }
+                                    }
+                                    break;
+                                case FACING_S:
+                                    cellptr->Bottleneck_topblockage = 1;
+                                    if (!offmap){
+                                        nextptr->Bottleneck_bottomblockage = 1;
+                                    }
+                                    for (int j=0; j<opencells; j++){
+                                        fillcell = Adjacent_Cell(fillcell, dir);
+                                        fillptr = &(*this)[fillcell];
+                                        if (opencells == 1){
+                                            fillptr->Bottleneck_Vone = 1;
+                                        }
+                                        else if (opencells == 2){
+                                            if (j == 0){
+                                                fillptr->Bottleneck_two_up = 1;
+                                            }
+                                            else {
+                                                fillptr->Bottleneck_two_down = 1;
+                                            }
+                                        }
+                                        else {
+                                            if (j == 0){
+                                                fillptr->Bottleneck_three_up = 1;
+                                            }
+                                            else if (j == 1){
+                                                fillptr->Bottleneck_three_Vmid = 1;
+                                            }
+                                            else {
+                                                fillptr->Bottleneck_three_down = 1;
+                                            }
+                                        }
+                                    }
+                                    break;
+                                case FACING_E:
+                                    cellptr->Bottleneck_leftblockage = 1;
+                                    if (!offmap){
+                                        nextptr->Bottleneck_rightblockage = 1;
+                                    }
+                                    for (int j=0; j<opencells; j++){
+                                        fillcell = Adjacent_Cell(fillcell, dir);
+                                        fillptr = &(*this)[fillcell];
+                                        if (opencells == 1){
+                                            fillptr->Bottleneck_Hone = 1;
+                                        }
+                                        else if (opencells == 2){
+                                            if (j == 0){
+                                                fillptr->Bottleneck_two_left = 1;
+                                            }
+                                            else {
+                                                fillptr->Bottleneck_two_right = 1;
+                                            }
+                                        }
+                                        else {
+                                            if (j == 0){
+                                                fillptr->Bottleneck_three_left = 1;
+                                            }
+                                            else if (j == 1){
+                                                fillptr->Bottleneck_three_Hmid = 1;
+                                            }
+                                            else {
+                                                fillptr->Bottleneck_three_right = 1;
+                                            }
+                                        }
+                                    }
+                                    break;
+                                case FACING_W:
+                                    cellptr->Bottleneck_rightblockage = 1;
+                                    if (!offmap){
+                                        nextptr->Bottleneck_leftblockage = 1;
+                                    }
+                                    for (int j=0; j<opencells; j++){
+                                        fillcell = Adjacent_Cell(fillcell, dir);
+                                        fillptr = &(*this)[fillcell];
+                                        if (opencells == 1){
+                                            fillptr->Bottleneck_Hone = 1;
+                                        }
+                                        else if (opencells == 2){
+                                            if (j == 0){
+                                                fillptr->Bottleneck_two_right = 1;
+                                            }
+                                            else {
+                                                fillptr->Bottleneck_two_left = 1;
+                                            }
+                                        }
+                                        else {
+                                            if (j == 0){
+                                                fillptr->Bottleneck_three_right = 1;
+                                            }
+                                            else if (j == 1){
+                                                fillptr->Bottleneck_three_Hmid = 1;
+                                            }
+                                            else {
+                                                fillptr->Bottleneck_three_left = 1;
+                                            }
+                                        }
+                                    }
+                                    break;
+                            }
+                        }
+                        // we're done scanning in this direction once we hit another blockage
+                        break;
+                    } // end if blocked
+                    else {
+                        opencells++;
+                    }
+                    
+                } // end for i < 4
+                
+            } // end for each cardinal direction
+            
+        } // end for each cell
+        return;
+}
+*/

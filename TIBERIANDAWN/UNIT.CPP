@@ -1426,6 +1426,17 @@ UnitClass::UnitClass(UnitType classid, HousesType house) :
 	//
 	House->Tracking_Add(this);
 #endif // USE_RA_AI
+    
+    // Chthon CFE Note: Ground vehicles are born with an innate preference for which side to drive on
+    // Using Random_Pick() in a constructor might be unsafe if this was ever ported back to peer-to-peer a la VanillaConquer...
+    GapTwoPreference = Random_Pick(HUG_RIGHT, HUG_LEFT);
+    if (Random_Pick(0, 2) == 0){
+        GapThreePreference = HUG_MIDDLE;
+    }
+    else {
+        GapThreePreference = GapTwoPreference;
+    }
+    
 }
 
 

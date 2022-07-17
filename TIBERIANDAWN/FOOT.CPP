@@ -124,8 +124,8 @@ FootClass::FootClass(void) : Speed(0)
         MemorizedNavQueue[index] = TARGET_NONE;
 	}
 	RepathDelay = 4;
-    NextGoToCell = 0;
-    NextNextGoToCell = 0;
+    GapTwoPreference = HUG_NONE;
+    GapThreePreference = HUG_NONE;
 }
 
 
@@ -195,8 +195,8 @@ FootClass::FootClass(HousesType house) :
         MemorizedNavQueue[index] = TARGET_NONE;
 	}
     RepathDelay = 4;
-    NextGoToCell = 0;
-    NextNextGoToCell = 0;
+    GapTwoPreference = HUG_NONE;
+    GapThreePreference = HUG_NONE;
 }
 
 
@@ -547,8 +547,14 @@ bool FootClass::Basic_Path(void)
 		}
 #endif
 
-		PathDelay = PATH_DELAY;
-		RepathDelay = Random_Pick(2, 4);
+		if (ActiveCFEPatchConfig.EnableASPathing){
+            // randomize so that colliding units won't always keep retrying oon the same frame
+            PathDelay = Random_Pick(CFE_PATH_DELAY-1, CFE_PATH_DELAY+1);
+        }
+        else {
+            PathDelay = PATH_DELAY;
+        }
+		RepathDelay = Random_Pick(3, 5); // Chthon CFE Note: how many cells to travel before automatically repathing
         if (Path[0] != FACING_NONE) return(true);
 
 		/*
@@ -1796,9 +1802,6 @@ void FootClass::Assign_Destination(TARGET target)
         UnmodifiedNavCom = target;
     }
     
-    // Chthon CFE Note: Flush the remembered next cells since we'll need to repath
-    NextGoToCell = 0;
-    NextNextGoToCell = 0;    
 }
 
 

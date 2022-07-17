@@ -1368,60 +1368,6 @@ void InfantryClass::AI(void)
                     Path[0] = FACING_NONE;	
                     freerepath = true;
                 }
-                // repath immediately if next move would cut off an ally
-                /*
-                doesn't work correctly
-                if (ActiveCFEPatchConfig.EnableASPathing && Target_Legal(NavCom) && (Path[0] != FACING_NONE) && (Distance(As_Cell(NavCom)) > 4)){
-                    CELL checkcell = Adjacent_Cell(Coord_Cell(Center_Coord()), Path[0]);
-                    for (FacingType otherfacing = FACING_FIRST; otherfacing < FACING_COUNT; otherfacing++) {
-                        // skip yourself
-                        if (Path[0] == (otherfacing ^ 4)){
-                            continue;
-                        }
-                        const CELL othercell = Adjacent_Cell(checkcell, otherfacing);
-                        CellClass const * othercellptr = &Map[othercell];
-                        const TechnoClass* sometechno = othercellptr->Cell_Techno();
-                        if (    sometechno &&
-                                sometechno->IsActive &&
-                                !sometechno->IsInLimbo &&
-                                sometechno->Strength &&
-                                House->Is_Ally(sometechno) &&
-                                (sometechno->What_Am_I() == RTTI_UNIT) &&
-                                Target_Legal(((FootClass*)sometechno)->NavCom) &&
-                                (((FootClass*)sometechno)->Path[0] != FACING_NONE) &&
-                                (otherfacing == (((FootClass*)sometechno)->Path[0] ^ 4))
-                        ){
-                            Path[0] = FACING_NONE;	
-                            freerepath = true;
-                            break;
-                        }
-                    }
-                    
-                }
-                */
-                if (ActiveCFEPatchConfig.EnableASPathing && (Path[0] != FACING_NONE) && PathDelay.Expired()){
-                    CELL checkcell = Adjacent_Cell(Coord_Cell(Center_Coord()), Path[0]);
-                    bool iscutoff = false;
-                    for (int i = 0; i < Units.Count(); i++) {
-                        UnitClass* unit = Units.Ptr(i);
-                        if (    unit &&
-                                unit->IsActive &&
-                                !unit->IsInLimbo &&
-                                unit->Strength &&
-                                House->Is_Ally(unit) &&
-                                (   (unit->NextGoToCell && (checkcell == unit->NextGoToCell)) ||
-                                    (unit->NextNextGoToCell && (checkcell == unit->NextNextGoToCell))
-                                )
-                        ){
-                            iscutoff = true;
-                            break;
-                        }
-                    }
-                    if (iscutoff){
-                        Path[0] = FACING_NONE;	
-                        freerepath = true;
-                    }
-                }
                 
 				/*
 				**	Determine if the next cell in the list is available
@@ -1484,7 +1430,12 @@ void InfantryClass::AI(void)
 						Stop_Driver();
 						return;
 					}
-					TryTryAgain = PATH_RETRY;
+					if (ActiveCFEPatchConfig.EnableASPathing){
+                        TryTryAgain = CFE_PATH_RETRY;
+                    }
+                    else {
+                        TryTryAgain = PATH_RETRY;
+                    }
                     if (freerepath){
                         PathDelay = OldPathDelay;
                     }
@@ -1496,15 +1447,6 @@ void InfantryClass::AI(void)
 				*/
 				COORDINATE acoord = Adjacent_Cell(Coord, Path[0]);
 				CELL acell = Coord_Cell(acoord);
-
-                // Chthon CFE Note: Since we've got a path, note the next two cells we'll be entering so other allied units can pathfind around them to avoid cutting us off
-                NextGoToCell = acell;
-                if (Path[1] != FACING_NONE){
-                    NextNextGoToCell = Adjacent_Cell(acell, Path[1]);
-                }
-                else {
-                    NextNextGoToCell = 0;
-                }
                 
 				if (Can_Enter_Cell(acell) != MOVE_OK) {
 
@@ -1611,11 +1553,7 @@ void InfantryClass::AI(void)
 		}
 		IsNewNavCom = false;
 	}
-	// Chthon CFE Note: Flush the remembered next cells if we've stopped moving
-	if(!Target_Legal(NavCom) /*|| ((Path[0] == FACING_NONE) && !IsDriving)*/){
-        NextGoToCell = 0;
-        NextNextGoToCell = 0;
-    }
+    
 }
 
 
