@@ -3393,7 +3393,9 @@ int UnitClass::Mission_Hunt(void)
                 TARGET nearbyspot = TARGET_NONE;
                 int tries = 0;
                 do {
-                    CELL newcell = XY_Cell(Random_Pick(currentX, currentX+8) - 4, Random_Pick(currentY, currentY+8) - 4);
+                    int randone = Random_Pick(currentX, currentX+8) - 4;
+                    int randtwo = Random_Pick(currentY, currentY+8) - 4;
+                    CELL newcell = XY_Cell(randone, randtwo);
                     if (Map.In_Radar(newcell) && Find_Path_AStar(nullptr, currentlocation, newcell, 1, MOVE_NO, -1)){
                         nearbyspot = ::As_Target(newcell);
                     }
@@ -3415,8 +3417,10 @@ int UnitClass::Mission_Hunt(void)
             else if (choice < 63){
                 TARGET nearbyspot = TARGET_NONE;
                 int tries = 0;
-                do {                    
-                    CELL newcell = XY_Cell(Random_Pick(Map.MapCellX, Map.MapCellWidth -1), Random_Pick(Map.MapCellY, Map.MapCellHeight -1));
+                do {
+                    int randone = Random_Pick(Map.MapCellX, Map.MapCellWidth -1);
+                    int randtwo = Random_Pick(Map.MapCellY, Map.MapCellHeight -1);
+                    CELL newcell = XY_Cell(randone, randtwo);
                     if (Map.In_Radar(newcell) && Find_Path_AStar(nullptr, Coord_Cell(Coord), newcell, 1, MOVE_NO, -1)){
                         nearbyspot = ::As_Target(newcell);
                     }

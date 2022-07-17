@@ -2014,7 +2014,10 @@ ResultType BuildingClass::Take_Damage(int & damage, int distance, WarheadType wa
                 }
                 
 				while (*offset != REFRESH_EOL) {
-					CELL cell = Coord_Cell(Coord) + *offset++;
+					COORDINATE scatter_coord;
+                    int delay;
+                    int loop;
+                    CELL cell = Coord_Cell(Coord) + *offset++;
 
 					/*
 					**	If the building is destroyed, then lots of
@@ -2022,13 +2025,24 @@ ResultType BuildingClass::Take_Damage(int & damage, int distance, WarheadType wa
 					*/
 					new SmudgeClass(Random_Pick(SMUDGE_CRATER1, SMUDGE_CRATER6), Cell_Coord(cell));
 					if (Random_Pick(0, 1) == 0) {
-						new AnimClass(ANIM_FIRE_SMALL, Coord_Scatter(Cell_Coord(cell), 0x0080), Random_Pick(0, 7), Random_Pick(1, 3));
+						scatter_coord = Coord_Scatter(Cell_Coord(cell), 0x0080);
+                        delay = Random_Pick(0, 7);
+                        loop = Random_Pick(1, 3);
+                        new AnimClass(ANIM_FIRE_SMALL, scatter_coord, delay, loop);
+                        //new AnimClass(ANIM_FIRE_SMALL, Coord_Scatter(Cell_Coord(cell), 0x0080), Random_Pick(0, 7), Random_Pick(1, 3));
 						if (Random_Pick(0, 1) == 0) {
-							new AnimClass(ANIM_FIRE_MED, Coord_Scatter(Cell_Coord(cell), 0x0040), Random_Pick(0, 7), Random_Pick(1, 3));
+							scatter_coord = Coord_Scatter(Cell_Coord(cell), 0x0040);
+                            delay = Random_Pick(0, 7);
+                            loop = Random_Pick(1, 3);
+                            new AnimClass(ANIM_FIRE_MED, scatter_coord, delay, loop);
+                            //new AnimClass(ANIM_FIRE_MED, Coord_Scatter(Cell_Coord(cell), 0x0040), Random_Pick(0, 7), Random_Pick(1, 3));
 						}
 					}
 					//Start_Profiler();
-					new AnimClass(ANIM_FBALL1, Coord_Scatter(Cell_Coord(cell), 0x0040), Random_Pick(0,3));
+					scatter_coord = Coord_Scatter(Cell_Coord(cell), 0x0040);
+                    delay = Random_Pick(0, 3);
+                    new AnimClass(ANIM_FBALL1, scatter_coord, delay);
+					//new AnimClass(ANIM_FBALL1, Coord_Scatter(Cell_Coord(cell), 0x0040), Random_Pick(0,3));
 				}
 
 				shakes = Class->Cost_Of() / 400;
@@ -2101,15 +2115,23 @@ ResultType BuildingClass::Take_Damage(int & damage, int distance, WarheadType wa
 							case 1:
 							case 2:
 							case 3:
-							case 4:
-								anim = new AnimClass(ANIM_ON_FIRE_SMALL, Coord_Scatter(Cell_Coord(cell), 0x0060), 0, Random_Pick(1, 3));
+							case 4: {
+								COORDINATE scatter_coord = Coord_Scatter(Cell_Coord(cell), 0x0060);
+                                int loop = Random_Pick(1, 3);
+                                anim = new AnimClass(ANIM_ON_FIRE_SMALL, scatter_coord, 0, loop);
+                                //anim = new AnimClass(ANIM_ON_FIRE_SMALL, Coord_Scatter(Cell_Coord(cell), 0x0060), 0, Random_Pick(1, 3));
 								break;
+                            }
 
 							case 5:
 							case 6:
-							case 7:
-								anim = new AnimClass(ANIM_ON_FIRE_MED, Coord_Scatter(Cell_Coord(cell), 0x0060), 0, Random_Pick(1, 3));
+							case 7: {
+								COORDINATE scatter_coord = Coord_Scatter(Cell_Coord(cell), 0x0060);
+                                int loop = Random_Pick(1, 3);
+                                anim = new AnimClass(ANIM_ON_FIRE_MED, scatter_coord, 0, loop);
+                                //anim = new AnimClass(ANIM_ON_FIRE_MED, Coord_Scatter(Cell_Coord(cell), 0x0060), 0, Random_Pick(1, 3));
 								break;
+                            }
 
 							case 8:
 								anim = new AnimClass(ANIM_ON_FIRE_BIG, Coord_Scatter(Cell_Coord(cell), 0x0060), 0, 1);
@@ -2124,7 +2146,11 @@ ResultType BuildingClass::Take_Damage(int & damage, int distance, WarheadType wa
 						}
 					} else {
 						if (Random_Pick(0, 1) == 0) {
-							anim = new AnimClass(ANIM_FIRE_SMALL, Coord_Scatter(Cell_Coord(cell), 0x0060), Random_Pick(0, 7), Random_Pick(1, 3));
+							COORDINATE scatter_coord = Coord_Scatter(Cell_Coord(cell), 0x0060);
+                            int delay = Random_Pick(0, 7);
+                            int loop = Random_Pick(1, 3);
+                            anim = new AnimClass(ANIM_FIRE_SMALL, scatter_coord, delay, loop);
+                            //anim = new AnimClass(ANIM_FIRE_SMALL, Coord_Scatter(Cell_Coord(cell), 0x0060), Random_Pick(0, 7), Random_Pick(1, 3));
 						}
 					}
 
@@ -2522,9 +2548,14 @@ void BuildingClass::Drop_Debris(TARGET source)
 		switch (Random_Pick(0, 5)) {
 			case 0:
 			case 1:
-			case 2:
-				new AnimClass(ANIM_SMOKE_M, Coord_Scatter(Cell_Coord(newcell), 0x0050, false), Random_Pick(0, 5), Random_Pick(1, 2));
+			case 2: {
+				COORDINATE scatter_coord = Coord_Scatter(Cell_Coord(newcell), 0x0050, false);
+                int delay = Random_Pick(0, 5);
+                int loop = Random_Pick(1, 2);
+                new AnimClass(ANIM_SMOKE_M, scatter_coord, delay, loop);
+                //new AnimClass(ANIM_SMOKE_M, Coord_Scatter(Cell_Coord(newcell), 0x0050, false), Random_Pick(0, 5), Random_Pick(1, 2));
 				break;
+            }
 
 			default:
 				break;
@@ -2536,7 +2567,10 @@ void BuildingClass::Drop_Debris(TARGET source)
 		if (Random_Pick(0, 3) == 0) {
 			new SmudgeClass(Random_Pick(SMUDGE_SCORCH1, SMUDGE_SCORCH6), Cell_Coord(newcell));
 		} else {
-			new SmudgeClass(Random_Pick(SMUDGE_CRATER1, SMUDGE_CRATER6), Coord_Scatter(Cell_Coord(newcell), 0x0080, false));
+			SmudgeType type = Random_Pick(SMUDGE_CRATER1, SMUDGE_CRATER6);
+            COORDINATE scatter_coord = Coord_Scatter(Cell_Coord(newcell), 0x0080, false);
+            new SmudgeClass(type, scatter_coord);
+            //new SmudgeClass(Random_Pick(SMUDGE_CRATER1, SMUDGE_CRATER6), Coord_Scatter(Cell_Coord(newcell), 0x0080, false));
 		}
 	}
 }

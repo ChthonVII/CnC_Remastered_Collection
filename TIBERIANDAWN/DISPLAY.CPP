@@ -2868,7 +2868,9 @@ CELL DisplayClass::Calculated_Cell(SourceType dir, HousesType house)
 			**	by the current tactical map position.
 			*/
 			case SOURCE_VISIBLE:
-				cell = XY_Cell(Coord_XCell(TacticalCoord)+Random_Pick(0, Lepton_To_Cell(TacLeptonWidth)-1), Coord_YCell(TacticalCoord)+Random_Pick(0, Lepton_To_Cell(TacLeptonHeight)-1));
+                int randone = Random_Pick(0, Lepton_To_Cell(TacLeptonWidth)-1);
+                int randtwo = Random_Pick(0, Lepton_To_Cell(TacLeptonHeight)-1);
+				cell = XY_Cell(Coord_XCell(TacticalCoord)+randone, Coord_YCell(TacticalCoord)+randtwo);
 				if (house == PlayerPtr->Class->House && !In_Radar(cell)) {
 					cell = 0;
 				}
