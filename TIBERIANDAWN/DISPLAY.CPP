@@ -2867,7 +2867,7 @@ CELL DisplayClass::Calculated_Cell(SourceType dir, HousesType house)
 			**	Dramatic entry point is somewhere on the visible screen as defined
 			**	by the current tactical map position.
 			*/
-			case SOURCE_VISIBLE:
+			case SOURCE_VISIBLE: {
                 int randone = Random_Pick(0, Lepton_To_Cell(TacLeptonWidth)-1);
                 int randtwo = Random_Pick(0, Lepton_To_Cell(TacLeptonHeight)-1);
 				cell = XY_Cell(Coord_XCell(TacticalCoord)+randone, Coord_YCell(TacticalCoord)+randtwo);
@@ -2875,6 +2875,7 @@ CELL DisplayClass::Calculated_Cell(SourceType dir, HousesType house)
 					cell = 0;
 				}
 				break;
+            }
 
 			/*
 			**	Drop off near friendly base or near a friendly unit or
