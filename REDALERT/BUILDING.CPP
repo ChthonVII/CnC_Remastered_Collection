@@ -2996,8 +2996,10 @@ bool BuildingClass::Limbo(void)
 		**	Update the power status of the owner's house.
 		*/
 		House->Adjust_Power(-Power_Output());
-		House->Adjust_Drain(-Class->Drain);
-		House->Adjust_Capacity(-Class->Capacity, true);
+		if (HasOpened){
+            House->Adjust_Drain(-Class->Drain);
+            House->Adjust_Capacity(-Class->Capacity, true);
+        }
 		if (House == PlayerPtr) {
 			Map.PowerClass::IsToRedraw = true;
 			Map.Flag_To_Redraw(false);
@@ -4442,7 +4444,25 @@ int BuildingClass::Mission_Deconstruction(void)
 				**	to an MCV.
 				*/
 				if (Target_Legal(ArchiveTarget) && *this == STRUCT_CONST && House->IsHuman && Strength > 0) {
-					ScenarioInit++;
+					
+                    // Chthon CFE Note: We need to do the things that the other branch would do, particularly what Limbo() would do
+                    // no idea why/how, but this mostly isn't necessary
+                    /*
+                    House->Active_Remove(this);
+                    //House->Recalc_Center();  // moved below delete
+                    House->Adjust_Power(-Power_Output());
+                    if (HasOpened){
+                        House->Adjust_Drain(-Class->Drain);
+                        House->Adjust_Capacity(-Class->Capacity, true);
+                    }
+                    // conditional ripped off from Petroglyph fix
+                    if (Is_Owned_By_Player()) {
+                        Map.PowerClass::IsToRedraw = true;
+                        Map.Flag_To_Redraw(false);
+                    }
+                    */
+                    
+                    ScenarioInit++;
 					UnitClass * unit = new UnitClass(UNIT_MCV, House->Class->House);
 					ScenarioInit--;
 					if (unit != NULL) {
@@ -4483,6 +4503,13 @@ int BuildingClass::Mission_Deconstruction(void)
 					} else {
 						House->Refund_Money(Refund_Amount());
 						delete this;
+					}
+					// Chthon CFE Note: continue clean-up stuff limbo/other branch would have done
+                    if (memohouse) {
+                        memohouse->Recalc_Center();
+                        //If MCV repack somehow failed, we might have 0 structures and no MCV
+						memohouse->Check_Pertinent_Structures();
+                        Map.Recalc(); // supposedly this forces sidebar to update list of buildables
 					}
 
 				} else {
@@ -5291,6 +5318,13 @@ bool BuildingClass::Revealed(HouseClass * house)
 		**	owned house is not yet revealed, it won't be reflected in the sidebar
 		**	selection icons.
 		*/
+        
+        // Chthon CFE Note: Bugfix as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/issues/747
+        // And use mixed logic from both TD and RA:
+            // In SP, buildings should start functioning when discovered by the human player or by their owner
+            // In MP, buildings should start functioning when found by anyone (although MP maps usually don't have preplaced buildings)
+        // Also just check HasOpened right here to avoid unneccessary function call
+		/*
 		if (!In_Radio_Contact() && House->IsHuman && Mission != MISSION_CONSTRUCTION) {
 			Grand_Opening();
 		} else {
@@ -5298,6 +5332,15 @@ bool BuildingClass::Revealed(HouseClass * house)
 				Grand_Opening();
 			}
 		}
+		*/
+		if (   !HasOpened &&
+                !In_Radio_Contact() &&
+                (House->IsHuman || (house == House) || (Session.Type != GAME_NORMAL)) &&
+                (Mission != MISSION_CONSTRUCTION) &&
+                (Mission != MISSION_NONE)
+        ){
+            Grand_Opening();
+        }
 
 		return(true);
 	}

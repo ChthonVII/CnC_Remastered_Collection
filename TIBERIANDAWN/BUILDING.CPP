@@ -2406,6 +2406,9 @@ BuildingClass::BuildingClass(StructType type, HousesType house) :
 	//
 	House->Tracking_Add(this);
 #endif // USE_RA_AI
+    
+    HasOpened = false;
+    
 }
 
 
@@ -3215,8 +3218,10 @@ bool BuildingClass::Limbo(void)
 		**	Update the power status of the owner's house.
 		*/
 		House->Adjust_Power(-Power_Output());
-		House->Adjust_Drain(-Class->Drain);
-		House->Adjust_Capacity(-(int)Class->Capacity, true);
+		if (HasOpened){
+            House->Adjust_Drain(-Class->Drain);
+            House->Adjust_Capacity(-(int)Class->Capacity, true);
+        }
 		if (House == PlayerPtr) {
 			Map.PowerClass::IsToRedraw = true;
 			Map.Flag_To_Redraw(false);
@@ -3445,72 +3450,76 @@ void BuildingClass::Grand_Opening(bool captured)
 {
 	Validate();
 
-	/*
-	**	Adjust the owning house according to the power, drain, and Tiberium capacity that
-	**	this building has.
-	*/
-	House->Adjust_Drain(Class->Drain);
-	House->Adjust_Capacity(Class->Capacity);
-	House->IsRecalcNeeded = true;
+    if (!HasOpened || captured) {
+		HasOpened = true;
+    
+        /*
+        **	Adjust the owning house according to the power, drain, and Tiberium capacity that
+        **	this building has.
+        */
+        House->Adjust_Drain(Class->Drain);
+        House->Adjust_Capacity(Class->Capacity);
+        House->IsRecalcNeeded = true;
 
-	/*	SPECIAL CASE:
-	**	Refineries get a free harvester. Add a harvester to the reinforcement list
-	**	at this time.
-	*/
-	if (*this == STRUCT_REFINERY && !ScenarioInit && !captured && !Debug_Map && (!House->IsHuman || PurchasePrice == 0 || PurchasePrice > Class->Raw_Cost())) {
-		CELL cell = Coord_Cell(Adjacent_Cell(Center_Coord(), DIR_SW));
-//		if (!Map[cell].Cell_Unit()) {
-			UnitClass * unit = new UnitClass(UNIT_HARVESTER, House->Class->House);
-			if (unit) {
+        /*	SPECIAL CASE:
+        **	Refineries get a free harvester. Add a harvester to the reinforcement list
+        **	at this time.
+        */
+        if (*this == STRUCT_REFINERY && !ScenarioInit && !captured && !Debug_Map && (!House->IsHuman || PurchasePrice == 0 || PurchasePrice > Class->Raw_Cost())) {
+            CELL cell = Coord_Cell(Adjacent_Cell(Center_Coord(), DIR_SW));
+    //		if (!Map[cell].Cell_Unit()) {
+                UnitClass * unit = new UnitClass(UNIT_HARVESTER, House->Class->House);
+                if (unit) {
 
-				/*
-				**	Try to place down the harvesters. If it could not be placed, then try
-				**	to place it in a nearby location.
-				*/
-				if (!unit->Unlimbo(Cell_Coord(cell), DIR_SW)) {
-					cell = Nearby_Location(unit);
+                    /*
+                    **	Try to place down the harvesters. If it could not be placed, then try
+                    **	to place it in a nearby location.
+                    */
+                    if (!unit->Unlimbo(Cell_Coord(cell), DIR_SW)) {
+                        cell = Nearby_Location(unit);
 
-					/*
-					**	If the harvester could still not be placed, then refund the money
-					**	to the owner and then bail.
-					*/
-					if (!unit->Unlimbo(Cell_Coord(cell), DIR_SW)) {
-						House->Refund_Money(unit->Class->Cost_Of());
-						delete unit;
-					}
-				}
-			} else {
+                        /*
+                        **	If the harvester could still not be placed, then refund the money
+                        **	to the owner and then bail.
+                        */
+                        if (!unit->Unlimbo(Cell_Coord(cell), DIR_SW)) {
+                            House->Refund_Money(unit->Class->Cost_Of());
+                            delete unit;
+                        }
+                    }
+                } else {
 
-				/*
-				**	If the harvester could not be created in the first place, then give
-				**	the full refund price to the owning player.
-				*/
-				House->Refund_Money(UnitTypeClass::As_Reference(UNIT_HARVESTER).Cost_Of());
-			}
-		}
-//	}
+                    /*
+                    **	If the harvester could not be created in the first place, then give
+                    **	the full refund price to the owning player.
+                    */
+                    House->Refund_Money(UnitTypeClass::As_Reference(UNIT_HARVESTER).Cost_Of());
+                }
+            }
+    //	}
 
-	/*
-	**	Helicopter pads get a free attack helicopter.
-	*/
-	if (*this == STRUCT_HELIPAD && !captured && (!House->IsHuman || PurchasePrice == 0 || PurchasePrice > Class->Raw_Cost())) {
-		ScenarioInit++;
-		AircraftClass * air = 0;
-		if (House->ActLike == HOUSE_GOOD) {
-			air = new AircraftClass(AIRCRAFT_ORCA, House->Class->House);
-		} else {
-			air = new AircraftClass(AIRCRAFT_HELICOPTER, House->Class->House);
-		}
-		if (air) {
-			air->Altitude = 0;
-			if (air->Unlimbo(Docking_Coord(), air->Pose_Dir())) {
-				air->Assign_Mission(MISSION_GUARD);
-				air->Transmit_Message(RADIO_HELLO, this);
-				Transmit_Message(RADIO_TETHER);
-			}
-		}
-		ScenarioInit--;
-	}
+        /*
+        **	Helicopter pads get a free attack helicopter.
+        */
+        if (*this == STRUCT_HELIPAD && !captured && (!House->IsHuman || PurchasePrice == 0 || PurchasePrice > Class->Raw_Cost())) {
+            ScenarioInit++;
+            AircraftClass * air = 0;
+            if (House->ActLike == HOUSE_GOOD) {
+                air = new AircraftClass(AIRCRAFT_ORCA, House->Class->House);
+            } else {
+                air = new AircraftClass(AIRCRAFT_HELICOPTER, House->Class->House);
+            }
+            if (air) {
+                air->Altitude = 0;
+                if (air->Unlimbo(Docking_Coord(), air->Pose_Dir())) {
+                    air->Assign_Mission(MISSION_GUARD);
+                    air->Transmit_Message(RADIO_HELLO, this);
+                    Transmit_Message(RADIO_TETHER);
+                }
+            }
+            ScenarioInit--;
+        }
+    }
 }
 
 
@@ -4657,9 +4666,10 @@ int BuildingClass::Mission_Construction(void)
 				Transmit_Message(RADIO_OVER_OUT);		// "You're free."
 				Begin_Mode(BSTATE_IDLE);
 				// Construction yard already called this on reveal in normal game mode, so don't do twice
-				if (*this != STRUCT_CONST || GameToPlay != GAME_NORMAL) {
+                // This is wrong as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/issues/747
+				//if (*this != STRUCT_CONST || GameToPlay != GAME_NORMAL) {
 					Grand_Opening();
-				}
+				//}
 				Assign_Mission(MISSION_GUARD);
 				PrimaryFacing = Class->StartFace;
 			}
@@ -4822,7 +4832,26 @@ int BuildingClass::Mission_Deconstruction(void)
 				**	to an MCV.
 				*/
 				if (Target_Legal(ArchiveTarget) && Special.IsMCVDeploy && *this == STRUCT_CONST && House->IsHuman) {
-					ScenarioInit++;
+					// Chthon CFE Note: We need to do the things that the other branch would do, particularly what Limbo() would do
+                    // no idea why/how, but this mostly isn't necessary
+                    /*
+                    House->BuildingFactories--;
+                    //House->Recalc_Center(); // moved below delete
+                    House->Adjust_Power(-Power_Output());
+                    if (HasOpened){
+                        House->Adjust_Drain(-Class->Drain);
+                        House->Adjust_Capacity(-(int)Class->Capacity, true);
+                    }
+                    // conditional ripped off from Petroglyph fix
+                    if (Is_Owned_By_Player()) {
+                        Map.PowerClass::IsToRedraw = true;
+                        Map.Flag_To_Redraw(false);
+                    }
+                    */
+                    HouseClass* memohouse = House; // need to do  a couple things after deletion
+                    
+                    
+                    ScenarioInit++;
 					UnitClass * unit = new UnitClass(UNIT_MCV, House->Class->House);
 					ScenarioInit--;
 					if (unit) {
@@ -4860,6 +4889,13 @@ int BuildingClass::Mission_Deconstruction(void)
 					} else {
 						House->Refund_Money(Refund_Amount());
 						Delete_This();
+					}
+					// Chthon CFE Note: continue clean-up stuff limbo/other branch would have done
+                    if (memohouse) {
+                        memohouse->Recalc_Center();
+                        //If MCV repack somehow failed, we might have 0 structures and no MCV
+						memohouse->Check_Pertinent_Structures();
+                        Map.Recalc(); // supposedly this forces sidebar to update list of buildables
 					}
 
 				} else {
@@ -5657,13 +5693,30 @@ bool BuildingClass::Revealed(HouseClass * house)
 		**	owned house is not yet revealed, it won't be reflected in the sidebar
 		**	selection icons.
 		*/
+        
+        // Chthon CFE Note: Bugfix as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/issues/747
+        // And use mixed logic from both TD and RA:
+            // In SP, buildings should start functioning when discovered by the human player or by their owner
+            // In MP, buildings should start functioning when found by anyone (although MP maps usually don't have preplaced buildings)
+        // The addition of HasOpened should prevent multiple grand openings (and we'll just check it here for efficiency)
+        
 		/*
 		** Making a change here to avoid Grand_Opening happening multiple times in MP/skirmish. ST - 7/26/2019 11:26AM
 		*/
 		//if (!In_Radio_Contact() && (house == House || GameToPlay != GAME_NORMAL) && Mission != MISSION_CONSTRUCTION) {
+		/*
 		if (!In_Radio_Contact() && (house == House && GameToPlay == GAME_NORMAL) && Mission != MISSION_CONSTRUCTION) {
 			Grand_Opening();
 		}
+		*/
+        if (   !HasOpened &&
+                !In_Radio_Contact() &&
+                (House->IsHuman || (house == House) || (GameToPlay != GAME_NORMAL)) &&
+                (Mission != MISSION_CONSTRUCTION) &&
+                (Mission != MISSION_NONE)
+        ){
+            Grand_Opening();
+        }
 
 		return(true);
 	}
