@@ -2357,7 +2357,34 @@ float FootClass::CFE_Passable_Cell(CELL cell, FacingType face, int depth, float 
                     } // end safety check
                     
                 } // end if IsTechno()
-            } // end if object isn't nullptr
+            } // end if uobject isn't nullptr
+            // DriveClass::Mark_Track() can mark a cell before the unit actually enters it
+            // (Can infantry do something similar?)
+            // In this case, uobject will be nullptr and we don't know anything about the blocker, so we have to make wild guesses
+            else {
+                if (move == MOVE_MOVING_BLOCK){
+                    // assume 50% slower than self
+                    moveticks = mytickspercell * 1.5f;
+                    moveticks *= roadrage;
+                }
+                else if (move == MOVE_TEMP){
+                    if (Distance(TarCom) < Weapon_Range(0)*2){
+                        retval += 10.0;
+                    }
+                    else {
+                        moveticks = mytickspercell * 1.5f;
+                        moveticks *= roadrage;
+                        offsetmoveticks = false;
+                        shootticks = 500;
+                        shootticks *= roadrage;
+                    }
+                }
+                else if (move == MOVE_DESTROYABLE){
+                    shootticks = 500;
+                    shootticks *= roadrage;
+                    offsetshootticks = false;
+                }
+            }
             
             
         } // end if !wallthere
