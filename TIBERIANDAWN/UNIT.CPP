@@ -2162,17 +2162,21 @@ void UnitClass::Per_Cell_Process(bool center)
 					Assign_Destination(::As_Target(XY_Cell(Map.MapCellX+Map.MapCellWidth, Cell_Y(cell))));
 					Set_Speed(255);
 					PrimaryFacing = DIR_E;
-                    /* #MinorAIFixes - gets Gunboat to clearing targetting on each direction reversal*/
-					Assign_Target(TARGET_NONE);
-					Target_Something_Nearby(THREAT_AREA);
+                    /* #MinorAIFixes - gets Gunboat to clearing targetting on each direction reversal*/ // Chthon CFE note: gate behind setting
+                    if (ActiveCFEPatchConfig.EnableGunboatBugfix){
+                        Assign_Target(TARGET_NONE);
+                        Target_Something_Nearby(THREAT_AREA);
+                    }
 				} else {
 					Assign_Mission(MISSION_HUNT);
 					Assign_Destination(::As_Target(XY_Cell(Map.MapCellX-1, Cell_Y(cell))));
 					Set_Speed(255);
 					PrimaryFacing = DIR_W;
-                    /* #MinorAIFixes - gets Gunboat to clearing targetting on each direction reversal*/
-					Assign_Target(TARGET_NONE);
-					Target_Something_Nearby(THREAT_AREA);
+                    /* #MinorAIFixes - gets Gunboat to clearing targetting on each direction reversal*/ // Chthon CFE note: gate behind setting
+                    if (ActiveCFEPatchConfig.EnableGunboatBugfix){
+                        Assign_Target(TARGET_NONE);
+                        Target_Something_Nearby(THREAT_AREA);
+                    }
 				}
 				Mark(MARK_DOWN);
 			} else {
@@ -3463,6 +3467,11 @@ int UnitClass::Mission_Hunt(void)
 				Set_Speed(255);
 			}
 			if (!Target_Legal(TarCom) || !In_Range(TarCom, 0)) {
+                // Chthon CFE note: Gunboats get fixated on one target because Target_Something_Nearby() does NOT change a valid TarCom unless THREAT_RANGE is passed.
+                //So we need to expressly clear the target first.
+                if (ActiveCFEPatchConfig.EnableGunboatBugfix){
+                    Assign_Target(TARGET_NONE);
+                }
 				Target_Something_Nearby(THREAT_AREA);
 			}
 		} else {
