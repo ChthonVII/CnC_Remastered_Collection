@@ -2383,6 +2383,7 @@ float FootClass::CFE_Passable_Cell(CELL cell, FacingType face, int depth, float 
     } // end of flow control
     
     CellClass const * cellptr = &Map[cell];
+        
     LandType celllandtype = Map[cell].Land_Type();
     
     // how fast am I?
@@ -2422,6 +2423,10 @@ float FootClass::CFE_Passable_Cell(CELL cell, FacingType face, int depth, float 
         if (cellptr->Overlay != OVERLAY_NONE) {
             OverlayTypeClass const * optr = &OverlayTypeClass::As_Reference(cellptr->Overlay);
                 if (optr && optr->IsWall) {
+                    // don't destroy friendly walls
+                    if (Is_Ally(cellptr->Owner)){
+                        return 0;
+                    }
                     wallthere = true;
                     // assume things take 1.5 ticks per hp to destroy
                     // wall hp is stored in a weird, weird way; see Reduce_Wall()
@@ -2461,8 +2466,16 @@ float FootClass::CFE_Passable_Cell(CELL cell, FacingType face, int depth, float 
             }
             if (uobject){
                 // or it could be a tree a stupid flame tank wants to light on fire... let's prevent that
+                // sadly, this isn't enough. Optimize_Moves() will still try to send fire-damage units through trees adjacent to their starting point
+                // So we actually need to fix the bug with trees not burning down
                 if (uobject->What_Am_I() == RTTI_TERRAIN){
-                    return 0;
+                    if (ActiveCFEPatchConfig.EnableBurningTreeFix){
+                        shootticks = uobject->Strength * 1.5f * roadrage;
+                        offsetshootticks = false; // can't shoot it until we get there
+                    }
+                    else {
+                        return 0;
+                    }
                 }
                 else if (uobject->Is_Techno()){
                     TechnoClass* tobj = (TechnoClass*)uobject;
