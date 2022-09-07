@@ -1607,7 +1607,11 @@ int FootClass::Optimize_Moves(PathType *path, MoveType threshhold) const
 					**	the path isn't any shorter.
 					*/
 					if (ABS((int)newcmd) == 1) {
-						if (Passable_Cell(Adjacent_Cell(cell, newdir), newdir, -1, threshhold)) {
+                        // Chthon CFE Note: Do not attempt to "optimize" movement through other objects
+                        // Particularly a problem with flame tanks/flame guys and trees
+                        // Passable_Cell() will upgrade MOVE_OK to MOVE_MOVING_BLOCK if the cell more than 1 away
+                        MoveType optthreshhold = ActiveCFEPatchConfig.EnableASPathing ? MOVE_OK : threshhold;
+						if (Passable_Cell(Adjacent_Cell(cell, newdir), newdir, -1, optthreshhold)) {
 							*cmd2 = newdir;
 							*cmd1 = newdir;
 						}
