@@ -172,7 +172,7 @@ ResultType TerrainClass::Take_Damage(int & damage, int distance, WarheadType war
 			**	Remove this terrain object from the targeting computers of all other
 			**	game objects. No use beating a dead horse.
 			*/
-			Detach_All();
+			//Detach_All(); // Chthon CFE Note: This can't be here or it will detach the anims before Shorten_Attached_Anims gets called
 
 			if (IsOnFire) {
 
@@ -182,6 +182,8 @@ ResultType TerrainClass::Take_Damage(int & damage, int distance, WarheadType war
 				*/
 				Shorten_Attached_Anims(this);
 			} else {
+                Detach_All();
+                Mark();
 				Start_To_Crumble();
 			}
 		}
@@ -541,6 +543,23 @@ void TerrainClass::AI(void)
 {
 	Validate();
 	ObjectClass::AI();
+    
+    // Chthon CFE Note: The burning animations are somehow getting detached during/after Shorten_Attached_Anims()
+    // So Fire_Out() never gets called to start the crumbling process after the tree dies
+    // So we need to do it ourselves
+    if (IsOnFire && !Strength && !IsCrumbling && ActiveCFEPatchConfig.EnableBurningTreeFix){
+        bool noanimsleft = true;
+        for (int index = 0; index < Anims.Count(); index++) {
+			AnimClass & anim = *Anims.Ptr(index);
+			if (anim.Object == this) {
+				noanimsleft = false;
+                break;
+			}
+		}
+		if (noanimsleft){
+            Fire_Out();
+        }
+    }
 
 	if (StageClass::Graphic_Logic()) {
 		Mark();
@@ -550,7 +569,8 @@ void TerrainClass::AI(void)
 		**	last stage of the crumbling animation, delete the terrain object.
 		*/
 		if (IsCrumbling && Fetch_Stage() == Get_Build_Frame_Count(Class->Get_Image_Data())-1) {
-			delete this;
+			Limbo(); // Chthon CFE Note: Make sure to properly clear the underlying cell so it becomes passable
+            delete this;
 		}
 	}
 
@@ -675,7 +695,13 @@ void TerrainClass::Start_To_Crumble(void)
 	Validate();
 	if (!IsCrumbling) {
 		IsCrumbling = true;
-		Set_Rate(2);
+		// Chthon CFE Note: Rate of 2 looks a little too abbreviated; try 3 instead
+        if (ActiveCFEPatchConfig.EnableBurningTreeFix){
+            Set_Rate(3);
+        }
+        else {
+            Set_Rate(2);
+        }
 		Set_Stage(0);
 	}
 }

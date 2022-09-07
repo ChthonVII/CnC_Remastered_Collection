@@ -122,6 +122,7 @@ struct CFEPatchConfig
     bool EnableMIGAmmoFudge = false;
     bool EnableBuildingCaptureAnnouncements = false;
     bool EnableSmarterSonar = false;
+    bool EnableBurningTreeFix = false;
     bool EnableNewSkirmishAI = false;
 
     int EnableVeterancy = 0;

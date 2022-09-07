@@ -108,6 +108,7 @@ struct CFEPatchConfig
     bool EnableNukeTank = false;
     bool DisableMPNeutralAttacks = false;
     bool EnableGDI9Fix = false;
+    bool EnableBurningTreeFix = false;
     bool EnableNewSkirmishAI = false;
     
     bool OverrideAPCReqs = false;
