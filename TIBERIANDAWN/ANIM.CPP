@@ -1041,7 +1041,9 @@ void AnimClass::Middle(void)
 		**	order to properly enact retribution and record the kill for
 		**	score purposes.
 		*/
-		BuildingClass * building = NULL;
+        // Chthon CFE Note: Hey, let's not go casting some random TechnoClass* to a BuildingClass* when it might not be a building...
+        // Especially b/c the only place we use it needs a TechnoClass*
+		TechnoClass* building = NULL;
 		TechnoClass * backup = NULL;
 		if (OwnerHouse != HOUSE_NONE) {
 			for (int index = 0; index < Logic.Count(); index++) {
@@ -1050,13 +1052,13 @@ void AnimClass::Middle(void)
 				if (obj && obj->Is_Techno() && obj->Owner() == OwnerHouse) {
 					backup = (TechnoClass *)obj;
 					if (obj->What_Am_I() == RTTI_BUILDING && *((BuildingClass *)obj) == STRUCT_TEMPLE) {
-						building = (BuildingClass *)obj;
+						building = (TechnoClass*)obj;
 						break;
 					}
 				}
 			}
 
-			if (!building) building = (BuildingClass *)backup;
+			if (!building) building = (TechnoClass*)backup;
 		}
 
 		int radius = 3;
@@ -1085,7 +1087,14 @@ void AnimClass::Middle(void)
 				CELL tcell = XY_Cell(xpos, ypos);
 				if (!Map.In_Radar(tcell)) continue;
 
-				int damage = rawdamage / ((ABS(radius)/2)+1);
+				int damage;
+                if (ActiveCFEPatchConfig.EnableNukeRadiusFix){
+                    int realradius = (ABS(x) > ABS(y)) ? ABS(x) : ABS(y);
+                    damage = (2 * rawdamage)/(realradius + 2); // rearrange terms to minimize truncation error
+                }
+                else {
+                    damage = rawdamage / ((ABS(realradius)/2)+1);
+                }
 				Explosion_Damage(Cell_Coord(tcell), damage, building, WARHEAD_FIRE);
 				new SmudgeClass(Random_Pick(SMUDGE_SCORCH1, SMUDGE_SCORCH6), Cell_Coord(tcell));
 			}
@@ -1157,7 +1166,9 @@ void AnimClass::Middle(void)
 	*/
 	switch (Class->Type) {
 		case ANIM_ION_CANNON: {
-				BuildingClass * building = NULL;
+                // Chthon CFE Note: Hey, let's not go casting some random TechnoClass* to a BuildingClass* when it might not be a building...
+                // Especially b/c the only place we use it needs a TechnoClass*
+				TechnoClass* building = NULL;
 				TechnoClass * backup = NULL;
 				if (OwnerHouse != HOUSE_NONE) {
 					for (int index = 0; index < Logic.Count(); index++) {
@@ -1166,13 +1177,13 @@ void AnimClass::Middle(void)
 						if (obj && obj->Is_Techno() && obj->Owner() == OwnerHouse && !obj->IsInLimbo) {
 							backup = (TechnoClass *)obj;
 							if (obj->What_Am_I() == RTTI_BUILDING && *((BuildingClass *)obj) == STRUCT_EYE) {
-								building = (BuildingClass *)obj;
+								building = (TechnoClass*)obj;
 								break;
 							}
 						}
 					}
 
-					if (!building) building = (BuildingClass *)backup;
+					if (!building) building = (TechnoClass*)backup;
 				}
 				Explosion_Damage(Center_Coord(), 600, building, WARHEAD_PB);
 			}
