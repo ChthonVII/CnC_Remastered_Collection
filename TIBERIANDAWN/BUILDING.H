@@ -252,7 +252,7 @@ class BuildingClass : public TechnoClass
 		virtual void Death_Announcement(TechnoClass const * source=0) const;
 		virtual FireErrorType Can_Fire(TARGET, int which) const;
 		virtual TARGET Greatest_Threat(ThreatType threat) const;
-		virtual ResultType Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source=0, ArmorPenType specialarmorpen = ARMORPEN_NONE);
+		virtual ResultType Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source=0, ArmorPenType specialarmorpen = ARMORPEN_NONE, bool givesxp = true);
 		virtual TARGET As_Target(void) const;
 		virtual bool Captured(HouseClass * newowner);
 

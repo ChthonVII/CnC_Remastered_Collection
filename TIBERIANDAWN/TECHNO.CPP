@@ -3375,7 +3375,7 @@ bool TechnoClass::Captured(HouseClass * newowner)
  * HISTORY:                                                                                    *
  *   06/20/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-ResultType TechnoClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, ArmorPenType specialarmorpen)
+ResultType TechnoClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, ArmorPenType specialarmorpen, bool givesxp)
 {
 	/*
 	**	Adjust damage according to house override armor value.
@@ -3497,7 +3497,7 @@ ResultType TechnoClass::Take_Damage(int & damage, int distance, WarheadType warh
 	
 	int oldstrength = Strength; // Chthon CFE Note: save this before it changes 
 	
-	ResultType result = ObjectClass::Take_Damage(damage, distance, warhead, source, ARMORPEN_NONE);
+	ResultType result = ObjectClass::Take_Damage(damage, distance, warhead, source, ARMORPEN_NONE, givesxp);
     // ARMORPEN_NONE because we already handled specialarmorpen here, so don't pass it on
 
 	switch (result) {
@@ -3535,7 +3535,7 @@ ResultType TechnoClass::Take_Damage(int & damage, int distance, WarheadType warh
 	}
 	
 	// Chthon CFE Note -- give XP when damaged by a non-ally
-	if (((ActiveCFEPatchConfig.EnableVeterancy == 2) || (ActiveCFEPatchConfig.EnableVeterancy == 1) && (GameToPlay != GAME_NORMAL)) && source &&  source->IsActive && !House->Is_Ally(source)){
+	if (((ActiveCFEPatchConfig.EnableVeterancy == 2) || (ActiveCFEPatchConfig.EnableVeterancy == 1) && (GameToPlay != GAME_NORMAL)) && givesxp && source &&  source->IsActive && !House->Is_Ally(source)){
         // pretend visceroids cost 5k so they give a bunch of xp
         if (What_Am_I() == RTTI_UNIT && *((UnitClass*)this) == UNIT_VICE){
             source->GainVeterancyXP(((oldstrength - Strength)*5000)/Class_Of().MaxStrength);

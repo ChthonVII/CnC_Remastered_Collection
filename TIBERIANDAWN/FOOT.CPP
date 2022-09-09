@@ -1209,9 +1209,9 @@ bool FootClass::Limbo(void)
  * HISTORY:                                                                                    *
  *   12/30/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
-ResultType FootClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, ArmorPenType specialarmorpen)
+ResultType FootClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, ArmorPenType specialarmorpen, bool givesxp)
 {
-	ResultType result = TechnoClass::Take_Damage(damage, distance, warhead, source, specialarmorpen);
+	ResultType result = TechnoClass::Take_Damage(damage, distance, warhead, source, specialarmorpen, givesxp);
 
 	if (result != RESULT_NONE && Team) {
 

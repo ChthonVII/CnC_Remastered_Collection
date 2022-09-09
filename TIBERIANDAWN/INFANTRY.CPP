@@ -393,7 +393,7 @@ void InfantryClass::operator delete(void *ptr)
  *   11/22/1994 JLB : Shares base damage handler for techno objects.                           *
  *   03/31/1995 JLB : Revenge factor.                                                          *
  *=============================================================================================*/
-ResultType InfantryClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, ArmorPenType specialarmorpen)
+ResultType InfantryClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, ArmorPenType specialarmorpen, bool givesxp)
 {
 	Validate();
 	ResultType res = RESULT_NONE;
@@ -412,7 +412,7 @@ ResultType InfantryClass::Take_Damage(int & damage, int distance, WarheadType wa
 //Mono_Printf("Infantry Take_Damage(%d, %d, %d, %p)\r", damage, distance, warhead, source);
 //Get_Key();
 
-	res = FootClass::Take_Damage(damage, distance, warhead, source, specialarmorpen);
+	res = FootClass::Take_Damage(damage, distance, warhead, source, specialarmorpen, givesxp);
 
 	/*
 	**	Flame thrower guys take more damage because of the exposed pilot light
@@ -421,7 +421,7 @@ ResultType InfantryClass::Take_Damage(int & damage, int distance, WarheadType wa
     // Chthon CFE Note: but veteran don't since they learned safety procedures
 	if (damage && res != RESULT_DESTROYED && *this == INFANTRY_E4 && VeterancyRank == 0) {
 		damage = 5;
-		ResultType newres = FootClass::Take_Damage(damage, distance, warhead, source);
+		ResultType newres = FootClass::Take_Damage(damage, distance, warhead, source, givesxp);
 		res = MAX(res, newres);
 	}
 

@@ -977,7 +977,7 @@ bool UnitClass::Unlimbo(COORDINATE coord, DirType dir)
  *   06/30/1995 JLB : Lasers do maximum damage against gunboat.                                *
  *   08/16/1995 JLB : Harvester crushing doesn't occur on early missions.                      *
  *=============================================================================================*/
-ResultType UnitClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, ArmorPenType specialarmorpen)
+ResultType UnitClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, ArmorPenType specialarmorpen, bool givesxp)
 {
 	Validate();
 	ResultType res = RESULT_NONE;
@@ -1018,7 +1018,7 @@ ResultType UnitClass::Take_Damage(int & damage, int distance, WarheadType warhea
         }
     }
     
-	res = TarComClass::Take_Damage(damage, distance, warhead, source, specialarmorpen);
+	res = TarComClass::Take_Damage(damage, distance, warhead, source, specialarmorpen, givesxp);
 
 	if (res == RESULT_DESTROYED) {
 		Death_Announcement(source);

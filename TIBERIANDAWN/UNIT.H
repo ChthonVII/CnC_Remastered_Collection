@@ -136,7 +136,7 @@ class UnitClass :	public TarComClass
 		**	Combat related.
 		*/
 		virtual COORDINATE Target_Coord(void) const;
-		virtual ResultType Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source=0, ArmorPenType specialarmorpen = ARMORPEN_NONE);
+		virtual ResultType Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source=0, ArmorPenType specialarmorpen = ARMORPEN_NONE, bool givesxp = true);
 		virtual TARGET As_Target(void) const;
 		virtual void Stun(void);
 

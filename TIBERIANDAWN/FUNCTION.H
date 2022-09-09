@@ -335,7 +335,7 @@ bool Is_Speaking(void);
 **	COMBAT.CPP
 */
 int Modify_Damage(int damage, WarheadType warhead, ArmorType armor, int distance);
-void Explosion_Damage(COORDINATE coord, unsigned strength, TechnoClass * source, WarheadType warhead, ArmorPenType specialarmorpen = ARMORPEN_NONE);
+void Explosion_Damage(COORDINATE coord, unsigned strength, TechnoClass * source, WarheadType warhead, ArmorPenType specialarmorpen = ARMORPEN_NONE, bool givesxp = true);
 
 /*
 **	CONQUER.CPP

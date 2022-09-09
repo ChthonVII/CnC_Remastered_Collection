@@ -1095,7 +1095,8 @@ void AnimClass::Middle(void)
                 else {
                     damage = rawdamage / ((ABS(realradius)/2)+1);
                 }
-				Explosion_Damage(Cell_Coord(tcell), damage, building, WARHEAD_FIRE);
+				Explosion_Damage(Cell_Coord(tcell), damage, building, WARHEAD_FIRE, ARMORPEN_NONE, false);
+                // Chthon CFE Note: Since credit for nuke might be given to some random unit (nuke from crate or temple destroyed while missile was in the air), we need to exlictily prevent this from giving veterancy XP
 				new SmudgeClass(Random_Pick(SMUDGE_SCORCH1, SMUDGE_SCORCH6), Cell_Coord(tcell));
 			}
 		}
@@ -1185,7 +1186,8 @@ void AnimClass::Middle(void)
 
 					if (!building) building = (TechnoClass*)backup;
 				}
-				Explosion_Damage(Center_Coord(), 600, building, WARHEAD_PB);
+				Explosion_Damage(Center_Coord(), 600, building, WARHEAD_PB, ARMORPEN_NONE, false);
+                // Chthon CFE Note: Since credit for ion cannon might be given to some random unit (ion cannon from crate), we need to exlictily prevent this from giving veterancy XP
 			}
 			break;
 

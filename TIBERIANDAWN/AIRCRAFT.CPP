@@ -1656,7 +1656,7 @@ BulletClass * AircraftClass::Fire_At(TARGET target, int which)
  * HISTORY:                                                                                    *
  *   05/26/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-ResultType AircraftClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, ArmorPenType specialarmorpen)
+ResultType AircraftClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, ArmorPenType specialarmorpen, bool givesxp)
 {
 	Validate();
 	ResultType res = RESULT_NONE;
@@ -1672,7 +1672,7 @@ ResultType AircraftClass::Take_Damage(int & damage, int distance, WarheadType wa
 	**	In order for a this to be damaged, it must either be a unit
 	**	with a crew or a sandworm.
 	*/
-	res = FootClass::Take_Damage(damage, distance, warhead, source, specialarmorpen);
+	res = FootClass::Take_Damage(damage, distance, warhead, source, specialarmorpen, givesxp);
 
 	switch (res) {
 		case RESULT_DESTROYED:

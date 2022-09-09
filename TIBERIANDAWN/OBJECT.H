@@ -227,7 +227,7 @@ class ObjectClass : public AbstractClass
 		*/
 		virtual bool In_Range(COORDINATE , int=0) const;
 		virtual int Weapon_Range(int =0) const;
-		virtual ResultType Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source=0, ArmorPenType specialarmorpen = ARMORPEN_NONE);
+		virtual ResultType Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source=0, ArmorPenType specialarmorpen = ARMORPEN_NONE, bool givesxp = true);
 		virtual TARGET As_Target(void) const;
 		virtual void Scatter(COORDINATE , bool=false, bool=false);
 		virtual bool Catch_Fire(void);

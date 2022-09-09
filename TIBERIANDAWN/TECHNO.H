@@ -316,7 +316,7 @@ class TechnoClass :	public RadioClass,
 		virtual BulletClass * Fire_At(TARGET target, int which=0);
 		virtual int Weapon_Range(int which) const;
 		virtual bool Captured(HouseClass * newowner);
-		virtual ResultType Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, ArmorPenType specialarmorpen = ARMORPEN_NONE);
+		virtual ResultType Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, ArmorPenType specialarmorpen = ARMORPEN_NONE, bool givesxp = true);
 		bool Evaluate_Cell(ThreatType method, int mask, CELL cell, int range, TechnoClass const ** object, int & value) const;
 		bool Evaluate_Object(ThreatType method, int mask, int range, TechnoClass const * object, int & value) const;
 		bool Is_Cloaked(HousesType house) const;
