@@ -84,7 +84,8 @@ extern void const *WarFactoryOverlay;
 
 struct CFEPatchConfig
 {
-	bool EnableASPathing = false;
+	bool EnableVersionAnnounce = false;
+    bool EnableASPathing = false;
 	bool EnableOOMRepair = false;
 	bool EnableRallyPoints = false;
 	bool EnableHarvyQueueJump = false;

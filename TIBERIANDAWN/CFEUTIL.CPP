@@ -59,7 +59,8 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
 
 	//cfehunter 12/06/2020 It's really starting to get to the point where I should make feature flags
 	//Features
-	GetSetting(ActiveCFEPatchConfig.EnableRallyPoints         , "FEATURES", "RALLY_POINTS");
+	GetSetting(ActiveCFEPatchConfig.EnableVersionAnnounce      , "FEATURES", "VERSION_ANNOUNCE");
+    GetSetting(ActiveCFEPatchConfig.EnableRallyPoints         , "FEATURES", "RALLY_POINTS");
 	GetSetting(ActiveCFEPatchConfig.EnableASPathing           , "FEATURES", "ASTAR_PATHING");
 	GetSetting(ActiveCFEPatchConfig.EnableOOMRepair           , "FEATURES", "OOM_REPAIR");
 	GetSetting(ActiveCFEPatchConfig.EnableHarvyQueueJump      , "FEATURES", "HARVY_QUEUE_JUMP");

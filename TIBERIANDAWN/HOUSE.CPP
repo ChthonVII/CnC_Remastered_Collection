@@ -916,6 +916,12 @@ void HouseClass::AI(void)
 	// Set PlayerPtr to be this house. Not really keen on this solution but it means I have to make fewer code changes to the original code. ST - 4/17/2019 4:32PM
 	Logic_Switch_Player_Context(this);
 
+    // Chthon CFE Note: Announce mod version for all players
+    if ((Frame == 75) && IsHuman && ActiveCFEPatchConfig.EnableVersionAnnounce){
+        char text[] = "CFE Patch Redux version 1.9 TEST BUILD 4";
+        On_Message(text, 20.0f, TXT_YOURGAME_OUTDATED);
+    }
+    
 	/*
 	**	Reset the scan accumulation bits for the next logic pass.
 	*/
