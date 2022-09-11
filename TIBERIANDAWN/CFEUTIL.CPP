@@ -83,6 +83,7 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     GetSetting(ActiveCFEPatchConfig.EnableGDI9Fix      , "FEATURES", "GDI9_FIX");
     GetSetting(ActiveCFEPatchConfig.EnableBurningTreeFix      , "FEATURES", "BURNING_TREE_FIX");
     GetSetting(ActiveCFEPatchConfig.EnableNukeRadiusFix      , "FEATURES", "NUKE_RADIUS_FIX");
+    GetSetting(ActiveCFEPatchConfig.EnableDeathsDoorFix      , "FEATURES", "DEATHS_DOOR_FIX");
     
 	//Settings
     GetSetting(ActiveCFEPatchConfig.EnableVeterancy      , "SETTINGS", "VETERANCY");
