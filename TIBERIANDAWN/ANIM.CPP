@@ -1089,11 +1089,11 @@ void AnimClass::Middle(void)
 
 				int damage;
                 if (ActiveCFEPatchConfig.EnableNukeRadiusFix){
-                    int realradius = (ABS(x) > ABS(y)) ? ABS(x) : ABS(y);
+                    int realradius = (ABS(x) > ABS(y)) ? ABS(x) + (ABS(y)/2) : ABS(y) + (ABS(x)/2);
                     damage = (2 * rawdamage)/(realradius + 2); // rearrange terms to minimize truncation error
                 }
                 else {
-                    damage = rawdamage / ((ABS(realradius)/2)+1);
+                    damage = rawdamage / ((ABS(radius)/2)+1);
                 }
 				Explosion_Damage(Cell_Coord(tcell), damage, building, WARHEAD_FIRE, ARMORPEN_NONE, false);
                 // Chthon CFE Note: Since credit for nuke might be given to some random unit (nuke from crate or temple destroyed while missile was in the air), we need to exlictily prevent this from giving veterancy XP
