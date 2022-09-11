@@ -2428,7 +2428,7 @@ float FootClass::CFE_Passable_Cell(CELL cell, FacingType face, int depth, float 
             OverlayTypeClass const * optr = &OverlayTypeClass::As_Reference(cellptr->Overlay);
                 if (optr && optr->IsWall) {
                     // don't destroy friendly walls
-                    if (Is_Ally(cellptr->Owner)){
+                    if (House->Is_Ally(cellptr->Owner)){
                         return 0;
                     }
                     wallthere = true;
