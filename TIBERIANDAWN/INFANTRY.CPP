@@ -421,7 +421,7 @@ ResultType InfantryClass::Take_Damage(int & damage, int distance, WarheadType wa
     // Chthon CFE Note: but veteran don't since they learned safety procedures
 	if (damage && res != RESULT_DESTROYED && *this == INFANTRY_E4 && VeterancyRank == 0) {
 		damage = 5;
-		ResultType newres = FootClass::Take_Damage(damage, distance, warhead, source, givesxp);
+		ResultType newres = FootClass::Take_Damage(damage, 0, WARHEAD_FIRE, source, ARMORPEN_NONE, false);
 		res = MAX(res, newres);
 	}
 
