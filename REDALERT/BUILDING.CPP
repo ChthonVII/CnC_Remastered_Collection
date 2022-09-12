@@ -1207,7 +1207,11 @@ bool BuildingClass::Mark(MarkType mark)
 					delete this;
 
 				} else {
+                    // Chthon CFE Note: Because Can_Enter_Cell() now cares about IsDown, we can't let it get set prematurely
+                    bool isdownmemo = IsDown;
+                    IsDown = false;
 					if (Can_Enter_Cell(cell) == MOVE_OK) {
+                        IsDown = isdownmemo;
 						/*
 						**	Determine if a bib is required for this building. If one is, then
 						**	create and place it.
@@ -1219,6 +1223,7 @@ bool BuildingClass::Mark(MarkType mark)
 
 						Map.Place_Down(cell, this);
 					} else {
+                        IsDown = isdownmemo;
 						return(false);
 					}
 				}
