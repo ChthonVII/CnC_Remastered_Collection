@@ -1420,7 +1420,7 @@ ResultType ObjectClass::Take_Damage(int & damage, int distance, WarheadType warh
 			**	give greater satisfaction when it is finally destroyed.
 			*/
             int overkill = damage - oldstrength;
-            if (ActiveCFEPatchConfig.EnableDeathsDoorFix && (damage > 1) && ((overkill < 10) || (overkill < damage / 2) || (overkill < maxstrength / 10)) && ((rawdamage < 100) || (damage < maxstrength / 2)) && ((oldstrength >= 10) || (oldstrength >= maxstrength / 100))){
+            if (ActiveCFEPatchConfig.EnableDeathsDoorFix && (rawdamage < 100) && (damage < maxstrength / 2) && (overkill < damage / 2) && (overkill < maxstrength / 10) && ((oldstrength > 10) || ((oldstrength > 1) && (oldstrength > maxstrength / 100)))){
                 damage = oldstrength - 1;
             }
             else {
