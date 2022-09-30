@@ -1061,7 +1061,7 @@ bool DriveClass::Start_Of_Move(void)
 			}
 		}
 
-		if (TryTryAgain = PATH_RETRY){
+		if (ActiveCFEPatchConfig.EnableASPathing){
             TryTryAgain = CFE_PATH_RETRY;
         }
 		else {
@@ -1218,7 +1218,7 @@ bool DriveClass::Start_Of_Move(void)
 		**	Reserve the destination cell so that it won't become
 		**	occupied AS this unit is moving into it.
 		*/
-		if (cando != MOVE_OK) {
+		if (cando != MOVE_OK) { // Chthon CFE Note: This is dead code because we already checked for this same condition and returned
 		 	Path[0] = FACING_NONE;		// Path is blocked!
 			TrackNumber = -1;
 		 	dest = NULL;
@@ -1272,8 +1272,20 @@ bool DriveClass::Start_Of_Move(void)
 						if (cando == MOVE_CLOAK) {
 							Map[destcell].Shimmer();
 						}
-
-						Path[0] = FACING_NONE;		// Path is blocked!
+                        
+                        // Chthon CFE Note: This is inconsistent with the behavior for the first cell above!!
+                        // In the one-cell case the unit will just wait one moving block without flushing its path
+                        // Also, the lack of a Stop_Driver() here might be a problem.
+                        // Let's make it consistent.
+						//Path[0] = FACING_NONE;		// Path is blocked!
+						Stop_Driver();
+						if (cando != MOVE_MOVING_BLOCK) {
+                            Path[0] = FACING_NONE;		// Path is blocked!
+                        }
+                        // move this up to avoid reduncancy
+                        IsNewNavCom = false;
+                        TrackIndex = 0;
+                        
 						TrackNumber = -1;
 						dest = NULL;
 						if (cando == MOVE_DESTROYABLE) {
@@ -1287,10 +1299,12 @@ bool DriveClass::Start_Of_Move(void)
 									Override_Mission(MISSION_ATTACK, ::As_Target(destcell), TARGET_NONE);
 								}
 							}
-							IsNewNavCom = false;
-							TrackIndex = 0;
-							return(true);
+							//IsNewNavCom = false;
+							//TrackIndex = 0;
+							//return(true);
 						}
+						// Chthon CFE Note: Continuing attempts to make this consistent, we should exit here
+                        return(true);
 					} else {
                         // Chthon CFE Note: replace memcopy with memmove when source and destination may overlap, as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/pull/608
 						//memcpy(&Path[0], &Path[2], CONQUER_PATH_MAX-2);
@@ -2352,3 +2366,30 @@ DriveClass::TurnTrackType const DriveClass::TrackControl[67] = {
 	{12,	12,	DIR_SW_X2,	F_},															// Drive back into refinery.
 	{13,	13,	DIR_SW,	F_}																// Drive out of weapons factory.
 };
+
+
+// Gets the next cell this unit plans to move to after the current move (if any) is complete
+// Returns 0 if this unit isn't trying to go anywhere
+// Note that DriveClass and Infantry class behave differently
+// DriveClass advances Path[0] as soon as it starts towards a new HeadToCoord
+// But infantry doesn't advance Path[0] until it reaches that HeadToCoord
+CELL DriveClass::CFE_Get_Next_Cell(){
+    CELL output = 0;
+    if (Path[0] != FACING_NONE){
+        COORDINATE headto = Head_To_Coord();
+        // if we are currently moving, apply the next move in Path[0] to our present destination
+        if (headto != 0){
+            output = Adjacent_Cell(Coord_Cell(headto), Path[0]);
+        }
+        // if we have a Path[], but aren't presently moving, apply the next move in Path[0] to our present location
+        else {
+            output = Adjacent_Cell(Coord_Cell(Coord), Path[0]);
+        }
+    }
+    // Assuming the bugfix for two-cell tracks works out, we don't need to worry about cases with no Path[0]
+    if (Map.In_Radar(output)){
+        return output;
+    }
+    
+    return 0;
+}

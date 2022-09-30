@@ -127,6 +127,8 @@ class DriveClass : public FootClass
 		*/
 		virtual void Code_Pointers(void);
 		virtual void Decode_Pointers(void);
+        
+        CELL CFE_Get_Next_Cell();
 
 		/**********************************************************************
 		**	These enumerations are used as working constants that exist only
