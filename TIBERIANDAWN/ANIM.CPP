@@ -54,7 +54,7 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include	"function.h"
-
+//#include "CFEDEBUG.H"
 
 /*
 ** This contains the value of the Virtual Function Table Pointer
@@ -118,11 +118,17 @@ void Shorten_Attached_Anims(ObjectClass * obj)
 {
 	if (obj) {
 		for (int index = 0; index < Anims.Count(); index++) {
-			AnimClass & anim = *Anims.Ptr(index);
+			// Chthon CFE Note: Let's not dereference pointers without a null check
+            // (This code was unreachable until bugfix, so not 100% sure it's not crashy)
+            //AnimClass & anim = *Anims.Ptr(index);
 
-			if (anim.Object == obj) {
-				anim.Loops = 0;
-			}
+			//if (anim.Object == obj) {
+			//	anim.Loops = 0;
+			//}
+            AnimClass* animptr = Anims.Ptr(index);
+            if (animptr && animptr->IsActive && (animptr->Object == obj)){
+                animptr->Loops = 0;
+            }
 		}
 	}
 }
@@ -644,6 +650,8 @@ AnimClass::AnimClass(AnimType animnum, COORDINATE coord, unsigned char timedelay
 	} else {
 		VirtualAnim = NULL;
 	}
+	
+	SoftDetach = false;
 }
 
 
@@ -1325,6 +1333,7 @@ COORDINATE AnimClass::Adjust_Coord(COORDINATE coord)
 void AnimClass::Detach(TARGET target, bool all)
 {
 	Validate();
+        
 	if (all) {
 		if (VirtualAnim && VirtualAnim->As_Target() == target) {
 			VirtualAnim = NULL;
@@ -1333,9 +1342,15 @@ void AnimClass::Detach(TARGET target, bool all)
 			}
 		}
 		if (Object && Object->As_Target() == target) {
-			Map.Remove(this, In_Which_Layer());
 			Object = NULL;
-			IsToDelete = true;
+            // Chthon CFE Note: To make burning down trees work properly, we need a way to detach animations without ending them.  
+            if (SoftDetach){
+                Loops = 0; // Do the work of Shorten_Attached_Anims()
+            }
+            else {
+                Map.Remove(this, In_Which_Layer());
+                IsToDelete = true;
+            }
 		}
 	}
 }

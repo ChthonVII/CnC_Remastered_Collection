@@ -164,6 +164,10 @@ class TerrainClass : public ObjectClass, public StageClass
 		** out spores?
 		*/
 		unsigned IsSporing:1;
+        
+public:
+        unsigned char BurnDownDelay; // Chthon CFE Note: How long a dead tree will continue burning
+private:
 
 		/*
 		** Some additional padding in case we need to add data to the class and maintain backwards compatibility for save/load
