@@ -54,6 +54,8 @@
 #include "function.h"
 #include <cmath>
 
+#include "FOOT.H"
+
 //#include	<string.h>
 
 /*
@@ -121,7 +123,6 @@ typedef enum {
 	FACING_COUNT			// Total of 8 directions (0..7).
 } FacingType;
 #endif
-
 
 /*-------------------------------------------------------------------------*/
 static bool DrawPath;
@@ -653,21 +654,23 @@ int FootClass::Find_Path_AStar(PathType* const resultPath, const CELL source, CE
 	// precompute our speed value so CFE_Passable_Cell doesn't need to do it repeatedly
 	int myleptonspertick = LeptonsPerTickSpeed();
     
-    // check now whether this is a group move so CFE_Passable_Cell doesn't need to do it repeatedly
-    bool isgroupmove = false;
-    // only ground vehicles need this (add boats for RA)
-    // harvesters should never do this; it tends to get them stuck
-    // only count as a group move if there's another unit nearby (frequent repaths will make this true when needed)
-    // don't count extremely short moves as group moves
-    if ((What_Am_I() == RTTI_UNIT) && (*((UnitClass*)this) != UNIT_HARVESTER) && Target_Legal(NavCom) && (::Distance(source, dest) > 5)){
-        for (int i = 0; i < Units.Count(); i++) {
-            UnitClass* unit = Units.Ptr(i);
-            if (unit && (unit != this) && unit->IsActive && !unit->IsInLimbo && unit->Strength && (House == unit->House) && (unit->NavCom == NavCom) && (Lepton_To_Cell(Distance(unit)) < 5)){
-                isgroupmove = true;
-                break;
+    // precompute the list of cells other units plan to occupy with their next move so we only need to do it once
+    std::vector<CellBlockerPair> twoawayblockages;
+    // We care about not cutting off units
+    // We don't care about not cutting off infantry
+    // In RA, we will have to care about boats
+    for (int i = 0; i < Units.Count(); i++) {
+        UnitClass* unit = Units.Ptr(i);
+        if (unit && (unit !=this) && unit->IsActive && !unit->IsInLimbo && unit->Strength && House->Is_Ally(unit)){
+            CellBlockerPair someblockerpair;
+            someblockerpair.blockedcell = unit->CFE_Get_Next_Cell();
+            someblockerpair.blockerptr = unit;
+            if (someblockerpair.blockedcell != 0){
+                twoawayblockages.push_back(someblockerpair);
             }
         }
     }
+
 
 	std::unordered_map<CELL, AStarCell> visited_cells;
 	static std::vector<AStarCell*> open_list;
@@ -719,7 +722,7 @@ int FootClass::Find_Path_AStar(PathType* const resultPath, const CELL source, CE
             }
             */
             CELL twoback = (prev_cell.prev) ? prev_cell.prev->position : 0;
-            float cell_cost = CFE_Passable_Cell(adjacent_cell_id, facing, prev_cell.cell_distance_from_start, prev_cell.cost_from_start, threat, threshhold, /*source, dest,*/ prev_cell.position, twoback, myleptonspertick, isgroupmove);
+            float cell_cost = CFE_Passable_Cell(adjacent_cell_id, facing, prev_cell.cell_distance_from_start, prev_cell.cost_from_start, threat, threshhold, prev_cell.position, twoback, myleptonspertick, twoawayblockages);
             
 			if (cell_cost > 0)
 			{
@@ -1820,13 +1823,11 @@ int FootClass::Passable_Cell(CELL cell, FacingType face, int threat, MoveType th
 // currentprice: current price of the path up to this point
 // threat: some level of threat the AI considers too great to enter the cell (not used much/often, I believe)
 // threshhold: the worst grade of passable type acceptable
-// begincell: the unit's current location
-// goalcell: the unit's destination
 // oneback: prior cell in path
 // twoback: two cells back in path
-// myleptonspertick: how may leptons per tick to I move on clear ground?
-// doflowcontrol: should I use the flow control logic to reduce traffic jams?
-float FootClass::CFE_Passable_Cell(CELL cell, FacingType face, int depth, float currentprice, int threat, MoveType threshhold, /*CELL begincell, CELL goalcell,*/ CELL oneback, CELL twoback, int myleptonspertick, bool doflowcontrol) const{
+// myleptonspertick: how many leptons per tick to I move on clear ground?
+// twoawayblockages: a precomputed list of cells that some other allied unit plans to enter on their next move
+float FootClass::CFE_Passable_Cell(CELL cell, FacingType face, int depth, float currentprice, int threat, MoveType threshhold, CELL oneback, CELL twoback, int myleptonspertick, std::vector<CellBlockerPair> const &twoawayblockages) const{
 
     // in case we somehow got called by an infantry in death animation
     if (!IsActive || IsInLimbo || !Strength){
@@ -1870,522 +1871,6 @@ float FootClass::CFE_Passable_Cell(CELL cell, FacingType face, int depth, float 
         retval -= 0.05f;
     }
     
-    // a very large chunk of code for making units that are part of a group move sometimes swing wide around corners or he start/end of bottlenecks
-    float flowcost = 0;
-    if (doflowcontrol){
-        enum flowchecktype {NO_CHECK, RIGHT_CHECK, RIGHT_CHECK_WIDE, RIGHT_CHECK_NARROW, LEFT_CHECK, LEFT_CHECK_WIDE, LEFT_CHECK_NARROW};
-        struct flowcelldata {
-            CELL oneawaycell;
-            CELL twoawaycell;
-            int oneawaystatus; //0 = passable, 1 = natural blockage, 2 =man-made blockage, -1 = off map
-            int twoawaystatus; //0 = passable, 1 = natural blockage, 2 =man-made blockage, -1 = off map
-            int gap;
-            int totalgap;
-        }; 
-        //FACING_N, FACING_E, FACING_S, FACING_W
-        flowchecktype checkflags[4] = {NO_CHECK, NO_CHECK, NO_CHECK, NO_CHECK};
-        flowchecktype cornercheckflags[4] = {NO_CHECK, NO_CHECK, NO_CHECK, NO_CHECK};
-        flowcelldata flowdata[4];
-        
-        // figure out which directions we have to check
-        // we only need to do cardinal directions since, even though units can move diagonally, all the cliffs and buildings are rectangular
-        // if the unit is moving diagonally, we need to check both pairs of cardinals
-        switch (face){
-            case FACING_N:
-                checkflags[1] = RIGHT_CHECK;
-                checkflags[3] = LEFT_CHECK;
-                break;
-            case FACING_NE:
-                checkflags[0] = LEFT_CHECK_NARROW;
-                checkflags[1] = RIGHT_CHECK_NARROW;
-                checkflags[2] = RIGHT_CHECK_WIDE;
-                checkflags[3] = LEFT_CHECK_WIDE;
-                break;
-            case FACING_E:
-                checkflags[0] = LEFT_CHECK;
-                checkflags[2] = RIGHT_CHECK;
-                break;
-            case FACING_SE:
-                checkflags[0] = LEFT_CHECK_WIDE;
-                checkflags[1] = LEFT_CHECK_NARROW;
-                checkflags[2] = RIGHT_CHECK_NARROW;
-                checkflags[3] = RIGHT_CHECK_WIDE;
-                break;
-            case FACING_S:
-                checkflags[1] = LEFT_CHECK;
-                checkflags[3] = RIGHT_CHECK;
-                break;
-            case FACING_SW:
-                checkflags[0] = RIGHT_CHECK_WIDE;
-                checkflags[1] = LEFT_CHECK_WIDE;
-                checkflags[2] = LEFT_CHECK_NARROW;
-                checkflags[3] = RIGHT_CHECK_NARROW;
-                break;
-            case FACING_W:
-                checkflags[0] = RIGHT_CHECK;
-                checkflags[2] = LEFT_CHECK;
-                break;
-            case FACING_NW:
-                checkflags[0] = RIGHT_CHECK_NARROW;
-                checkflags[1] = RIGHT_CHECK_WIDE;
-                checkflags[2] = LEFT_CHECK_WIDE;
-                checkflags[3] = LEFT_CHECK_NARROW;
-                break;
-            default:
-                break;
-        }
-    
-        // do an initial scan for blockages one or two cells away
-        for (int i=0; i<4; i++){
-            if (checkflags[i] == NO_CHECK){
-                continue;
-            }
-            FacingType flowcheckdir;
-            switch (i){
-                case 0:
-                    flowcheckdir = FACING_N;
-                    break;
-                case 1:
-                    flowcheckdir = FACING_E;
-                    break;
-                case 2:
-                    flowcheckdir = FACING_S;
-                    break;
-                case 3:
-                    flowcheckdir = FACING_W;
-                    break;
-                default:
-                    flowcheckdir = FACING_NONE;
-            }
-            // initialize
-            flowdata[i].oneawaycell = Adjacent_Cell(cell, flowcheckdir);
-            flowdata[i].twoawaycell = 0;
-            flowdata[i].oneawaystatus = 0;
-            flowdata[i].twoawaystatus = 0;
-            flowdata[i].gap = -1;
-            flowdata[i].totalgap = -1;
-            // if the first cell isn't off the map, check it
-            if (Map.In_Radar(flowdata[i].oneawaycell)){
-                CellClass* flowcellptr = &Map[flowdata[i].oneawaycell];
-                flowdata[i].oneawaystatus = flowcellptr->LongtermBlockage();
-                // if the first cell was passable, move on to second cell
-                if (flowdata[i].oneawaystatus == 0){
-                    flowdata[i].twoawaycell = Adjacent_Cell(flowdata[i].oneawaycell, flowcheckdir);
-                    // if second cell on map, check it
-                    if (Map.In_Radar(flowdata[i].twoawaycell)){
-                        flowcellptr = &Map[flowdata[i].twoawaycell];
-                        flowdata[i].twoawaystatus = flowcellptr->LongtermBlockage();
-                        if (flowdata[i].twoawaystatus != 0){
-                            flowdata[i].gap = 1;
-                        }
-                    }
-                    // second cell not on map
-                    else {
-                        flowdata[i].twoawaystatus = -1;
-                        flowdata[i].gap = 1;
-                    }
-                }
-                // if first cell not passable, we are done
-                else {
-                    flowdata[i].gap = 0;
-                }
-            }
-            // first cell not on map
-            else {
-                flowdata[i].oneawaystatus = -1;
-                flowdata[i].twoawaystatus = -1;
-                flowdata[i].gap = 0;
-            }
-        } // end for (i<4) initial scan
-    
-
-        // mark things that are potential corners for further testing
-        for (int i=0; i<4; i++){
-            // skip directions we didn't scan in the first place
-            if (checkflags[i] == NO_CHECK){
-                continue;
-            }
-            // skip directions that have no blockage
-            if (flowdata[i].gap == -1){
-                continue;
-            }
-            // skip directions where the map edge is a blockage -- it can't be a corner
-            if ((flowdata[i].gap == 0) && flowdata[i].oneawaystatus == -1){
-                continue;
-            }
-            else if ((flowdata[i].gap == 1) && flowdata[i].twoawaystatus == -1){
-                continue;
-            }
-            // rule out the possibility of a 1-cell gap
-            // check if the opposite direction also has a blockage
-            int oppositeindex = (i+2) % 4;
-            if (flowdata[oppositeindex].gap >= 0){
-                int totalgap = 1 + flowdata[i].gap + flowdata[oppositeindex].gap;
-                // proceed to corner check if gap is bigger than 1
-                if (totalgap > 1){
-                    cornercheckflags[i] = checkflags[i];
-                    flowdata[i].totalgap = totalgap; // save the total gap so we can use it later
-                }
-            }
-            // if there is no blockage in the opposite direction, proceed to corner check
-            else {
-                cornercheckflags[i] = checkflags[i];
-            }
-        } // end for (i<4) bottleneck scan
-
-        
-        // corner check logic
-        /* Preliminary note: We need a generalized direction of travel (GDT) -- 90 degrees CW or CCW of search direction, depending on whether blockage is to unit's left or right (CW if left of unit)
-        Two criteria must be met to have a corner or bottleneck start/end:
-        1. Either
-            blockage plus 2 cells from blockage in opposite direction of GDT should be impassble
-            or
-            blockage plus 2 cells in search direction should be impassable
-            The rationale for 3 cells total is that the smallest cliff pieces are 2 cells, and the connecting piece should have at least 1 cell aligned even if it's a diagonal
-        
-        2. One of the following:
-            A. The unit is passing through a bottleneck.
-                In this case we want to do flow control regardless of whether we're turning at the corner
-            B. The cell just past the blockage along GDT is passable and 
-                that cell is closer to the goal than the cell that's one step closer to the unit in the opposite of the search direction
-                Closer proximity to the goal is an imperfect proxy for expecting the unit will turn the corner
-            C. The cell just before the blockage along GDT is passable and
-                that cell is (a) equal the prior cell, or (b) equal the second prior cell, or (c) closer to the second prior cell than the cell that's one step closer to the unit in the opposite of the search direction, or (d) closer to the start than the cell that's one step closer to the unit in the opposite of the search direction.
-                Again we're using a proxy for expecting that we just came around a corner.
-                But in this case we have a few things that might be better indicators.
-                
-            On second thought, I'm going to take out the proximity checks.
-            The malus of some units going wide around corners not taken is probably less bad
-            than failing to go wide when the proxy test fail on corners actually taken.  
-        */
-        float tempflowcost; // use a temp variable because we might have more than one direction with a blockage
-        for (int i=0; i<4; i++){
-            if (cornercheckflags[i] == NO_CHECK){
-                continue;
-            }
-            tempflowcost = 0;
-            // get the cell with the blockage
-            CELL blockedcell;
-            if (flowdata[i].gap == 0){
-                blockedcell = flowdata[i].oneawaycell;
-            }
-            else {
-                blockedcell = flowdata[i].twoawaycell;
-            }
-            // bail if the "blockage" is the edge of the map (it can't be a corner)
-            // nvm - now handled in prior step above
-            //if (!Map.In_Radar(blockedcell)){
-            //    continue;
-            ///}
-            
-            // get general direction of travel
-            FacingType flowcheckdir;
-            switch (i){
-                case 0:
-                    flowcheckdir = FACING_N;
-                    break;
-                case 1:
-                    flowcheckdir = FACING_E;
-                    break;
-                case 2:
-                    flowcheckdir = FACING_S;
-                    break;
-                case 3:
-                    flowcheckdir = FACING_W;
-                    break;
-                default:
-                    flowcheckdir = FACING_NONE;
-            }
-            FacingType generaldirectionoftravel = flowcheckdir;
-            if ((cornercheckflags[i] == RIGHT_CHECK) || (cornercheckflags[i] == RIGHT_CHECK_NARROW) || (cornercheckflags[i] == RIGHT_CHECK_WIDE)){
-                generaldirectionoftravel = generaldirectionoftravel - (FacingType)2; //-= is not defined for FacingType, so use -
-            }
-            else {
-                generaldirectionoftravel += (FacingType)2;
-            }
-            FacingType reversegeneraldirectionoftravel = (FacingType)((char)generaldirectionoftravel ^4);
-            FacingType reversesearchdirection = (FacingType)((char)flowcheckdir ^4);
-
-            bool isbottleneck = (flowdata[i].totalgap > 1);
-            bool frontcelltest = false;
-            bool backcelltest = false;
-            bool extendedblocktest = false;
-            //bool continuetest = false;
-            CELL frontcell;
-            CELL backcell;
-            CELL tempcell;
-            CellClass* tempcellptr = nullptr;
-            
-            // Test if cell just past the potential corner is indeed open and closer to the goal than not turning the corner
-            if (!isbottleneck){
-                frontcell = Adjacent_Cell(blockedcell, generaldirectionoftravel);
-                if (Map.In_Radar(frontcell)){
-                    tempcellptr = &Map[frontcell];
-                    if (tempcellptr->LongtermBlockage() == 0){
-                        //continuetest = true;
-                        frontcelltest = true;
-                    }
-                }
-                /*
-                if (continuetest){
-                    tempcell = Adjacent_Cell(frontcell, reversesearchdirection);
-                    if (Map.In_Radar(tempcell){
-                        int dista = ::Distance(frontcell, goalcell);
-                        int distb = ::Distance(tempcell, goalcell);
-                        if (dista <= distb){
-                            frontcelltest = true;
-                        }
-                    }
-                    // if the alternative cell is off the map, then rounding the corner is the only option
-                    else {
-                        frontcelltest = true;
-                    }
-                    continuetest = false;
-                }
-                */
-            }
-            
-            // test if cell just behind potential corner is open and either a prior cell or closer to the start or the back-two cell
-            if (!isbottleneck && !frontcelltest){
-                backcell = Adjacent_Cell(blockedcell, reversegeneraldirectionoftravel);
-                if (Map.In_Radar(backcell)){
-                    tempcellptr = &Map[backcell];
-                    if (tempcellptr->LongtermBlockage() == 0){
-                        //continuetest = true;
-                        backcelltest = true;
-                    }
-                }
-                /*
-                if (continuetest){
-                    if ((backcell == oneback) || (backcell == twoback)){
-                        backcelltest = true;
-                    }
-                    else {
-                        tempcell = Adjacent_Cell(backcell, reversesearchdirection);
-                        if (Map.In_Radar(tempcell){
-                            int dista = ::Distance(backcell, begincell);
-                            int distb = ::Distance(tempcell, begincell);
-                            if (dista <= distb){
-                                backcelltest = true;
-                            }
-                            else {
-                                dista = ::Distance(backcell, twoback);
-                                distb = ::Distance(tempcell, twoback);
-                                if (dista < distb){ // not <= because it can sweep in paths that aren't going around the corner
-                                    backcelltest = true;
-                                }
-                            }
-                        }
-                        // if the alternative cell is off the map, then rounding the corner is the only option
-                        else {
-                            backcelltest = true;
-                        }
-                    }
-                    continuetest = false;
-                }
-                */
-            }
-            
-            // if we passed one of the first tests, check for a 3-long blockage
-            if (isbottleneck || frontcelltest || backcelltest){
-                
-                // check backwards
-                tempcell = Adjacent_Cell(blockedcell, reversegeneraldirectionoftravel);
-                if (Map.In_Radar(tempcell)){
-                    tempcellptr = &Map[tempcell];
-                    if (tempcellptr->LongtermBlockage() != 0){
-                        tempcell = Adjacent_Cell(tempcell, reversegeneraldirectionoftravel);
-                        if (Map.In_Radar(tempcell)){
-                            tempcellptr = &Map[tempcell];
-                             // if two consecutive cells past the blockage are both blocked, we're good
-                            if (tempcellptr->LongtermBlockage() != 0){
-                                extendedblocktest = true;
-                            }
-                        }
-                         // if the next cell is off the map, we're good.
-                        else {
-                            extendedblocktest = true;
-                        }
-                    }
-                }
-                // if the next cell is off the map, we're good.
-                else {
-                    extendedblocktest = true;
-                }
-                
-                // check sideways
-                if (!extendedblocktest){
-                    tempcell = Adjacent_Cell(blockedcell, flowcheckdir);
-                    if (Map.In_Radar(tempcell)){
-                        tempcellptr = &Map[tempcell];
-                        if (tempcellptr->LongtermBlockage() != 0){
-                            tempcell = Adjacent_Cell(tempcell, flowcheckdir);
-                            if (Map.In_Radar(tempcell)){
-                                tempcellptr = &Map[tempcell];
-                                // if two consecutive cells past the blockage are both blocked, we're good
-                                if (tempcellptr->LongtermBlockage() != 0){
-                                    extendedblocktest = true;
-                                }
-                            }
-                            // if the next cell is off the map, we're good.
-                            else {
-                                extendedblocktest = true;
-                            }
-                        }
-                    }
-                    // if the next cell is off the map, we're good.
-                    else {
-                        extendedblocktest = true;
-                    }
-                }
-            }
-            
-            // we found a corner!
-            // now let's figure out the cost to add
-            if ((isbottleneck || frontcelltest || backcelltest) && extendedblocktest){
-                
- 
-                // If we are going straight in a cardinal direction, the extra cost for going around a cell is 2 diagonals, minus 2 straight ~= 0.828
-                // If we are going straight in a diagonal direction, the extra cost for going around a cell is 2 straight minus 1 diagonal ~= 0.586
-                // (But we've eliminated this possibility by only checking cardinal directions)
-                // If we are turning into the gap (which we assume if our path isn't perpendicular to the gap),
-                // then there are two possibilties:
-                // If we can turn more tightly, inside our current arc, then the extra cost to go around a cell is zero
-                // If we must turn more widely, outside our current arc, then the extra cost to go around a cell is 1 diagonal ~= 1.414
-                // If we need to go around by 2 cells, cost is doubled
-                
-                
-                // potential corner with a 2-cell gap
-                if (flowdata[i].totalgap == 2){
-                    if (flowdata[i].gap == 0){
-                        if (GapTwoPreference == HUG_RIGHT){
-                            switch (checkflags[i]){
-                                case LEFT_CHECK:
-                                    tempflowcost = 0.828f;
-                                    break;
-                                case LEFT_CHECK_WIDE:
-                                    tempflowcost = 1.414f;
-                                    break;
-                                default:
-                                    tempflowcost = 0;
-                            }
-                        }
-                        else if (GapTwoPreference == HUG_LEFT){
-                            switch (checkflags[i]){
-                                case RIGHT_CHECK:
-                                    tempflowcost = 0.828f;
-                                    break;
-                                case RIGHT_CHECK_WIDE:
-                                    tempflowcost = 1.414f;
-                                    break;
-                                default:
-                                    tempflowcost = 0;
-                            }
-                        }
-                    }
-                }
-                // potential corner with a 3-cell gap or bigger
-                else{
-                    // outside cells
-                    if (flowdata[i].gap == 0){
-                        if (GapThreePreference == HUG_RIGHT){
-                            switch (checkflags[i]){
-                                case LEFT_CHECK:
-                                    tempflowcost = 1.656f; // doubled b/c we are 2 cells away from preferred position
-                                    break;
-                                case LEFT_CHECK_WIDE:
-                                    tempflowcost = 2.828f; // doubled b/c we are 2 cells away from preferred position
-                                    break;
-                                default:
-                                    tempflowcost = 0;
-                            }
-                        }
-                        else if (GapThreePreference == HUG_LEFT){
-                            switch (checkflags[i]){
-                                case RIGHT_CHECK:
-                                    tempflowcost = 1.656f; // doubled b/c we are 2 cells away from preferred position
-                                    break;
-                                case RIGHT_CHECK_WIDE:
-                                    tempflowcost = 2.828f; // doubled b/c we are 2 cells away from preferred position
-                                    break;
-                                default:
-                                    tempflowcost = 0;
-                            }
-                        }
-                        else if (GapThreePreference == HUG_MIDDLE){
-                            switch (checkflags[i]){
-                                case RIGHT_CHECK:
-                                case LEFT_CHECK:
-                                    tempflowcost = 0.828f;
-                                    break;
-                                case RIGHT_CHECK_WIDE:
-                                case LEFT_CHECK_WIDE:
-                                    tempflowcost = 1.414f;
-                                    break;
-                                default:
-                                    tempflowcost = 0;
-                            }
-                        }
-                    }
-                    // center cell
-                    // if there's also a potential corner on the other side, we'll end up checking this twice and using the higher value
-                    else if (flowdata[i].gap == 1){
-                        if (GapThreePreference == HUG_RIGHT){
-                            switch (checkflags[i]){
-                                case LEFT_CHECK:
-                                    tempflowcost = 0.828f;
-                                    break;
-                                case LEFT_CHECK_WIDE:
-                                    tempflowcost = 1.414f;
-                                    break;
-                                case RIGHT_CHECK_NARROW:
-                                    // the opposite side is necessarily a wide turn then.
-                                    // since it might not be a corner, handle it here
-                                    if (flowdata[i].totalgap == 3){
-                                        tempflowcost = 1.414f;
-                                        break;
-                                    }
-                                default:
-                                    tempflowcost = 0;
-                            }
-                        }
-                        else if (GapThreePreference == HUG_LEFT){
-                            switch (checkflags[i]){
-                                case RIGHT_CHECK:
-                                    tempflowcost = 0.828f;
-                                    break;
-                                case RIGHT_CHECK_WIDE:
-                                    tempflowcost = 1.414f;
-                                    break;
-                                case LEFT_CHECK_NARROW:
-                                    // the opposite side is necessarily a wide turn then.
-                                    // since it might not be a corner, handle it here
-                                    if (flowdata[i].totalgap == 3){
-                                        tempflowcost = 1.414f;
-                                        break;
-                                    }
-                                default:
-                                    tempflowcost = 0;
-                            }
-                        }
-                    }
-                }
-                // use the highest cost from any side
-                if (tempflowcost > flowcost){
-                    flowcost = tempflowcost;
-                }
-            }  // end if ((frontcelltest || backcelltest) && extendedblocktest) -- found a corner
-        } //end of for i<4, corner checking
-        
-        
-        // padding to break ties in favor of going around
-        // (but smaller padding than the logic for going around a slow-moving unit)
-        if (flowcost > 0){
-            flowcost  += 0.01f; 
-        }
-        
-    } // end of flow control
-    
     CellClass const * cellptr = &Map[cell];
         
     LandType celllandtype = Map[cell].Land_Type();
@@ -2410,8 +1895,175 @@ float FootClass::CFE_Passable_Cell(CELL cell, FacingType face, int depth, float 
         roadrage += (0.1f * (CFE_PATH_RETRY - TryTryAgain));
     }
     
+    // Check if this cell is on the precomputed list of cells two steps in front of an allied unit
+    // let's not cut them off if we can help it
+    bool istwostepblocker = false;
+    ObjectClass* twostepblocker = nullptr;
+    if (move == MOVE_OK){
+        for (unsigned int i = 0; i < twoawayblockages.size(); i++) {
+            if (twoawayblockages[i].blockedcell == cell){
+                move = MOVE_MOVING_BLOCK;
+                istwostepblocker = true;
+                twostepblocker = twoawayblockages[i].blockerptr;
+                break;
+            }
+        }
+    }
+    
     // There is a blockage, so we need to figure out how much delay it will cause
 	if ((move == MOVE_MOVING_BLOCK) || (move == MOVE_TEMP) || (move == MOVE_DESTROYABLE) ){
+        
+        // corner detection
+        // if a corner is detected adjacent to this cell, we will increase blockage costs extra high to encourge units to go around wide 
+        enum cornerchecktype {CHECK_NONE, CHECK_RIGHT, CHECK_LEFT};
+        cornerchecktype sidestocheck[4] = {CHECK_NONE, CHECK_NONE, CHECK_NONE, CHECK_NONE}; //FACING_N, FACING_E, FACING_S, FACING_W
+        int sidecheckresults[4] = {0, 0, 0, 0}; //0 = passable, 1 = natural blockage, 2 =man-made blockage, 3 = off map
+        CELL memocells[4] = {0, 0, 0, 0};
+        // figure out which cells are on which sides of the unit
+        switch (face){
+            case FACING_N:
+                sidestocheck[1] = CHECK_RIGHT;
+                sidestocheck[3] = CHECK_LEFT;
+                break;
+            case FACING_NE:
+                sidestocheck[0] = CHECK_LEFT;
+                sidestocheck[1] = CHECK_RIGHT;
+                sidestocheck[2] = CHECK_RIGHT;
+                sidestocheck[3] = CHECK_LEFT;
+                break;
+            case FACING_E:
+                sidestocheck[0] = CHECK_LEFT;
+                sidestocheck[2] = CHECK_RIGHT;
+                break;
+            case FACING_SE:
+                sidestocheck[0] = CHECK_LEFT;
+                sidestocheck[1] = CHECK_LEFT;
+                sidestocheck[2] = CHECK_RIGHT;
+                sidestocheck[3] = CHECK_RIGHT;
+                break;
+            case FACING_S:
+                sidestocheck[1] = CHECK_LEFT;
+                sidestocheck[3] = CHECK_RIGHT;
+                break;
+            case FACING_SW:
+                sidestocheck[0] = CHECK_RIGHT;
+                sidestocheck[1] = CHECK_LEFT;
+                sidestocheck[2] = CHECK_LEFT;
+                sidestocheck[3] = CHECK_RIGHT;
+                break;
+            case FACING_W:
+                sidestocheck[0] = CHECK_RIGHT;
+                sidestocheck[2] = CHECK_LEFT;
+                break;
+            case FACING_NW:
+                sidestocheck[0] = CHECK_RIGHT;
+                sidestocheck[1] = CHECK_RIGHT;
+                sidestocheck[2] = CHECK_LEFT;
+                sidestocheck[3] = CHECK_LEFT;
+                break;
+            default:
+                break;
+        }
+        
+        // do a preliminary scan for blocked cells
+        for (int i=0; i<4; i++){ //FACING_N, FACING_E, FACING_S, FACING_W
+                if (sidestocheck[i] == CHECK_NONE){
+                    continue;
+                }
+                CELL celltocheck = Adjacent_Cell(cell, FacingCardinals[i]);
+                if (Map.In_Radar(celltocheck)){
+                    CellClass* celltocheckptr = &Map[celltocheck];
+                    sidecheckresults[i] = celltocheckptr->LongtermBlockage();
+                    memocells[i] = celltocheck;
+                }
+                else {
+                    sidecheckresults[i] = 3; // off the map
+                }
+        }
+        
+        // if a blocked cell was found, do a more in-depth check to see if it's a corner
+        bool cornerdetected = false;
+        for (int i=0; i<4; i++){
+            // open cell is not a corner
+            if (sidecheckresults[i] == 0){
+                continue;
+            }
+            // off-the-map cell is not a corner
+            if (sidecheckresults[i] == 3){
+                continue;
+            }
+            // if a gap is only 1 cell wide, there's nothing we can do to optimize flow
+            if (sidecheckresults[(i+2)%4] > 0){
+                continue;
+            }
+            // set up some directions for the corner check
+            FacingType searchdirection = FacingCardinals[i];
+            FacingType traveldirection = searchdirection;
+            if (sidestocheck[i] == CHECK_RIGHT){
+                traveldirection += (FacingType)2;
+            }
+            else {
+                traveldirection = traveldirection - (FacingType)2; //-= not defined for FacingType
+            }
+            FacingType reversetraveldirection = (FacingType)((char)traveldirection ^4);
+            
+            // check for an open cell either before or behind the potential corner (otherwise it's a wall)
+            bool cornersubtestOK = false;
+            FacingType testdirections[2] = {traveldirection, reversetraveldirection};
+            for (int j=0; j<2; j++){
+                CELL celltocheck = Adjacent_Cell(memocells[i], testdirections[j]);
+                if (Map.In_Radar(celltocheck)){
+                    CellClass* celltocheckptr = &Map[celltocheck];
+                    if (celltocheckptr->LongtermBlockage() == 0){
+                        cornersubtestOK = true;
+                        break;
+                    }
+                }
+            }
+            // if neither the front nor the rear has an open cell, this a wall, not a corner
+            if (!cornersubtestOK){
+                continue;
+            }
+            
+            // test two additional cells sideways or behind to verify that the potential corner is attached to a wall
+            // (instead of just a one-off rock or something)
+            cornersubtestOK = false;
+            testdirections[0] = searchdirection; // now contains {searchdirection, reversetraveldirection}
+            for (int j=0; j<2; j++){
+                CELL linecell = memocells[i];
+                for (int k=0; k<2; k++){
+                    linecell = Adjacent_Cell(linecell, testdirections[j]);
+                    if (Map.In_Radar(linecell)){
+                        CellClass* linecellptr = &Map[linecell];
+                        // open ground means we don't have a line of blocked cells, so abort search in this direction
+                        if (linecellptr->LongtermBlockage() == 0){
+                            break;
+                        }
+                        // if we reached the last cell and it's blocked, we have a line of blocked cells
+                        else if (k == 1){
+                            cornersubtestOK = true;
+                        }
+                    }
+                    // count the edge of the map as an infinite wall
+                    else {
+                        cornersubtestOK = true;
+                        break;
+                    }
+                }
+                if (cornersubtestOK){
+                    break;
+                }
+            }
+            // if there isn't a wall extending back or sideways, this isn't a corner
+            if (!cornersubtestOK){
+                continue;
+            }
+            
+            // if we got here without hitting a continue statement, then we found a corner
+            cornerdetected = true;
+            break;
+            
+        } // end for i<4 corner testing
         
         // we need to know some things about the blocking unit to figure out how big the delay is
         float rotateticks = 0.0f;
@@ -2468,7 +2120,12 @@ float FootClass::CFE_Passable_Cell(CELL cell, FacingType face, int depth, float 
                     }
                 }
             }
-            if (uobject){
+            // if we faked a MOVE_MOVING_BLOCK because of a two-away unit, pick that up here
+            if (!uobject && istwostepblocker){
+                uobject = twostepblocker;
+                isremoteblocker = true;
+            }
+            if (uobject && uobject->IsActive && !uobject->IsInLimbo && uobject->Strength){
                 // or it could be a tree a stupid flame tank wants to light on fire... let's prevent that
                 // sadly, this isn't enough. Optimize_Moves() will still try to send fire-damage units through trees adjacent to their starting point
                 // So we actually need to fix the bug with trees not burning down
@@ -2485,7 +2142,7 @@ float FootClass::CFE_Passable_Cell(CELL cell, FacingType face, int depth, float 
                     TechnoClass* tobj = (TechnoClass*)uobject;
         
                     // safety check that the blocker isn't an infantry doing death animation or something
-                    if (/*tobj &&*/ tobj->IsActive && !tobj->IsInLimbo && tobj->Strength){
+                    //if (/*tobj &&*/ tobj->IsActive && !tobj->IsInLimbo && tobj->Strength){
 
                         bool blockerisinfantry = (tobj->What_Am_I() == RTTI_INFANTRY);
                         bool blockerisunit = (tobj->What_Am_I() == RTTI_UNIT);
@@ -2520,13 +2177,18 @@ float FootClass::CFE_Passable_Cell(CELL cell, FacingType face, int depth, float 
                                 blockerleptonspertick = 1;
                             }
                             blockertickspercell = 256.0/blockerleptonspertick;
-                            // figure out the blocker's direction by its relatie destination if possible, and its current orientation if not
-                            COORDINATE blockerheadto = thatfoot->Head_To_Coord();
-                            if (blockerheadto && (blockerheadto != thatfoot->Center_Coord())){
-                                blockerface = Dir_Facing(Direction8(thatfoot->Center_Coord(), blockerheadto));
+                            // figure out the blocker's direction by its relative destination if possible, and its current orientation if not
+                            if (istwostepblocker && (thatfoot->Path[0] != FACING_NONE)){
+                                blockerface = thatfoot->Path[0];
                             }
                             else {
-                                blockerface = Dir_Facing(thatfoot->PrimaryFacing);
+                                COORDINATE blockerheadto = thatfoot->Head_To_Coord();
+                                if (blockerheadto && (blockerheadto != thatfoot->Center_Coord())){
+                                    blockerface = Dir_Facing(Direction8(thatfoot->Center_Coord(), blockerheadto));
+                                }
+                                else {
+                                    blockerface = Dir_Facing(thatfoot->PrimaryFacing);
+                                }
                             }
                             blockisdiagonal = (blockerface == FACING_NE) || (blockerface == FACING_SE) || (blockerface == FACING_NW) || (blockerface == FACING_SW);
                             headon = (face == (blockerface ^4));
@@ -2593,12 +2255,23 @@ float FootClass::CFE_Passable_Cell(CELL cell, FacingType face, int depth, float 
                             if (isremoteblocker){
                                 moveticks *= 1.5f; // average case is that they're halfway through the move in
                             }
+                            
+                            // the cost to go around a unit while going around a corner increases by another diagaonal
+                            if (cornerdetected && (moveticks > 0) && ((move == MOVE_MOVING_BLOCK) || (move == MOVE_TEMP))){
+                                moveticks += 1.414f * blockertickspercell;
+                                if (isremoteblocker){
+                                    // add even more if the blocker isn't in the cell yet
+                                    moveticks += blockertickspercell;
+                                }
+                            }
+                            
                             if ( (move == MOVE_MOVING_BLOCK) || (move == MOVE_TEMP) ){
                                 moveticks *= roadrage;
                             }
                             if (move == MOVE_TEMP){
                                 offsetmoveticks = false;  // it won't scatter until we get there
                             }
+                            
                             // we may have to pass slower units or we'll keep bumping into them
                             // also "pass" same-speed units if we're only 1 cell behind them so we don't bumper bump when lepton values don't exactly match up 
                             if (goingmyway && 
@@ -2640,6 +2313,15 @@ float FootClass::CFE_Passable_Cell(CELL cell, FacingType face, int depth, float 
                                     goaroundcost = (isdiagonal) ? 0.586f : 0.828f;
                                 }
                                 
+                                // the cost to go around a unit while going around a corner increases by another diagaonal
+                                if (cornerdetected && (goaroundcost > 0)){
+                                    goaroundcost += 1.414f;
+                                    if (isremoteblocker){
+                                        // add even more if the blocker isn't in the cell yet
+                                        goaroundcost += 1.0f;
+                                    }
+                                }
+                                
                                 // pad the cost for going around to make sure ties are broken in favor of going around
                                 goaroundcost += 0.25f;
                                 
@@ -2659,10 +2341,10 @@ float FootClass::CFE_Passable_Cell(CELL cell, FacingType face, int depth, float 
                                 }
                                 
                                 // to the extent the go around cost is more than the flow cost, ignore the latter
-                                flowcost -= goaroundcost;
-                                if (flowcost < 0){
-                                    flowcost = 0;
-                                }
+                                //flowcost -= goaroundcost;
+                                //if (flowcost < 0){
+                                //    flowcost = 0;
+                                //}
                             }
                         }
                         
@@ -2750,7 +2432,7 @@ float FootClass::CFE_Passable_Cell(CELL cell, FacingType face, int depth, float 
                             shootticks *= roadrage; // keep proportion with other blockages, or road rage may direct us into MOVE_DESTROYABLE to get around other blockages that are actually less permanent
                             offsetshootticks = false; // can't shoot it until we get there
                         }
-                    } // end safety check
+                    //} // end safety check
                     
                 } // end if IsTechno()
             } // end if uobject isn't nullptr
@@ -2761,6 +2443,10 @@ float FootClass::CFE_Passable_Cell(CELL cell, FacingType face, int depth, float 
                 if (move == MOVE_MOVING_BLOCK){
                     // assume 50% slower than self
                     moveticks = mytickspercell * 1.5f;
+                    if (cornerdetected){
+                        // assume we need to go around whatever this is
+                        moveticks += mytickspercell * 2.242f;
+                    }
                     moveticks *= roadrage;
                 }
                 else if (move == MOVE_TEMP){
@@ -2814,9 +2500,6 @@ float FootClass::CFE_Passable_Cell(CELL cell, FacingType face, int depth, float 
         offsetable = 0.0f;
     }
     retval += ((offsetable + nonoffsetable)/mytickspercell); // convert ticks into cells
-    
-    // add the flow cost
-    retval += flowcost;
     
     
 	// Infantry don't really want to walk through tiberium if there's a reasonable detour (except chem soldiers)

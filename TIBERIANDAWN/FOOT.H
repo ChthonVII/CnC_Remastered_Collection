@@ -43,6 +43,10 @@
 class UnitClass;
 class BuildingClass;
 
+struct CellBlockerPair {
+    CELL       blockedcell = 0;
+    ObjectClass* blockerptr = nullptr;
+};
 
 /****************************************************************************
 **	Movable objects are handled by this class definition. Moveable objects
@@ -282,7 +286,7 @@ class FootClass :	public TechnoClass
 		// Chthon CFE Note: make  public so harvester optimizations and queue jumping can use it
 		int Find_Path_AStar(PathType* const resultPath, const CELL source, CELL dest, const int maxLen, const MoveType threshhold, const int threat) const;
         //int Passable_Cell(CELL cell, FacingType face, int threat, MoveType threshhold) const;
-        float CFE_Passable_Cell(CELL cell, FacingType face, int depth, float currentprice, int threat, MoveType threshhold, /*CELL begincell, CELL goalcell,*/ CELL oneback, CELL twoback, int myleptonspertick, bool doflowcontrol) const;
+        float CFE_Passable_Cell(CELL cell, FacingType face, int depth, float currentprice, int threat, MoveType threshhold, CELL oneback, CELL twoback, int myleptonspertick, std::vector<CellBlockerPair> const &twoawayblockages) const;
         int LeptonsPerTickSpeed(LandType landtype=LAND_CLEAR) const;
         
         // Chthon CFE Note: Q-Move port
