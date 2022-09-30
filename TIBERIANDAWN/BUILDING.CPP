@@ -101,7 +101,7 @@
 */
 #include "SidebarGlyphx.h"
 
-#include "CFEDEBUG.H"
+//#include "CFEDEBUG.H"
 
 extern void On_Sound_Effect(const HouseClass* player_ptr, int sound_effect_index, const char* extension, int variation, COORDINATE coord);
 
@@ -1651,7 +1651,6 @@ void BuildingClass::AI(void)
 	**	all production control.
 	*/
 	if (Factory && Factory->Has_Completed() && PlacementDelay.Expired()) {
-        if (*this == STRUCT_CONST){CFE_Debug_Printf("Frame: %i. Conyard is ready to place a building.", Frame);}
 		switch (Exit_Object(Factory->Get_Object())) {
 
 			/*
@@ -1663,19 +1662,16 @@ void BuildingClass::AI(void)
 				Factory->Abandon();
 				delete Factory;
 				Factory = 0;
-                if (*this == STRUCT_CONST){CFE_Debug_Printf("Frame: %i. Conyard is ready to place a building. Exit_Object() returned 0 (total fail).", Frame);}
 				break;
 
 			case 1:
 				PlacementDelay = TICKS_PER_SECOND*3;
-                if (*this == STRUCT_CONST){CFE_Debug_Printf("Frame: %i. Conyard is ready to place a building. Exit_Object() returned 1 (blocked, try again).", Frame);}
 				break;
 
 			case 2:
 				Factory->Completed();
 				delete Factory;
 				Factory = 0;
-                if (*this == STRUCT_CONST){CFE_Debug_Printf("Frame: %i. Conyard is ready to place a building. Exit_Object() returned 2 (success).", Frame);}
 				break;
 
 		}
@@ -1736,7 +1732,6 @@ void BuildingClass::AI(void)
 				**	production can never complete -- don't bother starting it.
 				*/
 				if (House->IsStarted && House->Available_Money() > 10) {
-                    if (*this == STRUCT_CONST){CFE_Debug_Printf("Frame: %i. Conyard requesting new thing to build.", Frame);}
 					TechnoTypeClass const * techno = House->Suggest_New_Object(Class->ToBuild);
 
 					/*
@@ -1744,19 +1739,16 @@ void BuildingClass::AI(void)
 					**	producing it now.
 					*/
 					if (techno) {
-                        if (*this == STRUCT_CONST){CFE_Debug_Printf("Frame: %i. Conyard will make a %i.", Frame, *((BuildingClass*)techno));}
 						Factory = new FactoryClass;
 						if (Factory) {
 							if (!Factory->Set(*techno, *House)) {
 								delete Factory;
 								Factory = 0;
-                                if (*this == STRUCT_CONST){CFE_Debug_Printf("Frame: %i. Factory failed to set up!.", Frame);}
 							} else {
 #ifdef USE_RA_AI
 								House->Production_Begun(Factory->Get_Object());		// Added for RA AI in TD. ST - 7/26/2019 9:46AM
 #endif
 								Factory->Start();
-                                if (*this == STRUCT_CONST){CFE_Debug_Printf("Frame: %i. Factory started.", Frame);}
 							}
 						}
 					}
@@ -2913,18 +2905,14 @@ int BuildingClass::Exit_Object(TechnoClass * base)
 				**	routine will return failure. The calling routine will probably abandon this
 				**	building in preference to building another.
 				*/
-				CFE_Debug_Printf("Frame: %i. Exit_Object() called.", Frame);
 				BaseNodeClass * node = Base.Next_Buildable(((BuildingClass *)base)->Class->Type);
 				// Replaced with RA AI functioality. ST - 7/25/2019 4:14PM
 #ifndef USE_RA_AI
 				if (node) {
-                    CFE_Debug_Printf("Frame: %i. Exit_Object() called. Node Found.", Frame);
 					if (Flush_For_Placement(base, Coord_Cell(node->Coord))) {
-                        CFE_Debug_Printf("Frame: %i. Exit_Object() called. Flush Failed", Frame);
 						return(1);
 					}
 					if (base->Unlimbo(node->Coord)) {
-                        CFE_Debug_Printf("Frame: %i. Exit_Object() called. Unlimbo passed", Frame);
 						return(2);
 					}
 				}
