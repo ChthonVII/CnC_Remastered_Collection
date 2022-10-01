@@ -1412,10 +1412,11 @@ void InfantryClass::AI(void)
 							if (TryTryAgain) {
 								TryTryAgain--;
 							} else {
+                                // Chthon CFE Note: dead code
 								// Chthon CFE Note: fix for MP
-                                //if (IsNewNavCom) Sound_Effect(VOC_SCOLD);
-                                if (IsNewNavCom && House->IsHuman) On_Sound_Effect(House, (int)VOC_SCOLD, "", 1, Coord);
-								IsNewNavCom = false;
+                                ////if (IsNewNavCom) Sound_Effect(VOC_SCOLD);
+                                //if (IsNewNavCom && House->IsHuman) On_Sound_Effect(House, (int)VOC_SCOLD, "", 1, Coord);
+								//IsNewNavCom = false;
 
 								//If we're trying to enter a transport we need to fail so others can try to enter. - LLL 4/17/2020
 								if (Mission == MISSION_ENTER) {
@@ -1472,10 +1473,11 @@ void InfantryClass::AI(void)
 
 					Path[0] = FACING_NONE;
 					Stop_Driver();
+                    // Chthon CFE Note: dead code
 					// Chthon CFE Note: Fix for MP
-                    //if (IsNewNavCom) Sound_Effect(VOC_SCOLD);
-					if (IsNewNavCom && House->IsHuman) On_Sound_Effect(House, (int)VOC_SCOLD, "", 1, Coord);
-                    IsNewNavCom = false;
+                    ////if (IsNewNavCom) Sound_Effect(VOC_SCOLD);
+					//if (IsNewNavCom && House->IsHuman) On_Sound_Effect(House, (int)VOC_SCOLD, "", 1, Coord);
+                    //IsNewNavCom = false;
 
 				} else {
 					if (Start_Driver(acoord)) {
@@ -1551,7 +1553,7 @@ void InfantryClass::AI(void)
 			}
 			Mark(MARK_DOWN);
 		}
-		IsNewNavCom = false;
+		//IsNewNavCom = false; // Chthon CFE Note: dead code
 	}
     
 }

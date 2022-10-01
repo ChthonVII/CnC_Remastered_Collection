@@ -1030,10 +1030,11 @@ bool DriveClass::Start_Of_Move(void)
 					TryTryAgain--;
 				} else {
 					Assign_Destination(TARGET_NONE);
+                    // Chthon CFE Note: dead code
 					// Chthon CFE Note: fixed for MP
 					//if (IsNewNavCom) Sound_Effect(VOC_SCOLD);
-					if (IsNewNavCom && House->IsHuman) On_Sound_Effect(House, (int)VOC_SCOLD, "", 1, Coord);
-					IsNewNavCom = false;
+					//if (IsNewNavCom && House->IsHuman) On_Sound_Effect(House, (int)VOC_SCOLD, "", 1, Coord);
+					//IsNewNavCom = false; // Chthon CFE Note: dead code
 				}
 			}
 			Stop_Driver();
@@ -1163,12 +1164,13 @@ bool DriveClass::Start_Of_Move(void)
 						Override_Mission(MISSION_ATTACK, ::As_Target(destcell), TARGET_NONE);
 					}
 				}
-			} else {
+			} /*else { // Chthon CFE Note: dead code
 				// Chthon CFE Note: bugfix - play for owner, not server, also add coord
                 //if (IsNewNavCom) Sound_Effect(VOC_SCOLD);
                 if (IsNewNavCom && House->IsHuman) On_Sound_Effect(House, (int)VOC_SCOLD, "", 1, Coord);
 			}
 			IsNewNavCom = false;
+            */
 			TrackNumber = -1;
 			return(true);
 		}
@@ -1218,11 +1220,14 @@ bool DriveClass::Start_Of_Move(void)
 		**	Reserve the destination cell so that it won't become
 		**	occupied AS this unit is moving into it.
 		*/
+        // Chthon CFE Note: dead code
+        /*
 		if (cando != MOVE_OK) { // Chthon CFE Note: This is dead code because we already checked for this same condition and returned
 		 	Path[0] = FACING_NONE;		// Path is blocked!
 			TrackNumber = -1;
 		 	dest = NULL;
 		} else {
+        */
 
 			Overrun_Square(Coord_Cell(dest), true);
 
@@ -1283,7 +1288,7 @@ bool DriveClass::Start_Of_Move(void)
                             Path[0] = FACING_NONE;		// Path is blocked!
                         }
                         // move this up to avoid reduncancy
-                        IsNewNavCom = false;
+                        //IsNewNavCom = false; // Chthon CFE Note: dead code
                         TrackIndex = 0;
                         
 						TrackNumber = -1;
@@ -1299,7 +1304,7 @@ bool DriveClass::Start_Of_Move(void)
 									Override_Mission(MISSION_ATTACK, ::As_Target(destcell), TARGET_NONE);
 								}
 							}
-							//IsNewNavCom = false;
+							//IsNewNavCom = false; // Chthon CFE Note: dead code
 							//TrackIndex = 0;
 							//return(true);
 						}
@@ -1319,9 +1324,9 @@ bool DriveClass::Start_Of_Move(void)
 				}
 				Path[CONQUER_PATH_MAX-1] = FACING_NONE;
 			}
-		}
+		//} // Chthon CFE Note: dead code
 
-		IsNewNavCom = false;
+		//IsNewNavCom = false; // Chthon CFE Note: dead code
 		TrackIndex = 0;
 		if (!Start_Driver(dest)) {
 			TrackNumber = -1;

@@ -101,7 +101,7 @@ FootClass::FootClass(void) : Speed(0)
 	IsInitiated = false;
 	IsPlanningToLook = false;
 	IsDeploying = false;
-	IsNewNavCom = false;
+	//IsNewNavCom = false; // Chthon CFE Note: dead code
 	IsFiring = false;
 	IsRotating = false;
 	IsUnloading = false;
@@ -181,7 +181,7 @@ FootClass::FootClass(HousesType house) :
 	IsRotating = false;
 	IsFiring = false;
 	IsDeploying = false;
-	IsNewNavCom = false;
+	//IsNewNavCom = false; // Chthon CFE Note: dead code
 	IsPlanningToLook = false;
 	HeadToCoord = 0L;
 	PathDelay = 0;
@@ -1802,6 +1802,10 @@ void FootClass::Assign_Destination(TARGET target)
         UnmodifiedNavCom = target;
     }
     
+    // Chthon CFE Note: this variable is never set to true anywhere, so it doens't do anything
+    // And... it shouldn't be, because the constant beeps are fucking annoying.
+    // So just strip it everywhere for performance
+    // IsNewNavCom = true;
 }
 
 

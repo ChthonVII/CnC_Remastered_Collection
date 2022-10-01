@@ -72,7 +72,7 @@ class FootClass :	public TechnoClass
 		**	movement. This flag is cleared if any movement was able to be performed.
 		**	It never gets set for computer controlled units.
 		*/
-		unsigned IsNewNavCom:1;
+		//unsigned IsNewNavCom:1; // Chthon CFE Note: dead code -- It's NEVER set to true ANYWHERE, so it does nothing! (Also, it you fix it, the beep is so fucking annoying it makes you unfix it.)
 
 		/*
 		**	There are certain cases where a unit should perform a full scan rather than
