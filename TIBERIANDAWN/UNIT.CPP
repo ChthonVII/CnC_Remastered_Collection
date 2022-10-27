@@ -2623,7 +2623,8 @@ bool UnitClass::Goto_Tiberium(void)
 			/*
 			**	Perform a ring search outward from the center.
 			*/
-			for (int radius = 1; radius < 64; radius++) {
+            int maxradius = (Map.MapBinaryVersion == MAP_VERSION_MEGA) ? 128 : 64;
+			for (int radius = 1; radius < maxradius; radius++) {
 				CELL cell = center;
 				CELL bestcell = 0;
 				int tiberium = 0;
