@@ -2095,6 +2095,15 @@ float FootClass::CFE_Passable_Cell(CELL cell, FacingType face, int depth, float 
         if (!wallthere){
             
             ObjectClass* uobject = cellptr->Cell_Occupier();
+            
+            // now deal with various cases where we're blocked, but the cell doesn't have an occupier
+            
+            // if we faked a MOVE_MOVING_BLOCK because of a two-away unit, pick that up here
+            if (!uobject && istwostepblocker){
+                uobject = twostepblocker;
+                isremoteblocker = true;
+            }
+            
             // if the cell is marked as occupied for a unit but there's nothing there,
             // that means someone used Mark_Track() to "reserve" it.
             // so let's try to find them if we can
@@ -2120,11 +2129,101 @@ float FootClass::CFE_Passable_Cell(CELL cell, FacingType face, int depth, float 
                     }
                 }
             }
-            // if we faked a MOVE_MOVING_BLOCK because of a two-away unit, pick that up here
-            if (!uobject && istwostepblocker){
-                uobject = twostepblocker;
-                isremoteblocker = true;
+            
+            // if this is a diagonal move, check for a diagonal blocker
+            bool isdiagonalcrossblocker = false;
+            if (!uobject && isdiagonal){
+                // the crossing point is the upper-left corner of the southeast cell
+                COORDINATE crossingpoint = 0;
+                switch (face){
+                    case FACING_NE:
+                        crossingpoint = Cell_Coord(Adjacent_Cell(cell, FACING_S));
+                        break;
+                    case FACING_SE:
+                        crossingpoint = Cell_Coord(cell);
+                        break;
+                    case FACING_SW:
+                        crossingpoint = Cell_Coord(Adjacent_Cell(cell, FACING_E));
+                        break;
+                    case FACING_NW:
+                        crossingpoint = Cell_Coord(Adjacent_Cell(cell, FACING_SE));
+                        break;
+                    default:
+                        // should be unreachable
+                        crossingpoint = Cell_Coord(cell);
+                }
+                FacingType reversefacing = (FacingType)((char)face ^4);
+                CELL xdcells[2] = {0,0};
+                xdcells[0] = Adjacent_Cell(cell, reversefacing + (FacingType)1);
+                xdcells[1] = Adjacent_Cell(cell, reversefacing - (FacingType)1);
+                if (Map.In_Radar(xdcells[0]) && Map.In_Radar(xdcells[1])){
+                    for (int i=0; i<2; i++){
+                        CellClass* xdcellptr = &Map[xdcells[i]];
+                        ObjectClass *xdobj = xdcellptr->Cell_Occupier();
+                        while (xdobj) {
+                            if ((xdobj != this) && xdobj->IsActive && !xdobj->IsInLimbo && xdobj->Strength){
+                                RTTIType xdrtti = xdobj->What_Am_I();
+                                if ((xdrtti == RTTI_UNIT) || (xdrtti == RTTI_INFANTRY)){
+                                    FootClass* xdfoot = (FootClass*)xdobj;
+                                    COORDINATE xdhtcoord = xdfoot->Head_To_Coord();
+                                    CELL xdhtcell = Coord_Cell(xdhtcoord);
+                                    CELL otherxdcell = xdcells[(i+1)%2];
+                                    bool iscrossblocker = false;
+                                    if (xdhtcell == otherxdcell){
+                                        iscrossblocker = true;
+                                    }
+                                    else if (xdhtcell == xdcells[i]){
+                                        int xbx = Coord_X(xdfoot->Coord);
+                                        int xby = Coord_Y(xdfoot->Coord);
+                                        int xbhtx = Coord_X(xdhtcoord);
+                                        int xbhty = Coord_Y(xdhtcoord);
+                                        int xpx = Coord_X(crossingpoint);
+                                        int xpy = Coord_Y(crossingpoint);
+                                        int highx;
+                                        int lowx;
+                                        int highy;
+                                        int lowy;
+                                        if (xbhtx > xpx){
+                                            highx = xbhtx - 1; // shift by one because <= later
+                                            lowx = xpx;
+                                        }
+                                        else {
+                                            highx = xpx;
+                                            lowx = xbhtx + 1; // shift by one because >= later
+                                        }
+                                        if (xbhty > xpy){
+                                            highy = xbhty - 1; // shift by one because <= later
+                                            lowy = xpy;
+                                        }
+                                        else {
+                                            highy = xpy;
+                                            lowy = xbhty + 1; // shift by one because >= later
+                                        }
+                                        if ((xbx >= lowx) && (xbx <= highx) && (xby >= lowy) && (xby <= highy)){
+                                            iscrossblocker = true;
+                                        }
+                                    }
+                                    if (iscrossblocker){
+                                        if (
+                                            ((move == MOVE_MOVING_BLOCK) && House->Is_Ally(xdfoot)) ||
+                                            ((move == MOVE_DESTROYABLE) && !House->Is_Ally(xdfoot))    
+                                        ){
+                                            uobject = xdfoot;
+                                            isdiagonalcrossblocker = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            xdobj = xdobj->Next;
+                        }
+                        if (isdiagonalcrossblocker){
+                            break;
+                        }
+                    }
+                }
             }
+            
             if (uobject && uobject->IsActive && !uobject->IsInLimbo && uobject->Strength){
                 // or it could be a tree a stupid flame tank wants to light on fire... let's prevent that
                 // sadly, this isn't enough. Optimize_Moves() will still try to send fire-damage units through trees adjacent to their starting point
@@ -2272,6 +2371,11 @@ float FootClass::CFE_Passable_Cell(CELL cell, FacingType face, int depth, float 
                                 offsetmoveticks = false;  // it won't scatter until we get there
                             }
                             
+                            // if we have a diagonal cross blocker, they're probably already partway out of the way
+                            if (isdiagonalcrossblocker){
+                                moveticks *= 0.75;
+                            }
+                            
                             // we may have to pass slower units or we'll keep bumping into them
                             // also "pass" same-speed units if we're only 1 cell behind them so we don't bumper bump when lepton values don't exactly match up 
                             if (goingmyway && 
@@ -2325,6 +2429,11 @@ float FootClass::CFE_Passable_Cell(CELL cell, FacingType face, int depth, float 
                                 // pad the cost for going around to make sure ties are broken in favor of going around
                                 goaroundcost += 0.25f;
                                 
+                                // if we have a diagonal cross blocker, they're probably already partway out of the way
+                                if (isdiagonalcrossblocker){
+                                    goaroundcost *= 0.75;
+                                }
+                                    
                                 // multiply by speed ratio so faster units really want to go around
                                 goaroundcost *= (myleptonspertick/blockerleptonspertick);
                                 

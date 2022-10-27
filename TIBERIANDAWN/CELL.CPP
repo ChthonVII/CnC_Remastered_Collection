@@ -73,6 +73,7 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include	"function.h"
+#include "CFEDEBUG.H"
 
 /*
 ** New sidebar for GlyphX multiplayer. ST - 3/26/2019 12:24PM
@@ -611,7 +612,27 @@ void CellClass::Occupy_Down(ObjectClass * object)
 
 		case RTTI_AIRCRAFT:
 		case RTTI_UNIT:
-			Flag.Occupy.Vehicle = true;
+            // Chthon CFE Note: Fixed to prevent one unit from changing a flag set by another.
+            // There seem to be two causes for this:
+            // (1) The major bug in the track-jumping logic in DRIVE.CPP (now fixed)
+            // (2) When tracks include a node that goes past an edge/corner a little bit into another cell.
+            // (Possibly due to track rotations/transpositions not accounting for
+            // "lepton 0 is in this cell, but lepton 256 is in the next cell") <-- guess
+            // Allowing a unit to pull up someone else's flag can lead to "two units in the same cell" situations.
+            if (!ReservingVehicle || (ReservingVehicle == object) || !Flag.Occupy.Vehicle) {
+                /*
+                if (ReservingVehicle && (ReservingVehicle != object) && !Flag.Occupy.Vehicle){
+                    CFE_Debug_Printf("Frame %i: CellClass::Occupy_Down() cleaned up dangling ReservingVehicle pointer in cell %i, %i (%i) that pointed to 0x%X", Frame, Cell_X(Cell_Number()), Cell_Y(Cell_Number()), Cell_Number(), ReservingVehicle);
+                }
+                */
+                ReservingVehicle = (DriveClass*)object;
+                Flag.Occupy.Vehicle = true;
+            }
+            /*
+            else {
+                CFE_Debug_Printf("Frame %i: CellClass::Occupy_Down() wants to reserve cell %i, %i (%i) for 0x%X but it's already reserved for 0x%X", Frame, Cell_X(Cell_Number()), Cell_Y(Cell_Number()), Cell_Number(), object, ReservingVehicle);
+            }
+            */
 			break;
 
 		case RTTI_TERRAIN:
@@ -675,7 +696,27 @@ void CellClass::Occupy_Up(ObjectClass * object)
 
 		case RTTI_AIRCRAFT:
 		case RTTI_UNIT:
-			Flag.Occupy.Vehicle = false;
+            // Chthon CFE Note: Fixed to prevent one unit from changing a flag set by another.
+            // There seem to be two causes for this:
+            // (1) The major bug in the track-jumping logic in DRIVE.CPP (now fixed)
+            // (2) When tracks include a node that goes past an edge/corner a little bit into another cell.
+            // (Possibly due to track rotations/transpositions not accounting for
+            // "lepton 0 is in this cell, but lepton 256 is in the next cell") <-- guess
+            // Allowing a unit to pull up someone else's flag can lead to "two units in the same cell" situations.
+            if (!ReservingVehicle || (ReservingVehicle == object) || !Flag.Occupy.Vehicle) {
+                /*
+                if (ReservingVehicle && (ReservingVehicle != object) && !Flag.Occupy.Vehicle){
+                    CFE_Debug_Printf("Frame %i: CellClass::Occupy_Up() cleaned up dangling ReservingVehicle pointer in cell %i, %i (%i) that pointed to 0x%X", Frame, Cell_X(Cell_Number()), Cell_Y(Cell_Number()), Cell_Number(), ReservingVehicle);
+                }
+                */
+                ReservingVehicle = nullptr;
+                Flag.Occupy.Vehicle = false;
+            }
+            /*
+            else {
+                CFE_Debug_Printf("Frame %i: CellClass::Occupy_Up() wants to unreserve cell %i, %i (%i) when picking up 0x%X, but can't do that because it's somehow reserved for 0x%X instead!", Frame, Cell_X(Cell_Number()), Cell_Y(Cell_Number()), Cell_Number(), object, ReservingVehicle);
+            }
+            */
 #ifdef NEVER
 			int x,y;
 			if (Map.Coord_To_Pixel(Cell_Coord(), x, y)) {

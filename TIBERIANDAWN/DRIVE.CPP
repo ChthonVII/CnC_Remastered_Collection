@@ -54,6 +54,8 @@
 
 #include	"function.h"
 
+#include "CFEDEBUG.H"
+
 extern void On_Sound_Effect(const HouseClass* player_ptr, int sound_effect_index, const char* extension, int variation, COORDINATE coord);
 
 DriveClass::DriveClass(void) : Class(0), SimLeptonX(0), SimLeptonY(0) {};			// Added SimLeptonX and Y. ST - 4/30/2019 8:06AM
@@ -472,6 +474,38 @@ COORDINATE DriveClass::Smooth_Turn(COORDINATE adj, DirType *dir)
 }
 
 
+COORDINATE DriveClass::Arbitrary_Smooth_Turn(COORDINATE fakeheadto, char faketracknumber, COORDINATE adj, DirType *dir)
+{
+	DirType	workdir = *dir;
+	int	x,y;
+	int   temp;
+	TrackControlType flags = TrackControl[faketracknumber].Flag;
+
+	x = Coord_X(adj);
+	y = Coord_Y(adj);
+
+	if (flags & F_T) {
+		temp	= x;
+		x		= y;
+		y 		= temp;
+		workdir = (DirType)(DIR_W - workdir);
+	}
+
+	if (flags & F_X) {
+		x 		 = -x;
+		workdir = (DirType)-workdir;
+	}
+
+	if (flags & F_Y) {
+		y = -y;
+		workdir = (DirType)(DIR_S - workdir);
+	}
+
+	*dir = workdir;
+
+	return(XY_Coord( Coord_X(fakeheadto) + x, Coord_Y(fakeheadto) + y));
+}
+
 /***********************************************************************************************
  * DriveClass::Assign_Destination -- Set the unit's NavCom.                                    *
  *                                                                                             *
@@ -666,7 +700,7 @@ bool DriveClass::While_Moving(void)
 		Mark(MARK_UP);
 		while (actual > PIXEL_LEPTON_W) {
 			COORDINATE		offset;
-			DirType	dir;
+			DirType dir;
 
 			actual -= PIXEL_LEPTON_W;
 
@@ -685,12 +719,58 @@ bool DriveClass::While_Moving(void)
 					if (!IsActive) {
 						return(false);
 					}
+					
+					// Chthon CFE Note: 
+					// I *believe* I've fixed all the bugs that may cause
+					// another unit to unexpectedly occupy the second cell.
+					// However, it's still possible for something to start to diagonally cross
+					// in front of us before we reach the midpoint.
+					// And that causes a visual "two units stacked in one place" bug.
+					// So we still need to check if we can enter the second cell
+					// when we reach the per-cell process point for the first cell.
+					// UnitClass::Can_Enter_Cell() has been patched to ignore the vehicle flag
+					// if the flag was set by this unit itself
+					// Otherwise Can_Enter_Cell() would always return a blockage.
+					CELL htcell = Coord_Cell(Head_To_Coord());
+                    MoveType cando = Can_Enter_Cell(htcell, Dir_Facing(dir));
+                    if (cando != MOVE_OK){
+                        //CFE_Debug_Printf("Frame %i, Unit 0x%X aborted move mid track because endpoint cell %i, %i (%i) is blocked (%i)! TrackNumber %i, TrackIndex %i", Frame, this, Cell_X(htcell), Cell_Y(htcell), htcell, cando, TrackNumber, TrackIndex);
+                        // unfortunately, we need to blow up the path and do a full stop,
+                        // since the "try again next frame" would replay Per_Cell_Process() repeatedly
+                        Path[0] = FACING_NONE; // Path[] is invalid because we already ate the next value and now we're aborting without going to that cell 
+                        actual = 0;
+                        Coord = Coord_Snap(Coord); // snap to the middle of the cell if we aren't exactly there already
+                        Stop_Driver();
+                        TrackNumber = -1;
+                        TrackIndex = NULL;
+                        Mark(MARK_DOWN);
+                        return true;
+                    }                    
 				}
 
 				/*
 				**	The unit could "jump tracks". Check to see if the unit should
 				**	do so.
 				*/
+                /* Chthon CFE Note: This is opaque as hell, so some documentation may be helpful.
+                 * It's more realistic for vehicles to move along curved paths that look like real-world turns
+                 * than to just go straight from the center of one cell to the next 
+                 * A track is an array of x,y offsets (relative to the destination coordinate)
+                 * that simulates a curved path like a turning vehicle.
+                 * Some tracks provide a curved path from the center of the current cell
+                 * to the center of the next one, while others provide a path that's two cells long.
+                 * Now what's track jumping?
+                 * For two-cell paths, there's a check ~3/4 of the way along the track in to see if
+                 * the second half of this track plus the next move from Path[] can be combined
+                 * into another two-cell path.
+                 * If so, Path[0] is consumed, HeadToCoord is changed, the track is swapped,
+                 * and the track progress is set ~1/4 of the way along the new track.
+                 * This strikes me as not a good way to do things,
+                 * since we're consuming Path[] and changing HeadToCoord,
+                 * but without all the logic in Start_Of_Move() that usually goes with doing that.
+                 * I'd like to take it out and replace it with something less insane,
+                 * but I'm not confident I understand things well enough to do that correctly.
+                 */
 				if (*this != UNIT_GUNBOAT && nextface != FACING_NONE && adj && RawTracks[tracknum-1].Jump == TrackIndex && TrackIndex) {
 					TurnTrackType const *newtrack;		// Proposed jump-to track.
 					int	tnum;
@@ -699,13 +779,89 @@ bool DriveClass::While_Moving(void)
 					newtrack = &TrackControl[tnum];
 					if (newtrack->Track && RawTracks[newtrack->Track-1].Entry) {
 						COORDINATE	c = Head_To_Coord();
+                        //CELL olddestcell = Coord_Cell(c); // Chthon CFE Note: Might want to know this later
 						int oldspeed = Speed;
 
 						c = Adjacent_Cell(c, nextface);
+                        
+                        // Chthon CFE Note: 
+                        // I *believe* I've fixed all the bugs that may cause
+                        // another unit to unexpectedly occupy the new midpoint cell (old endpoint cell).
+                        // However, it's still possible for something to start to diagonally cross
+                        // in front of us before we reach the cell.
+                        // And that causes a visual "two units stacked in one place" bug.
+                        // So we still need to check if we can enter the midpoint cell
+                        // (in addition to checking th new endpoint cell).
+                        // UnitClass::Can_Enter_Cell() has been patched to ignore the vehicle flag
+                        // if the flag was set by this unit itself
+                        // Otherwise Can_Enter_Cell() would always return a blockage.
+                        MoveType newmidpointres = MOVE_OK;
+                        CELL mycell = Coord_Cell(Coord);
+                        CELL newdestcell = Coord_Cell(c);
+                        CELL newmidpointcell = 0;
+                        TrackType const * newptr = RawTracks[newtrack->Track - 1].Track;
+                        int newmidpointindex = RawTracks[newtrack->Track - 1].Cell;
+                        //int newtrackentryindex = RawTracks[newtrack->Track - 1].Entry;
+                        DirType junkdir = DIR_N; // we don't care about our facing at hypothetical locations
+                        if (newmidpointindex > -1){
+                            COORDINATE newmidpointoffset = Arbitrary_Smooth_Turn(c, tnum, newptr[newmidpointindex].Offset, &junkdir);
+                            newmidpointcell = Coord_Cell(newmidpointoffset);
+                            if ((newmidpointcell != mycell) && (newmidpointcell != newdestcell)){
+                                FacingType newmidpointface = Dir_Facing(Direction8(Coord, newmidpointoffset));
+                                // UnitClass::Can_Enter_Cell() has been patched to ignore the vehicle flag if this unit itself set it
+                                // Otherwise Can_Enter_Cell() would always return a blockage.
+                                newmidpointres = Can_Enter_Cell(newmidpointcell, newmidpointface);
+                            }
+                            /* Fortunately (?) I've been able to rule out this possibility. The new midpoint is always the old destination
+                            if (newmidpointcell != olddestcell){
+                                CFE_Debug_Printf("Frame: %i: Unit 0x%X says: Track Jump Fubar v2! Old headto is %i, %i (%i), but track midpoint is %i, %i (%i)! Newtrack is %i", Frame, this, Cell_X(olddestcell), Cell_Y(olddestcell), olddestcell, Cell_X(newmidpointcell), Cell_Y(newmidpointcell), newmidpointcell, tnum);
+                            }
+                            */
 
-						switch(Can_Enter_Cell(Coord_Cell(c), nextface)) {
+                        }
+                        /*
+                        // TODO: We should be landing within 10 letpons of of the new track's entry point
+                        // But sometimes we aren't. (11 and 12 seem to be common.)
+                        // So we should go back and redo the movement we just did.
+                        // What we did was move from prior Coord towards oldtrack[exit+1] via the offset in oldtrack[exit]
+                        // We should instead move as far as possible in a straight line from old Coord towards newtrack[entry]
+                        // likely adjusting the "actual" accumulator when we do.
+                        // Going to require some fun with vectors, and may save it until I do the major motion system overhaul...
+                        // Another interesting thing going on here is that we may be just over the line into another cell relative to entry point. Not sure if same is true relative to entry-1. Not sure if it matters.
+                        COORDINATE newtrackentryoffset = Arbitrary_Smooth_Turn(c, tnum, newptr[newtrackentryindex].Offset, &junkdir);
+                        CELL newtrackentrycell = Coord_Cell(newtrackentryoffset);
+                        if (newtrackentrycell != mycell){
+                            CFE_Debug_Printf("Frame: %i: Unit 0x%X says: Holy Shit! Track Jump Fubar v3! Position is %i, %i (%i), but jump position is %i, %i (%i)! X delta is %i; Y delta is %i. Newtrack is %i", Frame, this, Cell_X(mycell), Cell_Y(mycell), mycell, Cell_X(newtrackentrycell), Cell_Y(newtrackentrycell), newtrackentrycell, Coord_X(newtrackentryoffset) - Coord_X(Coord), Coord_Y(newtrackentryoffset) - Coord_Y(Coord), tnum);
+                            
+                        }
+                        else if (Distance(newtrackentryoffset) >= 8){
+                            CFE_Debug_Printf("Frame: %i: Unit 0x%X says: Minor Shit! Track Jump Fubar v4! Position is %i, %i (%i), but jump position is %i, %i (%i)! X delta is %i; Y delta is %i. Newtrack is %i", Frame, this, Cell_X(mycell), Cell_Y(mycell), mycell, Cell_X(newtrackentrycell), Cell_Y(newtrackentrycell), newtrackentrycell, Coord_X(newtrackentryoffset) - Coord_X(Coord), Coord_Y(newtrackentryoffset) - Coord_Y(Coord), tnum);
+                        }
+                        */
+                        
+                        MoveType newendpointres = Can_Enter_Cell(newdestcell, nextface);
+                        MoveType worstres = newendpointres;
+                        CELL worstcell = newdestcell;
+                        if (newmidpointres != MOVE_OK){
+                            worstres = newmidpointres;
+                            worstcell = newmidpointcell;
+                            //CFE_Debug_Printf("Frame: %i: Unit 0x%X aborted a track jump because new midpoint cell %i, %i (%i) is blocked (%i)! Newtrack would have been %i", Frame, this, Cell_X(newmidpointcell), Cell_Y(newmidpointcell), newmidpointcell, newmidpointres, tnum);
+                        }
+
+                        switch(worstres) {
+						//switch(Can_Enter_Cell(Coord_Cell(c), nextface)) {
 							case MOVE_OK:
 								IsOnShortTrack = false;		// Shouldn't be necessary, but...
+								// Chthon CFE Note: We need to call Stop_Driver() *before* we change TrackNumber 
+								// Otherwise when Stop_Driver() calls Mark_Track() it may unflag the wrong cells.
+								// This is actually a *HUGE* bug.
+								// If a unit is unflagged a cell it has nothing to do with,
+								// then it may yank out someone else's flag.
+								// If that happens before the reserving unit gets into the cell,
+								// then the cell appears open for entry,
+								// and we can end up with two units both moving into this cell at the same time.
+								// Testing showed this as the biggest contributor to "two units in the same place" events.
+								Stop_Driver();
 								TrackNumber = tnum;
 								track = newtrack;
 
@@ -716,7 +872,7 @@ bool DriveClass::While_Moving(void)
 								ptr = RawTracks[tracknum-1].Track;
 								adj = false;
 
-								Stop_Driver();
+								//Stop_Driver(); // Chthon CFE Note: moved up
 								Per_Cell_Process(true);
 								if (Start_Driver(c)) {
 									Set_Speed(oldspeed);
@@ -729,17 +885,20 @@ bool DriveClass::While_Moving(void)
 									TrackNumber = -1;
 									actual = 0;
 								}
+								
 								break;
 
 							case MOVE_CLOAK:
-								Map[Coord_Cell(c)].Shimmer();
+								//Map[Coord_Cell(c)].Shimmer();
+                                Map[worstcell].Shimmer();
 								break;
 
 							case MOVE_TEMP:
 								if (*this == UNIT_HARVESTER || !House->IsHuman) {
 									bool old = Special.IsScatter;
 									Special.IsScatter = true;
-									Map[Coord_Cell(c)].Incoming(0, true);
+									//Map[Coord_Cell(c)].Incoming(0, true);
+                                    Map[worstcell].Incoming(0, true);
 									Special.IsScatter = old;
 								}
 								break;
@@ -747,7 +906,6 @@ bool DriveClass::While_Moving(void)
 					}
 				}
 				TrackIndex++;
-
 			} else {
 				actual = 0;
 				Coord = Head_To_Coord();
@@ -1014,7 +1172,7 @@ bool DriveClass::Start_Of_Move(void)
 					cell = Adjacent_Cell(ourcell, PrimaryFacing.Current());
 				}
 				if (Map.In_Radar(cell)) {
-					if (Can_Enter_Cell(cell) == MOVE_TEMP) {
+					if (Can_Enter_Cell(cell) == MOVE_TEMP) { // Chthon CFE Note: We don't need a facing here because the diagonal cross blocker it might detect won't yield MOVE_TEMP
 						CellClass * cellptr = &Map[cell];
 						TechnoClass * blockage = cellptr->Cell_Techno();
 						if (blockage && House->Is_Ally(blockage)) {
@@ -1050,7 +1208,7 @@ bool DriveClass::Start_Of_Move(void)
 		*/
 		CELL cell = Adjacent_Cell(Coord_Cell(Center_Coord()), Path[0]);
 		if (Map.In_Radar(cell)) {
-			if (Can_Enter_Cell(cell) == MOVE_TEMP) {
+			if (Can_Enter_Cell(cell) == MOVE_TEMP) { // Chthon CFE Note: We don't need a facing here because the diagonal cross blocker it might detect won't yield MOVE_TEMP
 				CellClass * cellptr = &Map[cell];
 				TechnoClass * blockage = cellptr->Cell_Techno();
 				if (blockage && House->Is_Ally(blockage)) {
@@ -1255,7 +1413,7 @@ bool DriveClass::Start_Of_Move(void)
 
 						dest = Adjacent_Cell(dest, nextface);
 						destcell = Coord_Cell(dest);
-						cando = Can_Enter_Cell(destcell);
+						cando = Can_Enter_Cell(destcell, nextface); // Chthon CFE Note: Need nextface for diagonal cross blocker checks
 					}
 
 					if (cando != MOVE_OK) {
@@ -1277,39 +1435,32 @@ bool DriveClass::Start_Of_Move(void)
 						if (cando == MOVE_CLOAK) {
 							Map[destcell].Shimmer();
 						}
-                        
-                        // Chthon CFE Note: This is inconsistent with the behavior for the first cell above!!
-                        // In the one-cell case the unit will just wait one moving block without flushing its path
-                        // Also, the lack of a Stop_Driver() here might be a problem.
-                        // Let's make it consistent.
-						//Path[0] = FACING_NONE;		// Path is blocked!
-						Stop_Driver();
-						if (cando != MOVE_MOVING_BLOCK) {
-                            Path[0] = FACING_NONE;		// Path is blocked!
-                        }
-                        // move this up to avoid reduncancy
-                        //IsNewNavCom = false; // Chthon CFE Note: dead code
-                        TrackIndex = 0;
-                        
-						TrackNumber = -1;
-						dest = NULL;
-						if (cando == MOVE_DESTROYABLE) {
 
-							if (Map[destcell].Cell_Object()) {
-								if (!House->Is_Ally(Map[destcell].Cell_Object())) {
-									Override_Mission(MISSION_ATTACK, Map[destcell].Cell_Object()->As_Target(), TARGET_NONE);
-								}
-							} else {
-								if (Map[destcell].Overlay != OVERLAY_NONE && OverlayTypeClass::As_Reference(Map[destcell].Overlay).IsWall) {
-									Override_Mission(MISSION_ATTACK, ::As_Target(destcell), TARGET_NONE);
-								}
-							}
-							//IsNewNavCom = false; // Chthon CFE Note: dead code
-							//TrackIndex = 0;
-							//return(true);
-						}
-						// Chthon CFE Note: Continuing attempts to make this consistent, we should exit here
-                        return(true);
+                        // Chthon CFE Note: This is inconsistent with the one-cell path above.
+						// Above, a MOVE_MOVING_BLOCK results in waiting a frame and trying again.
+						// But here, it blows up the whole path.
+						// I'd like to change this, but it seems to be mitigating an unsolved "two units in one place" bug
+						// So I'm going to leave it for now.
+                        Path[0] = FACING_NONE; // Path is blocked!
+                        TrackNumber = -1;
+                        dest = NULL;
+                        if (cando == MOVE_DESTROYABLE) {
+
+                            if (Map[destcell].Cell_Object()) {
+                                if (!House->Is_Ally(Map[destcell].Cell_Object())) {
+                                    Override_Mission(
+                                        MISSION_ATTACK, Map[destcell].Cell_Object()->As_Target(), TARGET_NONE);
+                                }
+                            } else {
+                                if (Map[destcell].Overlay != OVERLAY_NONE
+                                    && OverlayTypeClass::As_Reference(Map[destcell].Overlay).IsWall) {
+                                    Override_Mission(MISSION_ATTACK, ::As_Target(destcell), TARGET_NONE);
+                                }
+                            }
+                            //IsNewNavCom = false; // Chthon CFE Note: dead code
+                            TrackIndex = 0;
+                            return (true);
+                        }
 					} else {
                         // Chthon CFE Note: replace memcopy with memmove when source and destination may overlap, as per https://github.com/TheAssemblyArmada/Vanilla-Conquer/pull/608
 						//memcpy(&Path[0], &Path[2], CONQUER_PATH_MAX-2);
@@ -1683,7 +1834,24 @@ void DriveClass::Mark_Track(COORDINATE headto, MarkType type)
 						COORDINATE offset = Smooth_Turn(ptr[cellidx].Offset, &dir);
 						CELL cell = Coord_Cell(offset);
 						if ((unsigned)cell < MAP_CELL_TOTAL) {
-							Map[cell].Flag.Occupy.Vehicle = value;
+                            // Chthon CFE Note: Fixed to prevent one unit from changing a flag set by another.
+                            // Though the related fix in CELL.CPP seems to prevent this from ever being an issue.
+                            CellClass* cellptr = &Map[cell];
+                            DriveClass* rv = cellptr->ReservingVehicle;
+                            if (!rv || (rv == this) || ((type == MARK_UP) && !Map[cell].Flag.Occupy.Vehicle)){
+                                Map[cell].Flag.Occupy.Vehicle = value;
+                                if (type == MARK_UP){
+                                    cellptr->ReservingVehicle = nullptr;
+                                }
+                                else {
+                                    cellptr->ReservingVehicle = this;
+                                }
+                            }
+                            /*
+                            else {
+                                CFE_Debug_Printf("Frame %i: Unit 0x%X Mark_Track(%i) wants to un/reserve cell %i, %i (%i) as midpoint, but it's reserved by unit 0x%X!", Frame, this, type, Cell_X(cell), Cell_Y(cell), cell, rv);
+                            }
+                            */
 						}
 					}
 				}
@@ -1691,7 +1859,24 @@ void DriveClass::Mark_Track(COORDINATE headto, MarkType type)
 		}
 		CELL cell = Coord_Cell(headto);
 		if ((unsigned)cell < MAP_CELL_TOTAL) {
-			Map[cell].Flag.Occupy.Vehicle = value;
+            // Chthon CFE Note: Fixed to prevent one unit from changing a flag set by another.
+            // Though the related fix in CELL.CPP seems to prevent this from ever being an issue.
+			CellClass* cellptr = &Map[cell];
+            DriveClass* rv = cellptr->ReservingVehicle;
+            if (!rv || (rv == this) || ((type == MARK_UP) && !Map[cell].Flag.Occupy.Vehicle)){
+                Map[cell].Flag.Occupy.Vehicle = value;
+                if (type == MARK_UP){
+                    cellptr->ReservingVehicle = nullptr;
+                }
+                else {
+                    cellptr->ReservingVehicle = this;
+                }
+            }
+            /*
+            else {
+                CFE_Debug_Printf("Frame %i: Unit 0x%X Mark_Track(%i) wants to un/reserve cell %i, %i (%i) as endpoint, but it's reserved by unit 0x%X!", Frame, this, type, Cell_X(cell), Cell_Y(cell), cell, rv);
+            }
+            */
 		}
 	}
 }

@@ -187,9 +187,10 @@ class DriveClass : public FootClass
 		**	'TrackIndex' variable holds the current index into the specified track
 		**	(starts at 0).
 		*/
+protected: // Chthon CFE note: UnitClass needs these for some debugging printfs
 		char TrackNumber;
 		char TrackIndex;
-
+private:
 		/*---------------------------------------------------------------------
 		**	Member function prototypes.
 		*/
@@ -198,6 +199,8 @@ class DriveClass : public FootClass
 		bool Start_Of_Move(void);
 		void Lay_Track(void);
 		COORDINATE Smooth_Turn(COORDINATE adj, DirType *dir);
+        // Chthon CFE Note: Need a version of this that can preview what would happen from a new headto
+        COORDINATE Arbitrary_Smooth_Turn(COORDINATE fakeheadto, char faketracknumber, COORDINATE adj, DirType *dir);
 
 		static TurnTrackType const TrackControl[67];
 		static RawTrackType const RawTracks[13];

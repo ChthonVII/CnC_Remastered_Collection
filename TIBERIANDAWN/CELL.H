@@ -333,6 +333,9 @@ class CellClass
         */
         int LongtermBlockage() const;
         
+        // we need to fix the cell reservation system at least insofar that we who *who* reserved a cell
+        DriveClass* ReservingVehicle;
+        
     private:
     
 		/*
