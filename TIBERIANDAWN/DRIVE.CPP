@@ -795,6 +795,11 @@ bool DriveClass::While_Moving(void)
                         // UnitClass::Can_Enter_Cell() has been patched to ignore the vehicle flag
                         // if the flag was set by this unit itself
                         // Otherwise Can_Enter_Cell() would always return a blockage.
+
+                        // Actually, on second thought, I think this is completely fixed.
+                        // We already checked this cell at the previous per-cell-process point.
+                        // But keep it for later when we try to fix the alignment issues noted below
+#ifdef notneedednow
                         MoveType newmidpointres = MOVE_OK;
                         CELL mycell = Coord_Cell(Coord);
                         CELL newdestcell = Coord_Cell(c);
@@ -819,6 +824,7 @@ bool DriveClass::While_Moving(void)
                             */
 
                         }
+#endif
                         /*
                         // TODO: We should be landing within 10 letpons of of the new track's entry point
                         // But sometimes we aren't. (11 and 12 seem to be common.)
@@ -842,11 +848,13 @@ bool DriveClass::While_Moving(void)
                         MoveType newendpointres = Can_Enter_Cell(newdestcell, nextface);
                         MoveType worstres = newendpointres;
                         CELL worstcell = newdestcell;
+                        /*
                         if (newmidpointres != MOVE_OK){
                             worstres = newmidpointres;
                             worstcell = newmidpointcell;
                             //CFE_Debug_Printf("Frame: %i: Unit 0x%X aborted a track jump because new midpoint cell %i, %i (%i) is blocked (%i)! Newtrack would have been %i", Frame, this, Cell_X(newmidpointcell), Cell_Y(newmidpointcell), newmidpointcell, newmidpointres, tnum);
                         }
+                        */
 
                         switch(worstres) {
 						//switch(Can_Enter_Cell(Coord_Cell(c), nextface)) {
