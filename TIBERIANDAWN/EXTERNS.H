@@ -100,6 +100,7 @@ struct CFEPatchConfig
     bool EnableSmarterSAMs = false;
     bool EnableSmarterRepairBays = false;
     bool EnableSmarterMammoths = false;
+    bool EnableSmarterHarvesters = false;
     bool EnableGunboatBugfix = false;
     bool BetterTibGrowth = false;
     bool TibIndexBugfix = false;

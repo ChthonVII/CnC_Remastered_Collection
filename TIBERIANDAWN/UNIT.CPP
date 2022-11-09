@@ -483,12 +483,13 @@ void UnitClass::AI(void)
 	**	If this is a vehicle that heals itself (e.g., Mammoth Tank), then it will perform
 	**	the heal logic here.
 	*/
-	if (*this == UNIT_HTANK  && (Frame % 16) == 0 && Health_Ratio() < 0x0080 && VeterancyRank < 2) {
+    bool itsmybirthday = ((FrameMB() % 16) == 0);
+	if (*this == UNIT_HTANK  && itsmybirthday && Health_Ratio() < 0x0080 && VeterancyRank < 2) {
 		Strength++;
 		Mark(MARK_CHANGE);
         // dealt with in TECHNO.CPP if vetrancy >=2
 	}
-	else if (*this == UNIT_VICE && Map[Coord_Cell(Coord)].Land_Type() == LAND_TIBERIUM && Health_Ratio() < 0x0100 && (Frame % 16) == 0) {
+	else if (*this == UNIT_VICE && Map[Coord_Cell(Coord)].Land_Type() == LAND_TIBERIUM && Health_Ratio() < 0x0100 && itsmybirthday) {
 		Strength++;
         if (ActiveCFEPatchConfig.MeanerVisceroids){
             Strength+=ActiveCFEPatchConfig.MeanerVisceroids; // up to total of 4
@@ -498,13 +499,13 @@ void UnitClass::AI(void)
         }
 		Mark(MARK_CHANGE);
 	}
-	else if (ActiveCFEPatchConfig.EnableHarvySelfRepair && *this == UNIT_HARVESTER && (Frame % 16) == 0 && Health_Ratio() < 0x0080 && VeterancyRank < 2) {
+	else if (ActiveCFEPatchConfig.EnableHarvySelfRepair && *this == UNIT_HARVESTER && itsmybirthday && Health_Ratio() < 0x0080 && VeterancyRank < 2) {
 		++Strength;
 		Mark(MARK_CHANGE);
         // dealt with in TECHNO.CPP if vetrancy >=2
 	}
 	// Rank 3 veteran GDI APCs have an onboard medic to heal passengers // slowed down to 1 hp per 16 frames, which is still quite fast for infantry
-	else if ((*this == UNIT_APC) && (VeterancyRank == 3) && ((Owner() == HOUSE_GOOD ) || (House->ActLike == HOUSE_GOOD)) && ((Frame % 16) == 0)){
+	else if ((*this == UNIT_APC) && (VeterancyRank == 3) && ((Owner() == HOUSE_GOOD ) || (House->ActLike == HOUSE_GOOD)) && itsmybirthday){
         ObjectClass const * object = Attached_Object();
 		for (int pindex = 0; pindex < Class_Of().Max_Pips(); pindex++) {
 			if (object) {
@@ -522,7 +523,7 @@ void UnitClass::AI(void)
         }
     }
 	// Chthon CFE Note: Additional base heal for meaner visceroids
-	if ((ActiveCFEPatchConfig.MeanerVisceroids > 1) && *this == UNIT_VICE  && (Frame % 16) == 0 && Health_Ratio() < 0x0100) {
+	if ((ActiveCFEPatchConfig.MeanerVisceroids > 1) && *this == UNIT_VICE  && itsmybirthday && Health_Ratio() < 0x0100) {
 		Strength = Strength + ActiveCFEPatchConfig.MeanerVisceroids - 1;
         if (Strength > Class->MaxStrength){
             Strength = Class->MaxStrength;
@@ -615,6 +616,25 @@ void UnitClass::AI(void)
 		Do_Shimmer();
 	}
 
+	// Chthon CFE Note: Unstick Harvesters
+	if (ActiveCFEPatchConfig.EnableSmarterHarvesters && IsActive && (*this == UNIT_HARVESTER) && (FrameMB() % 50 == 0)){
+        // Am I stuck?
+        if ((Mission == MISSION_HARVEST) && (Speed == 0) && !IsRotating && !IsTethered && (PrimaryFacing != DIR_SW_X1) && (PrimaryFacing != DIR_SW_X2) ){
+            CELL mycell = Coord_Cell(Coord);
+            // Was I stuck here last time I checked?
+            if (mycell == LastHarvesterCell){
+                Do_Harvester_Unstick();
+            }
+            else {
+                LastHarvesterCell = mycell;
+            }
+        }
+        // I'm not stuck, so clear the recorded position
+        else {
+            LastHarvesterCell = 0;
+        }
+    }
+	
 }
 
 
@@ -1468,7 +1488,8 @@ UnitClass::UnitClass(UnitType classid, HousesType house) :
     else {
         GapThreePreference = GapTwoPreference;
     }
-    
+    HarvesterIsUnsticking = false;
+    LastHarvesterCell = 0;
 }
 
 
@@ -1575,8 +1596,15 @@ void UnitClass::Enter_Idle_Mode(bool initial)
 	if (Class->Primary == WEAPON_NONE) {
 		if (Class->IsToHarvest) {
 			if (!In_Radio_Contact() && Mission != MISSION_HARVEST) {
-				if (initial || !House->IsHuman || Map[Coord_Cell(Coord)].Land_Type() == LAND_TIBERIUM) {
+				if (initial || !House->IsHuman || Map[Coord_Cell(Coord)].Land_Type() == LAND_TIBERIUM || HarvesterIsUnsticking) {
 					order = MISSION_HARVEST;
+                    if (HarvesterIsUnsticking){
+                        HarvesterIsUnsticking = false;
+                        if ((Tiberium_Load() < 0x0100) && Target_Legal(ArchiveTarget)){
+                            Assign_Destination(ArchiveTarget);
+                            ArchiveTarget = TARGET_NONE;
+                        }
+                    }
 				} else {
 					order = MISSION_GUARD;
 				}
@@ -2054,10 +2082,11 @@ bool UnitClass::Try_To_Deploy(void)
 void UnitClass::Per_Cell_Process(bool center)
 {
 	Validate();
+    
 	CELL	cell = Coord_Cell(Coord);
 	TechnoClass	* whom;
 	HousesType house;
-
+    
 	/*
 	**	If this is a unit that is driving onto a building then the unit must enter
 	**	the building as the final step.
@@ -2484,7 +2513,7 @@ void UnitClass::Draw_It(int x, int y, WindowNumberType window)
 		**	If there is a rotating radar dish, draw it now.
 		*/
 		if (Class->IsRadarEquipped) {
-			shapenum = 32 + (Frame % 32);
+			shapenum = 32 + (FrameMB() % 32);
 			Techno_Draw_Object(shapefile, shapenum, x, y-5, window);
 		}
 
@@ -2563,7 +2592,7 @@ void UnitClass::Draw_It(int x, int y, WindowNumberType window)
 		shapefile = MixFileClass::Retrieve("FLAGFLY.SHP");
 		int flag_x = x + (ICON_PIXEL_W / 2) - 2;
 		int flag_y = y + (3 * ICON_PIXEL_H / 4) - Get_Build_Frame_Height(shapefile);
-		CC_Draw_Shape(this, "FLAGFLY", shapefile, Frame % 14, flag_x, flag_y, window, SHAPE_CENTER|SHAPE_FADING|SHAPE_GHOST, HouseClass::As_Pointer(Flagged)->Remap_Table(false, false), Map.UnitShadow, Flagged);
+		CC_Draw_Shape(this, "FLAGFLY", shapefile, FrameMB() % 14, flag_x, flag_y, window, SHAPE_CENTER|SHAPE_FADING|SHAPE_GHOST, HouseClass::As_Pointer(Flagged)->Remap_Table(false, false), Map.UnitShadow, Flagged);
 	}
 
 	TarComClass::Draw_It(x, y, window);
@@ -5421,5 +5450,26 @@ void UnitClass::Do_Squidgy_Spawn(){
     }
     SquidgySpawningTimer = 15; //20;
     Sound_Effect(VOC_SQUISH2, Coord); // make a squishy sound
+    return;
+}
+
+void UnitClass::Do_Harvester_Unstick(){
+    // not a harvester trying to harvest?!
+    if ((*this != UNIT_HARVESTER) || (Mission != MISSION_HARVEST)){
+        return;
+    }
+    // try the cell immediately behind you
+    CELL backupcell = Adjacent_Cell(Coord_Cell(Coord), (FacingType)((char)Dir_Facing(PrimaryFacing) ^4));
+    if (Map.In_Radar(backupcell)){
+        MoveType res = Can_Enter_Cell(backupcell);
+        if ((res <= MOVE_MOVING_BLOCK) || (res == MOVE_TEMP)){
+            Assign_Mission(MISSION_MOVE);
+            Assign_Destination(::As_Target(backupcell));
+            HarvesterIsUnsticking = true;
+            return;
+        }
+    }
+    // if that didn't work, try scatter
+    Scatter(0, true, true);
     return;
 }

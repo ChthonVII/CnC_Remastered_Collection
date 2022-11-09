@@ -533,11 +533,11 @@ void BulletClass::Draw_It(int x, int y, WindowNumberType window)
 	**	For tumbling projectiles, fetch offset stage.
 	*/
 	if (*this == BULLET_NAPALM) {
-		shapenum += Frame % 6;
+		shapenum += FrameMB() % 6;
 	}
 
 	if (*this == BULLET_GRENADE) {
-		shapenum += Frame % 8;
+		shapenum += FrameMB() % 8;
 //		Timer++;
 	}
 

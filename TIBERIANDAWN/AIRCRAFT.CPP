@@ -731,7 +731,7 @@ void AircraftClass::AI(void)
             // so we really want 28 + (0-14 depending on power)
             int repaircycle = 42 - Bound(Fixed_To_Cardinal(14, House->Power_Fraction()), 0, 14);
             
-            if (Frame % repaircycle == 0){
+            if (FrameMB() % repaircycle == 0){
                 Strength += Class->Repair_Step();
                 if (Strength > Class_Of().MaxStrength){
                     Strength = Class_Of().MaxStrength;
@@ -2082,7 +2082,7 @@ int AircraftClass::Process_Fly_To(bool slowdown)
 	
 	// Chthon CFE Note: Since aircraft don't call Per_Cell_Process in flight, we need to set their visibility flags here
 	// Unlike everything else, aircraft can become "undiscovered" by their owner because they fly under the shroud
-	if (Frame % TICKS_PER_SECOND == 0){
+	if (FrameMB() % TICKS_PER_SECOND == 0){
         CELL cell = Coord_Cell(Center_Coord());
         if (GameToPlay == GAME_NORMAL){
             if (!Is_Discovered_By_Player(PlayerPtr) && Map[cell].Is_Visible(PlayerPtr)) {

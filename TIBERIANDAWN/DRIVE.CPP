@@ -845,6 +845,7 @@ bool DriveClass::While_Moving(void)
                         }
                         */
                         
+                        CELL newdestcell = Coord_Cell(c);
                         MoveType newendpointres = Can_Enter_Cell(newdestcell, nextface);
                         MoveType worstres = newendpointres;
                         CELL worstcell = newdestcell;

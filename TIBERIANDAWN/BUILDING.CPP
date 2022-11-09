@@ -1622,6 +1622,7 @@ void BuildingClass::AI(void)
 	**	Handle any repair process that may be going on.
 	*/
 	if (IsRepairing) {
+        // Chthon CFE Note: Don't use FrameMB() because we want wrench icons synchronized
 		if ((Frame % 15) == 0) {
 			IsWrenchVisible = (IsWrenchVisible == false);
 			Mark(MARK_CHANGE);

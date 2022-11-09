@@ -49,6 +49,8 @@ class RadioClass;
 //unsigned Cardinal_To_Fixed(unsigned base, unsigned cardinal);
 //}
 
+extern long Frame; // Chthon CFE note: Needed so we can inline birthday frames
+
 /**********************************************************************
 **	Every game object (that can exist on the map) is ultimately derived from this object
 **	class. It holds the common information between all objects. This is primarily the
@@ -126,6 +128,9 @@ class ObjectClass : public AbstractClass
 		*/
 		short Strength;
 
+        // Chthon CFE Note: Store the object's birthday so we can distribute "Frame % something" events more evenly
+        long BirthdayFrame;
+        
 		/*
 		** Some additional padding in case we need to add data to the class and maintain backwards compatibility for save/load
 		*/
@@ -257,7 +262,9 @@ class ObjectClass : public AbstractClass
 		virtual void Debug_Dump(MonoClass *mono) const;
 		#endif
 		virtual void Move(FacingType);
-
+        
+        // Chthon CFE Note: Inline subtract birthday from frame
+        long FrameMB(){return Frame - BirthdayFrame;};
 };
 
 #endif

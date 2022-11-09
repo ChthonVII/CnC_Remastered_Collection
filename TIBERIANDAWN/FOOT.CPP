@@ -126,6 +126,7 @@ FootClass::FootClass(void) : Speed(0)
 	RepathDelay = 4;
     GapTwoPreference = HUG_NONE;
     GapThreePreference = HUG_NONE;
+    PriorCell = 0;
 }
 
 
@@ -1468,13 +1469,16 @@ void FootClass::Per_Cell_Process(bool center)
 		*/
 		IsUnloading = false;
 
+        // Chthon CFE Note: This is used several times, so let's optimize by only calling the function once.
+        CELL mycell = Coord_Cell(Coord);
+        
 		/*
 		**	If adjacent to an enemy building that has the ability to reveal a stealth tank,
 		**	then shimmer the cloaked object.
 		*/
 		if (Cloak == CLOAKED) {
 			for (FacingType face = FACING_N; face < FACING_COUNT; face++) {
-				CELL cell = Adjacent_Cell(Coord_Cell(Coord), face);
+				CELL cell = Adjacent_Cell(mycell, face);
 
 				if (Map.In_Radar(cell)) {
 					TechnoClass const * techno = Map[cell].Cell_Techno();
@@ -1514,7 +1518,7 @@ void FootClass::Per_Cell_Process(bool center)
 		/*
 		**	Trigger event associated with the player entering the cell.
 		*/
-		TriggerClass * trigger = Map[Coord_Cell(Coord)].Get_Trigger();
+		TriggerClass * trigger = Map[mycell].Get_Trigger();
         // Chthon CFE Note: revise so that units cloaked b/c of veterancy bonus still trip cell triggers
         // Missions break otherwise
 		//if (Cloak != CLOAKED && trigger && trigger->House == Owner()) {
@@ -1534,15 +1538,19 @@ void FootClass::Per_Cell_Process(bool center)
                     )
                 )
         ) {
-			trigger->Spring(EVENT_PLAYER_ENTERED, Coord_Cell(Coord));
+			trigger->Spring(EVENT_PLAYER_ENTERED, mycell);
 		}
 //	}
 
-	Map[Coord_Cell(Coord)].Goodie_Check(this, true);
+	Map[mycell].Goodie_Check(this, true);
 
-    // Chthon CFE Note: count down to repathing
-    if (RepathDelay){
-        RepathDelay--;
+    // Chthon CFE Note: Per_Cell_Process is also called when rotating in place!
+    if (mycell != PriorCell){
+        // Chthon CFE Note: count down to repathing
+        if (RepathDelay){
+            RepathDelay--;
+        }
+        PriorCell = mycell;
     }
     
 	TechnoClass::Per_Cell_Process(center);

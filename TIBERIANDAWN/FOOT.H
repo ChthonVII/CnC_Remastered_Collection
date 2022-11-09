@@ -341,6 +341,7 @@ public:
 				mutable unsigned int CFEPatchNavQFlagsPadding : 4; //round out to 1 byte, we can use this space later.
 			};
 		};
+        CELL PriorCell;
         
 private:
         
