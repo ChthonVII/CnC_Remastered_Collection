@@ -124,8 +124,6 @@ FootClass::FootClass(void) : Speed(0)
         MemorizedNavQueue[index] = TARGET_NONE;
 	}
 	RepathDelay = 4;
-    GapTwoPreference = HUG_NONE;
-    GapThreePreference = HUG_NONE;
     PriorCell = 0;
 }
 

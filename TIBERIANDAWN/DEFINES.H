@@ -3044,14 +3044,6 @@ typedef enum ArmorPenType : unsigned char {
     ARMORPEN_PSEUDO_HE // AP that does more damage vs no-armor and concrete
 } ArmorPenType;
 
-// Chthon CFE: Wall hugging preferences for units
-typedef enum WallHugType : unsigned char {
-    HUG_NONE,
-    HUG_RIGHT, 
-    HUG_LEFT,
-    HUG_MIDDLE
-} WallHugType;
-
 #pragma warning (pop)
 
 #endif

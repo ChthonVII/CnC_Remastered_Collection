@@ -323,8 +323,6 @@ public:
         
         // periodic repathing
         unsigned int RepathDelay = 4;
-        WallHugType GapTwoPreference;
-        WallHugType GapThreePreference;
         
         // Q-Move port stuff. Not offsetting this from padding b/c it's too big, so we just have to break savegame compatibility
         TARGET NavQueueOriginalHead = TARGET_NONE;
@@ -341,6 +339,8 @@ public:
 				mutable unsigned int CFEPatchNavQFlagsPadding : 4; //round out to 1 byte, we can use this space later.
 			};
 		};
+        
+        // Last cell this unit did a Per_Cell_Process() for
         CELL PriorCell;
         
 private:
