@@ -101,7 +101,7 @@
 */
 #include "SidebarGlyphx.h"
 
-//#include "CFEDEBUG.H"
+#include "CFEDEBUG.H"
 
 extern void On_Sound_Effect(const HouseClass* player_ptr, int sound_effect_index, const char* extension, int variation, COORDINATE coord);
 
@@ -1811,6 +1811,16 @@ void BuildingClass::AI(void)
 			}
 		}
 	}
+	
+	// Chthon CFE Note: Flush non-harvester units from Refinery bibs
+	if (ActiveCFEPatchConfig.EnableSmarterRefineries && IsActive && Strength && HasOpened && (*this == STRUCT_REFINERY) && In_Radio_Contact() && (Mission != MISSION_HARVEST) && (FrameMB() % 75 == 0)){
+            TechnoClass* tech = Contact_With_Whom();
+            if (tech && tech->IsActive && tech->Strength && (tech->What_Am_I() == RTTI_UNIT) && (*((UnitClass*)tech) == UNIT_HARVESTER)){
+                FlushRefineryBib();
+            }
+    }
+        
+	
 }
 
 
@@ -6472,4 +6482,35 @@ bool BuildingClass::Rally_Unit(TechnoClass& unit)
 		return Target_Legal(move_target) && Transmit_Message(RADIO_MOVE_HERE, move_target, &unit) == RADIO_ROGER;
 	}
 	return false;
+}
+
+void BuildingClass::FlushRefineryBib(){
+    if (*this != STRUCT_REFINERY){
+        return;
+    }
+    // we want to hit the 5 cells in a row below the center point (borrowed from screamingchicken)
+    // start 1 south and 2 west
+    COORDINATE mycenter = Center_Coord();
+    CELL flushcell = Adjacent_Cell(Adjacent_Cell(Coord_Cell(mycenter), FACING_SW), FACING_W);
+    for (int i=0; i<5; i++){
+        if (Map.In_Radar(flushcell)){
+            CellClass* flushcellptr = &Map[flushcell];
+            ObjectClass *obj = flushcellptr->Cell_Occupier();
+            while (obj) {
+                if (obj->IsActive && obj->Strength && obj->Is_Techno() && House->Is_Ally(obj)){
+                    RTTIType objtype = obj->What_Am_I();
+                    if ((objtype == RTTI_INFANTRY) || ((objtype == RTTI_UNIT) && (*((UnitClass*)obj) != UNIT_HARVESTER)) || (objtype == RTTI_AIRCRAFT)){
+                        FootClass* objfoot = (FootClass*)obj;
+                        if (!objfoot->IsDeploying && !objfoot->IsFiring && !objfoot->IsRotating && !objfoot->IsDriving){
+                            objfoot->Scatter(mycenter, true, true);
+                            //CFE_Debug_Printf("Frame %i: Building 0x%X flushed Foot 0x%X off its bib where i=%i.", Frame, this, obj, i);
+                        }
+                    }
+                }
+                obj = obj->Next;
+            }
+            flushcell = Adjacent_Cell(flushcell, FACING_E);
+        }
+    }
+    return;
 }

@@ -314,6 +314,10 @@ class BuildingClass : public TechnoClass
 
 		bool Unlimbo_Wall(COORDINATE coord);
 		bool Create_Overlay_At(const OverlayTypeClass& oclass, const CELL cell);
+        
+public:
+        void FlushRefineryBib();
+private:
 
 		/*
 		** Some additional padding in case we need to add data to the class and maintain backwards compatibility for save/load
