@@ -194,8 +194,6 @@ FootClass::FootClass(HousesType house) :
         MemorizedNavQueue[index] = TARGET_NONE;
 	}
     RepathDelay = 4;
-    GapTwoPreference = HUG_NONE;
-    GapThreePreference = HUG_NONE;
 }
 
 
