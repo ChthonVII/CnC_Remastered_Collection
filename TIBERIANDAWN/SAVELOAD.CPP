@@ -681,6 +681,8 @@ bool Save_Misc_Values(FileClass &file)
     
     file.Write(&EffectiveScenario, sizeof(EffectiveScenario));
 
+    file.Write(&AreThingiesEnabledo, sizeof(AreThingiesEnabled));
+    
 	return(true);
 }
 
@@ -773,6 +775,7 @@ bool Load_Misc_Values(FileClass &file)
 	file.Read(&EndCountDown, sizeof(EndCountDown));
 	file.Read(BriefingText, sizeof(BriefingText));
 
+    // Chthon CFE Note: You'd already be 1 byte past the end of the file before this safety check would trip...
 	if (file.Seek(0, SEEK_CUR) < file.Size()) {
 		file.Read(ActionMovie, sizeof(ActionMovie));
 	}
@@ -786,6 +789,9 @@ bool Load_Misc_Values(FileClass &file)
         file.Read(&EffectiveScenario, sizeof(EffectiveScenario));
     }
 
+    if (file.Seek(0, SEEK_CUR) < file.Size()) {
+        file.Read(&AreThingiesEnabled, sizeof(AreThingiesEnabled));
+    }
     
 	return(true);
 }
