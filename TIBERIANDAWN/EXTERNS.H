@@ -115,6 +115,7 @@ struct CFEPatchConfig
     bool EnableNukeRadiusFix = false;
     bool EnableDeathsDoorFix = false;
     bool EnableNewSkirmishAI = false;
+    bool EnableSellChanceFix = false;
     
     bool OverrideAPCReqs = false;
     bool OverrideWarFactoryHP = false;
@@ -130,6 +131,7 @@ struct CFEPatchConfig
     bool ApplyMPBalanceToSP = false;
     bool MPUnitsInSP = false;
     
+    int DefaultCustomMissionScenarioNumber = 1;
     int EnableVeterancy = 0;
     int EnableCommandoGuard = 1;
     int SafeSabotage = 0;
@@ -297,6 +299,7 @@ extern unsigned char *		BlackPalette;
 extern unsigned char *		WhitePalette;
 extern unsigned char *		GamePalette;
 extern unsigned 				Scenario;
+extern unsigned             EffectiveScenario; // Chthon CFE Note: fix for GlyphX giving garbage scenario numbers
 extern ScenarioPlayerType 	ScenPlayer;
 extern ScenarioDirType 		ScenDir;
 extern ScenarioVarType 		ScenVar;

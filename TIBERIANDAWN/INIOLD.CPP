@@ -46,6 +46,7 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include	"function.h"
+#include "CFEDEBUG.H"
 
  /************************************* Prototypes *********************************************/
 static void Assign_Houses(void);
@@ -734,7 +735,6 @@ bool Read_Scenario_Ini_File(char* scenario_file_name, char* bin_file_name, const
 		return(false);
 	}
 	else {
-
 		GlyphX_Debug_Print("Opened scenario file");
 		GlyphX_Debug_Print(scenario_file_name);
 
@@ -776,7 +776,37 @@ bool Read_Scenario_Ini_File(char* scenario_file_name, char* bin_file_name, const
 		** ST - 4/22/2020 5:14PM
 		*/
 		BuildLevel = WWGetPrivateProfileInt("Basic", "BuildLevel", 98, buffer);
+        
+        // Chthon CFE Note: We also need to set Scenario, since Petroglyph didn't do it for us in CNC_Start_Custom_Instance(), and the default of 1 is problematic
+        EffectiveScenario = WWGetPrivateProfileInt("Basic", "CFEScenario", 0, buffer);
+        if (EffectiveScenario == 0){
+           EffectiveScenario = ActiveCFEPatchConfig.DefaultCustomMissionScenarioNumber;
+        }
+        //CFE_Debug_Printf("Read_Scenario_Ini_File() Set Effective Scenario to %i", EffectiveScenario);
+        // While we're at it, let's add support for custom dino missions
+        int dinos = WWGetPrivateProfileInt("Basic", "CFEDinos", 0, buffer);
+        if (dinos){
+            ScenPlayer = SCEN_PLAYER_JP;
+            Whom = HOUSE_JP; // It's not clear if this should be set. Select_Game() in INIT.CPP says not to. But CNC_Start_Instance_Variation() in DLLInterface.cpp does set it, and that appears to work.
+            Special.IsJurassic = true;
+            AreThingiesEnabled = true;
+        }
 	}
+	else {
+        // Chthon CFE Note: Scenario was set to 0 in CNC_Set_Multiplayer_Data() and then CNC_Start_Custom_Instance() doesn't touch it
+        // This causes problems for code that expects sane values
+        // So we're going to do what RA does and set Scenario based on BuildLevel
+        const int buildlevelmap[8] = {1, 1, 3, 7, 9, 11, 13, 15};
+        int effectiveblvl = BuildLevel;
+        if (effectiveblvl < 0){
+            effectiveblvl = 0;
+        }
+        if (effectiveblvl > 7){
+            effectiveblvl = 7;
+        }
+        EffectiveScenario = buildlevelmap[effectiveblvl];
+        //CFE_Debug_Printf("Read_Scenario_Ini_File() Set Effective Scenario to %i", EffectiveScenario);
+    }
 
 	/*
 	**	Jurassic scenarios are allowed to build the full multiplayer set
@@ -1173,7 +1203,6 @@ bool Read_Movies_From_Scenario_Ini(char* root, bool fresh)
 		return(false);
 	}
 	else {
-
 		GlyphX_Debug_Print("Opened scenario file");
 		GlyphX_Debug_Print(fname);
 

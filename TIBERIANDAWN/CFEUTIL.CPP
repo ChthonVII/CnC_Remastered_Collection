@@ -87,8 +87,10 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     GetSetting(ActiveCFEPatchConfig.EnableBurningTreeFix      , "FEATURES", "BURNING_TREE_FIX");
     GetSetting(ActiveCFEPatchConfig.EnableNukeRadiusFix      , "FEATURES", "NUKE_RADIUS_FIX");
     GetSetting(ActiveCFEPatchConfig.EnableDeathsDoorFix      , "FEATURES", "DEATHS_DOOR_FIX");
+    GetSetting(ActiveCFEPatchConfig.EnableSellChanceFix      , "FEATURES", "SELL_CHANCE_FIX");
     
 	//Settings
+    GetSetting(ActiveCFEPatchConfig.DefaultCustomMissionScenarioNumber      , "SETTINGS", "CUSTOM_MISSION_DEFAULT_SCENARIO");
     GetSetting(ActiveCFEPatchConfig.EnableVeterancy      , "SETTINGS", "VETERANCY");
     GetSetting(ActiveCFEPatchConfig.EnableCommandoGuard       , "SETTINGS", "COMMANDO_GUARD");
     GetSetting(ActiveCFEPatchConfig.SafeSabotage        , "SETTINGS", "SAFE_SABOTAGE");
@@ -187,6 +189,11 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     // overall SAM delay can't be less than 1 tick
     if (ActiveCFEPatchConfig.SmarterSAMBalanceDelay + (TICKS_PER_SECOND*3) < 1){
         ActiveCFEPatchConfig.SmarterSAMBalanceDelay = (-1*(TICKS_PER_SECOND*3))+1;
+    }
+    
+    // Scenario can't be less than 1
+    if (ActiveCFEPatchConfig.DefaultCustomMissionScenarioNumber < 1){
+        ActiveCFEPatchConfig.DefaultCustomMissionScenarioNumber = 1;
     }
     
     // Compute complex weights here so they only have to be computed once

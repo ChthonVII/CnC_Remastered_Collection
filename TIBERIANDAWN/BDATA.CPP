@@ -5047,7 +5047,7 @@ int BuildingTypeClass::Max_Pips(void) const
  *=============================================================================================*/
 int BuildingTypeClass::Full_Name(void) const
 {
-	if (::Scenario == 3 && Type == STRUCT_MISSION) {
+	if ((::Scenario == 3) && (Type == STRUCT_MISSION) && (GameToPlay == GAME_NORMAL)) {
 		return(TXT_PRISON);
 	}
 	if (!IsNominal || Special.IsNamed || IsWall || Debug_Map || Type == STRUCT_V23 || Type == STRUCT_V30 || Type == STRUCT_MISSION || Type == STRUCT_BIO_LAB) {

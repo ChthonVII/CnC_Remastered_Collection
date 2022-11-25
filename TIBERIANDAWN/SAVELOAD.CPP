@@ -679,6 +679,8 @@ bool Save_Misc_Values(FileClass &file)
 
     file.Write(&TempleIoned, sizeof(TempleIoned));
     
+    file.Write(&EffectiveScenario, sizeof(EffectiveScenario));
+
 	return(true);
 }
 
@@ -775,10 +777,16 @@ bool Load_Misc_Values(FileClass &file)
 		file.Read(ActionMovie, sizeof(ActionMovie));
 	}
 	
+
     if (file.Seek(0, SEEK_CUR) < file.Size()) {
         file.Read(&TempleIoned, sizeof(TempleIoned));
     }
+    
+    if (file.Seek(0, SEEK_CUR) < file.Size()) {
+        file.Read(&EffectiveScenario, sizeof(EffectiveScenario));
+    }
 
+    
 	return(true);
 }
 

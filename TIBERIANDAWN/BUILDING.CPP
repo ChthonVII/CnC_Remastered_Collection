@@ -1688,22 +1688,38 @@ void BuildingClass::AI(void)
 		**	Possibly start repair process if the building is below half strength.
 		*/
         // Chthon CFE Note: borrow & tweak screamchicken's fix
-		int ratio = 0x00C0; // custom missions  - use 75% like endgame missions
-        if (Scenario <= 6) ratio = 0x0040;	// 64 aka 25%
-		if (Scenario > 6) ratio = 0x0080; // 50%
-		if (Scenario > 10) ratio = 0x00C0; //75%
+		int ratio = 0x0040; //25%
+		if (EffectiveScenario > 6) ratio = 0x0080; // 50%
+		if (EffectiveScenario > 10) ratio = 0x00C0; //75%
 		if (GameToPlay != GAME_NORMAL && ActiveCFEPatchConfig.EnableNewSkirmishAI){
             // TODO: figure out how to get UI knob input for AI smartness to make it actually do something
             ratio = 0x00E6; //90%
         }
-		if (Class->IsRepairable && Health_Ratio() <= (unsigned) ratio) {
+        unsigned myhealthratio = Health_Ratio();
+		if (Class->IsRepairable && myhealthratio <= (unsigned) ratio) {
 			if (House->Available_Money() >= REPAIR_THRESHHOLD) {
 				Repair(1);
 			} else {
-				if (IsTickedOff && (int)Scenario > 2 && Random_Pick(0, 50) < (int)Scenario && !Trigger) {
-					if (GameToPlay != GAME_NORMAL || Scenario != 15 || PlayerPtr->ActLike != HOUSE_GOOD || *this != STRUCT_TEMPLE) {
-						Sell_Back(1);
-					}
+                int sellratio = ratio;
+                if (GameToPlay != GAME_NORMAL){
+                    if (ratio > 0x0080){
+                        sellratio = 0x0100 - ratio;
+                    }
+                    // todo: add some smarter stuff for more advanced AI 
+                }
+                bool oktosell = true;
+                if ((GameToPlay == GAME_NORMAL) && (Scenario == 15) && (PlayerPtr->ActLike == HOUSE_GOOD) && (*this == STRUCT_TEMPLE)) {
+                    oktosell = false;
+                }
+                // todo: add further situations where a smart AI won't sell
+                // The random chance here was never intended to deal with values higher than 15.
+                // Looks like WW just forgot about this when making Covert Ops and then fixed it in RA.
+                int capeffectivescenario = EffectiveScenario;
+                if (ActiveCFEPatchConfig.EnableSellChanceFix && (EffectiveScenario > 15)){
+                    capeffectivescenario = 15;
+                }
+				if (oktosell && (myhealthratio <= (unsigned) sellratio) && IsTickedOff && EffectiveScenario > 2 && Random_Pick(0, 50) < capeffectivescenario && !Trigger) {
+                    Sell_Back(1);
 				}
 			}
 		}
@@ -1820,6 +1836,9 @@ void BuildingClass::AI(void)
             }
     }
         
+    if (IsActive && Strength && (Frame % 150 == 0)){
+        CFE_Debug_Printf("Frame %i: Building 0x%X says Scenario is %i and EffectiveScenario is %i", Frame, this, Scenario, EffectiveScenario);
+    }
 	
 }
 

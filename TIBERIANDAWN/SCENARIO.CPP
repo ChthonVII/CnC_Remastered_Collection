@@ -795,7 +795,7 @@ void Fixup_Scenario(bool issavedgameload) // Chthon CFE Note: added parameter so
 	/*
 	** Laser-firing Orcas in the PATSUX secret mission
 	*/
-	if (GameToPlay == GAME_NORMAL && Scenario == 72) {
+	if (GameToPlay == GAME_NORMAL && EffectiveScenario == 72) {
 		((AircraftTypeClass&)AircraftTypeClass::As_Reference(AIRCRAFT_ORCA)).Primary = WEAPON_OBELISK_LASER;
 	} else {
 		((AircraftTypeClass&)AircraftTypeClass::As_Reference(AIRCRAFT_ORCA)).Primary = WEAPON_DRAGON;

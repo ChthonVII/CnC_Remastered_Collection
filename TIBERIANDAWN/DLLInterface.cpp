@@ -35,7 +35,7 @@
 #include "defines.h" // VOC_COUNT, VOX_COUNT
 #include "SidebarGlyphx.h"
 
-//#include "CFEDEBUG.H"
+#include "CFEDEBUG.H"
 
 
 /*
@@ -687,7 +687,13 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scena
 		Special.IsTSpread = 0;
 	}
 
+	// Chthon CFE Note: The GlyphX client is passing 0 for custom maps and the file number for non-custom maps
+	// Both are problematic. 
+	// RA uses build level, but that's not available to us yet in this function
+	// So we need to fix this elsewhere...
 	Scenario = scenario_index;
+    EffectiveScenario = Scenario;
+    //CFE_Debug_Printf("CNC_Set_Multiplayer_Data() Set Effective Scenario to %i", EffectiveScenario);
 	MPlayerCount = 0;
 
 	for (int i=0 ; i<num_players ; i++) {
@@ -1080,6 +1086,8 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Read_INI(int scenario_index, i
 
 	// Hack a fix for scenario 21 since the same mission number is used in Covert Ops and N64
 	Scenario = (scenario_index == 81) ? 21 : scenario_index;
+    EffectiveScenario = Scenario;
+    //CFE_Debug_Printf("CNC_Read_INI() Set Effective Scenario to %i", EffectiveScenario);
 
 	ScenVar = (ScenarioVarType)scenario_variation;
 	ScenDir = (ScenarioDirType)scenario_direction;
@@ -1118,6 +1126,7 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Read_INI(int scenario_index, i
 	} else {
 		
 		GlyphX_Debug_Print("Opened scenario file");
+        //CFE_Debug_Printf("CNC_Read_INI() was called with scenario_index %i", scenario_index);
 		GlyphX_Debug_Print(fname);
 		
 		int bytes_read = file.Read(ini_buffer, _ini_buffer_size-1);
@@ -1163,6 +1172,7 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Set_Home_Cell(int x, int y, ui
 * Modified to accept a scenario direction 7/12/2019 - LLL
 *
 * History: 1/7/2019 5:20PM - ST
+* Chthon CFE Note: Anything that's not a custom map, whether single-player or multi-player, starts here
 **************************************************************************************************/
 extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Instance_Variation(int scenario_index, int scenario_variation, int scenario_direction, int build_level, const char *faction, const char *game_type, const char *content_directory, int sabotaged_structure, const char *override_map_name)
 {
@@ -1199,6 +1209,8 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Instance_Variation(int s
 
 	// Hack a fix for scenario 21 since the same mission number is used in Covert Ops and N64
 	Scenario = (scenario_index == 81) ? 21 : scenario_index;
+    EffectiveScenario = Scenario;
+    //CFE_Debug_Printf("CNC_Start_Instance_Variation() Set Effective Scenario to %i", EffectiveScenario);
 	BuildLevel = build_level;
 
 	SabotagedType = (StructType)sabotaged_structure;
@@ -1223,6 +1235,22 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Instance_Variation(int s
 		Set_Scenario_Name(ScenarioName, Scenario, ScenPlayer, (ScenarioDirType)scenario_direction, (ScenarioVarType)scenario_variation);
 	}
 
+	// Chthon CFE Note: We're being passed the file number as scenario_index for MP
+    // This causes problems for code that expects sane values
+    // So we're going to do what RA does and set Scenario based on BuildLevel
+    if (GameToPlay == GAME_GLYPHX_MULTIPLAYER){
+            const int buildlevelmap[8] = {1, 1, 3, 7, 9, 11, 13, 15};
+            int effectiveblvl = BuildLevel;
+            if (effectiveblvl < 0){
+                effectiveblvl = 0;
+            }
+            if (effectiveblvl > 7){
+                effectiveblvl = 7;
+            }
+            EffectiveScenario = buildlevelmap[effectiveblvl];
+            //CFE_Debug_Printf("CNC_Start_Instance_Variation() Set Effective Scenario to %i", EffectiveScenario);
+    }
+	
 	HiddenPage.Clear();
 	VisiblePage.Clear();
 
@@ -1237,12 +1265,16 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Instance_Variation(int s
 	GlyphXClientSidebarWidthInLeptons = 0;
 
 	Seed = timeGetTime();
+    
+    //CFE_Debug_Printf("CNC_Start_Instance_Variation() was called, scenario_index = %i", scenario_index);
 
 	if (!Start_Scenario(ScenarioName)) {
 		return(false);
 	}
 
-	HandleSabotagedStructure(sabotaged_structure);
+	if (GameToPlay == GAME_NORMAL){
+        HandleSabotagedStructure(sabotaged_structure);
+    }
 
 	DLLExportClass::Reset_Sidebars();
 	DLLExportClass::Reset_Player_Context();
@@ -1288,6 +1320,7 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Instance_Variation(int s
 *
 *
 * History: 2019/10/17 - JAS
+* Chthon CFE Note: Both single-player and multi-player custom maps start here
 **************************************************************************************************/
 extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Custom_Instance(const char* content_directory, const char* directory_path, 
 	const char* scenario_name, int build_level, bool multiplayer)
@@ -1318,6 +1351,7 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Custom_Instance(const ch
 
 	Clear_Scenario();
 
+    //CFE_Debug_Printf("CNC_Start_Custom_Instance() called with content_directory %s, directory_path %s, scenario_name %s, build_level %i, multiplayer %i", content_directory, directory_path, scenario_name, build_level, multiplayer);
 	if (!Read_Scenario_Ini_File(scenario_file_name, bin_file_name, scenario_name, true)) {
 		return false;
 	}

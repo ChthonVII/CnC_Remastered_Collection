@@ -1133,6 +1133,8 @@ bool Select_Game(bool fade)
 					BuildLevel = 1;
 #else
 					Scenario = 1;
+                    EffectiveScenario = Scenario;
+                    //CFE_Debug_Printf("Select_Game() Set Effective Scenario to %i", EffectiveScenario);
 					BuildLevel = 1;
 #endif
 					ScenPlayer = SCEN_PLAYER_GDI;
@@ -2019,7 +2021,9 @@ bool Parse_Command_Line(int argc, char *argv[])
 #ifdef DEMO
 	Scenario = 3;
 #else
-	Scenario = 1;
+	Scenario = 1; // Chthon CFE Note: This is where Scenario is getting set to 1 from a call chain that starts with CNC_Init() in DLLInterface.cpp
+	EffectiveScenario = Scenario;
+    //CFE_Debug_Printf("Parse_Command_Line() Set Effective Scenario to %i", EffectiveScenario);
 #endif
 	ScenPlayer = SCEN_PLAYER_GDI;
 	ScenDir = SCEN_DIR_EAST;

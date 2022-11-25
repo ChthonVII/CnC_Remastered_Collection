@@ -324,6 +324,10 @@ RulesClass Rule;
 */
 HousesType Whom;							// Initial command line house choice.
 unsigned Scenario;						// Scenario #
+ // Chthon CFE Note: Necessary because GlyphX gives us garbage scenario numbers for MP and custom missions,
+ // and we can't just change Scenario b/c Decode_Pointers() will use it to rewrite ScenarioName during a save operation,
+ // and the GlyphX client might call CNC_Get_Game_State () on us at some time after that
+unsigned EffectiveScenario = 1;	      // Must be initialized or we crash on loading a savegame (wtf?) 
 ScenarioPlayerType ScenPlayer;		// GDI, NOD, 2-Player, Multi-Player
 ScenarioDirType ScenDir;				// East/West
 ScenarioVarType ScenVar;				// variation A/B/C
