@@ -734,7 +734,7 @@ void InfantryClass::Per_Cell_Process(bool center)
             obj = obj->Next;
         }
         if (foundnav){
-            if (obj && obj->IsActive && obj->Strength && obj->Is_Techno() && (Owner() != obj->Owner()) &&
+            if (obj && obj->IsActive && !obj->IsInLimbo && obj->Strength && obj->Is_Techno() && (Owner() != obj->Owner()) &&
                 (   
                     ((obj->What_Am_I() == RTTI_BUILDING) && ((BuildingClass*)obj)->Can_Capture()) ||
                     ((obj->What_Am_I() == RTTI_AIRCRAFT) && (*((AircraftClass*)obj) == AIRCRAFT_TRANSPORT) && (((AircraftClass *)obj)->Pip_Count() == 0))
@@ -1068,13 +1068,13 @@ void InfantryClass::Assign_Target(TARGET target)
     // Chthon CFE Note: Borrow Tweak for MinorAIFixes
 	if (/*!Target_Legal(NavCom) &&*/ Class->IsCapture && Class->Primary == WEAPON_NONE) {
 		BuildingClass const * building = As_Building(target);
-		if (building && building->Can_Capture() && (Owner() != building->Owner())) { //add check that we don't already own it
+		if (building && /*building->IsActive*/ && !building->IsInLimbo && building->Strength && building->Can_Capture() && (Owner() != building->Owner())) { //add check that we don't already own it
 			Assign_Destination(target);
 		}
 		// Also check for chinook
 		else {
             AircraftClass* aircraft = As_Aircraft(target);
-            if (aircraft && (*aircraft == AIRCRAFT_TRANSPORT) && (aircraft->Pip_Count() == 0)){
+            if (aircraft && /*aircraft->IsActive*/ && !aircraft->IsInLimbo && aircraft->Strength && (*aircraft == AIRCRAFT_TRANSPORT) && (aircraft->Pip_Count() == 0)){
                 Assign_Destination(target);
             }
         }
@@ -3663,7 +3663,7 @@ int InfantryClass::Mission_Attack(void)
         TechnoClass* techno = As_Techno(TarCom);
         if (techno){
             // If an enginner is somehow in Mission_Attack and its TarCom is capturable, configure for mission capture
-            if (techno->IsActive && techno->Strength && (Owner() != techno->Owner()) &&
+            if (techno->IsActive && !techno->IsInLimbo && techno->Strength && (Owner() != techno->Owner()) &&
                 (   
                     ((techno->What_Am_I() == RTTI_BUILDING) && ((BuildingClass*)techno)->Can_Capture()) ||
                     ((techno->What_Am_I() == RTTI_AIRCRAFT) && (*((AircraftClass*)techno) == AIRCRAFT_TRANSPORT) && (((AircraftClass*)techno)->Pip_Count() == 0))
