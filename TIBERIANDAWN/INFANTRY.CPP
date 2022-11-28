@@ -1065,9 +1065,10 @@ void InfantryClass::Assign_Target(TARGET target)
 	**	If this is an infantry that can only capture, then also assign its destination to the
 	**	target specified.
 	*/
-	if (!Target_Legal(NavCom) && Class->IsCapture && Class->Primary == WEAPON_NONE) {
+    // Chthon CFE Note: Borrow Tweak for MinorAIFixes
+	if (/*!Target_Legal(NavCom) &&*/ Class->IsCapture && Class->Primary == WEAPON_NONE) {
 		BuildingClass const * building = As_Building(target);
-		if (building && building->Can_Capture()) {
+		if (building && building->Can_Capture() && (Owner() != building->Owner())) { //add check that we don't already own it
 			Assign_Destination(target);
 		}
 	}
