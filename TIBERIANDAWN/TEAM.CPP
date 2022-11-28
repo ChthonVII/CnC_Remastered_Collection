@@ -532,11 +532,24 @@ void TeamClass::AI(void)
 		**	this case. If it has timed out then advance to the next
 		**	mission in the list or disband the team.
 		*/
+        
+        // Chthon CFE Note: Borrowed from MinorAIFixes
+        // Don't let teams including an engineer target non-capturable things, like turrets
+        teamhasengineers = false;
+        FootClass* thismember = Member;
+        while (thismember){
+            if ((thismember->IsActive && !thismember->IsInLimbo && thismember->Strength && thismember->Who_Am_I() == RTTI_INFANTRY) && (*((InfantryClass*)thismember) == INFANTRY_E7)){
+                teamhasengineers = true;
+                break;
+            }
+            thismember = thismember->Member;
+        }
 		TeamMissionStruct const * mission = &Class->MissionList[CurrentMission];
 		switch (mission->Mission) {
 			case TMISSION_ATTACKBASE:
 				if (!Target_Legal(MissionTarget)) {
-					Assign_Mission_Target(Member->Greatest_Threat(THREAT_BUILDINGS));
+                    ThreatType somethreat = teamhasengineers ? THREAT_CAPTURE : THREAT_BUILDINGS;
+					Assign_Mission_Target(Member->Greatest_Threat(somethreat));
 					if (!Target_Legal(MissionTarget)) IsNextMission = true;
 				}
 				Coordinate_Attack();
@@ -561,7 +574,8 @@ void TeamClass::AI(void)
 			case TMISSION_ATTACKTARCOM:
 			case TMISSION_RAMPAGE:
 				if (!Target_Legal(MissionTarget)) {
-					Assign_Mission_Target(Member->Greatest_Threat(THREAT_NORMAL));
+                    ThreatType somethreat = teamhasengineers ? THREAT_CAPTURE : THREAT_NORMAL;
+					Assign_Mission_Target(Member->Greatest_Threat(somethreat));
 					if (!Target_Legal(MissionTarget)) IsNextMission = true;
 				}
 				Coordinate_Attack();
