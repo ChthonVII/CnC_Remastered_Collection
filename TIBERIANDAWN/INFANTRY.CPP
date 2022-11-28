@@ -737,7 +737,7 @@ void InfantryClass::Per_Cell_Process(bool center)
             if (obj && obj->IsActive && obj->Strength && obj->Is_Techno() && (Owner() != obj->Owner()) &&
                 (   
                     ((obj->What_Am_I() == RTTI_BUILDING) && ((BuildingClass*)obj)->Can_Capture()) ||
-                    ((obj->What_Am_I() == RTTI_AIRCRAFT) && (*((AircraftClass*)obj) == AIRCRAFT_TRANSPORT))
+                    ((obj->What_Am_I() == RTTI_AIRCRAFT) && (*((AircraftClass*)obj) == AIRCRAFT_TRANSPORT) && (((AircraftClass *)obj)->Pip_Count() == 0))
                 )
             ){
                 tech->Captured(House);
@@ -1074,7 +1074,7 @@ void InfantryClass::Assign_Target(TARGET target)
 		// Also check for chinook
 		else {
             AircraftClass* aircraft = As_Aircraft(target);
-            if (aircraft && (*aircraft == AIRCRAFT_TRANSPORT)){
+            if (aircraft && (*aircraft == AIRCRAFT_TRANSPORT) && (aircraft->Pip_Count() == 0)){
                 Assign_Destination(target);
             }
         }
@@ -3658,11 +3658,33 @@ int InfantryClass::Full_Name(void) const
 int InfantryClass::Mission_Attack(void)
 {
 	Validate();
-	if (*this == INFANTRY_E7 && As_Building(TarCom)) {
-		Assign_Destination(TarCom);
-		Assign_Mission(MISSION_CAPTURE);
-		return(1);
-	}
+    // Chthon CFE Note: Improvements based on MinorAIFixes
+    if (*this == INFANTRY_E7){
+        TechnoClass* techno = As_Techno(TarCom);
+        if (techno){
+            // If an enginner is somehow in Mission_Attack and its TarCom is capturable, configure for mission capture
+            if (techno->IsActive && techno->Strength && (Owner() != techno->Owner()) &&
+                (   
+                    ((techno->What_Am_I() == RTTI_BUILDING) && ((BuildingClass*)techno)->Can_Capture()) ||
+                    ((techno->What_Am_I() == RTTI_AIRCRAFT) && (*((AircraftClass*)techno) == AIRCRAFT_TRANSPORT) && (((AircraftClass*)techno)->Pip_Count() == 0))
+                )
+            ){
+                Assign_Destination(TarCom);
+                Assign_Mission(MISSION_CAPTURE);
+                return(1);
+            }
+            // If a CPU-controlled engineer is somehow in Mission_Attack with a NON-capturable target,
+            // find a captuarable one, then configure for mission capture
+            // (Unlike MinorAIFixes, we're going to limit this to CPU-controlled houses.
+            // Players might be unhappy with their engineers retargeting in a way that gets them killed.)
+            else if (!House->IsHuman){
+                Assign_Target(Greatest_Threat(THREAT_CAPTURE));
+                Assign_Destination(TarCom);
+                Assign_Mission(MISSION_CAPTURE);
+                return(1);
+            }
+        }
+    }
 	return(FootClass::Mission_Attack());
 }
 
