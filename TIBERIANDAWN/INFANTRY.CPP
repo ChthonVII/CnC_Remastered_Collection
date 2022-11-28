@@ -703,7 +703,9 @@ void InfantryClass::Per_Cell_Process(bool center)
 	**	capture, then capture it.
 	*/
 	if (center && Mission == MISSION_CAPTURE) {
-		TechnoClass * tech = cellptr->Cell_Techno();
+        // Chthon CFE Note: Fix for "two enginners capture at the same time" bug inspired by MinorAIFixes
+        // But done differently to preserve ability to capture Chinooks
+		/*TechnoClass * tech = cellptr->Cell_Techno();
 		if (tech && tech->As_Target() == NavCom && tech->What_Am_I() == RTTI_BUILDING && !tech->Can_Capture()) {
 			tech = NULL;
 			Assign_Destination(TARGET_NONE);
@@ -721,7 +723,30 @@ void InfantryClass::Per_Cell_Process(bool center)
 				}
 			}
 //#endif
-		}
+		}*/
+        ObjectClass* obj = cellptr->Cell_Occupier();
+        bool foundnav = false;
+        while (obj){
+            if (obj->As_Target() == NavCom){
+                foundnav = true;
+                break;
+            }
+            obj = obj->Next;
+        }
+        if (foundnav){
+            if (obj && obj->IsActive && obj->Strength && obj->Is_Techno() && (Owner() != obj->Owner()) &&
+                (   
+                    ((obj->What_Am_I() == RTTI_BUILDING) && ((BuildingClass*)obj)->Can_Capture()) ||
+                    ((obj->What_Am_I() == RTTI_AIRCRAFT) && (*((AircraftClass*)obj) == AIRCRAFT_TRANSPORT))
+                )
+            ){
+                tech->Captured(House);
+                Delete_This();
+                return;
+            }
+            // we didn't return
+            Assign_Destination(TARGET_NONE);
+        }
 	}
 
 	/*
