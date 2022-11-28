@@ -1071,6 +1071,13 @@ void InfantryClass::Assign_Target(TARGET target)
 		if (building && building->Can_Capture() && (Owner() != building->Owner())) { //add check that we don't already own it
 			Assign_Destination(target);
 		}
+		// Also check for chinook
+		else {
+            AircraftClass* aircraft = As_Aircraft(target);
+            if (aircraft && (*aircraft == AIRCRAFT_TRANSPORT)){
+                Assign_Destination(target);
+            }
+        }
 	}
 }
 
