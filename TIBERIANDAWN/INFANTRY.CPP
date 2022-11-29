@@ -738,6 +738,7 @@ void InfantryClass::Per_Cell_Process(bool center)
                 (   
                     ((obj->What_Am_I() == RTTI_BUILDING) && ((BuildingClass*)obj)->Can_Capture()) ||
                     ((obj->What_Am_I() == RTTI_AIRCRAFT) && (*((AircraftClass*)obj) == AIRCRAFT_TRANSPORT) && (((AircraftClass *)obj)->Pip_Count() == 0))
+                    // don't need to check altitude b/c Cell_Occupier() implies on the ground
                 )
             ){
                 tech->Captured(House);
@@ -1074,7 +1075,7 @@ void InfantryClass::Assign_Target(TARGET target)
 		// Also check for chinook
 		else {
             AircraftClass* aircraft = As_Aircraft(target);
-            if (aircraft && /*aircraft->IsActive*/ && !aircraft->IsInLimbo && aircraft->Strength && (*aircraft == AIRCRAFT_TRANSPORT) && (aircraft->Pip_Count() == 0)){
+            if (aircraft && /*aircraft->IsActive*/ && !aircraft->IsInLimbo && aircraft->Strength && (*aircraft == AIRCRAFT_TRANSPORT) && (aircraft->Pip_Count() == 0) && (aircraft->Altitude == 0)){
                 Assign_Destination(target);
             }
         }
@@ -3258,10 +3259,16 @@ ActionType InfantryClass::What_Action(ObjectClass * object) const
 	}
 
 	if (Class->IsCapture && action == ACTION_ATTACK) {
-		if (object->Owner() != Owner() &&
-			((object->What_Am_I() == RTTI_AIRCRAFT && ((AircraftClass *)object)->Pip_Count() == 0 && *((AircraftClass *)object) == AIRCRAFT_TRANSPORT) ||
-			(object->What_Am_I() == RTTI_BUILDING &&
-				((BuildingClass *)object)->Can_Capture()))
+		if (  (object->Owner() != Owner()) &&
+                (   (   (object->What_Am_I() == RTTI_AIRCRAFT) &&
+                        (((AircraftClass *)object)->Pip_Count() == 0) &&
+                        (*((AircraftClass *)object) == AIRCRAFT_TRANSPORT) && 
+                        (((AircraftClass *)object)->Altitude == 0)
+                    ) ||
+                    (   (object->What_Am_I() == RTTI_BUILDING &&
+                        ((BuildingClass *)object)->Can_Capture())
+                    )
+                )
 			) {
 
 			action = ACTION_CAPTURE;
@@ -3666,7 +3673,7 @@ int InfantryClass::Mission_Attack(void)
             if (techno->IsActive && !techno->IsInLimbo && techno->Strength && (Owner() != techno->Owner()) &&
                 (   
                     ((techno->What_Am_I() == RTTI_BUILDING) && ((BuildingClass*)techno)->Can_Capture()) ||
-                    ((techno->What_Am_I() == RTTI_AIRCRAFT) && (*((AircraftClass*)techno) == AIRCRAFT_TRANSPORT) && (((AircraftClass*)techno)->Pip_Count() == 0))
+                    ((techno->What_Am_I() == RTTI_AIRCRAFT) && (*((AircraftClass*)techno) == AIRCRAFT_TRANSPORT) && (((AircraftClass*)techno)->Pip_Count() == 0) && (((AircraftClass*)techno)->Altitude == 0))
                 )
             ){
                 Assign_Destination(TarCom);
