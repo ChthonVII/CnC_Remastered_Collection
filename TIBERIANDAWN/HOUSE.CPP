@@ -1083,9 +1083,10 @@ void HouseClass::AI(void)
 		*/
 		if (GameToPlay != GAME_NORMAL && Class->House==HOUSE_JP) {
 			int rlimit;
-
+            bool isdinos = false;
 			if (Special.IsJurassic && AreThingiesEnabled) {
 				rlimit = 450;
+                isdinos = true;
 			} else {
 				rlimit = 1000;
 			}
@@ -1095,7 +1096,8 @@ void HouseClass::AI(void)
 				UnitClass *obj = NULL;
 				CELL cell;
 
-				if (Special.IsJurassic && AreThingiesEnabled) {
+                
+				if (isdinos) {
 					obj = new UnitClass(Random_Pick(UNIT_TRIC, UNIT_STEG), HOUSE_JP);
 				} else if (Special.IsVisceroids) {
 					if (BuildLevel >= 7) {
@@ -1106,13 +1108,43 @@ void HouseClass::AI(void)
 				}
 
 				if (obj) {
-					cell = XY_Cell (Map.MapCellX + Random_Pick(0, Map.MapCellWidth - 1),
-						Map.MapCellY + Random_Pick(0, Map.MapCellHeight - 1));
-					if (!Scan_Place_Object(obj, cell)) {
-						delete obj;
-					}
-					else{
-                        obj->Do_Squidgy_Spawn();
+                    // don't put two random_picks() in function parameters.
+                    // order of operations isn't guaranteed; can be inconsistent between PCs
+                    int randX = Random_Pick(0, Map.MapCellWidth - 1);
+                    int randY = Random_Pick(0, Map.MapCellHeight - 1);
+					cell = XY_Cell (Map.MapCellX + randX, Map.MapCellY + randY);
+                    bool doneplacing = false;
+                    if (isdinos && ActiveCFEPatchConfig.MeanerVisceroids){
+                        CELL edgecell = Map.NearestEdgeEntryPoint(cell);
+                        if (edgecell != 0){
+                            FacingType eface = FACING_N;
+                            int edgex = Cell_X(edgecell);
+                            int edgey = Cell_Y(edgecell);
+                            if (edgex == Map.MapCellX - 1){
+                                eface = FACING_E;
+                            }
+                            else if (edgex == Map.MapCellX+Map.MapCellWidth){
+                                eface = FACING_W;
+                            }
+                            else if (edgey == Map.MapCellY - 1){
+                                eface = FACING_S;
+                            }
+                            DirType desiredfacing = Facing_Dir(eface);
+                            if (obj->Unlimbo(Cell_Coord(edgecell), desiredfacing)) {
+                                obj->Assign_Mission(MISSION_MOVE);
+                                obj->Assign_Destination(::As_Target(cell));
+								obj->Commence();
+                                doneplacing = true;
+                            }
+                        }
+                    }
+                    if (!doneplacing){
+                        if (!Scan_Place_Object(obj, cell)) {
+                            delete obj;
+                        }
+                        else if (!isdinos){
+                            obj->Do_Squidgy_Spawn();
+                        }
                     }
 				}
 			}

@@ -765,6 +765,15 @@ bool Read_Scenario_Ini_File(char* scenario_file_name, char* bin_file_name, const
 	WWGetPrivateProfileString("Basic", "Lose", "x", LoseMovie, sizeof(LoseMovie), buffer);
 	WWGetPrivateProfileString("Basic", "Action", "x", ActionMovie, sizeof(ActionMovie), buffer);
 
+    //CFE_Debug_Printf("Read_Scenario_Ini_File() Set Effective Scenario to %i", EffectiveScenario);
+    // While we're at it, let's add support for custom dino missions
+    int dinos = WWGetPrivateProfileInt("Basic", "CFEDinos", 0, buffer);
+    if (dinos){
+        // SP & MP dino stuff
+        Special.IsJurassic = true;
+        AreThingiesEnabled = true;
+    }
+    
 	/*
 	**	For single-player scenarios, 'BuildLevel' is the scenario number.
 	**	This must be set before any buildings are created (if a factory is created,
@@ -782,15 +791,13 @@ bool Read_Scenario_Ini_File(char* scenario_file_name, char* bin_file_name, const
         if (EffectiveScenario == 0){
            EffectiveScenario = ActiveCFEPatchConfig.DefaultCustomMissionScenarioNumber;
         }
-        //CFE_Debug_Printf("Read_Scenario_Ini_File() Set Effective Scenario to %i", EffectiveScenario);
-        // While we're at it, let's add support for custom dino missions
-        int dinos = WWGetPrivateProfileInt("Basic", "CFEDinos", 0, buffer);
+        
+        // SP-only dino stuff
         if (dinos){
             ScenPlayer = SCEN_PLAYER_JP;
             Whom = HOUSE_JP; // It's not clear if this should be set. Select_Game() in INIT.CPP says not to. But CNC_Start_Instance_Variation() in DLLInterface.cpp does set it, and that appears to work.
-            Special.IsJurassic = true;
-            AreThingiesEnabled = true;
         }
+        
 	}
 	else {
         // Chthon CFE Note: Scenario was set to 0 in CNC_Set_Multiplayer_Data() and then CNC_Start_Custom_Instance() doesn't touch it

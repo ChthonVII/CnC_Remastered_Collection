@@ -178,6 +178,7 @@ class DisplayClass: public MapClass
 		void  Remove(ObjectClass const *object, LayerType layer);
 		void  Submit(ObjectClass const *object, LayerType layer);
 		CELL  Calculated_Cell(SourceType dir, HousesType house);
+        CELL NearestEdgeEntryPoint(CELL input);
 		bool  In_View(register CELL cell);
 		bool  Passes_Proximity_Check(ObjectTypeClass const *object);
 #ifdef USE_RA_AI

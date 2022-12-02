@@ -2981,6 +2981,89 @@ CELL DisplayClass::Calculated_Cell(SourceType dir, HousesType house)
 }
 
 
+CELL DisplayClass::NearestEdgeEntryPoint(CELL input){
+    CELL cell;
+    CELL bestcell = 0;
+    int bestdistance = 10000;
+    int lastdistance;
+    int x;
+    int y;
+
+    // check north edge
+    lastdistance = 10000;
+    for (x = 0; x < MapCellWidth; x++) {
+        cell = XY_Cell(MapCellX + x, MapCellY-1);
+        int thisdistance = Distance(cell, input);
+        if ((thisdistance > lastdistance) && (thisdistance > bestdistance)){
+            break;
+        }
+        if (    (thisdistance < bestdistance) &&
+                (*this)[cell].Is_Generally_Clear() &&
+                (*this)[cell+MAP_CELL_W].Is_Generally_Clear()
+        ){
+                bestcell = cell;
+                bestdistance = thisdistance;
+        }
+        lastdistance = thisdistance;
+    }
+
+    // check east edge
+    lastdistance = 10000;
+    for (y = 0; y < MapCellHeight; y++) {
+        cell = XY_Cell(MapCellX+MapCellWidth, MapCellY + y);
+        int thisdistance = Distance(cell, input);
+        if ((thisdistance > lastdistance) && (thisdistance > bestdistance)){
+            break;
+        }
+        if (    (thisdistance < bestdistance) &&
+                (*this)[cell].Is_Generally_Clear() &&
+                (*this)[cell - 1].Is_Generally_Clear()
+        ){
+                bestcell = cell;
+                bestdistance = thisdistance;
+        }
+        lastdistance = thisdistance;
+    }
+
+    // check south edge
+    lastdistance = 10000;
+    for (x = 0; x < MapCellWidth; x++) {
+        cell = XY_Cell(MapCellX + x, MapCellY+MapCellHeight);
+        int thisdistance = Distance(cell, input);
+        if ((thisdistance > lastdistance) && (thisdistance > bestdistance)){
+            break;
+        }
+        if (    (thisdistance < bestdistance) &&
+                (*this)[cell].Is_Generally_Clear() &&
+                (*this)[cell-MAP_CELL_W].Is_Generally_Clear()
+        ){
+                bestcell = cell;
+                bestdistance = thisdistance;
+        }
+        lastdistance = thisdistance;
+    }
+
+	// check west edge
+    lastdistance = 10000;
+    for (y = 0; y < MapCellHeight; y++) {
+        cell = XY_Cell(MapCellX - 1, MapCellY + y);
+        int thisdistance = Distance(cell, input);
+        if ((thisdistance > lastdistance) && (thisdistance > bestdistance)){
+            break;
+        }
+        if (    (thisdistance < bestdistance) &&
+                (*this)[cell].Is_Generally_Clear() &&
+                (*this)[cell + 1].Is_Generally_Clear()
+        ){
+                bestcell = cell;
+                bestdistance = thisdistance;
+        }
+        lastdistance = thisdistance;
+    }
+
+    return bestcell;
+}
+
 /***********************************************************************************************
  * DisplayClass::Select_These -- All selectable objects in region are selected.                *
  *                                                                                             *

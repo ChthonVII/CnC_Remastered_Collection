@@ -1625,7 +1625,17 @@ void UnitClass::Enter_Idle_Mode(bool initial)
 				} else {
                     
                     	// Chthon CFE Note: Meaner Visercoids go back to mission_hunt since that's where their custom AI is
-                        if (ActiveCFEPatchConfig.MeanerVisceroids && *this == UNIT_VICE){
+                        // same for MP dinos
+                        if (    ActiveCFEPatchConfig.MeanerVisceroids && 
+                                (   (*this == UNIT_VICE) ||
+                                    (   (GameToPlay != GAME_NORMAL) &&
+                                        Special.IsJurassic &&
+                                        AreThingiesEnabled &&
+                                        (*this >= UNIT_TRIC) &&
+                                        (*this <= UNIT_STEG)
+                                    )
+                                )
+                        ){
                             Assign_Mission(MISSION_HUNT);
                             return;
                         }
@@ -3416,7 +3426,17 @@ int UnitClass::Mission_Hunt(void)
 		}
 	}
 	// Chthon CFE Note: Meaner Visercoids AI may wander the map
-	else if (ActiveCFEPatchConfig.MeanerVisceroids && *this == UNIT_VICE){
+	// ditto for MP dinos
+	else if (    ActiveCFEPatchConfig.MeanerVisceroids && 
+                    (   (*this == UNIT_VICE) ||
+                        (   (GameToPlay != GAME_NORMAL) &&
+                            Special.IsJurassic &&
+                            AreThingiesEnabled &&
+                            (*this >= UNIT_TRIC) &&
+                            (*this <= UNIT_STEG)
+                        )
+                    )
+        ){
         TARGET oldtarget = TarCom;
         // look for a nearby target
         if (Target_Something_Nearby(THREAT_AREA)) {
@@ -3439,7 +3459,10 @@ int UnitClass::Mission_Hunt(void)
             int choice = Random_Pick(0,63);
             // just sit there
             if (choice < 32){
-                //Random_Animate(); // visceroids already have a constant animation
+                if (*this != UNIT_VICE){ // visceroids already have a constant animation
+                    Random_Animate();
+                    return(Random_Pick((3*TICKS_PER_SECOND)+5, 10*TICKS_PER_SECOND)); // dinos should sit longer; they look funny constantly hopping about
+                }
                 return((3*TICKS_PER_SECOND)+5);
             }
             // move to a nearby cell
@@ -3465,8 +3488,8 @@ int UnitClass::Mission_Hunt(void)
                     }
                 } while (!Target_Legal(nearbyspot));
                 if (Target_Legal(nearbyspot)){
-                    Assign_Destination(nearbyspot);
                     Assign_Mission(MISSION_MOVE);
+                    Assign_Destination(nearbyspot);
                 }
                 return 1;
             }
@@ -3490,8 +3513,8 @@ int UnitClass::Mission_Hunt(void)
                     }
                 } while (!Target_Legal(nearbyspot));
                 if (Target_Legal(nearbyspot)){
-                    Assign_Destination(nearbyspot);
                     Assign_Mission(MISSION_MOVE);
+                    Assign_Destination(nearbyspot);
                 }
                 return 1;
             }
@@ -4912,7 +4935,16 @@ int UnitClass::Mission_Move(void)
 	}
 	
 	// Chthon CFE Note: Meaner Visercoids actually abort moves to go kill stuff
-	if (ActiveCFEPatchConfig.MeanerVisceroids && *this == UNIT_VICE){
+	if (    ActiveCFEPatchConfig.MeanerVisceroids && 
+                (   (*this == UNIT_VICE) ||
+                    (   (GameToPlay != GAME_NORMAL) &&
+                        Special.IsJurassic &&
+                        AreThingiesEnabled &&
+                        (*this >= UNIT_TRIC) &&
+                        (*this <= UNIT_STEG)
+                    )
+                )
+    ){
         if (Target_Something_Nearby(THREAT_AREA)) {
             Assign_Destination(TARGET_NONE);
             Assign_Mission(MISSION_HUNT);
