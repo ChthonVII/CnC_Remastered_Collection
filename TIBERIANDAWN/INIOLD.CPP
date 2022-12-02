@@ -798,6 +798,12 @@ bool Read_Scenario_Ini_File(char* scenario_file_name, char* bin_file_name, const
             Whom = HOUSE_JP; // It's not clear if this should be set. Select_Game() in INIT.CPP says not to. But CNC_Start_Instance_Variation() in DLLInterface.cpp does set it, and that appears to work.
         }
         
+        // Chthon CFE Note: Per-map enable for loaner copter behavior
+        int tempcopter = WWGetPrivateProfileInt("Basic", "CFELoanerCopter", 0, buffer);
+        if (tempcopter > 0){
+            ActiveCFEPatchConfig.ForceLoanerCopters = true;
+        }
+        
 	}
 	else {
         // Chthon CFE Note: Scenario was set to 0 in CNC_Set_Multiplayer_Data() and then CNC_Start_Custom_Instance() doesn't touch it

@@ -116,6 +116,7 @@ struct CFEPatchConfig
     bool EnableDeathsDoorFix = false;
     bool EnableNewSkirmishAI = false;
     bool EnableSellChanceFix = false;
+    bool ForceLoanerCopters = false;
     
     bool OverrideAPCReqs = false;
     bool OverrideWarFactoryHP = false;

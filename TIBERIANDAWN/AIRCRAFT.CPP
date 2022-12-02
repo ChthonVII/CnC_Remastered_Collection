@@ -1985,7 +1985,7 @@ void AircraftClass::Enter_Idle_Mode(bool )
 			**	If this transport is a loaner and part of a team, then remove it from
 			**	the team it is attached to.
 			*/
-			if (IsALoaner) {
+			if (IsALoaner && (*this == AIRCRAFT_TRANSPORT)) {
 				if (Team) {
 					Team->Remove(this);
 				}

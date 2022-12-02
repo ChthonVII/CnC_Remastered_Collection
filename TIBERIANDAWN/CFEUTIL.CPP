@@ -88,6 +88,8 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     GetSetting(ActiveCFEPatchConfig.EnableNukeRadiusFix      , "FEATURES", "NUKE_RADIUS_FIX");
     GetSetting(ActiveCFEPatchConfig.EnableDeathsDoorFix      , "FEATURES", "DEATHS_DOOR_FIX");
     GetSetting(ActiveCFEPatchConfig.EnableSellChanceFix      , "FEATURES", "SELL_CHANCE_FIX");
+    GetSetting(ActiveCFEPatchConfig.ForceLoanerCopters      , "FEATURES", "LOANER_COPTER_DEFAULT");
+    
     
 	//Settings
     GetSetting(ActiveCFEPatchConfig.DefaultCustomMissionScenarioNumber      , "SETTINGS", "CUSTOM_MISSION_DEFAULT_SCENARIO");
