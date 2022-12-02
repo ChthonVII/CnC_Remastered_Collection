@@ -741,7 +741,7 @@ void InfantryClass::Per_Cell_Process(bool center)
                     // don't need to check altitude b/c Cell_Occupier() implies on the ground
                 )
             ){
-                tech->Captured(House);
+                ((TechnoClass*)obj)->Captured(House);
                 Delete_This();
                 return;
             }
@@ -1069,13 +1069,13 @@ void InfantryClass::Assign_Target(TARGET target)
     // Chthon CFE Note: Borrow Tweak for MinorAIFixes
 	if (/*!Target_Legal(NavCom) &&*/ Class->IsCapture && Class->Primary == WEAPON_NONE) {
 		BuildingClass const * building = As_Building(target);
-		if (building && /*building->IsActive*/ && !building->IsInLimbo && building->Strength && building->Can_Capture() && (Owner() != building->Owner())) { //add check that we don't already own it
+		if (building && /*building->IsActive &&*/ !building->IsInLimbo && building->Strength && building->Can_Capture() && (Owner() != building->Owner())) { //add check that we don't already own it
 			Assign_Destination(target);
 		}
 		// Also check for chinook
 		else {
             AircraftClass* aircraft = As_Aircraft(target);
-            if (aircraft && /*aircraft->IsActive*/ && !aircraft->IsInLimbo && aircraft->Strength && (*aircraft == AIRCRAFT_TRANSPORT) && (aircraft->Pip_Count() == 0) && (aircraft->Altitude == 0)){
+            if (aircraft && /*aircraft->IsActive &&*/ !aircraft->IsInLimbo && aircraft->Strength && (*aircraft == AIRCRAFT_TRANSPORT) && (aircraft->Pip_Count() == 0) && (aircraft->Altitude == 0)){
                 Assign_Destination(target);
             }
         }

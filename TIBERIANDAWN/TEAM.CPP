@@ -535,10 +535,10 @@ void TeamClass::AI(void)
         
         // Chthon CFE Note: Borrowed from MinorAIFixes
         // Don't let teams including an engineer target non-capturable things, like turrets
-        teamhasengineers = false;
+        bool teamhasengineers = false;
         FootClass* thismember = Member;
         while (thismember){
-            if ((thismember->IsActive && !thismember->IsInLimbo && thismember->Strength && thismember->Who_Am_I() == RTTI_INFANTRY) && (*((InfantryClass*)thismember) == INFANTRY_E7)){
+            if ((thismember->IsActive && !thismember->IsInLimbo && thismember->Strength && thismember->What_Am_I() == RTTI_INFANTRY) && (*((InfantryClass*)thismember) == INFANTRY_E7)){
                 teamhasengineers = true;
                 break;
             }
