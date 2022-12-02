@@ -681,7 +681,7 @@ bool Save_Misc_Values(FileClass &file)
     
     file.Write(&EffectiveScenario, sizeof(EffectiveScenario));
 
-    file.Write(&AreThingiesEnabledo, sizeof(AreThingiesEnabled));
+    file.Write(&AreThingiesEnabled, sizeof(AreThingiesEnabled));
     
 	return(true);
 }
