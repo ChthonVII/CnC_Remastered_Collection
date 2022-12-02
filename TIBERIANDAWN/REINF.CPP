@@ -198,7 +198,7 @@ bool Do_Reinforcements(TeamTypeClass *teamtype)
 					
 					// Chthon CFE Note: Sets Reinforcement non-player Orca/Apaches to be Loaners so they can fly off-map when done
 					// Borrowed from MinorAIFixes
-					if (ActiveCFEPatchConfig.ForceLoanerCopters && (temp->What_Am_I() == RTTI_AIRCRAFT) && !HouseClass::As_Pointer(teamtype->House)->IsHuman) {
+					if ((GameToPlay == GAME_NORMAL) && ActiveCFEPatchConfig.ForceLoanerCopters && (temp->What_Am_I() == RTTI_AIRCRAFT) && !HouseClass::As_Pointer(teamtype->House)->IsHuman) {
                         AircraftType airtype = *((AircraftClass*)temp);
 						if ((airtype == AIRCRAFT_HELICOPTER) || (airtype == AIRCRAFT_ORCA)) {
 							temp->IsALoaner = true;
