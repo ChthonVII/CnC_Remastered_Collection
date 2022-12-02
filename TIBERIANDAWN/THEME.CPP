@@ -478,6 +478,9 @@ bool ThemeClass::Is_Allowed(ThemeType index) const
 		(GameToPlay != GAME_NORMAL || _themes[index].Scenario <= (int)Scenario) &&
 #endif
 		(index != THEME_J1 || Special.IsJurassic))));
+    
+    // Chthon CFE Note: I'd change this to use EffectiveScenario, except it appears that GlyphX does music without any input from the dll whatsoever. 
+    
 }
 
 
