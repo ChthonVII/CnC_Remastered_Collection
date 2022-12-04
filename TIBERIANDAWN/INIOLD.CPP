@@ -799,9 +799,14 @@ bool Read_Scenario_Ini_File(char* scenario_file_name, char* bin_file_name, const
         }
         
         // Chthon CFE Note: Per-map enable for loaner copter behavior
-        int tempcopter = WWGetPrivateProfileInt("Basic", "CFELoanerCopter", 0, buffer);
-        if (tempcopter > 0){
-            ActiveCFEPatchConfig.ForceLoanerCopters = true;
+        int tempcopter = WWGetPrivateProfileInt("Basic", "CFELoanerCopter", -1, buffer);
+        if (tempcopter > -1){
+            if (tempcopter == 0){
+                ActiveCFEPatchConfig.ForceLoanerCopters = false;
+            }
+            else {
+                ActiveCFEPatchConfig.ForceLoanerCopters = true;
+            }
         }
         
 	}
