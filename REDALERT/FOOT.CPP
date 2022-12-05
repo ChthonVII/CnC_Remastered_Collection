@@ -3064,8 +3064,9 @@ void FootClass::Recall_Navigation_List(){
     
     // start moving
     Assign_Target(TARGET_NONE);
-    Assign_Destination(RememberedNavCom);
     Assign_Mission(MISSION_MOVE);
+    Assign_Destination(RememberedNavCom);
+    
     
     return;
 }

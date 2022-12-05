@@ -7793,8 +7793,9 @@ void TechnoClass::AttackMoveEnterMoveMode(){
     //if (Is_Foot()) {
     //    ((FootClass *)this)->Clear_Navigation_List();
     //}
-    Assign_Destination(RememberedNavCom);
+    
     Assign_Mission(MISSION_MOVE); //Set_Mission() is bad because it makes Commence() not work, and then we end up with units in impossible mission/status combinations
+    Assign_Destination(RememberedNavCom);
     //Commence(); // Calling Commence() ourselves is bad because the movement system needs units to finish moving into a cell once they've reserved it, and an ill-timed Commence() can make that not happen. Wait for the normal AI processing to call Commence() for us.
     //if (Is_Foot()){
         //((FootClass*)this)->SkipNavQueueUpdate = false; // OK to process the nav queue when we go idle because move mode ends .
