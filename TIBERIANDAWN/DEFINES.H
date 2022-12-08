@@ -3044,6 +3044,10 @@ typedef enum ArmorPenType : unsigned char {
     ARMORPEN_PSEUDO_HE // AP that does more damage vs no-armor and concrete
 } ArmorPenType;
 
+// Chthon CFE Note: This should use a #define instead of hardcoding all over the place
+#define MAX_NAVQUEUE 10
+#define MAX_NAVQUEUE_INDEX (MAX_NAVQUEUE - 1)
+
 #pragma warning (pop)
 
 #endif

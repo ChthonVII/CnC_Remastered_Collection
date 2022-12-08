@@ -184,7 +184,7 @@ class AircraftClass : public FootClass, public FlyClass
 		*/
 		FacingClass SecondaryFacing;
 
-	private:
+		//private: // Chthon CFE Note: these need to be public so we can check them from elsewhere 
 
 		/*
 		**	Aircraft can be in either state of landing, taking off, or in steady altitude.
@@ -194,6 +194,7 @@ class AircraftClass : public FootClass, public FlyClass
 		*/
 		unsigned IsLanding:1;
 		unsigned IsTakingOff:1;
+    private:
 
 		/*
 		**	It is very common for aircraft to be homing in on a target. When this flag is

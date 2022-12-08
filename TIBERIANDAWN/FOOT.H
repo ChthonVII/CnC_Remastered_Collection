@@ -290,12 +290,13 @@ class FootClass :	public TechnoClass
         int LeptonsPerTickSpeed(LandType landtype=LAND_CLEAR) const;
         
         // Chthon CFE Note: Q-Move port
-        void Handle_Navigation_List(void);
+        bool Handle_Navigation_List(void); // Chthon CFE Note: made bool so we can know whether we got something
 		void Queue_Navigation_List(TARGET target);
 		void Clear_Navigation_List(void);
         void Memorize_Navigation_List();
         void Recall_Navigation_List();
         void Clear_Memorized_Navigation_List();
+        bool HasNavQueue(){return (NavQueueSize > 0);};
         
 	private:
 		int Passable_Cell(CELL cell, FacingType face, int threat, MoveType threshhold) const;
@@ -325,10 +326,12 @@ public:
         unsigned int RepathDelay = 4;
         
         // Q-Move port stuff. Not offsetting this from padding b/c it's too big, so we just have to break savegame compatibility
-        TARGET NavQueueOriginalHead = TARGET_NONE;
+        unsigned char NavQueueIndex;
+        unsigned char NavQueueSize;
+        unsigned char MemorizedNavQueueSize;
+        TARGET NavQueue[MAX_NAVQUEUE];
+        TARGET MemorizedNavQueue[MAX_NAVQUEUE];
         mutable TARGET UnmodifiedNavCom = TARGET_NONE;
-        TARGET NavQueue[10];
-        TARGET MemorizedNavQueue[10];
         union{
 			mutable unsigned char CFEPatchNavQFlags = 0;
 			struct{

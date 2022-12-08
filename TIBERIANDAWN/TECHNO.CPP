@@ -5368,10 +5368,20 @@ void TechnoClass::AttackMoveEnterMoveMode(){
     //if (What_Am_I() == RTTI_INFANTRY){
     //    ((FootClass*)this)->Stop_Driver(); // Butch had this for infantry only, it seems to be causing problems for other unit types
     //}
+    Assign_Target(TARGET_NONE); // this was added to RA in 1.7 for reasons I don't remember
+    // maybe for fixing the twitchy bazooka guys -- in which case TD wouldn't *need* it
+    // but let's put it here unless it breaks something
     
     Assign_Mission(MISSION_MOVE); //Set_Mission() is bad because it makes Commence() not work, and then we end up with units in impossible mission/status combinations
     Assign_Destination(RememberedNavCom);
     //Commence();
+    // aircraft can commence though -- and should so we can skip status ahead past takeoff
+    if (What_Am_I() == RTTI_AIRCRAFT){
+        AircraftClass* meplane = (AircraftClass*)this;
+        if (!meplane->IsLanding && !meplane->IsTakingOff){
+            Commence();
+        }
+    }
 }
 
 void TechnoClass::AttackMoveEnterAttackMode(){

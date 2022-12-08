@@ -731,6 +731,7 @@ CCDebugString ("C&C95 - Primary building packet received\n");
                     // Chthon CFE Note: Q-Move port
                     if (techno->What_Am_I() == RTTI_INFANTRY || techno->What_Am_I() == RTTI_UNIT || techno->What_Am_I() == RTTI_AIRCRAFT) {
                         ((FootClass *)techno)->Clear_Navigation_List();
+                        ((FootClass *)techno)->Clear_Memorized_Navigation_List();
                     }
                     techno->Enter_Idle_Mode();
                 }

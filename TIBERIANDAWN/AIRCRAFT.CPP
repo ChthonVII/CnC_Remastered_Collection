@@ -1794,6 +1794,7 @@ int AircraftClass::Mission_Move(void)
 		case VALIDATE_LZ:
 			// Attack Move rework by ChthonVII -- If "smarter aircraft" mode is also enabled, don't attack move if you don't have any ammo to start with
             if (AttackMove && ActiveCFEPatchConfig.EnableSmarterAircraft && !IsALoaner && !Ammo){
+                Memorize_Navigation_List();
                 ResetAttackMove();
                 Clear_Navigation_List();
                 Enter_Idle_Mode();
@@ -1841,16 +1842,16 @@ int AircraftClass::Mission_Move(void)
 				if (distance < 0x0080) {
                     
                     // Chthon CFE Note: Q-Move port
-                    if (Target_Legal(NavQueue[0])){
-                        if (AttackMove && !Ammo){
+                    if (HasNavQueue()){
+                        //if (AttackMove && !Ammo){
                             //Memorize_Navigation_List();
-                            Clear_Navigation_List();
-                        } else {
+                           // Clear_Navigation_List();
+                        //} else {
                             Assign_Destination(TARGET_NONE);
                             Assign_Target(TARGET_NONE);
                             Enter_Idle_Mode();
                             return(1);
-                        }
+                        //}
                     }
                     
                     
@@ -1924,12 +1925,16 @@ void AircraftClass::Enter_Idle_Mode(bool )
 	Validate();
     
     // Chthon CFE Note: Q-Move port
-    bool isoldnavcomgood = Target_Legal(NavCom);
-    Handle_Navigation_List();
-    if (Target_Legal(NavCom) && !isoldnavcomgood){
-        Assign_Mission(MISSION_MOVE);
-        Commence();
-        return;
+    if (!Target_Legal(NavCom)){
+        if (!AttackMove || Ammo){ // if attackmove but no ammo, then fall through to next block to memorize and clear queue
+            if (Handle_Navigation_List()){
+                Assign_Mission(MISSION_MOVE);
+                if (!IsLanding && !IsTakingOff){
+                    Commence();
+                }
+                return;
+            }
+        }
     }
     
     // Attack Move rework by ChthonVII -- If we would go idle, but we still have ammo, continue on towards destination instead

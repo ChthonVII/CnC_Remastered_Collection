@@ -125,6 +125,11 @@ FootClass::FootClass(void) : Speed(0)
 	}
 	RepathDelay = 4;
     PriorCell = 0;
+    NavQueueIndex = 0;
+    NavQueueSize = 0;
+    MemorizedNavQueueSize = 0;
+    UnmodifiedNavCom = TARGET_NONE;
+    CFEPatchNavQFlags = 0;
 }
 
 
@@ -591,10 +596,14 @@ int FootClass::Mission_Move(void)
                     (Distance(RememberedNavCom) <= 3*CELL_LEPTON_W) ||
                     !Find_Path_AStar(nullptr, Coord_Cell(Coord), As_Cell(RememberedNavCom), 1, MOVE_MOVING_BLOCK, -1)
             ){
-                if  (!Target_Legal(NavQueue[0])){
+                // if we have things in our move queue, then advance the queue (by entering idle mode), but don't reset attack-move 
+                if  (HasNavQueue()){
+                    //SkipNavQueueUpdate = false;
+                    Enter_Idle_Mode();
+                }
+                else {
                     ResetAttackMove();
                 }
-                Enter_Idle_Mode();
             }
             // otherwise go back to moving
             else {
@@ -2073,49 +2082,53 @@ void FootClass::Detach(TARGET target, bool all)
     /*
 	**	Remove the target from the NavQueue list as well.
 	*/
-	int loop_count = 0;
-	for (int index = 0; index < ARRAY_SIZE(NavQueue); index++) {
-		if (NavQueue[index] == target) {
-			NavQueue[index] = TARGET_NONE;
-			if (index < ARRAY_SIZE(NavQueue)-1) {
-				memmove(&NavQueue[index], &NavQueue[index+1], ((ARRAY_SIZE(NavQueue)-index)-1) * sizeof(NavQueue[0]));
-				NavQueue[ARRAY_SIZE(NavQueue)-1] = TARGET_NONE;
-				index--;
-			}
-		}
-		/*
-		** Extra safety check
-		*/
-		loop_count++;
-		if (loop_count > ARRAY_SIZE(NavQueue)) {
-			break;
-		}
-	}
-
-	// Chthon CFE Note: also remove as nav queue head
-	if (NavQueueOriginalHead == target){
-        NavQueueOriginalHead = TARGET_NONE;
+	// Chthon CFE Note: *Much* cleaner/safer to just loop backwards
+    bool pullback = false;
+    for (int index = MAX_NAVQUEUE_INDEX; index >= 0; index--) {
+        if (NavQueue[index] == target) {
+            if (pullback){
+                memmove(&NavQueue[index], &NavQueue[index+1], (MAX_NAVQUEUE - index - 1) * sizeof(NavQueue[0]));
+                NavQueue[MAX_NAVQUEUE_INDEX] = TARGET_NONE;
+            }
+            else {
+                NavQueue[index] = TARGET_NONE;
+                if ((index > 0) && (index == NavQueueIndex)){
+                    NavQueueIndex--;
+                }
+            }
+            NavQueueSize--;
+        }
+        else if (NavQueue[index] != TARGET_NONE){
+            pullback = true;
+        }
     }
-	
-	// copy/pasta to remove from the memorized Nav queue as well
-	loop_count = 0;
-	for (int index = 0; index < ARRAY_SIZE(MemorizedNavQueue); index++) {
-		if (MemorizedNavQueue[index] == target) {
-			MemorizedNavQueue[index] = TARGET_NONE;
-			if (index < ARRAY_SIZE(MemorizedNavQueue)-1) {
-				memmove(&MemorizedNavQueue[index], &MemorizedNavQueue[index+1], ((ARRAY_SIZE(MemorizedNavQueue)-index)-1) * sizeof(MemorizedNavQueue[0]));
-				MemorizedNavQueue[ARRAY_SIZE(MemorizedNavQueue)-1] = TARGET_NONE;
-				index--;
-			}
-		}
-		/*
-		** Extra safety check
-		*/
-		loop_count++;
-		if (loop_count > ARRAY_SIZE(MemorizedNavQueue)) {
-			break;
-		}
-	}
+    if (NavQueueSize == 0){
+        Clear_Navigation_List();
+    }
+    
+    pullback = false;
+    for (int index = MAX_NAVQUEUE_INDEX; index >= 0; index--) {
+        if (MemorizedNavQueue[index] == target) {
+            if (pullback){
+                memmove(&MemorizedNavQueue[index], &MemorizedNavQueue[index+1], (MAX_NAVQUEUE - index - 1) * sizeof(MemorizedNavQueue[0]));
+                MemorizedNavQueue[MAX_NAVQUEUE_INDEX] = TARGET_NONE;
+            }
+            else {
+                MemorizedNavQueue[index] = TARGET_NONE;
+                // Memorized queue doesn't have an index
+                //if ((index > 0) && (index == NavQueueIndex)){
+                //    NavQueueIndex--;
+                //}
+            }
+            MemorizedNavQueueSize--;
+        }
+        else if (MemorizedNavQueue[index] != TARGET_NONE){
+            pullback = true;
+        }
+    }
+    if (MemorizedNavQueueSize == 0){
+        Clear_Memorized_Navigation_List();
+    }
 	
 	if (UnmodifiedNavCom == target){
         UnmodifiedNavCom = TARGET_NONE;
@@ -2363,14 +2376,29 @@ BuildingClass* FootClass::Find_Docking_Bay(StructType b, bool friendly) const
  * HISTORY:                                                                                    *
  *   07/18/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
-void FootClass::Handle_Navigation_List(void)
-{    
+bool FootClass::Handle_Navigation_List(void)
+{  
+    // Chthon CFE Note: Significantly overhauled again to remove crazy ring buffer shuffling stuff
     
     // Chthon CFE Note: For various reasons related to attack-move, we may want to skip this.
-    // (Unlike RA, TD doesn't have oddball units that need special treatment. Leaving this in case we end up needing it later.)
     if (SkipNavQueueUpdate){
-        return;
+        return false;
     }
+    
+    /*
+	**	The navigation queue only needs to be processed if there is
+	**	currently no navigation target for this object.
+	*/
+    if (Target_Legal(NavCom)){
+        return false;
+    }
+    
+    // If we have nothing to dequeue, then we have nothing to dequeue
+    if (NavQueueSize == 0){
+        IsNavQueueLoop = false; // just in case it's somehow still set
+        return false;
+    }
+    
     // nuclear option to avoid skipping ahead during attack move
     if (   AttackMove &&
             Target_Legal(RememberedNavCom) &&
@@ -2378,88 +2406,73 @@ void FootClass::Handle_Navigation_List(void)
             (   
                 (What_Am_I() == RTTI_AIRCRAFT) ||
                 (Find_Path_AStar(nullptr, Coord_Cell(Coord), As_Cell(RememberedNavCom), 1, MOVE_MOVING_BLOCK, -1) != 0)
-            ) &&
-            // don't skip if we got here on the very first Q-click setting up path
-            !(
-                    Target_Legal(NavQueue[0]) &&
-                    !Target_Legal(NavQueue[1]) &&
-                    (NavQueue[0] == RememberedNavCom)
-            )
+            ) 
     ){
-        return;
+        return false;
     }
-            
     
-    /*
-	**	The navigation queue only needs to be processed if there is
-	**	currently no navigation target for this object.
-	*/
-	if (!Target_Legal(NavCom)) {
-		TARGET target = NavQueue[0];
-
-		/*
-		**	Check to see if the navigation queue even exists and
-		**	has at least one valid entry. If it does, then process it by
-		**	assigning the object's NavCom to the first entry on the list.
-		*/
-		if (Target_Legal(target)) {
-			Assign_Destination(target);
-			memmove(&NavQueue[0], &NavQueue[1], sizeof(NavQueue)-sizeof(NavQueue[0]));
-			NavQueue[ARRAY_SIZE(NavQueue)-1] = TARGET_NONE;
-
-            if (AttackMove){
-                RememberedNavCom = target;
+    // repeatedly dequeue until we find a good destination, or have tried everything
+    bool consumed = false;
+    int failcount = 0;
+    while (true){
+        TARGET target = NavQueue[NavQueueIndex];
+        NavQueueIndex++;
+        if ((NavQueueIndex >= NavQueueSize) || (NavQueueIndex > MAX_NAVQUEUE_INDEX)){
+            if (IsNavQueueLoop){
+                NavQueueIndex = 0;
             }
-            
-			/*
-			**	If the navigation queue is to loop (indefinately), then append the
-			**	target value from the first part to the end of the queue.
-			*/
-			if (IsNavQueueLoop) {
-				for (int index = 0; index < ARRAY_SIZE(NavQueue); index++) {
-					if (NavQueue[index] == TARGET_NONE) {
-						// if we've gotten ourselves into a loop with only one cell, then break out
-                        if (index == 0){
-                            IsNavQueueLoop = false;
-                            NavQueueOriginalHead = TARGET_NONE;
-                            //CFE_Debug_Printf("unit %i breaking out of loop mode", this);
-                            // the only way we can get here is double Q-clicking a destination, then not adding anything to the nav queue before the unit arrives there.
-                            // So the destination we just popped will be our current location.
-                            // So trash the destination to avoid issuing a move order with nowhere to go (really fuxxors fixed-wing planes)
-                            Assign_Destination(TARGET_NONE);
-                        }
-                        // otherwise stick whatever we just popped onto the back of the queue
-                        else {
-                            NavQueue[index] = target;
-                        }
-						break;
-					}
-				}
-			}
-			// if we are already somehow occuping the destination cell (b/c pathfinding around traffic jam, or whatever), we'll get stuck
-			// so dequeue again to get a destination that requires movement
-			if (As_Cell(target) == Coord_Cell(Coord)){
-                target = NavQueue[0];
-                if (Target_Legal(target)) {
-                    Assign_Destination(target);
-                    memmove(&NavQueue[0], &NavQueue[1], sizeof(NavQueue)-sizeof(NavQueue[0]));
-                    NavQueue[ARRAY_SIZE(NavQueue)-1] = TARGET_NONE;
-                    if (AttackMove){
-                        RememberedNavCom = target;
-                    }
-                    if (IsNavQueueLoop) {
-                        for (int index = 0; index < ARRAY_SIZE(NavQueue); index++) {
-                            if (NavQueue[index] == TARGET_NONE) {
-                                NavQueue[index] = target;
-                                break;
-                            }
-                        }
-                    }
+            else {
+                Clear_Navigation_List();
+                consumed = true;
+            }
+        }
+        if (Target_Legal(target)) {
+            // if we are already somehow occuping the destination cell (b/c pathfinding around traffic jam, or whatever), we'll get stuck, so dequeue again
+            bool isgood = false;
+            if (What_Am_I() == RTTI_AIRCRAFT){
+                COORDINATE coord;
+                if (Is_Target_Building(target)) {
+                    coord = As_Building(target)->Docking_Coord();
+                } else {
+                    coord = As_Coord(target);
+                }
+                int distance = Distance(coord);
+                // on second thought, let's use Rule.CloseEnoughDistance to be consistent
+                //int threshhold = (((AircraftClass*)this)->Class->IsFixedWing) ? 0x00C0 : 0x0080; // from AircraftClass::Mission_Move
+                int threshhold = 3*CELL_LEPTON_W;
+                if (distance > threshhold){
+                    isgood = true;
                 }
             }
-		}
-	}
+            else if (   (As_Cell(target) != Coord_Cell(Coord)) &&
+                            (   (Distance(target) > 3*CELL_LEPTON_W) ||
+                                (Can_Enter_Cell(As_Cell(target)) == MOVE_OK)
+                            )
+            ){
+                isgood = true;
+            }
+            if (isgood){
+                Assign_Destination(target);
+                if (AttackMove){
+                    RememberedNavCom = target;
+                }
+                return true;
+            }
+        }
+        failcount++;
+        if (consumed || (failcount >= NavQueueSize) || (failcount > MAX_NAVQUEUE_INDEX)){
+            // if nothing in the queue was usable, flush it and stop
+            Clear_Navigation_List();
+            Assign_Destination(TARGET_NONE);
+            return false;
+        }
+    }
+    
+    // should be unreachable
+    return false;
+    
 }
+
 
 // Chthon CFE Note: Q-Move port
 /***********************************************************************************************
@@ -2483,108 +2496,116 @@ void FootClass::Handle_Navigation_List(void)
  *   07/18/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
 void FootClass::Queue_Navigation_List(TARGET target)
-{
+{    
+    // Chthon CFE Note: Significantly overhauled again to remove crazy ring buffer shuffling stuff
+    if (!Target_Legal(target)){
+        return;
+    }
     
-    if (Target_Legal(target)) {
-		int count;
-        bool is_loop_request = false;
-        bool original_head_found = false;
-        bool array_has_space = false;
-        int original_head_index = 0;
-        CELL tcell = As_Cell(target);
-        
-        // if the immediate target was just just popped off the queue, count a click here as a loop mode request anyway
-        if ((target == NavCom) || (target == UnmodifiedNavCom)){
-            is_loop_request = true;
+    // If there are expired entries, shuffle the queue back to maximize open space
+    if (!IsNavQueueLoop && (NavQueueIndex > 0)){
+        memmove(&NavQueue[0], &NavQueue[NavQueueIndex], sizeof(NavQueue[0]) * (MAX_NAVQUEUE - NavQueueIndex) );
+        // fill the now unused back end of the array with TARGET_NONE to keep it tidy
+        for (int i=0; i<NavQueueIndex; i++){
+            NavQueue[MAX_NAVQUEUE_INDEX - i] = TARGET_NONE;
         }
-        
-		for (count = 0; count < ARRAY_SIZE(NavQueue); count++) {
-			if (!Target_Legal(NavQueue[count])){
-                array_has_space = true; // we need to distinuish whether the last spot was occupied or not
+        NavQueueSize -= NavQueueIndex;
+        NavQueueIndex = 0;
+    }
+    
+    // are we requesting loop mode?
+    // use RememberedNavCom if we appear to be in attack-move's attack mode, since Approach_Target() may have overwritten plain NavCom
+    TARGET currentdestination = (AttackMove && Target_Legal(TarCom) && Target_Legal(RememberedNavCom)) ? RememberedNavCom : NavCom;
+    bool is_loop_request = false;
+    // if the immediate target was just just popped off the queue, count a click here as a loop mode request anyway
+    if ((target == currentdestination) || (target == UnmodifiedNavCom)){
+        is_loop_request = true;
+    }
+    else {
+        CELL tcell = As_Cell(target);
+        for (int i=0; i<NavQueueSize; i++){
+            if (tcell == As_Cell(NavQueue[i])){
+                is_loop_request = true;
                 break;
             }
-            // clicking in a cell that's already in the queue is treated as a request for loop mode
-            if (tcell == As_Cell(NavQueue[count])){
-                is_loop_request = true;
+        }
+    }
+    
+    // handle a loop request
+    if (is_loop_request){
+                
+        // if this was the first time a loop request was made, we need to do some cleanup
+        if (!IsNavQueueLoop){
+            // the code at the top of the function should have flushed expired entries
+            
+            // now put the current destination at the **front** of the queue
+            // must be the front so that later appends always come immediately before it
+            if (Target_Legal(currentdestination)){
+                // if space, shuffle
+                if (NavQueueSize < MAX_NAVQUEUE){
+                    if (NavQueueSize > 0){
+                        memmove(&NavQueue[1], &NavQueue[0], sizeof(NavQueue)-sizeof(NavQueue[0]));
+                        NavQueueIndex++;
+                    }
+                    NavQueue[0] = currentdestination;
+                    NavQueueSize++;
+                }
+                // if no space, then the current destination is oldest, and therefore should be evicted, so do nothing 
             }
-            // find the index for the original destination so we know where to insert if loop mode is already active
-            if (NavQueue[count] == NavQueueOriginalHead){
-                original_head_found = true;
-                original_head_index = count;
-            }
+        }
+                
+        // even if the above didn't work, still set IsNavQueueLoop if we can
+        // looping with a slightly broken queue is better than not looping
+        if (NavQueueSize > 0){
+            IsNavQueueLoop = true;
+        }
+        
+    }
+    // handle general case (no loop request)
+    else {
+        
+        // get out of loop mode if we're somehow in it with an empty queue
+        if (IsNavQueueLoop && (NavQueueSize == 0)) {
+			IsNavQueueLoop = false;
 		}
         
-        if (is_loop_request){
+        // if space...
+        if (NavQueueSize < MAX_NAVQUEUE){
+            // special case when we're adding second element and the first is the navcom that was added via reinserting navcom when starting loop mode
+            // This should be handled correctly by the dequeue logic, but let's handle the most common case here anyway
+            if (IsNavQueueLoop && (NavQueueSize == 1) && (NavQueue[0] == currentdestination)){
+                NavQueueIndex++;
+            }
+            NavQueue[NavQueueSize] = target;
+            NavQueueSize++;
             
-            // if this is the first time a loop request was made, we need to put the current destination back at the end of the queue
-            if (!IsNavQueueLoop &&
-                array_has_space &&
-                Target_Legal(NavCom)
-            ){
-                NavQueue[count] = NavCom;
-                NavQueueOriginalHead = NavCom;
-                count++;
-            }
-            // even if the above didn't work, still set IsNavQueueLoop
-            // looping with a slightly broken queue is better than not looping
-            if (count > 0){
-                IsNavQueueLoop = true;
-            }
-		} else {
-            // if we are adding the first element to an empty queue, we shouldn't be looping
-            // we also shouldn't be looping if we're a minlayer in q-attack-move mode
-			if (count == 0) {
-				IsNavQueueLoop = false;
-                NavQueueOriginalHead = TARGET_NONE;
-			}
-			// if there's open space in the array to add something
-			if (array_has_space){
-                // if we're in loop mode and we've got the original head, we need to insert in front of it
-                if (IsNavQueueLoop && original_head_found){
-                    // if the head is at the front of the array, then go in the back
-                    // unless we're adding a second element and the first is the navcom that added via reinserting the original head
-                    if ((original_head_index == 0) && !((NavQueue[0] == NavCom) && (count == 1))){
-                        NavQueue[count] = target;
-                    }
-                    // otherwise shift the head and everything behind it over and insert before the head
-                    else {
-                        memmove(&NavQueue[original_head_index+1], &NavQueue[original_head_index], sizeof(NavQueue[0]) * (ARRAY_SIZE(NavQueue) - original_head_index - 1) );
-                        NavQueue[original_head_index] = target;
-                    }
-                }
-                // otherwise (not in loop mode) just stick things on the back of the queue
-                else {
-                    NavQueue[count] = target;
-                }
-			}
-			// if there's no empty space, evict the oldest entry. This seems like the least bad thing to do.
-			// gate behind the mod feature so this change to vanilla behavior can be turned off
-			else {
-                // if this is a loop, then the original head is the oldest
-                if (IsNavQueueLoop && original_head_found){
-                    NavQueue[original_head_index] = target;
-                    // point the head to the next oldest element
-                    int newheadindex = (original_head_index == ARRAY_SIZE(NavQueue) - 1) ? 0 : original_head_index + 1;
-                    NavQueueOriginalHead = NavQueue[newheadindex];
-                }
-                // otherwise, the element in [0] is the oldest
-                else {
-                    memmove(&NavQueue[0], &NavQueue[1], sizeof(NavQueue)-sizeof(NavQueue[0]));
-                    NavQueue[ARRAY_SIZE(NavQueue)-1] = target;
-                }
-            }
+        }
+        // if no space...
+        else{
+            // mod rule = evict oldest; 
 
-		}
+            // shuffle everything back one spot before inserting
+            memmove(&NavQueue[0], &NavQueue[1], sizeof(NavQueue)-sizeof(NavQueue[0]));
+            if (NavQueueIndex > 0){
+                NavQueueIndex--;
+            }
+            
+            NavQueue[MAX_NAVQUEUE_INDEX] = target;
+        }
+    
+        
+    }
+    
+    /*
+    **	If this object isn't doing anything, then start acting on the
+    **	navigation queue now.
+    */
+    if (!Target_Legal(NavCom) && Mission == MISSION_GUARD) {
+        Enter_Idle_Mode();
+    }
+    
+    return;
 
-		/*
-		**	If this object isn't doing anything, then start acting on the
-		**	navigation queue now.
-		*/
-		if (!Target_Legal(NavCom) && Mission == MISSION_GUARD) {
-			Enter_Idle_Mode();
-		}
-	}
-	
 }
 
 // Chthon CFE Note: Q-Move port
@@ -2608,13 +2629,14 @@ void FootClass::Queue_Navigation_List(TARGET target)
 void FootClass::Clear_Navigation_List(void)
 {
     
-	for (int index = 0; index < ARRAY_SIZE(NavQueue); index++) {
+	for (int index = 0; index < MAX_NAVQUEUE; index++) {
 		NavQueue[index] = TARGET_NONE;
 	}
 	IsNavQueueLoop = false;
-    NavQueueOriginalHead = TARGET_NONE;
     UnmodifiedNavCom = TARGET_NONE;
     SkipNavQueueUpdate = false;
+    NavQueueIndex = 0;
+    NavQueueSize = 0;
 }
 
 
@@ -2625,6 +2647,7 @@ void FootClass::Memorize_Navigation_List(){
     // just return if we aren't doing a Q-attack-move-loop, since that's the only context we want this
     if (    !AttackMove ||
              !IsNavQueueLoop ||
+             (NavQueueSize < 2) ||
              !Target_Legal(NavQueue[0]) ||
              !Target_Legal(NavQueue[1])
     ){
@@ -2633,22 +2656,10 @@ void FootClass::Memorize_Navigation_List(){
     
     // save the list (we're assuming both lists are the same size; don't change that!)
     memcpy(&MemorizedNavQueue[0], &NavQueue[0], sizeof(MemorizedNavQueue));
+    MemorizedNavQueueSize = NavQueueSize;
     
     // set a flag
     HasMemorizedNavQueue = true;
-
-    // roll the list around until the original head is at the front of the list
-    while (MemorizedNavQueue[0] != NavQueueOriginalHead){
-        TARGET target = MemorizedNavQueue[0];
-        memmove(&MemorizedNavQueue[0], &MemorizedNavQueue[1], sizeof(MemorizedNavQueue)-sizeof(MemorizedNavQueue[0]));
-        MemorizedNavQueue[ARRAY_SIZE(MemorizedNavQueue)-1] = TARGET_NONE;
-        for (int index = 0; index < ARRAY_SIZE(MemorizedNavQueue); index++) {
-            if (MemorizedNavQueue[index] == TARGET_NONE) {
-                MemorizedNavQueue[index] = target;
-                break;
-            }
-        }
-    }
     
     return;
 }
@@ -2658,35 +2669,33 @@ void FootClass::Memorize_Navigation_List(){
 // copies memorized nav list back and restarts Q-attack-move-loop
 void FootClass::Recall_Navigation_List(){
     
+    if (!HasMemorizedNavQueue || (MemorizedNavQueueSize < 2)){
+        Clear_Memorized_Navigation_List();
+        return;
+    }
+    
     // restore attack-move
     AttackMove = true;
     RememberedNavCom = MemorizedNavQueue[0];
     
     // restore loop
     IsNavQueueLoop = true;
-    NavQueueOriginalHead = MemorizedNavQueue[0];
     
     // copy the list (we're assuming both lists are the same size; don't change that!)
     memcpy(&NavQueue[0], &MemorizedNavQueue[0], sizeof(NavQueue));
+    NavQueueSize = MemorizedNavQueueSize;
     
-    // advance the list one step to put the current destination in the back
-    TARGET target = NavQueue[0];
-    memmove(&NavQueue[0], &NavQueue[1], sizeof(NavQueue)-sizeof(NavQueue[0]));
-    NavQueue[ARRAY_SIZE(NavQueue)-1] = TARGET_NONE;
-    for (int index = 0; index < ARRAY_SIZE(NavQueue); index++) {
-        if (NavQueue[index] == TARGET_NONE) {
-            NavQueue[index] = target;
-            break;
-        }
-    }
+    // if possible, advance the list one step to put the current destination in the back
+    NavQueueIndex = (NavQueueSize > 1) ? 1 : 0;
     
     // clear the old list & flag
     Clear_Memorized_Navigation_List();
     
     // start moving
     Assign_Target(TARGET_NONE);
-    Assign_Destination(RememberedNavCom);
     Assign_Mission(MISSION_MOVE);
+    Assign_Destination(RememberedNavCom);
+    
     
     return;
 }
@@ -2696,9 +2705,10 @@ void FootClass::Recall_Navigation_List(){
 void FootClass::Clear_Memorized_Navigation_List(){
     
     // clear the old list
-    for (int index = 0; index < ARRAY_SIZE(MemorizedNavQueue); index++) {
+    for (int index = 0; index < MAX_NAVQUEUE; index++) {
 		MemorizedNavQueue[index] = TARGET_NONE;
 	}
+	MemorizedNavQueueSize = 0;
     
     // clear the flag
     HasMemorizedNavQueue = false;
