@@ -272,7 +272,11 @@ void Initialise_CFE_Patch_Config()
 {
 	static constexpr const char* DefaultININame = "DEFAULT.CFEPATCHREDUX.INI";
 
-	const std::string ini_dir = Get_User_Mod_Dir() + "\\CFEPatchRedux";
+#ifdef CFE_TEST_BUILD
+	const std::string ini_dir = Get_User_Mod_Dir() + "\\CFEPatchReduxTESTBUILD";
+#else
+    const std::string ini_dir = Get_User_Mod_Dir() + "\\CFEPatchRedux";
+#endif
 	const std::string ini_path = ini_dir + "\\CFEPATCHREDUX.INI";
 
 	INIClass default_ini;

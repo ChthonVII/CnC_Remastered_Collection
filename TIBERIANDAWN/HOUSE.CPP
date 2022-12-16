@@ -918,7 +918,11 @@ void HouseClass::AI(void)
 
     // Chthon CFE Note: Announce mod version for all players
     if ((Frame == 75) && IsHuman && ActiveCFEPatchConfig.EnableVersionAnnounce){
+#ifdef CFE_TEST_BUILD        
         char text[] = "CFE Patch Redux version 1.9 TEST BUILD 4";
+#else
+        char text[] = "CFE Patch Redux version 1.9";
+#endif
         On_Message(text, 20.0f, TXT_YOURGAME_OUTDATED);
     }
     

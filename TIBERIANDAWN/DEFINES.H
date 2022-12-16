@@ -34,6 +34,10 @@
 #ifndef DEFINES_H
 #define DEFINES_H
 
+// Chthon CFE Note: Toggle for test build
+// Comment this out for a production build
+#define CFE_TEST_BUILD
+
 
 #define PETROGLYPH_EXAMPLE_MOD
 
