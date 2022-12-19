@@ -631,11 +631,21 @@ int FootClass::Find_Path_AStar(PathType* const resultPath, const CELL source, CE
 	}
 
 	//Target is impassable, try to account for that by finding a position nearby, or staying still if already close
-	if (!Passable_Cell(dest, FACING_NONE, threat, threshhold)) {
+	// Chthon CFE Note: We need to account for this block no longer getting called multiple times across a range of threshholds.
+	// The likely original behavior was that the MOVE_MOVING_BLOCK iteration would be selected
+	// So we'll use that.
+	MoveType temphold = (threshhold < MOVE_MOVING_BLOCK) ? threshhold : MOVE_MOVING_BLOCK;
+	if (!Passable_Cell(dest, FACING_NONE, threat, temphold)) {
 		static const int impassableCloseEnough = 3;
 		const int distanceToDest = ::Distance(source, dest);
 		if (distanceToDest > impassableCloseEnough) {
-			const CELL nearbyDest = Find_Passable_Position_Near(dest, impassableCloseEnough, threshhold, threat);
+			CELL nearbyDest = Find_Passable_Position_Near(dest, impassableCloseEnough, temphold, threat);
+            
+            // if that failed, it may be because we changed the threshhold, so try again
+            // this will reintroduce some bumper cars though... sigh...
+            if ((nearbyDest == 0) && (temphold < threshhold)){
+                nearbyDest = Find_Passable_Position_Near(dest, impassableCloseEnough, threshhold, threat);
+            }
 
 			//Failed to find a passable position at or near the target or nearby position is further away or equidistant to our current position, so just stay put
 			if (nearbyDest == 0 || ::Distance(dest, nearbyDest) >= distanceToDest) {
