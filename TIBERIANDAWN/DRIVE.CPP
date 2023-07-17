@@ -1890,6 +1890,26 @@ void DriveClass::Mark_Track(COORDINATE headto, MarkType type)
 	}
 }
 
+// copy paste the logic for finding the midpoint of the track
+CELL DriveClass::Track_Midpoint_Cell(){
+    if (!IsOnShortTrack && TrackNumber != -1) {
+			int tracknum = TrackControl[TrackNumber].Track;
+			if (tracknum) {
+				TrackType const * ptr = RawTracks[tracknum - 1].Track;
+				int cellidx = RawTracks[tracknum - 1].Cell;
+				if (cellidx > -1) {
+					DirType dir = ptr[cellidx].Facing;
+
+					if (TrackIndex < cellidx && cellidx != -1) {
+						COORDINATE offset = Smooth_Turn(ptr[cellidx].Offset, &dir);
+						CELL cell = Coord_Cell(offset);
+                        return cell;
+                    }
+                }
+            }
+    }
+    return -1;
+}
 
 /***********************************************************************************************
  * DriveClass::Offload_Tiberium_Bail -- Offloads one Tiberium quantum from the object.         *

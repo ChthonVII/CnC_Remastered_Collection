@@ -201,7 +201,11 @@ private:
 		COORDINATE Smooth_Turn(COORDINATE adj, DirType *dir);
         // Chthon CFE Note: Need a version of this that can preview what would happen from a new headto
         COORDINATE Arbitrary_Smooth_Turn(COORDINATE fakeheadto, char faketracknumber, COORDINATE adj, DirType *dir);
-
+        // copy paste the logic for finding the midpoint of the track
+public:
+        CELL Track_Midpoint_Cell();
+private:
+        
 		static TurnTrackType const TrackControl[67];
 		static RawTrackType const RawTracks[13];
 		static TrackType const Track13[];
