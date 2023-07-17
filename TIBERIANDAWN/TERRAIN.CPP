@@ -825,6 +825,7 @@ TerrainClass::TerrainClass(void) :
 	IsBarnacled = false;
 	IsSporing = false;
 	Strength = 0;
+    BurnDownDelay = 0;
 }
 
 
