@@ -264,7 +264,8 @@ class ObjectClass : public AbstractClass
 		virtual void Move(FacingType);
         
         // Chthon CFE Note: Inline subtract birthday from frame
-        long FrameMB(){return Frame - BirthdayFrame;};
+        // Make sure the result is never negative in case this somehow get called before Frame loaded from a save game
+        inline long FrameMB(){(Frame > BirthdayFrame) ? return Frame - BirthdayFrame : return BirthdayFrame - Frame;};
 };
 
 #endif
