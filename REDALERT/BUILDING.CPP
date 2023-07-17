@@ -5341,8 +5341,7 @@ bool BuildingClass::Revealed(HouseClass * house)
 		if (   !HasOpened &&
                 !In_Radio_Contact() &&
                 (House->IsHuman || (house == House) || (Session.Type != GAME_NORMAL)) &&
-                (Mission != MISSION_CONSTRUCTION) &&
-                (Mission != MISSION_NONE)
+                (Mission != MISSION_CONSTRUCTION)
         ){
             Grand_Opening();
         }

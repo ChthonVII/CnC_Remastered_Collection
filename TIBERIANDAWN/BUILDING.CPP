@@ -1835,11 +1835,7 @@ void BuildingClass::AI(void)
                 FlushRefineryBib();
             }
     }
-        
-    if (IsActive && Strength && (Frame % 150 == 0)){
-        CFE_Debug_Printf("Frame %i: Building 0x%X says Scenario is %i and EffectiveScenario is %i", Frame, this, Scenario, EffectiveScenario);
-    }
-	
+        	
 }
 
 
@@ -5740,14 +5736,19 @@ bool BuildingClass::Revealed(HouseClass * house)
 			Grand_Opening();
 		}
 		*/
+        //CFE_Debug_Printf("Frame %i: Building 0x%X says: Opened? %i, RadioContact? %i, Human? %i, house == House? %i, MP? %i, Mission %i", Frame, this, HasOpened, In_Radio_Contact(), House->IsHuman, (house == House), (GameToPlay != GAME_NORMAL), Mission);
+        
         if (   !HasOpened &&
                 !In_Radio_Contact() &&
                 (House->IsHuman || (house == House) || (GameToPlay != GAME_NORMAL)) &&
-                (Mission != MISSION_CONSTRUCTION) &&
-                (Mission != MISSION_NONE)
+                (Mission != MISSION_CONSTRUCTION)
         ){
             Grand_Opening();
+            //CFE_Debug_Printf("did opening");
         }
+        //else {
+        //    CFE_Debug_Printf("did NOT do opening");
+        //}
 
 		return(true);
 	}
