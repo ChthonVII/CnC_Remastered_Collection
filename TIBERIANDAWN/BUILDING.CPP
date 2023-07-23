@@ -2435,6 +2435,10 @@ BuildingClass::BuildingClass(StructType type, HousesType house) :
 	House->Tracking_Add(this);
 #endif // USE_RA_AI
     
+    RallyPoint = TARGET_NONE;
+    SAMLoweringDelay = 0;
+    SAMAmmo = 0;
+    howInverseWallPreviewMarkers = 0;
     HasOpened = false;
     
 }
