@@ -1481,7 +1481,7 @@ UnitClass::UnitClass(UnitType classid, HousesType house) :
 	House->Tracking_Add(this);
 #endif // USE_RA_AI
     
-    HarvesterIsUnsticking = false;
+    HarvesterIsUnsticking = 0;
     LastHarvesterCell = 0;
 }
 
@@ -1592,7 +1592,7 @@ void UnitClass::Enter_Idle_Mode(bool initial)
 				if (initial || !House->IsHuman || Map[Coord_Cell(Coord)].Land_Type() == LAND_TIBERIUM || HarvesterIsUnsticking) {
 					order = MISSION_HARVEST;
                     if (HarvesterIsUnsticking){
-                        HarvesterIsUnsticking = false;
+                        HarvesterIsUnsticking = 0;
                         if ((Tiberium_Load() < 0x0100) && Target_Legal(ArchiveTarget)){
                             Assign_Destination(ArchiveTarget);
                             ArchiveTarget = TARGET_NONE;
@@ -5492,7 +5492,7 @@ void UnitClass::Do_Harvester_Unstick(){
         if ((res <= MOVE_MOVING_BLOCK) || (res == MOVE_TEMP)){
             Assign_Mission(MISSION_MOVE);
             Assign_Destination(::As_Target(backupcell));
-            HarvesterIsUnsticking = true;
+            HarvesterIsUnsticking = 1;
             return;
         }
     }
