@@ -61,7 +61,7 @@ class FixedHeapClass
 		virtual int Free(void * pointer);
 		virtual int Free_All(void);
 
-	public:
+	protected:
 		void * operator[](int index) {return ((char *)Buffer) + (index * Size);};
 
 		/*

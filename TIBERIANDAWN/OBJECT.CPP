@@ -76,7 +76,7 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
-#include "CFEDEBUG.H"
+
 
 /*
 **	Selected objects have a special marking box around them. This is the shapes that are
@@ -915,10 +915,7 @@ bool ObjectClass::Select(bool allow_mixed)
  *=============================================================================================*/
 bool ObjectClass::Render(bool forced)
 {
-	CFE_Debug_Printf("object 0x%X called render.", this);
-    CFE_Debug_Printf("object 0x%X is a %i.", this, What_Am_I());
-    
-    int	x,y;
+	int	x,y;
 	COORDINATE	coord = Render_Coord();
 	CELL	cell = Coord_Cell(coord);
 

@@ -75,12 +75,9 @@
  *   DisplayClass::Center_Map -- Centers the map about the currently selected objects          *
  *   DisplayClass::Prev_Object -- Searches for the previous object on the map.                 *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-// #include	"function.h"
+#include	"function.h"
 
-#include "CFEDEBUG.H"
-
-#include <windows.h>
-#include <stdint.h>
+//#include "CFEDEBUG.H"
 
 // Chthon CFE Note -- externs for inverse building preview
 extern bool Legacy_Render_Enabled(void);
@@ -2157,15 +2154,11 @@ ObjectClass * DisplayClass::Cell_Object(CELL cell, int x, int y)
  *=============================================================================================*/
  void DisplayClass::Draw_It(bool forced)
 {
-	CFE_Debug_Printf("DisplayClass::Draw_It() called");
-    int	x,y;			// Working cell index values.
+	int	x,y;			// Working cell index values.
 
-    CFE_Debug_Printf("Display_Class::Draw_It() calling MapClass::Draw_It()");
 	MapClass::Draw_It(forced);
 
-    CFE_Debug_Printf("Display_Class::Draw_It() redraw check");
 	if (IsToRedraw || forced) {
-        CFE_Debug_Printf("Display_Class::Draw_It() redraw stuff");
 		IsToRedraw = false;
 
 		/*
@@ -2179,7 +2172,6 @@ ObjectClass * DisplayClass::Cell_Object(CELL cell, int x, int y)
 		** flag all cells covered by the messages to redraw.  This will prevent
 		** messages from smearing the map if it scrolls.
 		*/
-        CFE_Debug_Printf("Display_Class::Draw_It() redraw message stuff");
 		int num = Messages.Num_Messages();
 		if (num) {
 			CELL cell;
@@ -2214,7 +2206,6 @@ ObjectClass * DisplayClass::Cell_Object(CELL cell, int x, int y)
 		**	Check for a movement of the tactical map. If there has been some
 		**	movement, then part (or all) of the icons must be redrawn.
 		*/
-        CFE_Debug_Printf("Display_Class::Draw_It() movement stuff");
 		if (Lepton_To_Pixel(Coord_X(DesiredTacticalCoord)) != Lepton_To_Pixel(Coord_X(TacticalCoord)) ||
 			Lepton_To_Pixel(Coord_Y(DesiredTacticalCoord)) != Lepton_To_Pixel(Coord_Y(TacticalCoord))) {
 
@@ -2243,7 +2234,6 @@ ObjectClass * DisplayClass::Cell_Object(CELL cell, int x, int y)
 			/*
 			**	Blit any replicable block to avoid having to drawstamp.
 			*/
-            CFE_Debug_Printf("Display_Class::Draw_It() blit stuff");
 			CachedIconsDrawn=0;
 			UnCachedIconsDrawn=0;
 			if (!forced && (oldw != Lepton_To_Pixel(TacLeptonWidth) || oldh != Lepton_To_Pixel(TacLeptonHeight))) {
@@ -2284,9 +2274,9 @@ ObjectClass * DisplayClass::Cell_Object(CELL cell, int x, int y)
 			ScenarioInit++;
 			Set_Tactical_Position(DesiredTacticalCoord);
 			ScenarioInit--;
-            CFE_Debug_Printf("Display_Class::Draw_It() forced check");
+
 			if (!forced) {
-                CFE_Debug_Printf("Display_Class::Draw_It() !forced block");
+
 				/*
 				**
 				**	Set the 'redraw stamp' bit for any cells that could not be copied.
@@ -2384,9 +2374,9 @@ ObjectClass * DisplayClass::Cell_Object(CELL cell, int x, int y)
 					}
 				}
 			}
-            CFE_Debug_Printf("Display_Class::Draw_It() post forced block");
+
 		} else {
-            CFE_Debug_Printf("Display_Class::Draw_It() minor tact coord adjust");
+
 			/*
 			**	Set the tactical coordinate just in case the desired tactical has changed but
 			**	not enough to result in any visible map change. This is likely to occur with very
@@ -2413,7 +2403,6 @@ ObjectClass * DisplayClass::Cell_Object(CELL cell, int x, int y)
 		**	flagged to be redrawn.
 		*/
 		//Redraw_Icons(CELL_BLIT_ONLY);
-		CFE_Debug_Printf("Display_Class::Draw_It() redraw icons");
 		Redraw_Icons(0);
 
 		/*
@@ -2425,471 +2414,27 @@ ObjectClass * DisplayClass::Cell_Object(CELL cell, int x, int y)
 #ifdef FIX_ME_LATER
 //		HidPage.Blit(HidPage, 0, HidPage.Get_Height()-1, 0, HidPage.Get_Height(), HidPage.Get_Width(), 1, false);
 #endif //FIX_ME_LATER
-        CFE_Debug_Printf("Display_Class::Draw_It()  hid lock check");
 		if (HidPage.Lock()){
-            CFE_Debug_Printf("Display_Class::Draw_It() hid locked block");
+
 			//Redraw_Icons(CELL_DRAW_ONLY);
 
 			/*
 			**	Redraw the game objects layer by layer. The layer drawing occurs on the ground layer
 			**	first and then followed by all the layers in increasing altituded.
 			*/
-            
-            /*
-             * Houses.Load(file)			||
-		!TeamTypes.Load(file)		||
-		!Teams.Load(file)				||
-		!Triggers.Load(file)			||
-		!Aircraft.Load(file)			||
-		!Anims.Load(file)				||
-		!Buildings.Load(file)		||
-		!Bullets.Load(file)			||
-		!Infantry.Load(file)			||
-		!Overlays.Load(file)			||
-		!Smudges.Load(file)			||
-		!Templates.Load(file)		||
-		!Terrains.Load(file)			||
-		!Units.Load(file)				||
-		!Factories.Load(file)) {
-             */
-            
-CFE_Debug_Printf("Display_Class::Draw_It() recites object sizes: \
-                House %i, \
-                TeamType %i, \
-                Team %i, \
-                Trigger %i, \
-                Aircraft %i, \
-                Anim %i, \
-                Building %i, \
-                Bullet %i, \
-                Infantry %i, \
-                Overlay %i, \
-                Smudge %i, \
-                Template %i, \
-                Terrain %i, \
-                Unit %i, \
-                Factory %i, \
-                 Abstract %i, \
-                 Object %i",
-                sizeof(HouseClass), sizeof(TeamTypeClass), sizeof(TeamClass), sizeof(TriggerClass), sizeof(AircraftClass), sizeof(AnimClass), sizeof(BuildingClass), sizeof(BulletClass), sizeof(InfantryClass), sizeof(OverlayClass), sizeof(SmudgeClass), sizeof(TemplateClass), sizeof(TerrainClass), sizeof(UnitClass), sizeof(FactoryClass), sizeof(AbstractClass), sizeof(ObjectClass));
-            /*uintptr_t HouseStart = reinterpret_cast<uintptr_t>(Houses[0]); //
-            uintptr_t HouseEnd = HouseStart + (HOUSE_MAX * sizeof(HouseClass));
-            uintptr_t TeamTypeStart = reinterpret_cast<uintptr_t>(TeamTypes[0]);
-            uintptr_t TeamTypeEnd = TeamTypeStart + (TEAMTYPE_MAX * sizeof(TeamTypeClass));
-            uintptr_t TeamsStart = reinterpret_cast<uintptr_t>(Teams[0]);
-            uintptr_t TeamsEnd = TeamsStart + (TEAM_MAX * sizeof(TeamClass));
-            uintptr_t TriggerStart = reinterpret_cast<uintptr_t>(Triggers[0]);
-            uintptr_t TriggerEnd = TriggerStart + (TRIGGER_MAX * sizeof(TriggerClass));
-            uintptr_t AircraftStart = reinterpret_cast<uintptr_t>(Aircraft[0]);
-            uintptr_t AircraftEnd = AircraftStart + (AIRCRAFT_MAX * sizeof(AircraftClass));
-            uintptr_t AnimStart = reinterpret_cast<uintptr_t>(Anims[0]);
-            uintptr_t AnimEnd = AnimStart + (ANIM_MAX * sizeof(AnimClass));
-            uintptr_t BuildingStart = reinterpret_cast<uintptr_t>(Buildings[0]);
-            uintptr_t BuildingEnd = BuildingStart + (BUILDING_MAX * sizeof(BuildingClass));
-            uintptr_t BulletStart = reinterpret_cast<uintptr_t>(Bullets[0]);
-            uintptr_t BulletEnd = BulletStart + (BULLET_MAX * sizeof(BulletClass));
-            uintptr_t InfantryStart = reinterpret_cast<uintptr_t>(Infantry[0]);
-            uintptr_t InfantryEnd = InfantryStart + (INFANTRY_MAX * sizeof(InfantryClass));
-            uintptr_t OverlayStart = reinterpret_cast<uintptr_t>(Overlays[0]);
-            uintptr_t OverlayEnd = OverlayStart + (OVERLAY_MAX * sizeof(OverlayClass));
-            uintptr_t SmudgeStart = reinterpret_cast<uintptr_t>(Smudges[0]);
-            uintptr_t SmudgeEnd = SmudgeStart + (SMUDGE_MAX * sizeof(SmudgeClass));
-            uintptr_t TemplateStart = reinterpret_cast<uintptr_t>(Templates[0]);
-            uintptr_t TemplateEnd = TemplateStart + (TEMPLATE_MAX * sizeof(TemplateClass));
-			uintptr_t TerrainStart = reinterpret_cast<uintptr_t>(Terrains[0]);
-            uintptr_t TerrainEnd = TerrainStart + (TERRAIN_MAX * sizeof(TerrainClass));
-            uintptr_t UnitStart = reinterpret_cast<uintptr_t>(Units[0]);
-            uintptr_t UnitEnd = UnitStart + (UNIT_MAX * sizeof(UnitClass));
-            uintptr_t FactoryStart = reinterpret_cast<uintptr_t>(Factories[0]);
-            uintptr_t FactoryEnd = FactoryStart + (FACTORY_MAX * sizeof(FactoryClass));
-            
-            for (LayerType layer = LAYER_GROUND; layer < LAYER_COUNT; layer++) {
-                CFE_Debug_Printf("Display_Class::Draw_It() layer loop PRECHECK. layer = %i", layer);
-                for (int index = 0; index < Layer[layer].Count(); index++) {
-                    CFE_Debug_Printf("Display_Class::Draw_It() layer index loop PRECHECK. layer = %i, index = %i", layer, index);
-                    CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK next object address 0x%X", Layer[layer][index]);
-                    if (Layer[layer][index]){
-                        //
-                        //if (Layer[layer][index]->IsActive){
-                            //RTTIType nextrtti = Layer[layer][index]->What_Am_I();
-                           // CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK next object is a %i", nextrtti);
-                        //}
-                        //else {
-                         //   CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK object at 0x%X is NOT ACTIVE!!", Layer[layer][index]);
-                        //}
-                        
-                        uintptr_t pvalue = reinterpret_cast<uintptr_t>(Layer[layer][index]);
-                        bool foundp = false;
-                        if ((pvalue >= HouseStart) && (pvalue < HouseEnd)){
-                            uintptr_t nextup;
-                            for (int i = 0; i< HOUSE_MAX; i++){
-                                nextup = reinterpret_cast<uintptr_t>(Houses[i]);
-                                if (pvalue == nextup){
-                                    foundp = true;
-                                    CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is a valid HouseClass pointer", pvalue);
-                                    break;
-                                }
-                                else if (pvalue < nextup){
-                                    foundp = true;
-                                    CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is NOT a valid HouseClass pointer. Next valid pointer is 0x%X", pvalue, nextup);
-                                    break;
-                                }
-                            }
-                            if (!foundp){
-                                CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is NOT a valid HouseClass pointer. Last valid pointer is 0x%X", pvalue, nextup);
-                            }
-                        }
-                        else if ((pvalue >= TeamTypeStart) && (pvalue < TeamTypeEnd)){
-                            uintptr_t nextup;
-                            for (int i = 0; i< TEAMTYPE_MAX; i++){
-                                nextup = reinterpret_cast<uintptr_t>(TeamTypes[i]);
-                                if (pvalue == nextup){
-                                    foundp = true;
-                                    CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is a valid TeamTypeClass pointer", pvalue);
-                                    break;
-                                }
-                                else if (pvalue < nextup){
-                                    foundp = true;
-                                    CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is NOT a valid TeamTypeClass pointer. Next valid pointer is 0x%X", pvalue, nextup);
-                                    break;
-                                }
-                            }
-                            if (!foundp){
-                                CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is NOT a valid TeamTypeClass pointer. Last valid pointer is 0x%X", pvalue, nextup);
-                            }
-                        }
-                        else if ((pvalue >= TeamsStart) && (pvalue < TeamsEnd)){
-                            uintptr_t nextup;
-                            for (int i = 0; i< TEAM_MAX; i++){
-                                nextup = reinterpret_cast<uintptr_t>(Teams[i]);
-                                if (pvalue == nextup){
-                                    foundp = true;
-                                    CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is a valid TeamClass pointer", pvalue);
-                                    break;
-                                }
-                                else if (pvalue < nextup){
-                                    foundp = true;
-                                    CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is NOT a valid TeamClass pointer. Next valid pointer is 0x%X", pvalue, nextup);
-                                    break;
-                                }
-                            }
-                            if (!foundp){
-                                CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is NOT a valid TeamClass pointer. Last valid pointer is 0x%X", pvalue, nextup);
-                            }
-                        }
-                        else if ((pvalue >= TriggerStart) && (pvalue < TriggerEnd)){
-                            uintptr_t nextup;
-                            for (int i = 0; i< TRIGGER_MAX; i++){
-                                nextup = reinterpret_cast<uintptr_t>(Triggers[i]);
-                                if (pvalue == nextup){
-                                    foundp = true;
-                                    CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is a valid TriggerClass pointer", pvalue);
-                                    break;
-                                }
-                                else if (pvalue < nextup){
-                                    foundp = true;
-                                    CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is NOT a valid TriggerClass pointer. Next valid pointer is 0x%X", pvalue, nextup);
-                                    break;
-                                }
-                            }
-                            if (!foundp){
-                                CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is NOT a valid TriggerClass pointer. Last valid pointer is 0x%X", pvalue, nextup);
-                            }
-                        }
-                        else if ((pvalue >= AircraftStart) && (pvalue < AircraftEnd)){
-                            uintptr_t nextup;
-                            for (int i = 0; i< AIRCRAFT_MAX; i++){
-                                nextup = reinterpret_cast<uintptr_t>(Aircraft[i]);
-                                if (pvalue == nextup){
-                                    foundp = true;
-                                    CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is a valid AircraftClass pointer", pvalue);
-                                    break;
-                                }
-                                else if (pvalue < nextup){
-                                    foundp = true;
-                                    CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is NOT a valid AircraftClass pointer. Next valid pointer is 0x%X", pvalue, nextup);
-                                    break;
-                                }
-                            }
-                            if (!foundp){
-                                CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is NOT a valid AircraftClass pointer. Last valid pointer is 0x%X", pvalue, nextup);
-                            }
-                        }
-                        else if ((pvalue >= AnimStart) && (pvalue < AnimEnd)){
-                            uintptr_t nextup;
-                            for (int i = 0; i< ANIM_MAX; i++){
-                                nextup = reinterpret_cast<uintptr_t>(Anims[i]);
-                                if (pvalue == nextup){
-                                    foundp = true;
-                                    CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is a valid AnimClass pointer", pvalue);
-                                    break;
-                                }
-                                else if (pvalue < nextup){
-                                    foundp = true;
-                                    CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is NOT a valid AnimClass pointer. Next valid pointer is 0x%X", pvalue, nextup);
-                                    break;
-                                }
-                            }
-                            if (!foundp){
-                                CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is NOT a valid AnimClass pointer. Last valid pointer is 0x%X", pvalue, nextup);
-                            }
-                        }
-                        else if ((pvalue >= BuildingStart) && (pvalue < BuildingEnd)){
-                            uintptr_t nextup;
-                            for (int i = 0; i< BUILDING_MAX; i++){
-                                nextup = reinterpret_cast<uintptr_t>(Buildings[i]);
-                                if (pvalue == nextup){
-                                    foundp = true;
-                                    CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is a valid BuildingClass pointer", pvalue);
-                                    break;
-                                }
-                                else if (pvalue < nextup){
-                                    foundp = true;
-                                    CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is NOT a valid BuildingClass pointer. Next valid pointer is 0x%X", pvalue, nextup);
-                                    break;
-                                }
-                            }
-                            if (!foundp){
-                                CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is NOT a valid BuildingClass pointer. Last valid pointer is 0x%X", pvalue, nextup);
-                            }
-                        }
-                        else if ((pvalue >= BulletStart) && (pvalue < BulletEnd)){
-                            uintptr_t nextup;
-                            for (int i = 0; i< BULLET_MAX; i++){
-                                nextup = reinterpret_cast<uintptr_t>(Bullets[i]);
-                                if (pvalue == nextup){
-                                    foundp = true;
-                                    CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is a valid BulletClass pointer", pvalue);
-                                    break;
-                                }
-                                else if (pvalue < nextup){
-                                    foundp = true;
-                                    CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is NOT a valid BulletClass pointer. Next valid pointer is 0x%X", pvalue, nextup);
-                                    break;
-                                }
-                            }
-                            if (!foundp){
-                                CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is NOT a valid BulletClass pointer. Last valid pointer is 0x%X", pvalue, nextup);
-                            }
-                        }
-                        else if ((pvalue >= InfantryStart) && (pvalue < InfantryEnd)){
-                            uintptr_t nextup;
-                            for (int i = 0; i< INFANTRY_MAX; i++){
-                                nextup = reinterpret_cast<uintptr_t>(Infantry[i]);
-                                if (pvalue == nextup){
-                                    foundp = true;
-                                    CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is a valid InfantryClass pointer", pvalue);
-                                    break;
-                                }
-                                else if (pvalue < nextup){
-                                    foundp = true;
-                                    CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is NOT a valid InfantryClass pointer. Next valid pointer is 0x%X", pvalue, nextup);
-                                    break;
-                                }
-                            }
-                            if (!foundp){
-                                CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is NOT a valid InfantryClass pointer. Last valid pointer is 0x%X", pvalue, nextup);
-                            }
-                        }
-                        else if ((pvalue >= OverlayStart) && (pvalue < OverlayEnd)){
-                            uintptr_t nextup;
-                            for (int i = 0; i< OVERLAY_MAX; i++){
-                                nextup = reinterpret_cast<uintptr_t>(Overlays[i]);
-                                if (pvalue == nextup){
-                                    foundp = true;
-                                    CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is a valid OverlayClass pointer", pvalue);
-                                    break;
-                                }
-                                else if (pvalue < nextup){
-                                    foundp = true;
-                                    CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is NOT a valid OverlayClass pointer. Next valid pointer is 0x%X", pvalue, nextup);
-                                    break;
-                                }
-                            }
-                            if (!foundp){
-                                CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is NOT a valid OverlayClass pointer. Last valid pointer is 0x%X", pvalue, nextup);
-                            }
-                        }
-                        else if ((pvalue >= SmudgeStart) && (pvalue < SmudgeEnd)){
-                            uintptr_t nextup;
-                            for (int i = 0; i< SMUDGE_MAX; i++){
-                                nextup = reinterpret_cast<uintptr_t>(Smudges[i]);
-                                if (pvalue == nextup){
-                                    foundp = true;
-                                    CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is a valid SmudgeClass pointer", pvalue);
-                                    break;
-                                }
-                                else if (pvalue < nextup){
-                                    foundp = true;
-                                    CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is NOT a valid SmudgeClass pointer. Next valid pointer is 0x%X", pvalue, nextup);
-                                    break;
-                                }
-                            }
-                            if (!foundp){
-                                CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is NOT a valid SmudgeClass pointer. Last valid pointer is 0x%X", pvalue, nextup);
-                            }
-                        }
-                        else if ((pvalue >= TemplateStart) && (pvalue < TemplateEnd)){
-                            uintptr_t nextup;
-                            for (int i = 0; i< TEMPLATE_MAX; i++){
-                                nextup = reinterpret_cast<uintptr_t>(Templates[i]);
-                                if (pvalue == nextup){
-                                    foundp = true;
-                                    CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is a valid TemplateClass pointer", pvalue);
-                                    break;
-                                }
-                                else if (pvalue < nextup){
-                                    foundp = true;
-                                    CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is NOT a valid TemplateClass pointer. Next valid pointer is 0x%X", pvalue, nextup);
-                                    break;
-                                }
-                            }
-                            if (!foundp){
-                                CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is NOT a valid TemplateClass pointer. Last valid pointer is 0x%X", pvalue, nextup);
-                            }
-                        }
-						else if ((pvalue >= TerrainStart) && (pvalue < TerrainEnd)){
-                            uintptr_t nextup;
-                            for (int i = 0; i< TERRAIN_MAX; i++){
-                                nextup = reinterpret_cast<uintptr_t>(Terrains[i]);
-                                if (pvalue == nextup){
-                                    foundp = true;
-                                    CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is a valid TerrainClass pointer", pvalue);
-                                    break;
-                                }
-                                else if (pvalue < nextup){
-                                    foundp = true;
-                                    CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is NOT a valid TerrainClass pointer. Next valid pointer is 0x%X", pvalue, nextup);
-                                    break;
-                                }
-                            }
-                            if (!foundp){
-                                CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is NOT a valid TerrainClass pointer. Last valid pointer is 0x%X", pvalue, nextup);
-                            }
-                        }
-                        else if ((pvalue >= UnitStart) && (pvalue < UnitEnd)){
-                            uintptr_t nextup;
-                            for (int i = 0; i< UNIT_MAX; i++){
-                                nextup = reinterpret_cast<uintptr_t>(Units[i]);
-                                if (pvalue == nextup){
-                                    foundp = true;
-                                    CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is a valid UnitClass pointer", pvalue);
-                                    break;
-                                }
-                                else if (pvalue < nextup){
-                                    foundp = true;
-                                    CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is NOT a valid UnitClass pointer. Next valid pointer is 0x%X", pvalue, nextup);
-                                    break;
-                                }
-                            }
-                            if (!foundp){
-                                CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is NOT a valid UnitClass pointer. Last valid pointer is 0x%X", pvalue, nextup);
-                            }
-                        }
-                        else if ((pvalue >= FactoryStart) && (pvalue < FactoryEnd)){
-                            uintptr_t nextup;
-                            for (int i = 0; i< FACTORY_MAX; i++){
-                                nextup = reinterpret_cast<uintptr_t>(Factories[i]);
-                                if (pvalue == nextup){
-                                    foundp = true;
-                                    CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is a valid FactoryClass pointer", pvalue);
-                                    break;
-                                }
-                                else if (pvalue < nextup){
-                                    foundp = true;
-                                    CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is NOT a valid FactoryClass pointer. Next valid pointer is 0x%X", pvalue, nextup);
-                                    break;
-                                }
-                            }
-                            if (!foundp){
-                                CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is NOT a valid FactoryClass pointer. Last valid pointer is 0x%X", pvalue, nextup);
-                            }
-                        }
-                        else {
-                            CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK 0x%X is NOT any type of C&C heap object!", pvalue);
-                        }
-                        if (foundp){
-                            CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK Inspecting object at 0x%X: IsActive %i, Strength %i", pvalue, Layer[layer][index]->IsActive, Layer[layer][index]->Strength); 
-                        }
-                    }
-                    else {
-                        CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK found a null pointer!!!");
-                    }
-                }
-                CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK layer %i complete", layer);
-                for (int i=0; i<15; i++){
-                    CFE_Debug_Printf("Busy loop so the log gets flushed before we crash %i", i);
-                    Sleep(1000);
-                }
-            }
-            CFE_Debug_Printf("Display_Class::Draw_It() PRECHECK complete");
-            for (int i=0; i<15; i++){
-                CFE_Debug_Printf("Busy loop so the log gets flushed before we crash %i", i);
-                Sleep(1000);
-            }
-            */            
 			for (LayerType layer = LAYER_GROUND; layer < LAYER_COUNT; layer++) {
-                CFE_Debug_Printf("Display_Class::Draw_It() layer loop. layer = %i", layer);
 				for (int index = 0; index < Layer[layer].Count(); index++) {
-                    CFE_Debug_Printf("Display_Class::Draw_It() layer index loop. layer = %i, index = %i", layer, index);
-                    CFE_Debug_Printf("Display_Class::Draw_It() next object address 0x%X", Layer[layer][index]);
-                    RTTIType nextrtti = Layer[layer][index]->What_Am_I();
-                    CFE_Debug_Printf("Display_Class::Draw_It() next object is a %i", nextrtti);
-                    /*
-                    if (nextrtti == RTTI_TERRAIN){
-                        bool goodpointer = false;
-                        if (Layer[layer][index] < &Terrains[0]){
-                            CFE_Debug_Printf("Display_Class::Draw_It() says BAD POINTER! Pointer 0x%X is less than first terrain 0x%X", Layer[layer][index], &Terrains[0]);
-                        }
-                        else {
-                            for (int i = 0; i < TERRAIN_MAX; i++){
-                                bool pointerinrange = false;
-                                if (Layer[layer][index] == &Terrains[i]){
-                                    CFE_Debug_Printf("Display_Class::Draw_It() says good pointer. It's terrain object %i", i);
-                                    pointerinrange = true;
-                                    goodpointer = true;
-                                    break;
-                                }
-                                else if (Layer[layer][index] < &Terrains[i]){
-                                    CFE_Debug_Printf("Display_Class::Draw_It() says BAD POINTER. Pointer 0x%X falls between 0x%X and 0x%X", Layer[layer][index], &Terrains[i-1], &Terrains[i]);
-                                    pointerinrange = true;
-                                    break;
-                                }
-                            }
-                            if (!pointerinrange){
-                                CFE_Debug_Printf("Display_Class::Draw_It() says BAD POINTER. Pointer 0x%X is beyond the end of Terrain array.", Layer[layer][index]);
-                            }
-                        }
-                        if (goodpointer){
-                            CFE_Debug_Printf("Since this is a good pointer, let's look at it. IsActive = %i, Strength = %i.", Layer[layer][index]->IsActive, Layer[layer][index]->Strength);
-                        }
-                    }
-                    */
-                    for (int i=0; i<15; i++){
-                        CFE_Debug_Printf("Busy loop so the log gets flushed before we crash %i", i);
-                        Sleep(500);
-                    }
-                    
 					Layer[layer][index]->Render(forced);
-                    CFE_Debug_Printf("Display_Class::Draw_It() returned from Render() for object address 0x%X", Layer[layer][index]);
-                    for (int i=0; i<15; i++){
-                        CFE_Debug_Printf("Busy loop so the log gets flushed before we crash %i", i);
-                        Sleep(500);
-                    }
-                    
 				}
 			}
-			CFE_Debug_Printf("Display_Class::Draw_It() survived loops");
 
 			/*
 			**	Finally, redraw the shadow overlay as necessary.
 			*/
 //Colour_Debug(5);
 			Redraw_Shadow();
-            
 		}
-        CFE_Debug_Printf("Display_Class::Draw_It() past hid lock");
-		
+
 		Redraw_Shadow_Rects();
 
 		HidPage.Unlock();
@@ -2898,7 +2443,6 @@ CFE_Debug_Printf("Display_Class::Draw_It() recites object sizes: \
 		/*
 		**	Draw the rubber band over the top of it all.
 		*/
-        CFE_Debug_Printf("Display_Class::Draw_It() rubber band");
 		if (IsRubberBand) {
 			LogicPage->Draw_Rect(BandX+TacPixelX, BandY+TacPixelY, NewX+TacPixelX, NewY+TacPixelY, WHITE);
 		}
@@ -2923,7 +2467,6 @@ CFE_Debug_Printf("Display_Class::Draw_It() recites object sizes: \
 		}
 #endif
 	}
-	CFE_Debug_Printf("Draw_It() completed");
 }
 
 

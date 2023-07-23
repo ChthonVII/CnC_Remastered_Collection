@@ -46,8 +46,6 @@
 
 #include	"function.h"
 
-#include "CFEDEBUG.H"
-
 extern bool DLLSave(FileClass &file);
 extern bool DLLLoad(FileClass &file);
 
@@ -363,7 +361,6 @@ bool Load_Game(int id)
 */
 bool Load_Game(const char *file_name)
 {
-    CFE_Debug_Printf("Entered Load_Game()");
 	RawFileClass file;
 	int i;
 	unsigned long version;
@@ -374,7 +371,6 @@ bool Load_Game(const char *file_name)
 	/*
 	**	Open the file
 	*/
-    CFE_Debug_Printf("File Open");
 	if (!file.Open(file_name, READ)) {
 		return(false);
 	}
@@ -382,7 +378,6 @@ bool Load_Game(const char *file_name)
 	/*
 	** Load the DLLs variables first, in case we need to do something different based on version
 	*/
-    CFE_Debug_Printf("DLL variables");
 	if (RunningAsDLL) {
 		if (!DLLLoad(file)) {
 			file.Close();
@@ -393,7 +388,6 @@ bool Load_Game(const char *file_name)
 	/*
 	**	Read & discard the save-game's header info
 	*/
-    CFE_Debug_Printf("Header");
 	if (file.Read(descr_buf, DESCRIP_MAX) != DESCRIP_MAX) {
 		file.Close();
 		return(false);
@@ -421,13 +415,11 @@ bool Load_Game(const char *file_name)
 	**	- The map's Layers & Logic Layer are cleared to empty
 	**	- The list of currently-selected objects is cleared
 	*/
-    CFE_Debug_Printf("Calling Clear_Scenario()");
 	Clear_Scenario();
 
 	/*
 	**	Read in & verify the save-game ID code
 	*/
-    CFE_Debug_Printf("Vesion check");
 	if (file.Read(&version,sizeof(version)) != sizeof(version)) {
 		file.Close();
 		return(false);
@@ -443,7 +435,6 @@ bool Load_Game(const char *file_name)
 	**	Set the required CD to be in the drive according to the scenario
 	**	loaded.
 	*/
-    CFE_Debug_Printf("CD check");
 	if (RequiredCD != -2) {
 		if (scenario >= 20 && scenario <60 && GameToPlay == GAME_NORMAL) {
 			RequiredCD = 2;
@@ -478,14 +469,12 @@ bool Load_Game(const char *file_name)
 	**	what the Theater is; this must be done before any objects are created, so
 	**	they'll be properly created.
 	*/
-    CFE_Debug_Printf("Load Map");
 	Map.Load(file);
 
 	Call_Back();
 	/*
 	**	Load the object data.
 	*/
-    CFE_Debug_Printf("Load Objects");
 	if (!Houses.Load(file)			||
 		!TeamTypes.Load(file)		||
 		!Teams.Load(file)				||
@@ -509,12 +498,10 @@ bool Load_Game(const char *file_name)
 	/*
 	**	Load the Logic & Map Layers
 	*/
-    CFE_Debug_Printf("Load Logic");
 	if (!Logic.Load(file)) {
 		file.Close();
 		return(false);
 	}
-	CFE_Debug_Printf("Load Map Layers");
 	for (i = 0; i < LAYER_COUNT; i++) {
 		if (!Map.Layer[i].Load(file)) {
 			file.Close();
@@ -526,7 +513,6 @@ bool Load_Game(const char *file_name)
 	/*
 	**	Load the Score
 	*/
-    CFE_Debug_Printf("Load score");
 	if (!Score.Load(file)) {
 		file.Close();
 		return(false);
@@ -535,7 +521,6 @@ bool Load_Game(const char *file_name)
 	/*
 	**	Load the AI Base
 	*/
-    CFE_Debug_Printf("Load Base Nodes");
 	if (!Base.Load(file)) {
 		file.Close();
 		return(false);
@@ -544,21 +529,16 @@ bool Load_Game(const char *file_name)
 	/*
 	**	Load miscellaneous variables, including the map size & the Theater
 	*/
-    CFE_Debug_Printf("Load Misc Values");
 	if (!Load_Misc_Values(file)) {
 		file.Close();
 		return(false);
 	}
 
-	CFE_Debug_Printf("File Close");
 	file.Close();
-    CFE_Debug_Printf("Call Decode_All_Pointers()");
 	Decode_All_Pointers();
-    CFE_Debug_Printf("Call Map.Init_IO");
 	Map.Init_IO();
 	Map.Flag_To_Redraw(true);
 
-    CFE_Debug_Printf("Call Fixup_Scenario()");
 	Fixup_Scenario(true); // Chthon CFE Note: use our new parameter
 
 	ScenarioInit = 0;
@@ -573,7 +553,6 @@ bool Load_Game(const char *file_name)
     ** - mrparrot 07/12/2021
     * */
 	//for (HousesType house = HOUSE_FIRST; house < HOUSE_COUNT; house++) {
-    CFE_Debug_Printf("Remap MP colors");
 	for (HousesType house = HOUSE_MULTI1; house < MPlayerCount + MPlayerGhosts; house++) {
 		HouseClass * hptr = HouseClass::As_Pointer(house);
 		if (hptr && hptr->IsActive) {
@@ -584,7 +563,6 @@ bool Load_Game(const char *file_name)
 	/*
 	** Re-init unit trackers. They will be garbage pointers after the load
 	*/
-    CFE_Debug_Printf("Rewrite trackers");
 	for (HousesType house = HOUSE_FIRST; house < HOUSE_COUNT; house++) {
 		HouseClass * hptr = HouseClass::As_Pointer(house);
 		if (hptr && hptr->IsActive) {
@@ -600,7 +578,6 @@ bool Load_Game(const char *file_name)
 #endif
 
 	Call_Back();
-    CFE_Debug_Printf("Finished Entered Load_Game(). The bug is not here...");
 	return(true);
 }
 

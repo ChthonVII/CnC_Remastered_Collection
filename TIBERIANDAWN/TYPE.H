@@ -845,9 +845,9 @@ class BuildingTypeClass : public TechnoTypeClass {
 		**	cells the building has visual overlap but does not occupy.
 		*/
 		short const *OverlapList;
-public:
+
 		static BuildingTypeClass const * const Pointers[STRUCT_COUNT];
-private:
+
 		/*
 		**	The construction animation graphic data pointer is
 		**	pointed to by this element.

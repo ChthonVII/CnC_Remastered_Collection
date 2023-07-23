@@ -113,8 +113,6 @@
 
 #include	"function.h"
 
-#include <windows.h>
-
 
 /***************************************************************************
 **	Cloaking control values.
@@ -3939,13 +3937,7 @@ VisualType TechnoClass::Visual_Character(bool raw)
  *=============================================================================================*/
 void TechnoClass::Techno_Draw_Object(void const * shapefile, int shapenum, int x, int y, WindowNumberType window)
 {
-    CFE_Debug_Printf("TechnoClass::Techno_Draw_Object has been called by object 0x%X", this);
-    for (int i=0; i<5; i++){
-        CFE_Debug_Printf("Busy loop so the log gets flushed before we crash %i", i);
-        Sleep(1000);
-    }
 	if (shapefile) {
-        CFE_Debug_Printf("TechnoClass::Techno_Draw_Object shapefile branch");
 		VisualType visual = Visual_Character();
 		void const * remap = Remap_Table();
 
@@ -3954,12 +3946,6 @@ void TechnoClass::Techno_Draw_Object(void const * shapefile, int shapenum, int x
 			visual = VISUAL_SHADOWY;
 		}
 
-		CFE_Debug_Printf("TechnoClass::Techno_Draw_Object visual is %i. Going to call CC_Draw_Shape()", visual);
-		for (int i=0; i<5; i++){
-            CFE_Debug_Printf("Busy loop so the log gets flushed before we crash %i", i);
-            Sleep(1000);
-        }
-        
 		if (visual != VISUAL_HIDDEN && visual != VISUAL_RIPPLE) {
 			if (visual == VISUAL_SHADOWY) {
 				CC_Draw_Shape(this, shapefile, shapenum, x, y, window, SHAPE_CENTER|SHAPE_WIN_REL|SHAPE_FADING|SHAPE_PREDATOR, NULL, Map.FadingShade);
@@ -3973,11 +3959,6 @@ void TechnoClass::Techno_Draw_Object(void const * shapefile, int shapenum, int x
 		if (visual != VISUAL_NORMAL && visual != VISUAL_HIDDEN) {
 			CC_Draw_Shape(this, shapefile, shapenum, x, y, window, SHAPE_PREDATOR|SHAPE_CENTER|SHAPE_WIN_REL);
 		}
-		CFE_Debug_Printf("TechnoClass::Techno_Draw_Object returned from CC_Draw_Shape()!");
-		for (int i=0; i<5; i++){
-            CFE_Debug_Printf("Busy loop so the log gets flushed before we crash %i", i);
-            Sleep(1000);
-        }
 	}
 }
 
