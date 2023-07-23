@@ -1829,7 +1829,8 @@ void BuildingClass::AI(void)
 	}
 	
 	// Chthon CFE Note: Flush non-harvester units from Refinery bibs
-	if (ActiveCFEPatchConfig.EnableSmarterRefineries && IsActive && Strength && HasOpened && (*this == STRUCT_REFINERY) && In_Radio_Contact() && (Mission != MISSION_HARVEST) && (FrameMB() % 75 == 0)){
+	//if (ActiveCFEPatchConfig.EnableSmarterRefineries && IsActive && Strength && HasOpened && (*this == STRUCT_REFINERY) && In_Radio_Contact() && (Mission != MISSION_HARVEST) && (FrameMB() % 75 == 0)){
+    if (ActiveCFEPatchConfig.EnableSmarterRefineries && IsActive && Strength && HasOpened && (*this == STRUCT_REFINERY) && In_Radio_Contact() && (Mission != MISSION_HARVEST) && (Frame % 75 == 0)){
             TechnoClass* tech = Contact_With_Whom();
             if (tech && tech->IsActive && tech->Strength && (tech->What_Am_I() == RTTI_UNIT) && (*((UnitClass*)tech) == UNIT_HARVESTER)){
                 FlushRefineryBib();

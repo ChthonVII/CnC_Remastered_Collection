@@ -483,7 +483,8 @@ void UnitClass::AI(void)
 	**	If this is a vehicle that heals itself (e.g., Mammoth Tank), then it will perform
 	**	the heal logic here.
 	*/
-    bool itsmybirthday = ((FrameMB() % 16) == 0);
+    //bool itsmybirthday = ((FrameMB() % 16) == 0);
+    bool itsmybirthday = ((Frame % 16) == 0);
 	if (*this == UNIT_HTANK  && itsmybirthday && Health_Ratio() < 0x0080 && VeterancyRank < 2) {
 		Strength++;
 		Mark(MARK_CHANGE);
@@ -617,7 +618,8 @@ void UnitClass::AI(void)
 	}
 
 	// Chthon CFE Note: Unstick Harvesters
-	if (ActiveCFEPatchConfig.EnableSmarterHarvesters && IsActive && (*this == UNIT_HARVESTER) && (FrameMB() % 50 == 0)){
+	if (ActiveCFEPatchConfig.EnableSmarterHarvesters && IsActive && (*this == UNIT_HARVESTER) && (Frame % 50 == 0)){
+	//if (ActiveCFEPatchConfig.EnableSmarterHarvesters && IsActive && (*this == UNIT_HARVESTER) && (FrameMB() % 50 == 0)){
         // Am I stuck?
         if ((Mission == MISSION_HARVEST) && (Speed == 0) && !IsRotating && !IsTethered && (PrimaryFacing != DIR_SW_X1) && (PrimaryFacing != DIR_SW_X2) ){
             CELL mycell = Coord_Cell(Coord);
@@ -2514,7 +2516,8 @@ void UnitClass::Draw_It(int x, int y, WindowNumberType window)
 		**	If there is a rotating radar dish, draw it now.
 		*/
 		if (Class->IsRadarEquipped) {
-			shapenum = 32 + (FrameMB() % 32);
+			//shapenum = 32 + (FrameMB() % 32);
+            shapenum = 32 + (Frame % 32);
 			Techno_Draw_Object(shapefile, shapenum, x, y-5, window);
 		}
 
@@ -2593,7 +2596,8 @@ void UnitClass::Draw_It(int x, int y, WindowNumberType window)
 		shapefile = MixFileClass::Retrieve("FLAGFLY.SHP");
 		int flag_x = x + (ICON_PIXEL_W / 2) - 2;
 		int flag_y = y + (3 * ICON_PIXEL_H / 4) - Get_Build_Frame_Height(shapefile);
-		CC_Draw_Shape(this, "FLAGFLY", shapefile, FrameMB() % 14, flag_x, flag_y, window, SHAPE_CENTER|SHAPE_FADING|SHAPE_GHOST, HouseClass::As_Pointer(Flagged)->Remap_Table(false, false), Map.UnitShadow, Flagged);
+		//CC_Draw_Shape(this, "FLAGFLY", shapefile, FrameMB() % 14, flag_x, flag_y, window, SHAPE_CENTER|SHAPE_FADING|SHAPE_GHOST, HouseClass::As_Pointer(Flagged)->Remap_Table(false, false), Map.UnitShadow, Flagged);
+        CC_Draw_Shape(this, "FLAGFLY", shapefile, Frame % 14, flag_x, flag_y, window, SHAPE_CENTER|SHAPE_FADING|SHAPE_GHOST, HouseClass::As_Pointer(Flagged)->Remap_Table(false, false), Map.UnitShadow, Flagged);
 	}
 
 	TarComClass::Draw_It(x, y, window);

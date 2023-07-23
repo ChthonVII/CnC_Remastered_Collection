@@ -2056,7 +2056,8 @@ void TechnoClass::AI(void)
         if (healcycle == 0){
             healcycle = 1;
         }
-        if ((FrameMB() % healcycle) == 0){
+        //if ((FrameMB() % healcycle) == 0){
+        if ((Frame % healcycle) == 0){
             unsigned int healthreshhold = 0x0080;
             // units that already have healing to 50% without veterancy get healing to 100%
             // buildings get healing to 100% at rank 3 as compensation for not getting move speed
