@@ -502,13 +502,15 @@ extern "C" __declspec(dllexport) unsigned int __cdecl CNC_Version(unsigned int v
 **************************************************************************************************/
 extern "C" __declspec(dllexport) void __cdecl CNC_Init(const char *command_line, CNC_Event_Callback_Type event_callback)
 {
-	DLLExportClass::Set_Content_Directory(NULL);
+	CFE_Debug_Printf("CNC_Init() called.");
+    DLLExportClass::Set_Content_Directory(NULL);
 	
 	DLL_Startup(command_line);
 
 	DLLExportClass::Set_Event_Callback( event_callback );
 
 	DLLExportClass::Init();
+    CFE_Debug_Printf("CNC_Init() finished.");
 }
 
 
@@ -585,7 +587,9 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Add_Mod_Path(const char *mod_p
 **************************************************************************************************/
 extern "C" __declspec(dllexport) bool __cdecl CNC_Get_Visible_Page(unsigned char *buffer_in, unsigned int &width, unsigned int &height)
 {
-	if (!DLLExportClass::Legacy_Render_Enabled() || (buffer_in == NULL)) {
+	CFE_Debug_Printf("CNC_Get_Visible_Page() called.");
+    if (!DLLExportClass::Legacy_Render_Enabled() || (buffer_in == NULL)) {
+        CFE_Debug_Printf("CNC_Get_Visible_Page() returned false.");
 		return false;
 	}
 
@@ -595,6 +599,7 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Get_Visible_Page(unsigned char
 
 	GraphicBufferClass *gbuffer = HidPage.Get_Graphic_Buffer();
 	if (gbuffer == NULL) {
+        CFE_Debug_Printf("CNC_Get_Visible_Page() returned false.");
 		return false;
 	}
 
@@ -602,12 +607,14 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Get_Visible_Page(unsigned char
 	int view_port_height = Map.MapCellHeight * CELL_PIXEL_H;
 
 	if (view_port_width == 0 || view_port_height == 0) {
+        CFE_Debug_Printf("CNC_Get_Visible_Page() returned false.");
 		return false;
 	}
 
 	unsigned char *raw_buffer = (unsigned char*) gbuffer->Get_Buffer();
 	long raw_size = gbuffer->Get_Size();
 	if (raw_buffer == NULL || gbuffer->Get_Width() < view_port_width || gbuffer->Get_Height() < view_port_height) {
+        CFE_Debug_Printf("CNC_Get_Visible_Page() returned false.");
 		return false;
 	}
 
@@ -618,7 +625,7 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Get_Visible_Page(unsigned char
 	for (int i = 0; i < view_port_height; ++i, buffer_in += view_port_width, raw_buffer += pitch) {
 		memcpy(buffer_in, raw_buffer, view_port_width);
 	}
-
+    CFE_Debug_Printf("CNC_Get_Visible_Page() returned true.");
 	return true;
 }
 
@@ -647,12 +654,14 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Get_Palette(unsigned char(&pal
 **************************************************************************************************/
 extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scenario_index, CNCMultiplayerOptionsStruct &game_options, int num_players, CNCPlayerInfoStruct *player_list, int max_players)
 {
-	
+	CFE_Debug_Printf("CNC_Set_Multiplayer_Data() called.");
 	if (num_players <= 0) {
+        CFE_Debug_Printf("CNC_Set_Multiplayer_Data() returned false.");
 		return false;
 	}
 
 	if (num_players > min(MAX_PLAYERS, max_players)) {
+        CFE_Debug_Printf("CNC_Set_Multiplayer_Data() returned false.");
 		return false;
 	}
 
@@ -728,7 +737,7 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scena
 	** We need some default for the local ID in order to have a valid PlayerPtr during scenario load. ST - 4/24/2019 10:33AM
 	*/
 	MPlayerLocalID = MPlayerID[0];
-
+    CFE_Debug_Printf("CNC_Set_Multiplayer_Data() returned true.");
 	return true;
 }
 
@@ -1482,7 +1491,9 @@ bool Debug_Write_Shape(const char *file_name, void const * shapefile, int shapen
 **************************************************************************************************/
 extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player_id)
 {
-	//DLLExportClass::Set_Event_Callback(event_callback);
+	CFE_Debug_Printf("CNC_Advance_Instance() called. (no frame check)");
+    //DLLExportClass::Set_Event_Callback(event_callback);
+    if (Frame <= 10) CFE_Debug_Printf("CNC_Advance_Instance() called. Frame is %i", Frame);
 	
 	InMainLoop = true;
 	
@@ -1534,6 +1545,7 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
 		//	Keyboard_Process(input);
 		//}
 
+        if (Frame <= 10) CFE_Debug_Printf("CNC_Advance_Instance() MP sidebar stuff");
 		if (GameToPlay == GAME_GLYPHX_MULTIPLAYER) {
 			/*
 			** Process the sidebar. ST - 4/18/2019 11:59AM
@@ -1555,12 +1567,14 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
 	** layer in the same way, and any processing done that's based on
 	** the order of this layer will sync on different machines.
 	*/
+    if (Frame <= 10) CFE_Debug_Printf("CNC_Advance_Instance() layer sort");
 	Map.Layer[LAYER_GROUND].Sort();
 
 	/*
 	**	AI logic operations are performed here.
 	*/
 	//Skip this block of code on first update of single-player games. This helps prevents trigger generated messages on the first update from being lost during loading screen or movie. - LLL
+	if (Frame <= 10) CFE_Debug_Printf("CNC_Advance_Instance() AI loop");
 	static bool FirstUpdate = GameToPlay != GAME_GLYPHX_MULTIPLAYER;;
 	if (!FirstUpdate)
 	{
@@ -1570,7 +1584,7 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
 		DLLExportClass::Logic_Switch_Player_Context(old_player_ptr);
 	}
 	FirstUpdate = false;
-
+    if (Frame <= 10) CFE_Debug_Printf("CNC_Advance_Instance() past AI loop");
 	/*
 	**	Manage the inter-player message list.  If Manage() returns true, it means
 	**	a message has expired & been removed, and the entire map must be updated.
@@ -1583,6 +1597,7 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
 	/*
 	**	Process all commands that are ready to be processed.
 	*/
+    if (Frame <= 10) CFE_Debug_Printf("CNC_Advance_Instance() input processing");
 	if (GameToPlay == GAME_NORMAL) {
 		Queue_AI();
 	} else {
@@ -1603,7 +1618,8 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
 	**	Keep track of elapsed time in the game.
 	*/
 	//Score.ElapsedTime += TIMER_SECOND / TICKS_PER_SECOND;
-
+    if (Frame <= 10) CFE_Debug_Printf("CNC_Advance_Instance() housekeeping");
+	
 	/*
 	**	Perform any win/lose code as indicated by the global control flags.
 	*/
@@ -1656,6 +1672,7 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
 	**	The frame logic has been completed. Increment the frame
 	**	counter.
 	*/
+    if (Frame <= 10) CFE_Debug_Printf("CNC_Advance_Instance() frame increment");
 	Frame++;
 
 	/*
@@ -1670,6 +1687,7 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
 	** the underlying cause was probably fixed in RA.
 	** ST - 4/14/2020 11:45AM
 	*/
+    if (Frame <= 10) CFE_Debug_Printf("CNC_Advance_Instance() Map Clean");
 	Map.Clean();
 
 #ifndef NDEBUG
@@ -1686,6 +1704,8 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
 	}
 #endif NDEBUG
 
+    if (Frame <= 10) CFE_Debug_Printf("CNC_Advance_Instance() final cleanup");
+
 	InMainLoop = false;
 
 	if (ProgEndCalled) {
@@ -1700,6 +1720,7 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
 	//Sync_Delay();
 	Color_Cycle();
 	//DLLExportClass::Set_Event_Callback(NULL);
+    if (Frame <= 11) CFE_Debug_Printf("CNC_Advance_Instance() complete. We survived a Frame %i with no crash.", Frame - 1);
 	return(GameActive);
 }
 
@@ -1717,7 +1738,8 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
 **************************************************************************************************/
 extern "C" __declspec(dllexport) bool __cdecl CNC_Save_Load(bool save, const char *file_path_and_name, const char *game_type)
 {
-	bool result = false;
+	CFE_Debug_Printf("CNC_Save_Load() called");
+    bool result = false;
 
 	if (save) {
 		result = Save_Game(file_path_and_name, "internal");
@@ -1749,16 +1771,23 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Save_Load(bool save, const cha
 		DLLExportClass::Recalculate_Placement_Distances();
         // Chthon CFE NOTE: The above line is (I think) from CFEpatch. The below line is from official 9/16/2020 patch.
         // Not sure if they conflict, or what proper order is.
+        CFE_Debug_Printf("CNC_Save_Load() calling Cancel_Placement()");
 		DLLExportClass::Cancel_Placement(DLLExportClass::GlyphxPlayerIDs[0], -1, -1);
-		Set_Logic_Page(SeenBuff);
+		CFE_Debug_Printf("CNC_Save_Load() calling Set Logic Page()");
+        Set_Logic_Page(SeenBuff);
+        CFE_Debug_Printf("CNC_Save_Load() calling VisiblePage.Clear()");
 		VisiblePage.Clear();
+        CFE_Debug_Printf("CNC_Save_Load() calling Map.Flag_To_Redraw()");
 		Map.Flag_To_Redraw(true);
+        CFE_Debug_Printf("CNC_Save_Load() calling legacy render stuff");
 		if (DLLExportClass::Legacy_Render_Enabled()) {
+            CFE_Debug_Printf("CNC_Save_Load() wait, what, we're doing the legacy render?");
 			Map.Render();
 		}
+		CFE_Debug_Printf("CNC_Save_Load() calling SetPallette()");
 		Set_Palette(GamePalette);
 	}
-
+    CFE_Debug_Printf("CNC_Save_Load() complete. The bug is not here. result %i", result);
 	return result;
 }
 
@@ -1909,12 +1938,15 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Start_Mission_Timer(int time)
 **************************************************************************************************/
 extern "C" __declspec(dllexport) bool __cdecl CNC_Get_Start_Game_Info(uint64 player_id, int &start_location_waypoint_index)
 {
-	start_location_waypoint_index = 0;
+	CFE_Debug_Printf("CNC_Get_Start_Game_Info() called.");
+    start_location_waypoint_index = 0;
 	if (!DLLExportClass::Set_Player_Context(player_id)) {
+        CFE_Debug_Printf("CNC_Get_Start_Game_Info() returned false.");
 		return false;
 	}
 	
 	start_location_waypoint_index = PlayerPtr->StartLocationOverride;
+    CFE_Debug_Printf("CNC_Get_Start_Game_Info() returned true.");
 	return true;
 }
 
@@ -2824,7 +2856,8 @@ void DLLExportClass::Force_Human_Team_Wins(uint64 quitting_player_id)
 **************************************************************************************************/
 extern "C" __declspec(dllexport) bool __cdecl CNC_Get_Game_State(GameStateRequestEnum state_type, uint64 player_id, unsigned char *buffer_in, unsigned int buffer_size)
 {
-	bool got_state = false;
+	CFE_Debug_Printf("CNC_Get_Game_State() called.");
+    bool got_state = false;
 
 	switch (state_type) {
 		
@@ -2951,7 +2984,7 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Get_Game_State(GameStateReques
 				break;
 			}
 	}
-
+    CFE_Debug_Printf("CNC_Get_Game_State() done. returned %i", got_state);
 	return got_state;
 }
 
@@ -3016,10 +3049,12 @@ void DLL_Draw_Line_Intercept(int x, int y, int x1, int y1, unsigned char color, 
 
 void DLLExportClass::DLL_Draw_Intercept(int shape_number, int x, int y, int width, int height, int flags, ObjectClass *object, const char *shape_file_name, char override_owner, int scale)
 {
-	CNCObjectStruct& new_object = ObjectList->Objects[TotalObjectCount + CurrentDrawCount];
+	CFE_Debug_Printf("DLL_Draw_Intercept() called. Please don't be here...");
+    CNCObjectStruct& new_object = ObjectList->Objects[TotalObjectCount + CurrentDrawCount];
 	memset(&new_object, 0, sizeof(new_object));
 	Convert_Type(object, new_object);
 	if (new_object.Type == UNKNOWN) {
+        CFE_Debug_Printf("DLL_Draw_Intercept() returned unkown type");
 		return;
 	}
 
@@ -3361,6 +3396,7 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number, int x, int y, int widt
     }
 	
 	CurrentDrawCount++;
+    CFE_Debug_Printf("DLL_Draw_Intercept() returned. Phew.");
 }			  
 
 
@@ -3416,7 +3452,8 @@ void DLLExportClass::DLL_Draw_Line_Intercept(int x, int y, int x1, int y1, unsig
 **************************************************************************************************/
 bool DLLExportClass::Get_Layer_State(uint64 player_id, unsigned char *buffer_in, unsigned int buffer_size)
 {
-	player_id;
+	CFE_Debug_Printf("Get_Layer_State() called.");
+    player_id;
 
 	static int _export_count = 0;
 
@@ -3455,6 +3492,7 @@ bool DLLExportClass::Get_Layer_State(uint64 player_id, unsigned char *buffer_in,
 				unsigned int memory_needed = sizeof(CNCObjectListStruct);
 				memory_needed += (TotalObjectCount + 10) * sizeof(CNCObjectStruct);
 				if (memory_needed >= buffer_size) {
+                    CFE_Debug_Printf("Get_Layer_State() returned false.");
 					return false;
 				}
 				
@@ -3515,9 +3553,10 @@ bool DLLExportClass::Get_Layer_State(uint64 player_id, unsigned char *buffer_in,
 
 	if (ObjectList->Count) {
 		_export_count++;
+        CFE_Debug_Printf("Get_Layer_State() returned true.");
 		return true;
 	}
-
+    CFE_Debug_Printf("Get_Layer_State() returned false.");
 	return false;
 }
 
@@ -4590,6 +4629,7 @@ static const int _map_width_shift_bits = 7;
 
 void DLLExportClass::Calculate_Placement_Distances(BuildingTypeClass* placement_type, unsigned char* placement_distance)
 {
+    CFE_Debug_Printf("Calculate_Placement_Distances() called.");
 	int map_cell_x = Map.MapCellX;
 	int map_cell_y = Map.MapCellY;
 	int map_cell_width = Map.MapCellWidth;
@@ -4656,6 +4696,7 @@ void DLLExportClass::Calculate_Placement_Distances(BuildingTypeClass* placement_
 			}
 		}
 	}
+	CFE_Debug_Printf("Calculate_Placement_Distances() returned.");
 }
 
 void Recalculate_Placement_Distances()
@@ -4665,9 +4706,11 @@ void Recalculate_Placement_Distances()
 
 void DLLExportClass::Recalculate_Placement_Distances()
 {
+    CFE_Debug_Printf("Recalculate_Placement_Distances() called.");
 	if (PlacementType[CurrentLocalPlayerIndex] != NULL) {
 		Calculate_Placement_Distances(PlacementType[CurrentLocalPlayerIndex], PlacementDistance[CurrentLocalPlayerIndex]);
 	}
+	CFE_Debug_Printf("Recalculate_Placement_Distances() returned.");
 }
 
 
@@ -5706,7 +5749,9 @@ bool DLLExportClass::Toggle_Control_Group_Selection(unsigned char control_group_
 **************************************************************************************************/
 bool DLLExportClass::Get_Shroud_State(uint64 player_id, unsigned char *buffer_in, unsigned int buffer_size)
 {
-	if (!DLLExportClass::Set_Player_Context(player_id)) {
+	CFE_Debug_Printf("Get_Shroud_State() called.");
+    if (!DLLExportClass::Set_Player_Context(player_id)) {
+        CFE_Debug_Printf("Get_Shroud_State() rerturned false.");
 		return false;
 	}
 	
@@ -5780,7 +5825,7 @@ bool DLLExportClass::Get_Shroud_State(uint64 player_id, unsigned char *buffer_in
 	}
 
 	shroud->Count = entry_index;
-
+    CFE_Debug_Printf("Get_Shroud_State() returned true.");
 	return true;
 }	
 
@@ -5800,7 +5845,8 @@ bool DLLExportClass::Get_Shroud_State(uint64 player_id, unsigned char *buffer_in
 **************************************************************************************************/
 bool DLLExportClass::Get_Occupier_State(uint64 player_id, unsigned char *buffer_in, unsigned int buffer_size)
 {
-	UNREFERENCED_PARAMETER(player_id);
+	CFE_Debug_Printf("Get_Occupier_State() called.");
+    UNREFERENCED_PARAMETER(player_id);
 
 	CNCOccupierHeaderStruct* occupiers = (CNCOccupierHeaderStruct*)buffer_in;
 	CNCOccupierEntryHeaderStruct* entry = reinterpret_cast<CNCOccupierEntryHeaderStruct*>(occupiers + 1U);
@@ -5846,6 +5892,7 @@ bool DLLExportClass::Get_Occupier_State(uint64 player_id, unsigned char *buffer_
 
 			memory_needed += sizeof(CNCOccupierEntryHeaderStruct) + (sizeof(CNCOccupierObjectStruct) * occupier_count);
 			if (memory_needed >= buffer_size) {
+                CFE_Debug_Printf("Get_Occupier_State() returnf false.");
 				return false;
 			}
 
@@ -5865,7 +5912,7 @@ bool DLLExportClass::Get_Occupier_State(uint64 player_id, unsigned char *buffer_
 			entry = reinterpret_cast<CNCOccupierEntryHeaderStruct*>(occupier + 1U);
 		}
 	}
-
+    CFE_Debug_Printf("Get_Occupier_State() returned true.");
 	return true;
 }
 
@@ -5885,7 +5932,9 @@ bool DLLExportClass::Get_Occupier_State(uint64 player_id, unsigned char *buffer_
 **************************************************************************************************/
 bool DLLExportClass::Get_Player_Info_State(uint64 player_id, unsigned char *buffer_in, unsigned int buffer_size)
 {
-	if (!DLLExportClass::Set_Player_Context(player_id)) {
+	CFE_Debug_Printf("Get_Player_Info_State() called.");
+    if (!DLLExportClass::Set_Player_Context(player_id)) {
+        CFE_Debug_Printf("Get_Player_Info_State() returned false.");
 		return false;
 	}
 	
@@ -5894,12 +5943,14 @@ bool DLLExportClass::Get_Player_Info_State(uint64 player_id, unsigned char *buff
 	unsigned int memory_needed = sizeof(*player_info) + 32;  // A little extra for no reason
 
 	if (memory_needed >= buffer_size) {
+        CFE_Debug_Printf("Get_Player_Info_State() returned false.");
 		return false;
 	}
 	
 	player_info->GlyphxPlayerID = 0;
 
 	if (PlayerPtr == NULL) {
+        CFE_Debug_Printf("Get_Player_Info_State() returned false.");
 		return false;;
 	}
 
@@ -5961,7 +6012,7 @@ bool DLLExportClass::Get_Player_Info_State(uint64 player_id, unsigned char *buff
 
 	// Screen shake
 	player_info->ScreenShake = PlayerPtr->ScreenShakeTime;
-
+CFE_Debug_Printf("Get_Player_Info_State() returned true.");
 	return true;
 };
 
@@ -5981,6 +6032,7 @@ bool DLLExportClass::Get_Player_Info_State(uint64 player_id, unsigned char *buff
 **************************************************************************************************/
 bool DLLExportClass::Get_Dynamic_Map_State(uint64 player_id, unsigned char *buffer_in, unsigned int buffer_size)
 {
+    CFE_Debug_Printf("Get_Dynamic_Map_State() called.");
 	/*
 	** Get the player for this...
 	*/
@@ -6041,6 +6093,7 @@ bool DLLExportClass::Get_Dynamic_Map_State(uint64 player_id, unsigned char *buff
 
 			memory_needed += sizeof(CNCDynamicMapEntryStruct) * 2;
 			if (memory_needed >= buffer_size) {
+                CFE_Debug_Printf("Get_Dynamic_Map_State() returned false.");
 				return false;
 			}
 
@@ -6080,7 +6133,7 @@ bool DLLExportClass::Get_Dynamic_Map_State(uint64 player_id, unsigned char *buff
 
 	dynamic_map->Count = entry_index;
 	dynamic_map->VortexActive = false;
-
+CFE_Debug_Printf("Get_Dynamic_Map_State() returned true.");
 	return true;
 }
 
@@ -6102,7 +6155,8 @@ bool DLLExportClass::Get_Dynamic_Map_State(uint64 player_id, unsigned char *buff
 **************************************************************************************************/
 void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct *dynamic_map, int &entry_index, CellClass *cell_ptr, int xpixel, int ypixel, bool debug_output)
 {
-	/*
+	CFE_Debug_Printf("Cell_Class_Draw_It() called.");
+    /*
 	** 
 	**  Based on CellClass::Draw_It and SmudgeTypeClass::Draw_It
 	** 
@@ -6251,7 +6305,7 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct *dynamic_map, int &e
 		cursorEntry.IsTheaterShape = false;
 		cursorEntry.IsFlag = false;
 	}
-	
+	CFE_Debug_Printf("Cell_Class_Draw_It() returned.");
 }
 
 
@@ -6270,7 +6324,7 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct *dynamic_map, int &e
 **************************************************************************************************/
 void DLLExportClass::Glyphx_Queue_AI(void)
 {
-	
+	CFE_Debug_Printf("Glyphx_Queue_AI() called.");
 	//------------------------------------------------------------------------
 	//	Move events from the OutList (events generated by this player) into the
 	//	DoList (the list of events to execute).
@@ -6355,7 +6409,7 @@ void DLLExportClass::Glyphx_Queue_AI(void)
 			break;
 		}
 	}
-
+    CFE_Debug_Printf("Glyphx_Queue_AI() returned.");
 }
 
 			  
@@ -7608,6 +7662,7 @@ bool Legacy_Render_Enabled(void){
 **************************************************************************************************/
 bool DLLExportClass::Legacy_Render_Enabled(void)
 {
+    CFE_Debug_Printf("Legacy_Render_Enabled() called.");
 	if (GameToPlay == GAME_GLYPHX_MULTIPLAYER) {
 		unsigned int num_humans = 0U;
 		for (int i = 0; i < MPlayerCount; ++i) {
@@ -7616,10 +7671,12 @@ bool DLLExportClass::Legacy_Render_Enabled(void)
 				if (++num_humans > 1) break;
 			}
 		}
+		CFE_Debug_Printf("Legacy_Render_Enabled() returned %i.", num_humans < 2);
 		return num_humans < 2;
 	}
 
 	//return false;
+	CFE_Debug_Printf("Legacy_Render_Enabled() returned true");
 	return true;
 }
 

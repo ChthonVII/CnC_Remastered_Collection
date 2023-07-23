@@ -102,6 +102,7 @@
 #include "SidebarGlyphx.h"
 
 #include "CFEDEBUG.H"
+#include <windows.h>
 
 extern void On_Sound_Effect(const HouseClass* player_ptr, int sound_effect_index, const char* extension, int variation, COORDINATE coord);
 
@@ -654,16 +655,71 @@ void BuildingClass::Debug_Dump(MonoClass *mono) const
  *=============================================================================================*/
 void BuildingClass::Draw_It(int x, int y, WindowNumberType window)
 {
+    CFE_Debug_Printf("BuildingClass::Draw_It() called");
+    CFE_Debug_Printf("BuildingClass::Draw_It() windows is %i", window);
+    CFE_Debug_Printf("BuildingClass::Draw_It() called by object 0x%X", this);
+    CFE_Debug_Printf("BuildingClass::Draw_It() called by object 0x%X validate is %i", this, Validate());
+    //CFE_Debug_Printf("What are we anyway? Active %i, Strength %i, StructType %i, *this %i, RallyPoint 0x%X, ShowInverseWallPreviewMarkers %i, House %s, Class 0x%X, class %s, BSTATE", IsActive, Strength, StructType(), *this, RallyPoint, ShowInverseWallPreviewMarkers, House->Class->IniName, Class, Class->IniName, BState);
+    CFE_Debug_Printf("BuildingClass::Draw_It() sizeof abstract %i, of object %i", sizeof(AbstractClass), sizeof(ObjectClass));
+    CFE_Debug_Printf("What are we anyway? Active %i, Strength %i, Strength address 0x%X, SelectionMask address 0x%X, Next Address 0x%x, Trigger address 0x%X, StructType %i, *this %i, RallyPoint 0x%X, ShowInverseWallPreviewMarkers %i, Class 0x%X, BSTATE %i", IsActive, Strength, &Strength, &IsSelectedMask, &Next, &Trigger, StructType(), *this, RallyPoint, ShowInverseWallPreviewMarkers, Class, BState);
+    short* strengthptr = &Strength;
+    CFE_Debug_Printf("Let's double-check what's going on with Strength. Strength %i, Strength as hex 0x%X, address of Strength 0x%X (offset from start of object %i), contents of address as hex 0x%X, contents of address as int %i", Strength, Strength, strengthptr, reinterpret_cast<uintptr_t>(strengthptr) - reinterpret_cast<uintptr_t>(this), *strengthptr, *strengthptr);
+    long* bfptr = &BirthdayFrame;
+    CFE_Debug_Printf("Let's do the same for BirthdayFrame (the next member). BF %i, BF as hex 0x%X, address of BF 0x%X (offset from start of object %i), contents of address as hex 0x%X, contents of address as int %i", BirthdayFrame, BirthdayFrame, bfptr, reinterpret_cast<uintptr_t>(bfptr) - reinterpret_cast<uintptr_t>(this), *bfptr, *bfptr);
+    bool matchespointer = false;
+    for (int i=STRUCT_FIRST; i<STRUCT_COUNT; i++){
+        if (Class == BuildingTypeClass::Pointers[i]){
+            CFE_Debug_Printf("BuildingClass::Draw_It() Class matched the %ith pointer", i);
+            matchespointer = true;
+            break;
+        }
+    }
+    if (!matchespointer){
+        CFE_Debug_Printf("BuildingClass::Draw_It() Class did not match any pointer");
+    }
+    
+    const int maxloop = 2* sizeof(BuildingClass);
+    CFE_Debug_Printf("BuildingClass::Draw_It() dumper max loop is %i", maxloop);
+    char bbuffer[maxloop+1];
+    memset(bbuffer, 0, sizeof(bbuffer));
+    char cbuffer[3];
+    memset(cbuffer, 0, sizeof(cbuffer));
+    unsigned char* readpointer = reinterpret_cast<unsigned char*>(this);
+    char* writepointer = bbuffer;
+    for (int i=0; i<maxloop; i++){
+        sprintf(cbuffer, "%02hhX", *readpointer);
+        memcpy(writepointer, cbuffer, 2);
+        readpointer++;
+        writepointer += 2;
+    }
+    bbuffer[maxloop] = 0;
+    CFE_Debug_Printf("Dumping the whole object: %s", bbuffer);
+    
+    
+    CFE_Debug_Printf("Dumping 80 bytes as little endian long long ints...");
+    unsigned long long int* readpointerll = reinterpret_cast<unsigned long long int*>(this);
+    for (int i=0; i<10; i++){
+        CFE_Debug_Printf("%016llX", *readpointerll);
+        readpointerll++;
+    }
+    
+    for (int i=0; i<5; i++){
+        CFE_Debug_Printf("Busy loop so the log gets flushed before we crash %i", i);
+        Sleep(1000);
+    }
 	Validate();
 	void const * shapefile;	// Pointer to loaded shape file.
 	int shapenum;
 
+    CFE_Debug_Printf("BuildingClass::Draw_It() called FetchStage()");
 	shapenum = Fetch_Stage();
+    CFE_Debug_Printf("BuildingClass::Draw_It() got shapenum of %i", shapenum);
 
 	/*
 	**	The shape file to use for rendering depends on whether the building
 	**	is undergoing construction or not.
 	*/
+    CFE_Debug_Printf("BuildingClass::Draw_It() doing BSTATE check");
 	if (BState == BSTATE_CONSTRUCTION) {
 		shapefile = Class->Get_Buildup_Data();
 
@@ -676,13 +732,15 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window)
 		}
 
 	} else {
-
+        CFE_Debug_Printf("BuildingClass::Draw_It() not-building branch");
 		shapefile = Class->Get_Image_Data();
+        CFE_Debug_Printf("BuildingClass::Draw_It() got shapefile. It is 0x%X", shapefile);
 
 		/*
 		**	The obelisk has a stage value than can be overridden by
 		**	its current state.
 		*/
+        CFE_Debug_Printf("BuildingClass::Draw_It() Obleisk check");
 		if (*this == STRUCT_OBELISK) {
 			if (IsCharged) {
 				shapenum = 3;
@@ -700,8 +758,11 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window)
 		**	differently than normal buildings. They need to take into consideration
 		**	the direction the turret is facing.
 		*/
+        CFE_Debug_Printf("BuildingClass::Draw_It() turret check");
 		if (Class->IsTurretEquipped) {
 			shapenum = UnitClass::BodyShape[Facing_To_32(PrimaryFacing.Current())];
+            
+            CFE_Debug_Printf("BuildingClass::Draw_It() SAM check");
 
 			if (*this == STRUCT_SAM) {
 
@@ -724,15 +785,17 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window)
 				shapenum += 64;
 			}
 		} else {
-
+            CFE_Debug_Printf("BuildingClass::Draw_It() not-a-turret branch");
 			/*
 			**	If it has only one point of strength left, it is shown in the
 			**	worst state possible.
 			*/
+            CFE_Debug_Printf("BuildingClass::Draw_It() 1hp check");
 			if (Strength <= 1) {
 				shapenum = Get_Build_Frame_Count(shapefile)-1;
 			} else {
-
+                CFE_Debug_Printf("BuildingClass::Draw_It() more than 1 hp");
+                CFE_Debug_Printf("BuildingClass::Draw_It() weap factory check");
 				if (*this == STRUCT_WEAP) {
 					shapenum = 0;
 					if (Health_Ratio() < 0x0080) {
@@ -740,11 +803,12 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window)
 					}
 
 				} else {
-
+                    CFE_Debug_Printf("BuildingClass::Draw_It() not a weap factory branch");
 					/*
 					**	Special render stage for silos. The stage is dependant on the current
 					**	Tiberium collected as it relates to Tiberium capacity.
 					*/
+                    CFE_Debug_Printf("BuildingClass::Draw_It() silo check");
 					if (*this == STRUCT_STORAGE) {
 						int level = 0;
 						if (House->Capacity) {
@@ -758,12 +822,13 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window)
 						}
 
 					} else {
-
+                        CFE_Debug_Printf("BuildingClass::Draw_It() not-a-silo branch");
 						if (Health_Ratio() < 0x0080) {
 
 							/*
 							**	Special damage stage for pump.
 							*/
+                            CFE_Debug_Printf("BuildingClass::Draw_It() pump check");
 							if (!Class->IsSimpleDamage) {
 								int last1 = Class->Anims[BSTATE_IDLE].Start + Class->Anims[BSTATE_IDLE].Count;
 								int last2 = Class->Anims[BSTATE_ACTIVE].Start + Class->Anims[BSTATE_ACTIVE].Count;
@@ -775,7 +840,7 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window)
 
 								shapenum += largest;
 							} else {
-
+                                CFE_Debug_Printf("BuildingClass::Draw_It() not-a-pump branch");
 								/*
 								**	Presume that the damage stage is the end frame.
 								*/
@@ -787,13 +852,25 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window)
 			}
 		}
 	}
+	
+	CFE_Debug_Printf("BuildingClass::Draw_It() shapenum finally picked as %i", shapenum);
+    for (int i=0; i<5; i++){
+        CFE_Debug_Printf("Busy loop so the log gets flushed before we crash %i", i);
+        Sleep(1000);
+    }
 
 	/*
 	**	Actually draw the building shape.
 	*/
+    CFE_Debug_Printf("BuildingClass::Draw_It() calling Techno_Draw_Object with shapefile 0x%X, shapenum %i, shape count %i ,x %i, y %i, window %i", shapefile, shapenum, Get_Build_Frame_Count(shapefile), x, y, window);
 	IsTheaterShape = Class->IsTheater;
 	Techno_Draw_Object(shapefile, shapenum, x, y, window);
 	IsTheaterShape = false;
+    CFE_Debug_Printf("BuildingClass::Draw_It() returned from Techno_Draw_Object");
+    for (int i=0; i<5; i++){
+        CFE_Debug_Printf("Busy loop so the log gets flushed before we crash %i", i);
+        Sleep(1000);
+    }
 
 	/*
 	** Patch for adding overlay onto weapon factory.  Only add the overlay if
@@ -801,6 +878,7 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window)
 	** contact, he must be unloading a constructed vehicle, so draw that
 	** vehicle before drawing the overlay.
 	*/
+    CFE_Debug_Printf("BuildingClass::Draw_It() overlay graphics stuff");
 	if (BState != BSTATE_CONSTRUCTION) {
 
 		/*
@@ -834,7 +912,12 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window)
 			CC_Draw_Shape(ObjectTypeClass::SelectShapes, SELECT_WRENCH, x, y, window, SHAPE_CENTER|SHAPE_WIN_REL);
 		}
 	}
-
+    
+	CFE_Debug_Printf("BuildingClass::Draw_It() about to do rally point stuff");
+    for (int i=0; i<5; i++){
+        CFE_Debug_Printf("Busy loop so the log gets flushed before we crash %i", i);
+        Sleep(1000);
+    }
 	// Chthon CFE Note: fixed to work in LAN multiplayer
 	if (Can_Have_Rally_Point() && Is_Selected_By_Player(House) && RallyPoint && Target_Legal(RallyPoint))
 	{
@@ -884,6 +967,11 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window)
         }
 	}
 
+    CFE_Debug_Printf("BuildingClass::Draw_It() about to do inverse markers stuff");
+    for (int i=0; i<5; i++){
+        CFE_Debug_Printf("Busy loop so the log gets flushed before we crash %i", i);
+        Sleep(1000);
+    }
 	// Chthon CFE Note: Use the Construction Yard as the base object for drawing the inverse wall placement markers
 	// reworked because asking it to draw too many shapes could crash the GlyphX client
 	// only draw in remasted mode, since LAN multiplayer is the only mode normal TS-style markers don't work, and legacy render is disabled there
@@ -1113,8 +1201,20 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window)
     }
     // end of block for using the Construction Yard as the base object for drawing the inverse wall placement markers
 	
+    CFE_Debug_Printf("BuildingClass::Draw_It() about to do TechnoClass::Draw_It()");
+    for (int i=0; i<5; i++){
+        CFE_Debug_Printf("Busy loop so the log gets flushed before we crash %i", i);
+        Sleep(1000);
+    }
 	
 	TechnoClass::Draw_It(x, y, window);
+    
+    CFE_Debug_Printf("BuildingClass::Draw_It() returned from TechnoClass::Draw_It(). Didn't crash...");
+    for (int i=0; i<5; i++){
+        CFE_Debug_Printf("Busy loop so the log gets flushed before we crash %i", i);
+        Sleep(1000);
+    }
+    
 }
 
 /***********************************************************************************************

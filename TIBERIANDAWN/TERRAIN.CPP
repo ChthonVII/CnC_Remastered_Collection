@@ -59,7 +59,7 @@
 #include	"function.h"
 #include	"terrain.h"
 
-//#include "CFEDEBUG.H"
+#include "CFEDEBUG.H"
 
 #define	BARNACLE_STAGE			22
 #define	FIRST_SPORE_STAGE		30
@@ -420,32 +420,75 @@ bool TerrainClass::Mark(MarkType mark)
  *=============================================================================================*/
 void TerrainClass::Draw_It(int x, int y, WindowNumberType window)
 {
-	Validate();
+    //CFE_Debug_Printf("TerrainClass::Draw_It() called");
+    //CFE_Debug_Printf("TerrainClass::Draw_It() called by object 0x%X", this);
+    //CFE_Debug_Printf("TerrainClass::Draw_It() called by object 0x%X validate is %i", this, Validate());
+    //CFE_Debug_Printf("What are we anyway? Active %i, Strength %i, TerrainType %i, IsOnFire %i, IsCrumbling %i, IsBlossoming %i, IsBarnacled %i, IsSporing %i, BurnDownDelay %i", IsActive, Strength, TerrainType(), IsOnFire, IsCrumbling, IsBlossoming, IsBarnacled, IsSporing, BurnDownDelay);
+    //for (int i=0; i<5; i++){
+    //    CFE_Debug_Printf("Busy loop so the log gets flushed before we crash %i", i);
+    //}
+    Validate();
 	void const * shapedata;
 
+    //CFE_Debug_Printf("TerrainClass::Draw_It() called by object 0x%X is calling Class->Get_Image_Data()", this);
+    //for (int i=0; i<5; i++){
+    //    CFE_Debug_Printf("Busy loop so the log gets flushed before we crash %i", i);
+    //}
 	shapedata = Class->Get_Image_Data();
 	if (shapedata) {
-		int	shapenum = 0;
+		int	 shapenum = 0;
 
 		/*
 		**	Determine the animation stage to render the terrain object. If it is crumbling, then
 		**	it will display the crumbling animation.
 		*/
+        //CFE_Debug_Printf("TerrainClass::Draw_It() called by object 0x%X going to pick shapenum", this);
+        //for (int i=0; i<5; i++){
+        //    CFE_Debug_Printf("Busy loop so the log gets flushed before we crash %i", i);
+        //}
 		if (IsCrumbling || Class->IsTransformable) {
 			shapenum = Fetch_Stage()+IsCrumbling;
+            //CFE_Debug_Printf("TerrainClass::Draw_It() called by object 0x%X going to pick shapenum first branch", this);
+            //for (int i=0; i<5; i++){
+            //    CFE_Debug_Printf("Busy loop so the log gets flushed before we crash %i", i);
+            //}
 		} else {
+            //CFE_Debug_Printf("TerrainClass::Draw_It() called by object 0x%X going to pick shapenum second branch", this);
+            //for (int i=0; i<5; i++){
+             //   CFE_Debug_Printf("Busy loop so the log gets flushed before we crash %i", i);
+            //}
 			if (Strength < 2) {
+                //CFE_Debug_Printf("TerrainClass::Draw_It() called by object 0x%X going to pick shapenum first branch", this);
+                //for (int i=0; i<5; i++){
+                 //   CFE_Debug_Printf("Busy loop so the log gets flushed before we crash %i", i);
+                //}
 				shapenum++;
 			}
 		}
+		//CFE_Debug_Printf("TerrainClass::Draw_It() called by object 0x%X picked shapnum %i", this, shapenum);
+        //for (int i=0; i<5; i++){
+         //   CFE_Debug_Printf("Busy loop so the log gets flushed before we crash %i", i);
+        //}
 
 		ShapeFlags_Type flags = SHAPE_NORMAL;
 		if (Is_Selected_By_Player() && Debug_Map) flags = flags | SHAPE_FADING;
-
+        //CFE_Debug_Printf("TerrainClass::Draw_It() called by object 0x%X flags are", this, flags);
+        //for (int i=0; i<5; i++){
+         //   CFE_Debug_Printf("Busy loop so the log gets flushed before we crash %i", i);
+        //}
+        
 		IsTheaterShape = true;
+        //CFE_Debug_Printf("TerrainClass::Draw_It() called by object 0x%X about to call CC_Draw_Shape with shapenum %i, x %i, y %i", this, shapenum, x, y);
+        //for (int i=0; i<5; i++){
+         //   CFE_Debug_Printf("Busy loop so the log gets flushed before we crash %i", i);
+        //}
 		CC_Draw_Shape(this, shapedata, shapenum, x, y, window, flags|SHAPE_WIN_REL|SHAPE_GHOST, Map.FadingLight, Map.UnitShadow);
 		IsTheaterShape = false;
 	}
+	//CFE_Debug_Printf("TerrainClass::Draw_It() called by object 0x%X is finished!", this);
+    //for (int i=0; i<5; i++){
+     //   CFE_Debug_Printf("Busy loop so the log gets flushed before we crash %i", i);
+    //}
 }
 
 

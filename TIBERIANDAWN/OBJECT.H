@@ -265,7 +265,7 @@ class ObjectClass : public AbstractClass
         
         // Chthon CFE Note: Inline subtract birthday from frame
         // Make sure the result is never negative in case this somehow get called before Frame loaded from a save game
-        inline long FrameMB(){(Frame > BirthdayFrame) ? return Frame - BirthdayFrame : return BirthdayFrame - Frame;};
+        inline long FrameMB(){return (Frame > BirthdayFrame) ? Frame - BirthdayFrame : BirthdayFrame - Frame;};
 };
 
 #endif

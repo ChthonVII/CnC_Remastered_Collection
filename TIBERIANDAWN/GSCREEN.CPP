@@ -48,6 +48,8 @@
 
 #include <filepcx.h>
 
+#include "CFEDEBUG.H"
+
 GadgetClass * GScreenClass::Buttons = 0;
 
 GraphicBufferClass * GScreenClass::ShadowPage = 0;
@@ -389,9 +391,10 @@ void GScreenClass::Render(void)
 	//if (Buttons && Buttons->Is_List_To_Redraw()) {
 	//	IsToRedraw = true;
 	//}
-
+    CFE_Debug_Printf("Render() called.");
 
 	if (IsToUpdate || IsToRedraw) {
+        CFE_Debug_Printf("Render calling Set_Logic_Page().");
 
 		//WWMouse->Erase_Mouse(&HidPage, TRUE);
 		GraphicViewPortClass * oldpage= Set_Logic_Page(HidPage);
@@ -401,8 +404,9 @@ void GScreenClass::Render(void)
 		//	SeenBuff.To_Buffer(0, 0, 320, 200, ShadowPage);
 		//	Show_Mouse();
 		//}
+        CFE_Debug_Printf("Render calling Draw_It().");
 		Draw_It(IsToRedraw);
-
+        CFE_Debug_Printf("Render drawing buttons.");
 		if (Buttons) Buttons->Draw_All(false);
 
 #ifdef SCENARIO_EDITOR
@@ -419,10 +423,14 @@ void GScreenClass::Render(void)
 		** Draw the multiplayer message system to the Hidpage at this point.
 		** This way, they'll Blit along with the rest of the map.
 		*/
+        CFE_Debug_Printf("Render doing message stuff.");
 		if (Messages.Num_Messages() > 0) {
+            CFE_Debug_Printf("Render calling Messages.Set_Width()");
 			Messages.Set_Width(Lepton_To_Cell(Map.TacLeptonWidth) * ICON_PIXEL_W);
 		}
+		CFE_Debug_Printf("Render calling Messages.Draw().");
 		Messages.Draw();
+        CFE_Debug_Printf("Render made it further than I expected");
 
 		//Blit_Display(); // 5/19/20 SKY - Skip copying to scene page, we can get the data directly from hidden page
 		IsToUpdate = false;
@@ -430,6 +438,7 @@ void GScreenClass::Render(void)
 
 		Set_Logic_Page(oldpage);
 	}
+	CFE_Debug_Printf("Render() finished!?!.");
 }
 
 
