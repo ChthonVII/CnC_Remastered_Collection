@@ -260,6 +260,9 @@ AircraftClass::AircraftClass(AircraftType classid, HousesType house) :
 	//
 	House->Tracking_Add(this);
 #endif
+    
+    TargetRecheckCounter = 0;
+    
 }
 
 
