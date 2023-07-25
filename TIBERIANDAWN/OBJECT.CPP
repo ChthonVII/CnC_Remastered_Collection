@@ -302,7 +302,7 @@ ObjectClass::ObjectClass(void)
 	IsAnimAttached = false;			// Anim is not attached.
 	Strength = 255;					// nominal strength value
 	IsSelectedMask = 0;				// Mask showing who has selected this object
-	BirthdayFrame = Frame;         // Chthon CFE Note: Set BirthdayFrame
+	//BirthdayFrame = Frame;         // Chthon CFE Note: Set BirthdayFrame
 }
 
 
@@ -1450,6 +1450,11 @@ ResultType ObjectClass::Take_Damage(int & damage, int distance, WarheadType warh
 		*/
 		switch (Strength) {
 			case 0:
+                if ((What_Am_I() == RTTI_TERRAIN) && ((TerrainClass*)this)->IsOnFire && ActiveCFEPatchConfig.EnableBurningTreeFix){
+                    Strength = 1;
+                    result = RESULT_MAJOR;
+                    break;
+                }
 				Record_The_Kill(source);
 				result = RESULT_DESTROYED;
 				Detach_All();

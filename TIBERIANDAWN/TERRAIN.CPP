@@ -180,18 +180,20 @@ ResultType TerrainClass::Take_Damage(int & damage, int distance, WarheadType war
         
         // tell burning animations to do a soft detach instead of a normal one
         // and query their remaining length
+        /*
         if (IsOnFire && ActiveCFEPatchConfig.EnableBurningTreeFix){
             int maxfuegodelay = 0;
             for (int index = 0; index < Anims.Count(); index++) {
                 AnimClass* animptr = Anims.Ptr(index);
                 if (animptr && animptr->IsActive && !animptr->IsInLimbo && (animptr->Object == this)) {
-                    animptr->SoftDetach = true; // we never need to unset this because there's no other circumstances where we'd get one of these animations detaching
+                    animptr->SoftDetach = 1; // we never need to unset this because there's no other circumstances where we'd get one of these animations detaching
                     int fuegodelay = animptr->FramesLeft();
                     if (fuegodelay > maxfuegodelay){
                         maxfuegodelay = fuegodelay;
                     }
                 }
             }
+            IsAnimAttached = 0;
             if (maxfuegodelay > 0){
                 BurnDownDelay = maxfuegodelay;
                 // allow the flames and crumble animations to overlap a bit so it looks more realistic
@@ -204,6 +206,7 @@ ResultType TerrainClass::Take_Damage(int & damage, int distance, WarheadType war
                 BurnDownDelay = 0;
             }
         }
+        */
 
         
 		res = ObjectClass::Take_Damage(damage, distance, warhead, source, specialarmorpen, givesxp);
@@ -234,12 +237,15 @@ ResultType TerrainClass::Take_Damage(int & damage, int distance, WarheadType war
 				Shorten_Attached_Anims(this);
 			} else {
             */
-            if (!IsOnFire){    
+            //if (!IsOnFire){    
                 //Detach_All(); // Redundant. ObjectClass::Take_Damage() just did that.
                 Mark();
 				Start_To_Crumble();
-			}
+			//}
 		}
+		else if ((res == RESULT_MAJOR) && IsOnFire && ActiveCFEPatchConfig.EnableBurningTreeFix){
+            Shorten_Attached_Anims(this);
+        }
 	}
 	return(res);
 }
@@ -567,6 +573,10 @@ void TerrainClass::Fire_Out(void)
 	Validate();
 	if (IsOnFire) {
 		IsOnFire = false;
+        // ObjectClass::TakeDamage() will keep a burning terrain object at 1 hp until it's not on fire anymore.
+        if (Strength == 1){
+            Strength = 0;
+        }
 		if (!IsCrumbling && !Strength) {
 			Detach_All();
 			Mark();
@@ -599,6 +609,7 @@ void TerrainClass::AI(void)
 	ObjectClass::AI();
     
     // Chthon CFE Note: Check if the fire has gone out on a dead tree and start it crumbling
+    /*
     if (IsOnFire && !Strength && !IsCrumbling && ActiveCFEPatchConfig.EnableBurningTreeFix){
         if (BurnDownDelay){
             BurnDownDelay--;
@@ -607,6 +618,7 @@ void TerrainClass::AI(void)
             Fire_Out();
         }
     }
+    */
 
 	if (StageClass::Graphic_Logic()) {
 		Mark();
