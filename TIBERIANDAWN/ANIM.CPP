@@ -651,7 +651,7 @@ AnimClass::AnimClass(AnimType animnum, COORDINATE coord, unsigned char timedelay
 		VirtualAnim = NULL;
 	}
 	
-	SoftDetach = false;
+	SoftDetach = 0;
 }
 
 
@@ -709,6 +709,9 @@ AnimClass::~AnimClass(void)
 			Coord = Coord_Add(Object->Center_Coord(), Coord);
 			Object = NULL;
 		}
+		else if (SoftDetach){
+            Map.Remove(this, In_Which_Layer());
+        }
 
 		Limbo();
 	}
