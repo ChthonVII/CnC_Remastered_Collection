@@ -115,6 +115,8 @@ BulletClass::BulletClass(void) :
 	Strength = 0;
 	IsLocked = true;
 	IsInaccurate = false;
+    
+    SpecialArmorPen = ARMORPEN_NONE;
 }
 
 
@@ -200,6 +202,8 @@ BulletClass::BulletClass(BulletType id) :
 	Riser = 0;
 	Strength = Class->MaxStrength;
 	TarCom = TARGET_NONE;
+    
+    SpecialArmorPen = ARMORPEN_NONE;
 }
 
 
