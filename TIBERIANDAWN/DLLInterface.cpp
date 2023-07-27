@@ -1489,6 +1489,35 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
 	if (Frame <= 10) {		// Don't spam forever, but useful to know that we actually started advancing
 		GlyphX_Debug_Print("CNC_Advance_Instance - TD");
 	}
+	
+	if (Frame == 2) {
+        CFE_Debug_Printf("Object size report:");
+        CFE_Debug_Printf("\tAbstractClass %i bytes.", sizeof(AbstractClass));
+        CFE_Debug_Printf("\tObjectClass %i bytes.", sizeof(ObjectClass));
+        CFE_Debug_Printf("\tTechnoClass %i bytes.", sizeof(TechnoClass));
+        CFE_Debug_Printf("\tStageClass %i bytes.", sizeof(StageClass));
+        CFE_Debug_Printf("\tFlasherClass %i bytes.", sizeof(FlasherClass));
+        CFE_Debug_Printf("\tCargoClass %i bytes.", sizeof(CargoClass));
+        CFE_Debug_Printf("\tDoorClass %i bytes.", sizeof(DoorClass));
+        CFE_Debug_Printf("\tCrewClass %i bytes.", sizeof(CrewClass));
+        CFE_Debug_Printf("\tFlyClass %i bytes.", sizeof(FlyClass));
+        CFE_Debug_Printf("\tFootClass %i bytes.", sizeof(FootClass));
+        CFE_Debug_Printf("\tDriveClass %i bytes.", sizeof(DriveClass));
+        
+        CFE_Debug_Printf("\tTCountDownTimerClass %i bytes.", sizeof(TCountDownTimerClass));
+        
+        
+        CFE_Debug_Printf("\tAnimClass %i bytes.", sizeof(AnimClass));
+        CFE_Debug_Printf("\tAircraftClass %i bytes.", sizeof(AircraftClass));
+        CFE_Debug_Printf("\tBuildingClass %i bytes.", sizeof(BuildingClass));
+        CFE_Debug_Printf("\tBulletClass %i bytes.", sizeof(BulletClass));
+        
+        CFE_Debug_Printf("\tBaseNodeClass %i bytes.", sizeof(BaseNodeClass));
+        CFE_Debug_Printf("\tCellClass %i bytes.", sizeof(CellClass));
+        
+        // not done yet. Will be large pain for small gain
+        CFE_Debug_Printf("\tDisplayClass %i bytes.", sizeof(DisplayClass));
+    }
 
 	/*
 	** Shouldn't really need to do this, but I like the idea of always running the main loop in the context of the same player.
