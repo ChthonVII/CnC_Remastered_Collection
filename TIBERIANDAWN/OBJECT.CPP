@@ -302,7 +302,7 @@ ObjectClass::ObjectClass(void)
 	IsAnimAttached = false;			// Anim is not attached.
 	Strength = 255;					// nominal strength value
 	IsSelectedMask = 0;				// Mask showing who has selected this object
-	//BirthdayFrame = Frame;         // Chthon CFE Note: Set BirthdayFrame
+	BirthdayFrame = Frame;         // Chthon CFE Note: Set BirthdayFrame
 }
 
 

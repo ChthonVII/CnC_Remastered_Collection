@@ -2045,7 +2045,7 @@ void TechnoClass::AI(void)
     } // end of AttackMove stuff
     
     // Chthon CFE Note: Do healing for veteran units
-    // 1 hp per 16 frames turned out to be insanely strong from low HP units,
+    // 1 hp per 16 frames turned out to be insanely strong for low HP units,
     // so redoing this so it's 1/600th of maxhp per 16 frames
     // That should keep the rate for Mammoth Tanks and harvesters the same as before, while everything else scales accordingly
     if (VeterancyRank > 1 && Strength){ //check for non-zero Strength so we don't heal things in the middle of death animation
@@ -2056,8 +2056,7 @@ void TechnoClass::AI(void)
         if (healcycle == 0){
             healcycle = 1;
         }
-        //if ((FrameMB() % healcycle) == 0){
-        if ((Frame % healcycle) == 0){
+        if ((FrameMB() % healcycle) == 0){
             unsigned int healthreshhold = 0x0080;
             // units that already have healing to 50% without veterancy get healing to 100%
             // buildings get healing to 100% at rank 3 as compensation for not getting move speed
