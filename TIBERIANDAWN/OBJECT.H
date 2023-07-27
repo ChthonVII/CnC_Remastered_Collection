@@ -60,11 +60,27 @@ class RadioClass;
 class ObjectClass : public AbstractClass
 {
 	public:
+        
+        // Chthon CFE Note: Bind the bitfields inside a Union so they pack correctly.
+        // Compatibility note: MSVC is happy with anonymous union & struct, but apparently gcc needs extensions for it.
+        union {
+            unsigned short ObjectClassFlags; // use short to align the following short
+			struct{
+				unsigned IsDown:1;
+                unsigned IsToDamage:1;
+                unsigned IsToDisplay:1;
+                unsigned IsInLimbo:1;
+                unsigned IsSelected:1;
+                unsigned IsAnimAttached:1;
+				unsigned ObjectClassFlagsPadding : 10; //round out to 2 bytes, we can use this space later.
+			};
+		};
+        
 		/*
 		**	The object can be in one of two states -- placed down on the map, or not. If the
 		**	object is placed down on the map, then this flag will be true.
 		*/
-		unsigned IsDown:1;
+		//unsigned IsDown:1;
 
 		/*
 		**	This is a support flag that is only used while building a list of objects to
@@ -73,7 +89,7 @@ class ObjectClass : public AbstractClass
 		**	object, this flag is cleared again. This process ensures that an object is never
 		**	subject to "double jeapordy".
 		*/
-		unsigned IsToDamage:1;
+		//unsigned IsToDamage:1;
 
 //	private:
 		/*
@@ -81,7 +97,7 @@ class ObjectClass : public AbstractClass
 		**	flag could be set by many different circumstances. It is automatically cleared
 		**	when the object is rerendered.
 		*/
-		unsigned IsToDisplay:1;
+		//unsigned IsToDisplay:1;
 
 
 	public:
@@ -91,7 +107,7 @@ class ObjectClass : public AbstractClass
 		**	also be in limbo if they have been created but are being held until the proper time
 		**	for delivery.
 		*/
-		unsigned IsInLimbo:1;
+		//unsigned IsInLimbo:1;
 
 		/*
 		**	When an object is "selected" it is given a floating bar graph or other graphic imagery
@@ -99,7 +115,7 @@ class ObjectClass : public AbstractClass
 		**	bearing on the actions of the currently selected object. For quick checking purposes,
 		**	if this object is the one that is "selected", this flag will be true.
 		*/
-		unsigned IsSelected:1;
+		//unsigned IsSelected:1;
 
 		//Added a mask instead of bool for selecting players. This is because we must now support multiplayer.
 		// - 6/26/2019
@@ -108,7 +124,7 @@ class ObjectClass : public AbstractClass
 		/*
 		**	If an animation is attached to this object, then this flag will be true.
 		*/
-		unsigned IsAnimAttached:1;
+		//unsigned IsAnimAttached:1;
 
 		/*
 		**	Several objects could exist in the same cell list. This is a pointer to the
@@ -134,7 +150,20 @@ class ObjectClass : public AbstractClass
 		/*
 		** Some additional padding in case we need to add data to the class and maintain backwards compatibility for save/load
 		*/
-		unsigned char SaveLoadPadding[16];
+		unsigned char SaveLoadPadding[10]; // original padding was 16
+        
+        // Chthon CFE Note:
+        /*  Memory map is:
+         *  2 bytes     ObjectClassFlags
+         *  2 bytes     IsSelectedMask
+         *  4 bytes     Next
+         *  4 byes      Trigger
+         *  2 bytes     Strength
+         *  10 bytes     Padding
+         * -----
+         * Total 24 bytes
+         * 
+         */
 
 		/*-----------------------------------------------------------------------------------
 		**	Constructor & destructors.

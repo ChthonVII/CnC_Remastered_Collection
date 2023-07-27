@@ -74,7 +74,7 @@ class FuseClass {
 		**	This is the designated impact point of the projectile. The fuse
 		**	will trip when the closest point to this location has been reached.
 		*/
-		COORDINATE HeadTo;
+		//COORDINATE HeadTo; //relocate for packing purposes
 
 		/*
 		**	This is the running proximity value to the impact point. This value
@@ -82,6 +82,21 @@ class FuseClass {
 		**	zero or when it starts to grow larger.
 		*/
 		short Proximity;
+        
+        COORDINATE HeadTo;
+        
+        
+                // Chthon CFE Note:
+        /*  Memory map is:
+         *  1 byte      Timer
+         *  1 byte     Arming
+         *  2 bytew    Proximity
+         *  4 btyes     HeadTo
+         * -----
+         * Total 8 bytes
+         * 
+         */
+        
 };
 
 inline COORDINATE FuseClass::Fuse_Target(void)

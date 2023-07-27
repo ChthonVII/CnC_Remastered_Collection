@@ -75,6 +75,18 @@ class FlyClass {
 		*/
 		unsigned SpeedAccum;			// Lepton accumulator.
 		MPHType SpeedAdd;			// Lepton add (per frame).
+		
+		unsigned char FlyClassPadding1[3];
+		        // Chthon CFE Note:
+        /*  Memory map is:
+         *  4 bytes     SpeedAccum
+         *  1 byte     SpeedAdd
+         *  3 btyes     FlyClassPadding1
+         * -----
+         * Total 8 bytes
+         * 
+         */
+		
 };
 
 #endif

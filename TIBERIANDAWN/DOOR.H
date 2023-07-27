@@ -53,19 +53,38 @@ class DoorClass
 		/*
 		**	This is the door state.
 		*/
+        /* //// Chthon CFE Note: Make this a proper enum so the size is predictable 
 		enum {
 			IS_CLOSED,		// Door is closed.
 			IS_OPENING,		// Door is in the process of opening.
 			IS_OPEN,			// Door is fully open.
 			IS_CLOSING		//	Door is in the process of closing.
 		} State;
+        */
+        DoorStateType State;
 
 		/*
 		**	If the animation for this door indicates that the object it is
 		**	attached to should be redrawn, then this flag will be true.
 		*/
-		unsigned IsToRedraw:1;
+		//unsigned IsToRedraw:1;
+        unsigned char IsToRedraw; // Chthon CFE Note make this a char so it packs correctly
 
+        unsigned char DoorClassPadding[5]; // Chthon CFE Note: round out to a multiple of 8 bytes
+        
+        // Chthon CFE Note:
+        /*  Memory map is:
+         *  8 bytes     Control
+         *  1 byte      Stages
+         *  1 byte      State
+         *  1 byte      IsToRedraw
+         *  5 bytes    DoorClassPadding
+         * -----
+         * Total 16 bytes
+         * 
+         */
+        
+        
 	public:
 		DoorClass(void);
 

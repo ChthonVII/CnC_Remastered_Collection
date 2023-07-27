@@ -70,12 +70,29 @@ class BuildingClass : public TechnoClass
 		**	the current owner is.
 		*/
 		HousesType ActLike;
+        
+        // Chthon CFE Note: Bind the bitfields inside a Union so they pack correctly.
+        // Compatibility note: MSVC is happy with anonymous union & struct, but apparently gcc needs extensions for it.
+        union {
+            unsigned char BuildingClassFlags;
+			struct{
+				unsigned IsReadyToCommence:1;
+                unsigned IsRepairing:1;
+                unsigned IsWrenchVisible:1;
+                unsigned IsGoingToBlow:1;
+                unsigned IsSurvivorless:1;
+                unsigned IsCharging:1;
+                unsigned IsCharged:1;
+                unsigned IsCaptured:1;
+				//unsigned BuildingClassFlagsPadding : 0; //round out to 1 byte, we can use this space later.
+			};
+		};
 
 		/*
 		**	If the building is at a good point to change orders, then this
 		**	flag will be set to true.
 		*/
-		unsigned IsReadyToCommence:1;
+		//unsigned IsReadyToCommence:1;
 
 		/*
 		**	If this building is currently spending money to repair itself, then
@@ -83,40 +100,42 @@ class BuildingClass : public TechnoClass
 		**	has reached full strength, when money is exhausted, or if the player
 		**	specifically stops the repair process.
 		*/
-		unsigned IsRepairing:1;
+		//unsigned IsRepairing:1;
 
 		/*
 		**	If repair is currently in progress and this flag is true, then a wrench graphic
 		**	will be overlaid on the building to give visual feedback for the repair process.
 		*/
-		unsigned IsWrenchVisible:1;
+		//unsigned IsWrenchVisible:1;
 
 		/*
 		** This flag is set when a commando has raided the building and planted
 		** plastic explosives.  When the CommandoCountDown timer expires, the
 		** building takes massive damage.
 		*/
-		unsigned IsGoingToBlow:1;
+		//unsigned IsGoingToBlow:1;
 
 		/*
 		**	If this building was destroyed by some method that would prevent
 		**	survivors, then this flag will be true.
 		*/
-		unsigned IsSurvivorless:1;
+		//unsigned IsSurvivorless:1;
 
 		/*
 		**	These state control variables are used by the oblisk for the charging
 		**	animation.
 		*/
-		unsigned IsCharging:1;
-		unsigned IsCharged:1;
+		//unsigned IsCharging:1;
+		//unsigned IsCharged:1;
 
 		/*
 		**	A building that has been captured will not contain the full compliment
 		**	of crew. This is true even if it subsiquently gets captured back.
 		*/
-		unsigned IsCaptured:1;
+		//unsigned IsCaptured:1;
 
+		unsigned char BuildingClassPadding1[2]; // align the initial long inside the timer class
+		
 		/*
 		**	Special countdown to destruction value. If the building is destroyed,
 		**	it won't actually be removed from the map until this value reaches
@@ -130,7 +149,7 @@ class BuildingClass : public TechnoClass
 		*/
 		BStateType BState;
 		BStateType QueueBState;
-
+        
 		/*
 		** For multiplayer games, this keeps track of the last house to damage
 		** this building, so if it burns to death or otherwise gradually dies,
@@ -138,6 +157,9 @@ class BuildingClass : public TechnoClass
 		*/
 		HousesType WhoLastHurtMe;
 
+        
+        unsigned char BuildingClassPadding2; // align the next long
+        
 		/*
 		**	This is the saboteur responsible for this building's destruction.
 		*/
@@ -165,9 +187,17 @@ class BuildingClass : public TechnoClass
         // Chthon CFE Note: delay for smarter SAMs
         short int SAMLoweringDelay;
         unsigned char SAMAmmo;
-        unsigned char ShowInverseWallPreviewMarkers = 0;
-        bool HasOpened; // borrowed from RA. (It's a bitfield in RA, and we could make it a bitfield here too if we had more bools to add.)
-
+        // Chthon CFE Note: Bind the bitfields inside a Union so they pack correctly.
+        // Compatibility note: MSVC is happy with anonymous union & struct, but apparently gcc needs extensions for it.
+        union {
+            unsigned char BuildingClassModFlags;
+			struct{
+				unsigned ShowInverseWallPreviewMarkers:2;
+                unsigned HasOpened:1; // borrowed from RA.
+				unsigned BuildingClassModFlagsPadding : 5; //round out to 1 byte, we can use this space later.
+			};
+		};
+        
 		TARGET Target_For_Rally_Point() const;
 
 		/*---------------------------------------------------------------------
@@ -328,8 +358,38 @@ private:
         // Smarter SAMS eat 3 bytes
         // ShowInverseWallPreviewMarkers eats 1 byte
         // RESET PADDING in v1.8 b/c we're breaking save compatibility anyway
-		unsigned char SaveLoadPadding[32];
+		unsigned char SaveLoadPadding[12];
 
+        
+        // Chthon CFE Note:
+        /*  Memory map is:
+         * 4 bytes     Factory
+         * 1 byte       ActLike
+         * 1 byte       BuildingClassFlags
+         * 2 bytes      BuildingClassPadding1
+         * 8 bytes      CountDown
+         * 1 byte        BState
+         * 1 byte      QueueBState
+         * 1 bytes      WhoLastHurtMe
+         * 1 byte       BuildingClassPadding2
+         * 4 bytes      WhomToRepay
+         * 4 bytes      LastStrength
+         * 4 bytes      PlacementDelay
+         * 4 bytes      RallyPoint
+         * 2 bytes      SAMLoweringDelay
+         * 1 byte       SAMAmmo
+         * 1 byte       BuildingClassModFlags
+         * 
+         * (VTable isn't part of the memory layout because it's static)
+         * (CenterOffset isn't part of the memory layout because it's static)
+
+         *  12 bytes     Padding
+         * -----
+         * Total 48 bytes
+         * 
+         */
+        
+        
 		static COORDINATE const CenterOffset[BSIZE_COUNT];
 
 		/*

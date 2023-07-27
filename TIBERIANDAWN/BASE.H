@@ -46,8 +46,24 @@ class BaseNodeClass
 		int operator != (BaseNodeClass const & node);
 		int operator > (BaseNodeClass const & node);
 
-		StructType Type;
+		//StructType Type;
+		//COORDINATE Coord;
+        
+        // Chthon CFE Note: flip order for easier alignment
 		COORDINATE Coord;
+        StructType Type;
+        unsigned char BaseNodeClassPadding[3];
+        
+        
+        // Chthon CFE Note:
+        /*  Memory map is:
+         *  4 bytes     Coord
+         *  1 byte      Type
+         *  3 btyes     Padding
+         * -----
+         * Total 8 bytes
+         * 
+         */
 };
 
 

@@ -103,17 +103,32 @@ class BulletClass :	public ObjectClass,
 		**	Dee-buggin' support.
 		*/
 		int Validate(void) const;
-
+        
+        
+        // Chthon CFE Note: Bind the bitfields inside a Union so they pack correctly.
+        // Compatibility note: MSVC is happy with anonymous union & struct, but apparently gcc needs extensions for it.
+        union {
+            unsigned char BulletClassFlags;
+			struct{
+				unsigned IsInaccurate:1;
+                unsigned IsToAnimate:1;
+                unsigned IsLocked:1;
+				unsigned BulletClassFlagsPadding : 3; //round out to 1 byte, we can use this space later.
+			};
+		};
+        
+        ArmorPenType SpecialArmorPen;
+        
 		/*
 		**	If this bullet is forced to be inaccurate because of some outside means. A tank
 		**	firing while moving is a good example.
 		*/
-		unsigned IsInaccurate:1;
+		//unsigned IsInaccurate:1;
 
 	private:
 
 		// Crude animation flag.
-		unsigned IsToAnimate:1;
+		//unsigned IsToAnimate:1;
 
 		/*
 		**	This is the height of the projectile. It starts at a low height, rises to an
@@ -128,7 +143,7 @@ class BulletClass :	public ObjectClass,
 		**	while simultaneously being reduced itself. The net effect, is a rising
 		**	projectile that slows and then eventually drops.
 		*/
-		signed char Riser;
+		//signed char Riser; // move for packing purposes
 
 		/*
 		**	This is the target of the projectile. It is especially significant for those projectiles
@@ -136,15 +151,18 @@ class BulletClass :	public ObjectClass,
 		*/
 		TARGET TarCom;
 
+        signed char Riser;
+        
 		/*
 		** Is this missle allowed to come in from out of bounds?
 		*/
-		unsigned IsLocked:1;
+		//unsigned IsLocked:1;
 
     // Chthon CFE Note: Added member to store special per-type armor penetration (used by some rank 3 veteran unit bonuses)
-    public:
-        ArmorPenType SpecialArmorPen = ARMORPEN_NONE;
-    private:
+    // move for packing purposes
+    //public:
+    //    ArmorPenType SpecialArmorPen = ARMORPEN_NONE;
+    //private:
         
         
 		/*
@@ -153,7 +171,23 @@ class BulletClass :	public ObjectClass,
         // Chthon CFE Note: original padding was 32 bytes
         // SpecialArmorPen ate 1 byte
         // RESET PADDING in v1.8 b/c we're breaking save compatibility anyway
-		unsigned char SaveLoadPadding[32];
+		unsigned char SaveLoadPadding[3];
+        
+                // Chthon CFE Note:
+        /*  Memory map is:
+         *  4 bytes     Class
+         *  4 bytes     Payback
+         *  2 bytes     PrimaryFacing
+         *  1 byte      BulletClassFlags
+         *  1 bytes     SpecialArmorPen
+         *  4 bytes     Altitude
+         *  4 bytes     TarCom
+         *  1 byte       Riser
+         *  3 btyes     Padding
+         * -----
+         * Total 24 bytes
+         * 
+         */
 
 		/*
 		** This contains the value of the Virtual Function Table Pointer

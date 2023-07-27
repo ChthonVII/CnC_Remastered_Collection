@@ -3041,7 +3041,7 @@ typedef enum StrategyType : unsigned char {
 #endif //USE_RA_AI
 
 
-// Chthon CFE: Added some defines for per-type armor penetration (used by some rank 3 veteran unit bonuses)
+// Chthon CFE Note: Added some defines for per-type armor penetration (used by some rank 3 veteran unit bonuses)
 typedef enum ArmorPenType : unsigned char {
     ARMORPEN_NONE,
     ARMORPEN_PSEUDO_AP, // SA that does slightly more damage vs wood and a lot more vs steel 
@@ -3051,6 +3051,14 @@ typedef enum ArmorPenType : unsigned char {
 // Chthon CFE Note: This should use a #define instead of hardcoding all over the place
 #define MAX_NAVQUEUE 10
 #define MAX_NAVQUEUE_INDEX (MAX_NAVQUEUE - 1)
+
+// Chthon CFE Note: Make this a proper enum so the size is predictable 
+typedef enum DoorStateType : unsigned char {
+	IS_CLOSED,		// Door is closed.
+    IS_OPENING,		// Door is in the process of opening.
+    IS_OPEN,			// Door is fully open.
+    IS_CLOSING		//	Door is in the process of closing.
+} DoorStateType;
 
 #pragma warning (pop)
 

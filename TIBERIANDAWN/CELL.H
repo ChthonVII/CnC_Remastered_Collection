@@ -46,58 +46,76 @@
 class CellClass
 {
 	public:
+        
+        // Chthon CFE Note: Bind the bitfields inside a Union so they pack correctly.
+        // Compatibility note: MSVC is happy with anonymous union & struct, but apparently gcc needs extensions for it.
+        union {
+            unsigned char CellClassFlags;
+			struct{
+				unsigned IsPlot:1;
+                unsigned IsCursorHere:1;
+                unsigned IsMapped:1;
+                unsigned IsVisible:1;
+                unsigned IsTrigger:1;
+                unsigned IsWaypoint:1;
+                unsigned IsRadarCursor:1;
+                unsigned IsFlagged:1;
+				//unsigned CellClassFlagsPadding : 0; //round out to 1 byte, we can use this space later.
+			};
+		};
+        
 		/*
 		**	Does this cell need to be updated on the radar map?  If something changes in the cell
 		**	that might change the radar map imagery, then this flag will be set. It gets cleared
 		**	when the cell graphic is updated to the radar map.
 		*/
-		unsigned IsPlot:1;
+		//unsigned IsPlot:1;
 
 		/*
 		**	Does this cell contain the special placement cursor graphic?  This graphic is
 		**	present when selecting a site for building placement.
 		*/
-		unsigned IsCursorHere:1;
+		//unsigned IsCursorHere:1;
 
 		/*
 		**	Is this cell mapped by the player?  A mapped cell is visible. An unmapped cell
 		**	is covered in a dark shroud. In addition to visibility, mapped cells are the only
 		**	legal place for transports to land.
 		*/
-		unsigned IsMapped:1;
+		//unsigned IsMapped:1;
 
 		/*
 		**	If any part of this cell is visible (even just peeking out from under the shadow),
 		**	this this flag will be true. Mapped cells always have this flag set, but unmapped
 		**	cells might not -- it depends on where the shadow edge is located.
 		*/
-		unsigned IsVisible:1;
+		//unsigned IsVisible:1;
 
 		/*
 		** Every cell can be assigned a trigger. The same trigger can be assigned to
 		** multiple cells. This bitflag indicates whether this cell has a trigger.
 		** The trigger pointers for all cells must be stored elsewhere.
 		*/
-		unsigned IsTrigger:1;
+		//unsigned IsTrigger:1;
 
 		/*
 		** Every cell can be assigned a waypoint.  A waypoint can only be assigned
 		** to one cell, and vice-versa.  This bit simply indicates whether this
 		** cell is assigned a waypoint or not.
 		*/
-		unsigned IsWaypoint:1;
+		//unsigned IsWaypoint:1;
 
 		/*
 		** Is this cell currently under the radar map cursor?  If so then it
 		**   needs to be updated whenever the map is updated.
 		*/
-		unsigned IsRadarCursor:1;
+		//unsigned IsRadarCursor:1;
 
 		/*
 		**	If this cell contains a house flag, then this will be true. The actual house
 		**	flag it contains is specified by the Owner field.
 		*/
-		unsigned IsFlagged:1;
+		//unsigned IsFlagged:1;
 
 		/*
 		**	This contains the icon number and set to use for the base
@@ -136,6 +154,8 @@ class CellClass
 		*/
 		HousesType InfType;
 
+        unsigned char CellClassPadding1[3]; // align the next long
+        
 		/*
 		**	These point to the object(s) that are located in this cell or overlap
 		**	this cell.
@@ -289,6 +309,8 @@ class CellClass
 		LandType Land;		// The land type of this cell.
 
 		LandType OverrideLand;	// The overriden land type of this cell.
+		
+		unsigned char CellClassPadding2; // align the next long
 
 		/*
 		**	Points to the flag animation on this cell in CTF games.
@@ -341,7 +363,38 @@ class CellClass
 		/*
 		** Some additional padding in case we need to add data to the class and maintain backwards compatibility for save/load
 		*/
-		unsigned char SaveLoadPadding[28];
+		unsigned char SaveLoadPadding[8]; // orignal padding 28 bytes
+        
+        // Chthon CFE Note:
+        /*  Memory map is:
+         *  1 byte     CellClassFlags
+         *  1 byte      TType
+         *  1 byte      TIcon
+         *  1 byte      Overlay
+         *  1 byte      OverlayData
+         *  1 byte      Smudge
+         *  1 byte      SmudgeData
+         *  1 byte      Owner
+         *  1 byte      InfType
+         *  3 bytes     CellClassPadding1
+         *  4 bytes     OccupierPtr
+         *  12 bytes    Overlapper (3 * 4 bytes)
+         * 4 bytes      IsMappedByPlayerMask
+         * 4 bytes      IsVisibleByPlayerMask
+         * 1 byte       Flag
+         *  1 byte      Land
+         * 1 byte       LandOverride
+         *  1 bytes     CellClassPadding2
+         *  4 bytes     CTFFlag
+         * 4 bytes      ReservingVehicle
+         * 
+         *  8 btyes     Padding
+         * -----
+         * Total 56 bytes
+         * 
+         */
+        
+        
 };
 
 #endif

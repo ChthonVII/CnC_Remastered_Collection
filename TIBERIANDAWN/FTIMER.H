@@ -82,6 +82,15 @@ class TCountDownTimerClass {
 	protected:
 		long Started;				// Initial frame time start.
 		long DelayTime;			// Ticks remaining before countdown timer expires.
+		
+		 // Chthon CFE Note:
+        /*  Memory map is:
+         *  4 bytes      Started
+         *  4 bytes      DelayTime
+         * -----
+         * Total 8 bytes
+         * 
+         */
 };
 
 
