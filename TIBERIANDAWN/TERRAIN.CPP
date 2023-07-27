@@ -156,7 +156,8 @@ ResultType TerrainClass::Take_Damage(int & damage, int distance, WarheadType war
 	/*
 	**	Small arms can never destroy a terrain element.
 	*/
-	if ((!IsOnFire || warhead == WARHEAD_FIRE) && warhead != WARHEAD_SA && !Class->IsImmune) {
+    // burning trees can take damage from non-fire sources since the tweak to ObjectClass::TakeDamage() will prevent fatal damage while on fire.
+	if ((!IsOnFire || (warhead == WARHEAD_FIRE) || ActiveCFEPatchConfig.EnableBurningTreeFix) && warhead != WARHEAD_SA && !Class->IsImmune) {
 
         /*
         // Chthon CFE Note: There's a bug with burning trees living on as indestructible zombies.
@@ -171,44 +172,12 @@ ResultType TerrainClass::Take_Damage(int & damage, int distance, WarheadType war
             TerrainClass::Take_Damage() will also call Detach_All(), leaving no attached animations to work with.
             Much code in ANIM.CPP just assumes a pointer to a live object, so we get crashes when we "fix" things so they can be attached to a dead tree.
             Limbo() is never called, so the cell isn't cleaned up properly.
-        A workable fix requires several components:
-            A new "soft detach" for animations that will detach them and shorten them to 0 loops instead of immediately terminating them.
-            A way to query animations for how many more frames they will last.
-            A counter to track when the animations will end and it's time to call Fire_Out()
+        A workable fix requires:
+            Change ObjectClass::Take_Damage() to freeze the tree at 1hp until the fire goes out.
+            Set hp to 0 and start the crumbling procedure if Fire_Out() is called when the tree is at 1hp.
             Add the mising Limbo() call.
         */
-        
-        // tell burning animations to do a soft detach instead of a normal one
-        // and query their remaining length
-        /*
-        if (IsOnFire && ActiveCFEPatchConfig.EnableBurningTreeFix){
-            int maxfuegodelay = 0;
-            for (int index = 0; index < Anims.Count(); index++) {
-                AnimClass* animptr = Anims.Ptr(index);
-                if (animptr && animptr->IsActive && !animptr->IsInLimbo && (animptr->Object == this)) {
-                    animptr->SoftDetach = 1; // we never need to unset this because there's no other circumstances where we'd get one of these animations detaching
-                    int fuegodelay = animptr->FramesLeft();
-                    if (fuegodelay > maxfuegodelay){
-                        maxfuegodelay = fuegodelay;
-                    }
-                }
-            }
-            IsAnimAttached = 0;
-            if (maxfuegodelay > 0){
-                BurnDownDelay = maxfuegodelay;
-                // allow the flames and crumble animations to overlap a bit so it looks more realistic
-                BurnDownDelay -= 5;
-                if (BurnDownDelay < 0){
-                    BurnDownDelay = 0;
-                }
-            }
-            else {
-                BurnDownDelay = 0;
-            }
-        }
-        */
-
-        
+                
 		res = ObjectClass::Take_Damage(damage, distance, warhead, source, specialarmorpen, givesxp);
 
 		if (damage && warhead == WARHEAD_FIRE) {
@@ -228,7 +197,7 @@ ResultType TerrainClass::Take_Damage(int & damage, int distance, WarheadType war
 			//Detach_All(); // Chthon CFE Note: Redundant. ObjectClass::Take_Damage() just did that.
 
 			/*
-             * no point in this since normally unreachable and soft detach replaces it in fixed version
+             * no point in this since all anims have been detached by now
 			if (IsOnFire) {
 				/*
 				**	Attached flame animation should be shortened as much as possible so that
@@ -237,11 +206,11 @@ ResultType TerrainClass::Take_Damage(int & damage, int distance, WarheadType war
 				Shorten_Attached_Anims(this);
 			} else {
             */
-            //if (!IsOnFire){    
+            if (!IsOnFire){    
                 //Detach_All(); // Redundant. ObjectClass::Take_Damage() just did that.
                 Mark();
 				Start_To_Crumble();
-			//}
+			}
 		}
 		else if ((res == RESULT_MAJOR) && IsOnFire && ActiveCFEPatchConfig.EnableBurningTreeFix){
             Shorten_Attached_Anims(this);
@@ -355,7 +324,6 @@ TerrainClass::TerrainClass(TerrainType type, CELL cell) :
 		}
 	}
 	Set_Rate(0);	// turn off animation
-    BurnDownDelay = 0;
 }
 
 
@@ -573,8 +541,8 @@ void TerrainClass::Fire_Out(void)
 	Validate();
 	if (IsOnFire) {
 		IsOnFire = false;
-        // ObjectClass::TakeDamage() will keep a burning terrain object at 1 hp until it's not on fire anymore.
-        if (Strength == 1){
+        // Chthon CFE Note: Tweaked ObjectClass::TakeDamage() will keep a burning terrain object at 1 hp until it's not on fire anymore.
+        if (Strength == 1 && ActiveCFEPatchConfig.EnableBurningTreeFix){
             Strength = 0;
         }
 		if (!IsCrumbling && !Strength) {
@@ -608,18 +576,6 @@ void TerrainClass::AI(void)
 	Validate();
 	ObjectClass::AI();
     
-    // Chthon CFE Note: Check if the fire has gone out on a dead tree and start it crumbling
-    /*
-    if (IsOnFire && !Strength && !IsCrumbling && ActiveCFEPatchConfig.EnableBurningTreeFix){
-        if (BurnDownDelay){
-            BurnDownDelay--;
-        }
-        else {
-            Fire_Out();
-        }
-    }
-    */
-
 	if (StageClass::Graphic_Logic()) {
 		Mark();
 
@@ -837,7 +793,6 @@ TerrainClass::TerrainClass(void) :
 	IsBarnacled = false;
 	IsSporing = false;
 	Strength = 0;
-    BurnDownDelay = 0;
 }
 
 

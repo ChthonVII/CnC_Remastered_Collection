@@ -136,13 +136,14 @@ class TerrainClass : public ObjectClass, public StageClass
 		*/
 		int Validate(void) const;
 
-	private:
+	//private: // ObjectClass::TakeDamage() needs access to this now
 
 		/*
 		**	If this terrain object is on fire, then this flag will be true.
 		*/
 		unsigned IsOnFire:1;
 
+    private:
 		/*
 		**	Is this a terrain object that undergoes crumbling animation and it is
 		**	in fact crumbling at this time?
@@ -165,8 +166,6 @@ class TerrainClass : public ObjectClass, public StageClass
 		*/
 		unsigned IsSporing:1;
         
-public:
-        unsigned char BurnDownDelay; // Chthon CFE Note: How long a dead tree will continue burning
 private:
 
 		/*

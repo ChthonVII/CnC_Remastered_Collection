@@ -100,11 +100,6 @@ class AnimClass : public ObjectClass, private StageClass {
 		*/
 		int Validate(void) const;
 
-        
-        // Chthon CFE Note: Tell us how long an animation has to go.
-        // Assumes 0 loops because our only use case forces Loops = 0
-        int FramesLeft(){return (Class->Stages - Fetch_Stage()) * Fetch_Rate();};
-        
 		/*
 		**	If this animation is attached to an object, then this points to that object. An
 		**	animation that is attached will follow that object as it moves. This is important
@@ -205,10 +200,6 @@ class AnimClass : public ObjectClass, private StageClass {
 		**	Real-time point to kill this animation.
 		*/
 		unsigned long long KillTime;
-
-public:
-        // Chthon CFE Note: Flag to do a "soft" detach that keeps the animation alive after detachment, but shortens loops to 0
-        bool SoftDetach; 
     
 private:
         

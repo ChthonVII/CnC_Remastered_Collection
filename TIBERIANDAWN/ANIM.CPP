@@ -651,7 +651,6 @@ AnimClass::AnimClass(AnimType animnum, COORDINATE coord, unsigned char timedelay
 		VirtualAnim = NULL;
 	}
 	
-	SoftDetach = 0;
 }
 
 
@@ -709,9 +708,6 @@ AnimClass::~AnimClass(void)
 			Coord = Coord_Add(Object->Center_Coord(), Coord);
 			Object = NULL;
 		}
-		else if (SoftDetach){
-            Map.Remove(this, In_Which_Layer());
-        }
 
 		Limbo();
 	}
@@ -1346,14 +1342,8 @@ void AnimClass::Detach(TARGET target, bool all)
 		}
 		if (Object && Object->As_Target() == target) {
 			Object = NULL;
-            // Chthon CFE Note: To make burning down trees work properly, we need a way to detach animations without ending them.  
-            if (SoftDetach){
-                Loops = 0; // Do the work of Shorten_Attached_Anims()
-            }
-            else {
-                Map.Remove(this, In_Which_Layer());
-                IsToDelete = true;
-            }
+            Map.Remove(this, In_Which_Layer());
+            IsToDelete = true;
 		}
 	}
 }
