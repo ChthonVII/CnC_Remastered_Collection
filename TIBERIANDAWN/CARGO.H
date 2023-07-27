@@ -75,24 +75,13 @@ class CargoClass {
 		**	This is the number of objects attached to this cargo hold. For transporter
 		**	objects, they might contain more than one object.
 		*/
-		//unsigned char Quantity;
-		unsigned long Quantity; // Chthon CFE Note: Make it a long so that the next long aligns
+		unsigned char Quantity;
 
 		/*
 		**	This is the target value of any attached object. A value of zero indicates
 		**	that no object is attached.
 		*/
 		FootClass * CargoHold;
-        
-        // Chthon CFE Note:
-        /*  Memory map is:
-         *  4 bytes     Quantity
-         *  4 bytes     CargoHold
-         * -----
-         * Total 8 bytes
-         * 
-         */
-        
 };
 
 #endif

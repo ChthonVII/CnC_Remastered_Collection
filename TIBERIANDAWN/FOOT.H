@@ -55,31 +55,6 @@ struct CellBlockerPair {
 class FootClass :	public TechnoClass
 {
 	public:
-        // Chthon CFE Note: Bind the bitfields inside a Union so they pack correctly.
-        // Compatibility note: MSVC is happy with anonymous union & struct, but apparently gcc needs extensions for it.
-        union {
-            unsigned short FootClassFlags;
-			struct{
-				unsigned IsInitiated:1;
-                //unsigned IsNewNavCom:1; // Chthon CFE Note: dead code -- It's NEVER set to true ANYWHERE, so it does nothing! (Also, if you fix it, the beep is so fucking annoying it makes you unfix it.)
-                unsigned IsPlanningToLook:1;
-                unsigned IsDeploying:1;
-                unsigned IsFiring:1;
-                unsigned IsRotating:1;
-                unsigned IsDriving:1;
-                unsigned IsUnloading:1;
-                
-                // mod flags
-                mutable unsigned int SkipNavQueueUpdate : 1;
-                mutable unsigned int IsNavQueueLoop : 1;
-                mutable unsigned int HasMemorizedNavQueue : 1;
-                mutable unsigned int JustModifiedNavCom : 1;
-                
-				unsigned FootClassFlagsPadding : 5; //round out to 2 bytes, we can use this space later.
-			};
-		};
-        
-        
 		/*
 		**	If this unit has officially joined the team's group, then this flag is
 		**	true. A newly assigned unit to a team is not considered part of the
@@ -88,7 +63,7 @@ class FootClass :	public TechnoClass
 		**	a target without falling back to regroup the moment a distant member
 		**	joins.
 		*/
-		//unsigned IsInitiated:1;
+		unsigned IsInitiated:1;
 
 		/*
 		**	When the player gives this object a navigation target AND that target
@@ -97,14 +72,14 @@ class FootClass :	public TechnoClass
 		**	movement. This flag is cleared if any movement was able to be performed.
 		**	It never gets set for computer controlled units.
 		*/
-		//unsigned IsNewNavCom:1; // Chthon CFE Note: dead code -- It's NEVER set to true ANYWHERE, so it does nothing! (Also, if you fix it, the beep is so fucking annoying it makes you unfix it.)
+		//unsigned IsNewNavCom:1; // Chthon CFE Note: dead code -- It's NEVER set to true ANYWHERE, so it does nothing! (Also, it you fix it, the beep is so fucking annoying it makes you unfix it.)
 
 		/*
 		**	There are certain cases where a unit should perform a full scan rather than
 		**	the more efficient "ring scan". This situation occurs when a unit first
 		**	appears on the map or when it finishes a multiple cell movement track.
 		*/
-		//unsigned IsPlanningToLook:1;
+		unsigned IsPlanningToLook:1;
 
 		/*
 		**	Certain units have the ability to metamorphize into a building. When this
@@ -112,20 +87,20 @@ class FootClass :	public TechnoClass
 		**	flag will be true. This ensures that any necessary special case code gets
 		**	properly executed for this unit.
 		*/
-		//unsigned IsDeploying:1;
+		unsigned IsDeploying:1;
 
 		/*
 		**	This flag tells the system that the unit is doing a firing animation. This is
 		**	critical to the firing logic.
 		*/
-		//unsigned IsFiring:1;
+		unsigned IsFiring:1;
 
 		/*
 		**	This unit could be either rotating its body or rotating its turret. During the
 		**	process of rotation, this flag is set. By examining this flag, unnecessary logic
 		**	can be avoided.
 		*/
-		//unsigned IsRotating:1;
+		unsigned IsRotating:1;
 
 		/*
 		**	If this object is current driving to a short range destination, this flag is
@@ -134,7 +109,7 @@ class FootClass :	public TechnoClass
 		**	else until it reaches its destination. The exception is when infantry wish to
 		**	head to a different destination, they are allowed to start immediately.
 		*/
-		//unsigned IsDriving:1;
+		unsigned IsDriving:1;
 
 		/*
 		**	If this object is unloading from a hover transport, then this flag will be
@@ -143,7 +118,7 @@ class FootClass :	public TechnoClass
 		**	position. This flag will be cleared automatically when the object moves to the
 		**	center of a cell.
 		*/
-		//unsigned IsUnloading:1;
+		unsigned IsUnloading:1;
 
 		/*
 		**	This is the "throttle setting" of the unit. It is a fractional value with 0 = stop
@@ -151,8 +126,6 @@ class FootClass :	public TechnoClass
 		*/
 		unsigned char const Speed;
 
-        unsigned char Group; // moved her eto align the next long
-        
 		/*
 		**
 		**	This is the desired destination of the unit. The unit will attempt to head
@@ -174,7 +147,7 @@ class FootClass :	public TechnoClass
 		**	this will be set to the team number (0 - 9). If it is not part of any
 		**	pseudo-team, then the number will be -1.
 		*/
-		//unsigned char Group; // move for sake of alignment
+		unsigned char Group;
 
 		/*
 		**	This points to the next member in the team that this object is part of. This
@@ -195,8 +168,6 @@ class FootClass :	public TechnoClass
 		*/
 		FacingType Path[CONQUER_PATH_MAX];
 
-        unsigned char FootClassPadding1[3]; // align next object
-        
 		/*
 		**	When there is a complete findpath failure, this timer is initialized so
 		**	that a findpath won't be calculated until this timer expires.
@@ -352,7 +323,7 @@ public:
         float SpeedBias = 1.0;
         
         // periodic repathing
-        unsigned char RepathDelay = 4;
+        unsigned int RepathDelay = 4;
         
         // Q-Move port stuff. Not offsetting this from padding b/c it's too big, so we just have to break savegame compatibility
         unsigned char NavQueueIndex;
@@ -361,7 +332,6 @@ public:
         TARGET NavQueue[MAX_NAVQUEUE];
         TARGET MemorizedNavQueue[MAX_NAVQUEUE];
         mutable TARGET UnmodifiedNavCom = TARGET_NONE;
-        /* // merge with general flags
         union{
 			mutable unsigned char CFEPatchNavQFlags = 0;
 			struct{
@@ -372,7 +342,6 @@ public:
 				mutable unsigned int CFEPatchNavQFlagsPadding : 4; //round out to 1 byte, we can use this space later.
 			};
 		};
-        */
         
         // Last cell this unit did a Per_Cell_Process() for
         CELL PriorCell;
@@ -385,38 +354,7 @@ private:
         // Chthon CFE Note: Original padding was 16 bytes
         // speed bias eats 4 bytes
         // RESET PADDING in v1.8 b/c we're breaking save compatibility anyway
-		unsigned char SaveLoadPadding[10];
-        
-        // Chthon CFE Note:
-        /*  Memory map is:
-         *  2 bytes     FootClassFlags
-         *  1 byte      Speed
-         *  1 byte      Group
-         *  4 bytes     NavCom
-         *  4 bytes     Suspended NavCom
-         *  4 bytes     Team
-         *  4 bytes     Member
-         * 9 bytes      Path (1 byte times CONQUER_MAX_PATH=9)
-         * 3 bytes      FootClassPadding1 
-         * 8 bytes     PathDelay
-         *  4 bytes     TryTryAgain
-         *  8 bytes     BaseAttackTimer
-         *  4 bytes     HeadToCoord
-         * 4 bytes      SpeedBias
-         * 1 byte      RepathDelay
-         * 1 byte       NavQueueIndex
-         * 1 byte       NavQueueSize
-         * 1 byte       MemorizedNavQueueSize
-         * 40 bytes     NavQueue (10(MAX_NAVQUEUE) * 4 bytes)
-         * 40 bytes     MemorizedNavQueue
-         * 4 bytes      UnmodifiedNavCom
-         * 2 bytes      PriorCell
-         *  10 btyes     Padding
-         * -----
-         * Total 160 bytes
-         * 
-         */
-        
+		unsigned char SaveLoadPadding[16];
 };
 
 #endif

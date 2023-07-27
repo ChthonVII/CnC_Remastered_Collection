@@ -37,30 +37,19 @@
 
 class FlasherClass {
 	public:
-        
-        // Chthon CFE Note: Bind the bitfields inside a Union so they pack correctly.
-        // Compatibility note: MSVC is happy with anonymous union & struct, but apparently gcc needs extensions for it.
-        union {
-            unsigned long FlasherClassFlags; 
-			struct{
-                unsigned FlashCount:7;
-                unsigned IsBlushing:1;
-			};
-		};
-        
 		/*
 		**	When this object is targeted, it will flash a number of times. This is the
 		**	flash control number. It counts down to zero and then stops. Odd values
 		**	cause the object to be rendered in a lighter color.
 		*/
-		//unsigned FlashCount:7;
+		unsigned FlashCount:7;
 
 		/*
 		**	When an object is targeted, it flashes several times to give visual feedback
 		**	to the player. Every other game "frame", this flag is true until the flashing
 		**	is determined to be completed.
 		*/
-		//unsigned IsBlushing:1;
+		unsigned IsBlushing:1;
 
 		// 2019/09/20 JAS - Flashing info needs to exist per player
 		FlasherClass(void) {
@@ -87,18 +76,6 @@ class FlasherClass {
 		// 2019/09/20 JAS - Flashing info needs to exist per player
 		unsigned int Get_Flashing_Flags() const;
 		unsigned int FlashCountPerPlayer[HOUSE_COUNT];
-        
-        unsigned char FlasherClassPadding[4]; // round out to a multiple of 8 bytes
-        
-        // Chthon CFE Note:
-        /*  Memory map is:
-         *  4 bytes     FlasherClassFlags
-         *  48 bytes     FlashCountPerPlayer (12 * 4)
-         *  4 bytes     FlasherClassPadding
-         * -----
-         * Total 56 bytes
-         * 
-         */
 };
 
 #endif

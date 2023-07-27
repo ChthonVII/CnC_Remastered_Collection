@@ -52,47 +52,25 @@ class AbstractClass
 		**	point. For buildings, it is the upper left corner.
 		*/
 		COORDINATE Coord;
-        
-        // Chthon CFE Note: Bind the bitfields inside a Union so they pack correctly.
-        // Compatibility note: MSVC is happy with anonymous union & struct, but apparently gcc needs extensions for it.
-        union {
-            unsigned char AbstractClassFlags;
-			struct{
-				unsigned IsActive:1;
-                unsigned IsRecentlyCreated:1;
-				unsigned AbstractClassFlagsPadding : 6; //round out to 1 byte, we can use this space later.
-			};
-		};
+
 		/*
 		**	The actual object ram-space is located in arrays in the data segment. This flag
 		**	is used to indicate which objects are free to be reused and which are currently
 		**	in use by the game.
 		*/
-		//unsigned IsActive:1;
+		unsigned IsActive:1;
 
 		/*
 		** A flag to indicate that this object was recently created. Since an object's allocation is just a matter of whether
 		** the IsActive flag is set, during a logic frame an object with a given ID could be 'deleted' then reallocated 
 		** as a different type of object in a different location. This flag lets us know that this happened. ST - 8/19/2019 5:33PM
 		*/
-		//unsigned IsRecentlyCreated:1;
+		unsigned IsRecentlyCreated:1;
 				
 		/*
 		** Some additional padding in case we need to add data to the class and maintain backwards compatibility for save/load
 		*/
-		unsigned char SaveLoadPadding[7]; // original padding was 8
-        
-        // Chthon CFE Note:
-        /*  Memory map is:
-         *  4 bytes     Virtual Function Table Pointer
-         *  4 bytes     Coord
-         *  1 byte      Abstract Flags
-         *  7 btyes     Padding
-         * -----
-         * Total 16 bytes
-         * 
-         */
-        
+		unsigned char SaveLoadPadding[8];
 
 		/*-----------------------------------------------------------------------------------
 		**	Constructor & destructors.

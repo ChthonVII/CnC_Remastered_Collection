@@ -2439,8 +2439,8 @@ BuildingClass::BuildingClass(StructType type, HousesType house) :
     RallyPoint = TARGET_NONE;
     SAMLoweringDelay = 0;
     SAMAmmo = 0;
-    ShowInverseWallPreviewMarkers = 0;
-    HasOpened = 0;
+    howInverseWallPreviewMarkers = 0;
+    HasOpened = false;
     
 }
 
@@ -3483,7 +3483,7 @@ void BuildingClass::Grand_Opening(bool captured)
 	Validate();
 
     if (!HasOpened || captured) {
-		HasOpened = 1;
+		HasOpened = true;
     
         /*
         **	Adjust the owning house according to the power, drain, and Tiberium capacity that

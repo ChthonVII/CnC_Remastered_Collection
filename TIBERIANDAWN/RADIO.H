@@ -56,8 +56,6 @@ class RadioClass : public MissionClass {
 		**	This is a record of the last message received by this receiver.
 		*/
 		RadioMessageType LastMessage;
-        
-        unsigned char RadioClassPadding[3]; // align the next long
 
 		/*
 		**	This is the object that radio communication has been established
@@ -73,17 +71,6 @@ class RadioClass : public MissionClass {
 		*/
 		static char const * Messages[RADIO_COUNT];
 
-        // Chthon CFE Note:
-        /*  Memory map is:
-         *  1 byte    LastMessage
-         *  3 bytes     RadioClassPadding
-         *  4 bytes    Radio
-         *  (Messages is static and therefore not part of the memory layout)
-         * -----
-         * Total 8 bytes
-         * 
-         */
-        
 	public:
 
 		/*---------------------------------------------------------------------

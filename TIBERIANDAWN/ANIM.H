@@ -142,42 +142,29 @@ class AnimClass : public ObjectClass, private StageClass {
 		*/
 		COORDINATE Adjust_Coord(COORDINATE coord);
 
-        // Chthon CFE Note: Bind the bitfields inside a Union so they pack correctly.
-        // Compatibility note: MSVC is happy with anonymous union & struct, but apparently gcc needs extensions for it.
-        union {
-            unsigned short AnimClassFlags; // use short to align next long
-			struct{
-				unsigned IsToDelete:1;
-                unsigned IsBrandNew:1;
-                unsigned IsAlternate:1;
-                unsigned IsInvisible:1;
-				unsigned AnimClassFlagsPadding : 12; //round out to 2 bytes, we can use this space later.
-			};
-		};
-        
 		/*
 		**	Delete this animation at the next opportunity. This is flagged when the
 		**	animation is to be prematurely ended as a result of some outside event.
 		*/
-		//unsigned IsToDelete:1;
+		unsigned IsToDelete:1;
 
 		/*
 		**	If the animation has just been created, then don't do any animation
 		**	processing until it has been through the render loop at least once.
 		*/
-		//unsigned IsBrandNew:1;
+		unsigned IsBrandNew:1;
 
 		/*
 		**	Use alternate color when drawing
 		*/
-		//unsigned IsAlternate:1;
+		unsigned IsAlternate:1;
 
 		/*
 		**	If this animation is invisible, then this flag will be true. An invisible
 		**	animation is one that is created for the sole purpose of keeping all
 		**	machines syncronised. It will not be displayed.
 		*/
-		//unsigned IsInvisible:1;
+		unsigned IsInvisible:1;
 
 		/*
 		** 2019/09/19 JAS
@@ -204,12 +191,6 @@ class AnimClass : public ObjectClass, private StageClass {
 		*/
 		unsigned char Accum;
 
-public:
-        // Chthon CFE Note: Flag to do a "soft" detach that keeps the animation alive after detachment, but shortens loops to 0
-        unsigned char SoftDetach; 
-    
-private:
-        
 		/*
 		** This contains the value of the Virtual Function Table Pointer
 		*/
@@ -225,35 +206,16 @@ private:
 		*/
 		unsigned long long KillTime;
 
-
+public:
+        // Chthon CFE Note: Flag to do a "soft" detach that keeps the animation alive after detachment, but shortens loops to 0
+        bool SoftDetach; 
+    
+private:
         
 		/*
 		** Some additional padding in case we need to add data to the class and maintain backwards compatibility for save/load
 		*/
 		unsigned char SaveLoadPadding[24];
-        
-        // Chthon CFE Note:
-        /*  Memory map is:
-         *  4 bytes     Object
-         *  4 bytes     SortTarget
-         *  1 byte      OwnerHouse
-         * 1 byte      Loops
-         *  2 byte      AnimClassFlags
-         *  4 bytes VisibleFlags
-         *  4 bytes Class
-         * 1 byte  Delay
-         *  1 byte Accum
-         *  (VTable isn't part of the memory layout because it's static)
-         * 
-         * 4 bytes VirtualAnim
-         * 
-         * 
-         *  7 btyes     Padding
-         * -----
-         * Total 16 bytes
-         * 
-         */
-        
 };
 
 

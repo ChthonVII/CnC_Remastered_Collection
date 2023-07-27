@@ -70,15 +70,6 @@ class FacingClass
 	private:
 		DirType CurrentFacing;
 		DirType DesiredFacing;
-        
-        // Chthon CFE Note:
-        /*  Memory map is:
-         *  1 byte      CurrentFacing
-         *  1 byte      DesiredFacing
-         * -----
-         * Total 2 bytes
-         * 
-         */
 };
 
 

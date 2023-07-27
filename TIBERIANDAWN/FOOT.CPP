@@ -129,11 +129,7 @@ FootClass::FootClass(void) : Speed(0)
     NavQueueSize = 0;
     MemorizedNavQueueSize = 0;
     UnmodifiedNavCom = TARGET_NONE;
-    //CFEPatchNavQFlags = 0;
-    SkipNavQueueUpdate = 0;
-    IsNavQueueLoop = 0;
-    HasMemorizedNavQueue = 0;
-    JustModifiedNavCom = 0;
+    CFEPatchNavQFlags = 0;
 }
 
 

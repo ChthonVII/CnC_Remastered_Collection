@@ -56,17 +56,6 @@ class StageClass {
 		*/
 		unsigned char Rate;
 
-        // Chthon CFE Note:
-        /*  Memory map is:
-         *  2 bytes     Stage
-         *  1 byte     StageTimer
-         *  1 byte      Rate
-         * -----
-         * Total 8 bytes
-         * 
-         */
-        
-        
 	public:
 		StageClass(void) {
 			StageTimer = 0;

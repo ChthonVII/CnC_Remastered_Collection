@@ -57,55 +57,26 @@ class TechnoClass :	public RadioClass,
 {
 	public:
 
-        // Chthon CFE Note: Bind the bitfields inside a Union so they pack correctly.
-        // Compatibility note: MSVC is happy with anonymous union & struct, but apparently gcc needs extensions for it.
-        union {
-            unsigned long TechnoClassFlags; // use long to align the following long
-			struct{
-                unsigned IsTickedOff:1;
-                unsigned IsCloakable:1;
-                unsigned IsLeader:1;
-                unsigned IsALoaner:1;
-                unsigned IsLocked:1;
-                unsigned IsInRecoilState:1;
-                unsigned IsTethered:1;
-                unsigned IsOwnedByPlayer:1;
-                unsigned IsDiscoveredByPlayer:1;
-                unsigned IsDiscoveredByComputer:1;
-                unsigned IsALemon:1;
-                unsigned IsSecondShot:1;
-                
-                // mod flags
-                mutable unsigned int AttackMove : 1;
-                mutable unsigned int VeterancyRank : 2;
-                mutable unsigned int ReadyQuadShot : 1;
-                mutable unsigned int VeteranTwoShooter: 1;
-                mutable unsigned int VeteranQuadShooter: 1;
-                
-				unsigned TechnoClassFlagsPadding : 14; //round out to 4 bytes, we can use this space later.
-			};
-		};
-        
 		/*
 		**	This flag will be true if the object has been damaged with malace.
 		**	Damage received due to friendly fire or wear and tear does not count.
 		**	The computer is not allowed to sell a building unless it has been
 		**	damaged with malace.
 		*/
-		//unsigned IsTickedOff:1;
+		unsigned IsTickedOff:1;
 
 		/*
 		**	If this object has inherited the ability to cloak, then this bit will
 		**	be set to true.
 		*/
-		//unsigned IsCloakable:1;
+		unsigned IsCloakable:1;
 
 		/*
 		**	If this object is designated as special then this flag will be true. For
 		**	buildings, this means that it is the primary factory. For units, it means
 		**	that the unit is the team leader.
 		*/
-		//unsigned IsLeader:1;
+		unsigned IsLeader:1;
 
 		/*
 		**	Certain units are flagged as "loaners".  These units are typically transports that
@@ -113,13 +84,13 @@ class TechnoClass :	public RadioClass,
 		**	units are not owned by the player and thus cannot be directly controlled.  These
 		**	units will leave the game as soon as they have fulfilled their purpose.
 		*/
-		//unsigned IsALoaner:1;
+		unsigned IsALoaner:1;
 
 		/*
 		**	Once a unit enters the map, then this flag is set. This flag is used to make
 		**	sure that a unit doesn't leave the map once it enters the map.
 		*/
-		//unsigned IsLocked:1;
+		unsigned IsLocked:1;
 
 		/*
 		**	Buildings and units with turrets usually have a recoil animation when they
@@ -127,7 +98,7 @@ class TechnoClass :	public RadioClass,
 		**	in the "recoil state". The flag will then be cleared pending the next
 		**	firing event.
 		*/
-		//unsigned IsInRecoilState:1;
+		unsigned IsInRecoilState:1;
 
 		/*
 		**	If this unit is "loosely attached" to another unit it is given special
@@ -137,32 +108,32 @@ class TechnoClass :	public RadioClass,
 		**	At that time it radios the transport object and the "tether" is broken -
 		**	freeing both the unit and the transport object.
 		*/
-		//unsigned IsTethered:1;
+		unsigned IsTethered:1;
 
 		/*
 		**	Is this object owned by the player?  If not, then it is owned by the computer
 		**	or remote opponent. This flag facilitates the many logic differences when dealing
 		**	with player's or computer's units or buildings.
 		*/
-		//unsigned IsOwnedByPlayer:1;
+		unsigned IsOwnedByPlayer:1;
 
 		/*
 		**	The more sophisticated game objects must keep track of whether they are discovered
 		**	or not. This is because the state of discovery can often control how the object
 		**	behaves. In addition, this fact is used in radar and user I/O processing.
 		*/
-		//unsigned IsDiscoveredByPlayer:1;
+		unsigned IsDiscoveredByPlayer:1;
 
 		/*
 		**	This is used to control the computer recognizing this object.
 		*/
-		//unsigned IsDiscoveredByComputer:1;
+		unsigned IsDiscoveredByComputer:1;
 
 		/*
 		**	Some game objects can be of the "lemon" variety. This means that they take damage
 		**	even when everything is ok. This adds a little variety to the game.
 		*/
-		//unsigned IsALemon:1;
+		unsigned IsALemon:1;
 
 		/*
 		**	This flag is used to control second shot processing for those units or buildings
@@ -170,7 +141,7 @@ class TechnoClass :	public RadioClass,
 		**	the second shot is ready to fire. After this shot is fired, regular rearm timing
 		**	is used rather than the short rearm time.
 		*/
-		//unsigned IsSecondShot:1;
+		unsigned IsSecondShot:1;
 
 		/*
 		**	For units in area guard mode, this is the recorded home position. The guarding
@@ -190,7 +161,6 @@ class TechnoClass :	public RadioClass,
 		**	This records the current cloak state for this vehicle.
 		*/
 		CloakType Cloak;
-        unsigned char TechnoClassPadding1[3]; // align the first short inside StageClass
 		StageClass CloakingDevice;
 
 		/* (Targeting Computer)
@@ -211,8 +181,6 @@ class TechnoClass :	public RadioClass,
 		*/
 		unsigned char Arm;
 
-        unsigned char TechnoClassPadding2; // align the next long
-        
 		/*
 		**	The number of shot this object can fire before running out of ammo. If this
 		**	value is zero, then firing is not allowed. If -1, then there is no ammunition
@@ -250,8 +218,6 @@ class TechnoClass :	public RadioClass,
         // Attack Move rework by ChthonVII --  Remember the intial destination in case of appearing enemies during an attack move
 		mutable TARGET RememberedNavCom; //this is unsigned short in TD, so only 2 bytes (now 4 bytes b/c megamaps)
 		
-		unsigned int IsKnownToExistByPlayerMask;
-		
 		// Veterancy by ChthonVII
 		unsigned short int VeterancyXP = 0;
 		
@@ -260,8 +226,6 @@ class TechnoClass :	public RadioClass,
 		// We need the anonymous union & struct so we can force the zero initialization.
 		// Compatibility note: MSVC is happy with this, but apparently gcc needs extensions for it.
         // mutable makes them modifiable from inside const functions (the inability to do this greatly complicated Butch's attack move implementation)
-        // move these up into the general TechnoClass Flags
-        /*
         union{
 			mutable unsigned char CFEPatchFlags = 0;
 			struct{
@@ -273,9 +237,8 @@ class TechnoClass :	public RadioClass,
 				mutable unsigned int CFEPatchFlagsPadding : 2; //round out to 1 byte, we can use this space later.
 			};
 		};
-        */
         
-        
+        unsigned int IsKnownToExistByPlayerMask;
         
 		/*
 		** Some additional padding in case we need to add data to the class and maintain backwards compatibility for save/load
@@ -286,41 +249,8 @@ class TechnoClass :	public RadioClass,
         // megamaps -> TARGET type for attack-move now takes 4 bytes
         // Veterancy eats 2 bytes (not including CFEPatchFlags since that's counted with attack move)
         // RESET PADDING in v1.8 b/c we're breaking save compatibility anyway
-		unsigned char SaveLoadPadding[10];
+		unsigned char SaveLoadPadding[16];
 
-        // Chthon CFE Note:
-        /*  Memory map is:
-         * 4 bytes     TechnoClassFlags
-         * 4 bytes     ArchiveTarget
-         * 4 bytes     House
-         * 1 bytes     Cloak
-         * 3 bytes     TechnoClassPadding1
-         * 8 bytes     CloakingDevice
-         * 4 bytes     TarCom;
-         * 4 bytes      SuspendedTarCom;
-         * 2 bytes      PrimaryFacing
-         * 1 byte       Arm
-         * 1 byte       TechnoClassPadding2
-         * 4 bytes      Ammo
-         * 60 bytes     Lines  (15 * 4 bytes)
-         * 4 bytes      LineCount
-         * 4 bytes      LineFrame
-         * 4 bytes      LineMaxFrames
-         * 4 bytes      PurchasePrice
-         * 4 bytes      IsDiscoveredByPlayerMask
-         * 4 bytes      ArmorBias
-         * 4 bytes      FirepowerBias
-         * 4 bytes      LocalROFBias
-         * 4 bytes      RememberedNavCom
-         * 4 bytes      IsKnownToExistByPlayerMask
-         * 2 bytes      VeterancyXP
-         * 10 bytes     Padding
-         * -----
-         * Total 152 bytes
-         * 
-         */
-        
-        
 		/*---------------------------------------------------------------------
 		**	Constructors, Destructors, and overloaded operators.
 		*/

@@ -183,20 +183,6 @@ class AircraftClass : public FootClass, public FlyClass
 		**	as the PrimaryFacing, but in the case of helicopters, it can be different.
 		*/
 		FacingClass SecondaryFacing;
-        
-        // Chthon CFE Note: Bind the bitfields inside a Union so they pack correctly.
-        // Compatibility note: MSVC is happy with anonymous union & struct, but apparently gcc needs extensions for it.
-        union {
-            unsigned char AircraftClassFlags;
-			struct{
-				unsigned IsLanding:1;
-                unsigned IsTakingOff:1;
-                unsigned IsHoming:1;
-                unsigned IsHovering:1;
-				unsigned AircraftClassFlagsPadding : 4; //round out to 1 byte, we can use this space later.
-			};
-		};
-        
 
 		//private: // Chthon CFE Note: these need to be public so we can check them from elsewhere 
 
@@ -206,8 +192,8 @@ class AircraftClass : public FootClass, public FlyClass
 		**	necessary to handle the transition in this manner so that it occurs smoothly
 		**	during the graphic processing section.
 		*/
-		//unsigned IsLanding:1;
-		//unsigned IsTakingOff:1;
+		unsigned IsLanding:1;
+		unsigned IsTakingOff:1;
     private:
 
 		/*
@@ -219,7 +205,7 @@ class AircraftClass : public FootClass, public FlyClass
 		**	a new mode. Example: Transport helicopters go into a hovering into correct position
 		**	mode when the target is reached.
 		*/
-		//unsigned IsHoming:1;
+		unsigned IsHoming:1;
 
 		/*
 		**	Helicopters that are about to land must hover into a position exactly above the landing
@@ -228,7 +214,7 @@ class AircraftClass : public FootClass, public FlyClass
 		**	like the helicopter is hovering and shifting sideways to position over the landing
 		**	zone. When the position is over the landing zone, then this flag is set to false.
 		*/
-		//unsigned IsHovering:1;
+		unsigned IsHovering:1;
 
 		/*
 		**	This is the jitter tracker to be used when the aircraft is a helicopter and
@@ -260,8 +246,6 @@ class AircraftClass : public FootClass, public FlyClass
 		**	zero then the aircraft is technically out of ammo.
 		*/
 		char AttacksRemaining;
-        
-        unsigned char AircraftClassPadding1[3]; // to align the next long
 
 		/*
 		**	Cargo planes will wait a certain number of ticks before flying in.
@@ -279,27 +263,8 @@ class AircraftClass : public FootClass, public FlyClass
         // Chthon CFE note: original padding was 28 bytes
         // TargetRecheckCounter eats 2 bytes
         // RESET PADDING in v1.8 b/c we're breaking save compatibility anyway
-		unsigned char SaveLoadPadding[6];
+		unsigned char SaveLoadPadding[28];
 
-        // Chthon CFE Note:
-        /*  Memory map is:
-         *  2 bytes     SecondaryFacing
-         *  1 byte      AircraftClassFlags
-         *  1 byte      Jitter
-         *  4 bytes     Altitude
-         *  8 bytes     SightTimer
-         *  1 byte         AttacksRemaining
-         * 3 bytes      AircraftClassPadding1
-         * 4 bytes      ReinforcementStart
-         * 2 bytes      TargetRecheckCounter
-         *  6 bytes     Padding
-         * 
-         *  (VTable isn't part of the memory layout because it's static)
-         * -----
-         * Total 32 bytes
-         * 
-         */
-        
 		/*
 		** This contains the value of the Virtual Function Table Pointer
 		*/

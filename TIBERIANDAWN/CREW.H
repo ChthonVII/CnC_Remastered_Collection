@@ -48,16 +48,6 @@ class CrewClass
 		**	When it reaches a certain point, the unit improves.
 		*/
 		unsigned short Kills;
-        unsigned char CrewClassPadding[6]; // Chthon CFE Note: round out to a multiple of 8 bytes
-        
-        // Chthon CFE Note:
-        /*  Memory map is:
-         *  2 bytes     Kills
-         *  6 bytes     CrewClassPadding
-         * -----
-         * Total 8 bytes
-         * 
-         */
 
 		/*
 		**	Constructors, Destructors, and overloaded operators.
