@@ -1490,6 +1490,7 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
 		GlyphX_Debug_Print("CNC_Advance_Instance - TD");
 	}
 	
+	/*
 	if (Frame == 2) {
         CFE_Debug_Printf("Object size report:");
         CFE_Debug_Printf("\tAbstractClass %i bytes.", sizeof(AbstractClass));
@@ -1518,6 +1519,7 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
         // not done yet. Will be large pain for small gain
         CFE_Debug_Printf("\tDisplayClass %i bytes.", sizeof(DisplayClass));
     }
+    */
 
 	/*
 	** Shouldn't really need to do this, but I like the idea of always running the main loop in the context of the same player.
