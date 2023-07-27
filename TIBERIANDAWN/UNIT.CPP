@@ -5481,6 +5481,8 @@ void UnitClass::Do_Harvester_Unstick(){
     if ((*this != UNIT_HARVESTER) || (Mission != MISSION_HARVEST)){
         return;
     }
+    // remember that we are supposed to go back to harvesting the next time we idle
+    HarvesterIsUnsticking = 1;
     // try the cell immediately behind you
     CELL backupcell = Adjacent_Cell(Coord_Cell(Coord), (FacingType)((char)Dir_Facing(PrimaryFacing) ^4));
     if (Map.In_Radar(backupcell)){
@@ -5488,7 +5490,6 @@ void UnitClass::Do_Harvester_Unstick(){
         if ((res <= MOVE_MOVING_BLOCK) || (res == MOVE_TEMP)){
             Assign_Mission(MISSION_MOVE);
             Assign_Destination(::As_Target(backupcell));
-            HarvesterIsUnsticking = 1;
             return;
         }
     }
