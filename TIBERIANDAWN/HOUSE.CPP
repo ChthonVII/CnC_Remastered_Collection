@@ -729,7 +729,7 @@ bool HouseClass::Can_Build(TechnoTypeClass const * type, HousesType house) const
 	**	GDI has a special second training mission. Adjust the scenario level so that
 	**	scenario two will still feel like scenario #1.
 	*/
-	if (house == HOUSE_GOOD && level == 2) {
+	if (house == HOUSE_GOOD && Scenario == 2) {  // J_D: Scenario instead of level so that GDI build level 2 is available to mission-makers
 		level = 1;
 	}
 
