@@ -634,6 +634,20 @@ bool Save_Misc_Values(FileClass &file)
 	if (file.Write(LoseMovie, sizeof(LoseMovie)) != sizeof(LoseMovie)) {
 		return(false);
 	}
+	
+	// J_D: hey, the other win movies too!
+	if (file.Write(WinMovie2, sizeof(WinMovie2)) != sizeof(WinMovie2)) {
+		return(false);
+	}
+	
+	if (file.Write(WinMovie3, sizeof(WinMovie3)) != sizeof(WinMovie3)) {
+		return(false);
+	}
+	
+	if (file.Write(WinMovie4, sizeof(WinMovie4)) != sizeof(WinMovie4)) {
+		return(false);
+	}
+	// end J_D section
 
 	/*
 	**	Save currently-selected objects list.
@@ -737,6 +751,20 @@ bool Load_Misc_Values(FileClass &file)
 		return(false);
 	}
 
+	// J_D: hey, the other win movies too!
+	if (file.Read(WinMovie2, sizeof(WinMovie2)) != sizeof(WinMovie2)) {
+		return(false);
+	}
+	
+	if (file.Read(WinMovie3, sizeof(WinMovie3)) != sizeof(WinMovie3)) {
+		return(false);
+	}
+	
+	if (file.Read(WinMovie4, sizeof(WinMovie4)) != sizeof(WinMovie4)) {
+		return(false);
+	}
+	// end J_D section
+	
 	for (i = 0; i < SelectedObjectsType::COUNT; i++) {
 		/*
 		**	Load currently-selected objects list.
