@@ -847,7 +847,11 @@ bool Select_Game(bool fade)
 	PlayerWins = false;
 	PlayerLoses = false;
 	MPlayerObiWan = false;
-	Debug_Unshroud = false;
+	if (ActiveCFEPatchConfig.ShroudRemover) {  // J_D: Shroud Remover tool
+		Debug_Unshroud = true;
+	} else {
+		Debug_Unshroud = false;
+	}
 	Map.Set_Cursor_Shape(0);
 	Map.PendingObjectPtr = 0;
 	Map.PendingObject = 0;
@@ -2032,7 +2036,11 @@ bool Parse_Command_Line(int argc, char *argv[])
 
 	Debug_Map = false;
 //	Debug_Play_Map = false;
-	Debug_Unshroud = false;
+	if (ActiveCFEPatchConfig.ShroudRemover) {  // J_D: Shroud Remover tool
+		Debug_Unshroud = true;
+	} else {
+		Debug_Unshroud = false;
+	}
 
 	for (int index = 1; index < argc; index++) {
 		char * string;		// Pointer to argument.

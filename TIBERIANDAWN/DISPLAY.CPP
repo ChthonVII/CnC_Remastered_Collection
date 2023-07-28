@@ -2521,7 +2521,11 @@ void DisplayClass::Redraw_Icons(int draw_flags)
 					**	process will occur.  Only draw the shadow if Debug_Unshroud is false.
 					*/
 					if (!cellptr->Is_Mapped(PlayerPtr) && !Debug_Unshroud) {			// Use PlayerPtr since we won't be rendering in MP. ST - 3/6/2019 2:49PM
-						IsShadowPresent = true;
+						if (ActiveCFEPatchConfig.ShroudRemover) {  // J_D: Shroud Remover tool
+							IsShadowPresent = false;
+						} else {
+							IsShadowPresent = true;
+						}
 					}
 				}
 			}

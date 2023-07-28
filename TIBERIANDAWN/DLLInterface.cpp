@@ -5795,8 +5795,13 @@ bool DLLExportClass::Get_Shroud_State(uint64 player_id, unsigned char *buffer_in
 
 			CNCShroudEntryStruct &shroud_entry = shroud->Entries[entry_index];
 
-			shroud_entry.IsVisible = cellptr->Is_Visible(PlayerPtr);
-			shroud_entry.IsMapped = cellptr->Is_Mapped(PlayerPtr);
+			if (ActiveCFEPatchConfig.ShroudRemover) {  // J_D: Shroud Remover tool
+				shroud_entry.IsVisible = true;
+				shroud_entry.IsMapped = true;
+			} else {
+				shroud_entry.IsVisible = cellptr->Is_Visible(PlayerPtr);
+				shroud_entry.IsMapped = cellptr->Is_Mapped(PlayerPtr);
+			}
 			shroud_entry.IsJamming = false;
 			shroud_entry.ShadowIndex = -1;
 
