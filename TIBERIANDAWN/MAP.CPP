@@ -2053,7 +2053,77 @@ void MapClass::CFELogic(void){
             }
         }
     }
-        
+    
+    if(ActiveCFEPatchConfig.TibResurgence){
+        for (index = 0; index < MAP_CELL_TOTAL; index++) {
+            CELL cell = index;
+            if (!Map.In_Radar(cell)) {
+                continue; // don't bother if the cell's not on the playable section of the map
+            }
+            CellClass *ptr = &(*this)[cell];
+            TerrainClass * terrain = ptr->Cell_Terrain();
+            if (terrain && terrain->Class->IsTiberiumSpawn){
+                // build up ~5 minutes of no tiberium
+                if (ptr->TibResurgenceCountdown == 0){
+                    int nearbytibcount = 0;
+                    bool toomuch = false;
+                    for (FacingType j = FACING_N; j < FACING_COUNT; j++) {
+                        newcell = (*this)[cell].Adjacent_Cell(j);
+                        if (newcell && Map.In_Radar(newcell->Cell_Number()) && (newcell->Land_Type() == LAND_TIBERIUM)){
+                            nearbytibcount += newcell->OverlayData;
+                            if (ActiveCFEPatchConfig.TibIndexBugfix){
+                                nearbytibcount++;
+                            }
+                            if (nearbytibcount > 8){
+                                toomuch = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!toomuch){
+                        ptr->TibResurgenceBuildup = ptr->TibResurgenceBuildup + 8 - Random_Pick(0, nearbytibcount);
+                        if (ptr->TibResurgenceBuildup >= 36000){ // 8 * 15 ticks/sec * 60 sec/min * 5 min
+                            ptr->TibResurgenceBuildup = 0;
+                            ptr->TibResurgenceCountdown = 192;
+                        }
+                    }
+                }
+                // spread tiberium until counter expires
+                else if (ptr->TibResurgenceCountdown > 0) {
+                    ptr->TibResurgenceCountdown--;
+                    FacingType offset = Random_Pick(FACING_N, FACING_NW); // 0 to 7
+                    // starting from a random direction, iterate through the possible directions and check the adjacent cells
+                    for (FacingType j = FACING_N; j < FACING_COUNT; j++) {
+                        if (Random_Pick(0, 15) > 0){
+                            continue;
+                        }
+                        FacingType facingindex = j + offset; // FacingType + operator has been redefined as modulo! (so this is OK)
+                        newcell = (*this)[cell].Adjacent_Cell(facingindex);
+                        if (
+                            newcell &&
+                            Map.In_Radar(newcell->Cell_Number()) && //don't spread tiberium off the map
+                            newcell->Cell_Object() == NULL &&
+                            newcell->TType != TEMPLATE_BRIDGE1 &&
+                            newcell->TType != TEMPLATE_BRIDGE2 &&
+                            newcell->TType != TEMPLATE_BRIDGE3 &&
+                            newcell->TType != TEMPLATE_BRIDGE4
+                        ){
+                            if (newcell->Land_Type() == LAND_CLEAR && newcell->Overlay == OVERLAY_NONE){
+                                new OverlayClass(Random_Pick(OVERLAY_TIBERIUM1, OVERLAY_TIBERIUM12), newcell->Cell_Number());
+                                newcell->OverlayData = ActiveCFEPatchConfig.TibIndexBugfix ? 0 : 1;
+                            }
+                            else if (newcell->Land_Type() == LAND_TIBERIUM && newcell->OverlayData < 11){
+                                newcell->OverlayData++;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    
+    
     return;
 }
 

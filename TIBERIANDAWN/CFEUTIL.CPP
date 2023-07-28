@@ -79,6 +79,7 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     GetSetting(ActiveCFEPatchConfig.EnableGunboatBugfix      , "FEATURES", "GUNBOAT_BUGFIX");
     GetSetting(ActiveCFEPatchConfig.BetterTibGrowth      , "FEATURES", "BETTER_TIB_GROWTH");
     GetSetting(ActiveCFEPatchConfig.TibIndexBugfix      , "FEATURES", "TIB_INDEX_BUGFIX");
+    GetSetting(ActiveCFEPatchConfig.TibResurgence      , "FEATURES", "TIB_RESURGENCE");
     GetSetting(ActiveCFEPatchConfig.TreeVisceroidSpawnAnyway      , "FEATURES", "TREE_VISCEROID_SPAWN_OVERRIDE");
     GetSetting(ActiveCFEPatchConfig.TSVisceroidSpawn      , "FEATURES", "TS_VISCEROID_SPAWN");
     GetSetting(ActiveCFEPatchConfig.EnableNukeTank      , "FEATURES", "NUKE_TANK");

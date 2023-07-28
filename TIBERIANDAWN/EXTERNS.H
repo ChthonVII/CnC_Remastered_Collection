@@ -105,6 +105,7 @@ struct CFEPatchConfig
     bool EnableGunboatBugfix = false;
     bool BetterTibGrowth = false;
     bool TibIndexBugfix = false;
+    bool TibResurgence = false;
     bool TreeVisceroidSpawnAnyway = false;
     bool TSVisceroidSpawn = false;
     bool AllowSandbagging = true;

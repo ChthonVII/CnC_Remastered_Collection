@@ -335,6 +335,8 @@ class CellClass
         
         // we need to fix the cell reservation system at least insofar that we who *who* reserved a cell
         DriveClass* ReservingVehicle;
+        int TibResurgenceBuildup;
+        int TibResurgenceCountdown;
         
     private:
     

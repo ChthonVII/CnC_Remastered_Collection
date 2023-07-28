@@ -142,6 +142,10 @@ CellClass::CellClass(void)
 	Owner = HOUSE_NONE;
 	InfType = HOUSE_NONE;
 	OverrideLand = LAND_COUNT;
+    
+    TibResurgenceBuildup = 0;
+    TibResurgenceCountdown = 0;
+    ReservingVehicle = nullptr;
 }
 
 
