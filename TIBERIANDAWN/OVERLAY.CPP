@@ -319,7 +319,7 @@ bool OverlayClass::Mark(MarkType mark)
 				}
 
 				/*
-				**	*****  Is this really needed?
+				**	*****  Is this really needed?// Chthon CFE Note: Yes it is! It changes the land type when tiberium spreads!
 				*/
 				cellptr->Recalc_Attributes();
 			}
