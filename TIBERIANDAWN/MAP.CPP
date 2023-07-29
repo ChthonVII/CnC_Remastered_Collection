@@ -2068,7 +2068,7 @@ void MapClass::CFELogic(void){
                     int nearbytibcount = 0;
                     bool toomuch = false;
                     for (FacingType j = FACING_N; j < FACING_COUNT; j++) {
-                        newcell = (*this)[cell].Adjacent_Cell(j);
+                        CallClass* newcell = (*this)[cell].Adjacent_Cell(j);
                         if (newcell && Map.In_Radar(newcell->Cell_Number()) && (newcell->Land_Type() == LAND_TIBERIUM)){
                             nearbytibcount += newcell->OverlayData;
                             if (ActiveCFEPatchConfig.TibIndexBugfix){
@@ -2098,7 +2098,7 @@ void MapClass::CFELogic(void){
                             continue;
                         }
                         FacingType facingindex = j + offset; // FacingType + operator has been redefined as modulo! (so this is OK)
-                        newcell = (*this)[cell].Adjacent_Cell(facingindex);
+                        CallClass* newcell = (*this)[cell].Adjacent_Cell(facingindex);
                         if (
                             newcell &&
                             Map.In_Radar(newcell->Cell_Number()) && //don't spread tiberium off the map
