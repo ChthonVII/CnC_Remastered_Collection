@@ -2593,7 +2593,7 @@ void UnitClass::Draw_It(int x, int y, WindowNumberType window)
 		shapefile = MixFileClass::Retrieve("FLAGFLY.SHP");
 		int flag_x = x + (ICON_PIXEL_W / 2) - 2;
 		int flag_y = y + (3 * ICON_PIXEL_H / 4) - Get_Build_Frame_Height(shapefile);
-		CC_Draw_Shape(this, "FLAGFLY", shapefile, FrameMB() % 14, flag_x, flag_y, window, SHAPE_CENTER|SHAPE_FADING|SHAPE_GHOST, HouseClass::As_Pointer(Flagged)->Remap_Table(false, false), Map.UnitShadow, Flagged);d);
+		CC_Draw_Shape(this, "FLAGFLY", shapefile, FrameMB() % 14, flag_x, flag_y, window, SHAPE_CENTER|SHAPE_FADING|SHAPE_GHOST, HouseClass::As_Pointer(Flagged)->Remap_Table(false, false), Map.UnitShadow, Flagged);
 	}
 
 	TarComClass::Draw_It(x, y, window);
