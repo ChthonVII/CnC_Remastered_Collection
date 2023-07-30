@@ -2082,19 +2082,20 @@ void MapClass::CFELogic(void){
                     }
                     if (!toomuch){
                         ptr->TibResurgenceBuildup = ptr->TibResurgenceBuildup + 8 - Random_Pick(0, nearbytibcount);
-                        if (ptr->TibResurgenceBuildup >= 36000){ // 8 * 15 ticks/sec * 60 sec/min * 5 min
+                        if (ptr->TibResurgenceBuildup >= 54000){ // 8 * 15 ticks/sec * 60 sec/min * 7.5 min
                             ptr->TibResurgenceBuildup = 0;
-                            ptr->TibResurgenceCountdown = 192;
+                            ptr->TibResurgenceCountdown = 384;
                         }
                     }
                 }
                 // spread tiberium until counter expires
-                else if (ptr->TibResurgenceCountdown > 0) {
+                // wait to start until a sporing animation happens
+                else if ((ptr->TibResurgenceCountdown > 0) && ((TibResurgenceCountdown < 384) || ptr->IsSporing)) {
                     ptr->TibResurgenceCountdown--;
                     FacingType offset = Random_Pick(FACING_N, FACING_NW); // 0 to 7
                     // starting from a random direction, iterate through the possible directions and check the adjacent cells
                     for (FacingType j = FACING_N; j < FACING_COUNT; j++) {
-                        if (Random_Pick(0, 15) > 0){
+                        if (Random_Pick(0, 31) > 0){
                             continue;
                         }
                         FacingType facingindex = j + offset; // FacingType + operator has been redefined as modulo! (so this is OK)
@@ -2112,8 +2113,41 @@ void MapClass::CFELogic(void){
                                 new OverlayClass(Random_Pick(OVERLAY_TIBERIUM1, OVERLAY_TIBERIUM12), newcell->Cell_Number());
                                 newcell->OverlayData = ActiveCFEPatchConfig.TibIndexBugfix ? 0 : 1;
                             }
-                            else if (newcell->Land_Type() == LAND_TIBERIUM && newcell->OverlayData < 11){
-                                newcell->OverlayData++;
+                            else if (newcell->Land_Type() == LAND_TIBERIUM){
+                                if (newcell->OverlayData < 11){
+                                    newcell->OverlayData++;
+                                }
+                                else {
+                                    int maxroll = 3;
+                                    for (FacingType k = facingindex - FACING_NE; k <= facingindex + FACING_NE; k++){
+                                        maxroll--;
+                                        if (maxroll){
+                                            if (Random_Pick(0, maxroll) != 0){
+                                                continue;
+                                            }
+                                        }
+                                        CallClass* newnewcell = newcell.Adjacent_Cell(k);
+                                        if (
+                                            newnewcell &&
+                                            Map.In_Radar(newnewcell->Cell_Number()) && //don't spread tiberium off the map
+                                            newnewcell->Cell_Object() == NULL &&
+                                            newnewcell->TType != TEMPLATE_BRIDGE1 &&
+                                            newnewcell->TType != TEMPLATE_BRIDGE2 &&
+                                            newnewcell->TType != TEMPLATE_BRIDGE3 &&
+                                            newnewcell->TType != TEMPLATE_BRIDGE4
+                                        ){
+                                            if (newnewcell->Land_Type() == LAND_CLEAR && newnewcell->Overlay == OVERLAY_NONE){
+                                                new OverlayClass(Random_Pick(OVERLAY_TIBERIUM1, OVERLAY_TIBERIUM12), newnewcell->Cell_Number());
+                                                newnewcell->OverlayData = ActiveCFEPatchConfig.TibIndexBugfix ? 0 : 1;
+                                                break;
+                                            }
+                                            else if ((newnewcell->Land_Type() == LAND_TIBERIUM) && (newnewcell->OverlayData < 11)){
+                                                newnewcell->OverlayData++;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }

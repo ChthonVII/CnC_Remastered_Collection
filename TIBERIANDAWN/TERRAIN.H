@@ -164,6 +164,7 @@ class TerrainClass : public ObjectClass, public StageClass
 		** If this is a blossom tree that is barnacled, is it pulsing and spewing
 		** out spores?
 		*/
+public: // Chthon CFE Note: Tiberium Resurgence needs this public
 		unsigned IsSporing:1;
         
 private:
