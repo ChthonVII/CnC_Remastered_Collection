@@ -617,7 +617,7 @@ void UnitClass::AI(void)
 	}
 
 	// Chthon CFE Note: Unstick Harvesters
-	if (ActiveCFEPatchConfig.EnableSmarterHarvesters && IsActive && (*this == UNIT_HARVESTER) && (FrameMB() % 50 == 0)){
+	if (ActiveCFEPatchConfig.EnableSmarterHarvesters && IsActive && (*this == UNIT_HARVESTER) && (FrameMB() % 60 == 0)){
         // Am I stuck?
         if ((Mission == MISSION_HARVEST) && (Speed == 0) && !IsRotating && !IsTethered && (PrimaryFacing != DIR_SW_X1) && (PrimaryFacing != DIR_SW_X2) ){
             CELL mycell = Coord_Cell(Coord);
