@@ -4877,7 +4877,8 @@ int UnitClass::Mission_Guard(void)
 		return(TICKS_PER_SECOND);
 	}
 
-	if (*this == UNIT_HARVESTER && !House->IsHuman) {
+	// Chthon CFE Note: Wake up "smarter harvesters" once per minute 
+	if (*this == UNIT_HARVESTER && (!House->IsHuman || (ActiveCFEPatchConfig.EnableSmarterHarvesters && (FrameMB() % TICKS_PER_MINUTE == 0)))) {
 		Assign_Mission(MISSION_HARVEST);
 		return(TICKS_PER_SECOND);
 	}
