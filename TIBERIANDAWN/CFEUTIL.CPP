@@ -90,6 +90,7 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     GetSetting(ActiveCFEPatchConfig.EnableDeathsDoorFix      , "FEATURES", "DEATHS_DOOR_FIX");
     GetSetting(ActiveCFEPatchConfig.EnableSellChanceFix      , "FEATURES", "SELL_CHANCE_FIX");
     GetSetting(ActiveCFEPatchConfig.ForceLoanerCopters      , "FEATURES", "LOANER_COPTER_DEFAULT");
+    GetSetting(ActiveCFEPatchConfig.AIvsWalls	, "FEATURES", "AI_VS_WALLS");  // J_D: AI Can Attack Walls; thanks to screaming_chicken
     GetSetting(ActiveCFEPatchConfig.ShroudRemover      , "FEATURES", "SHROUD_REMOVER");  // J_D's thing; thanks to Terra_Ex and screaming_chicken
     
     

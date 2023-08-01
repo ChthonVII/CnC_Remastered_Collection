@@ -298,6 +298,10 @@ class FootClass :	public TechnoClass
         void Clear_Memorized_Navigation_List();
         bool HasNavQueue(){return (NavQueueSize > 0);};
         
+        // #MinorAIFixes -- J_D				
+		TARGET Greatest_Threat_Wall(ThreatType method, bool adjacent) const;
+        bool Verify_Attack_Walls(bool speedcheck);
+        
 	private:
 		int Passable_Cell(CELL cell, FacingType face, int threat, MoveType threshhold) const;
 		PathType * Find_Path(CELL dest, FacingType *final_moves, int maxlen, MoveType threshhold);

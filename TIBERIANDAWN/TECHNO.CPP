@@ -1780,6 +1780,7 @@ TARGET TechnoClass::Greatest_Threat(ThreatType method) const
 		*/
 		TechnoClass const * object;
 		int value;
+        // Chthon CFE Note: < is wrong. Should be <=. Fix throughout when time permits.
 		for (int radius = 1; radius < crange; radius++) {
 
 			/*
@@ -1928,6 +1929,124 @@ TARGET TechnoClass::Greatest_Threat(ThreatType method) const
 	return(TARGET_NONE);
 }
 
+
+
+/***********************************************************************************************
+ * TechnoClass::Greatest_Threat_Wall -- Finds a Wall Target given search criteria.             *
+ *                                                                                             *
+ *     #MinorAIFixes -- J_D                                                                    *
+ *                                                                                             *
+ *    This routine will scan Overlays looking for the nearest valid target.                    *
+ *                                                                                             *
+ * INPUT:   method   -- The method control parameter is used to control the type of target     *
+ *                      scan performed. It consists of a series of bit flags (see ThreatType)  *
+ *                      that are combined to form the target scan desired.                     *
+ *                                                                                             *
+ *			adjacent -- Will restrict the scan to a one Cell radius.                           *
+ *                                                                                             *
+ * OUTPUT:  Returns the target value of a suitable target. If no target was found then the     *
+ *          value TARGET_NONE is returned.                                                     *
+ *                                                                                             *
+ * WARNINGS:   none                                                                            *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   29/04/2021 Created.                                                                       *
+ *=============================================================================================*/
+TARGET TechnoClass::Greatest_Threat_Wall(ThreatType method, bool adjacent) const
+{
+	/*
+	**	Limit area target scans use a method where the actual map cells are
+	**	examined for occupants. The occupant is then examined in turn. The
+	**	best target within the area is returned as a target.
+	*/
+	if (method & (THREAT_AREA | THREAT_RANGE)) {
+		int range = Threat_Range((method & THREAT_RANGE) ? 0 : 1);
+
+		int crange = range / ICON_LEPTON_W;
+		if (range == 0) {
+			crange = MAX(Weapon_Range(0), Weapon_Range(1)) / ICON_LEPTON_W;
+			crange++;
+		}
+
+		/*
+		**	If we only want 1 Cell radius, then override the range.
+		*/
+		if (adjacent) {
+			crange = 2; // Chthon CFE Note: would be 1 with bugfix
+		}
+
+		CELL cell = Coord_Cell(Fire_Coord(0));
+
+		/*
+		**	Radiate outward from the object's location, looking for the best
+		**	target.
+		*/
+        // Chthon CFE Note: < is wrong. Should be <=. Fix throughout when time permits.
+		for (int radius = 1; radius < crange; radius++) {
+
+			/*
+			**	Scan the top and bottom rows of the "box".
+			*/
+			for (int x = -radius; x <= radius; x++) {
+				CELL newcell;
+
+				if ((Cell_X(cell) + x) < Map.MapCellX) continue;
+				if ((Cell_X(cell) + x) >= (Map.MapCellX + Map.MapCellWidth)) continue;
+
+				if ((Cell_Y(cell) - radius) >= Map.MapCellY) {
+					newcell = XY_Cell(Cell_X(cell) + x, Cell_Y(cell) - radius);
+					if(Evaluate_Cell_For_Wall(newcell))
+					{
+						CellClass * cellptr = &Map[newcell];
+						return(::As_Target(cellptr->Cell_Number()));
+					}
+				}
+
+				if ((Cell_Y(cell) + radius) < (Map.MapCellY + Map.MapCellHeight)) {
+					newcell = XY_Cell(Cell_X(cell) + x, Cell_Y(cell) + radius);
+					if (Evaluate_Cell_For_Wall(newcell))
+					{
+						CellClass * cellptr = &Map[newcell];
+						return(::As_Target(cellptr->Cell_Number()));
+					}
+				}
+			}
+
+			/*
+			**	Scan the left and right columns of the "box".
+			*/
+			for (int y = -(radius - 1); y < radius; y++) {
+				CELL newcell;
+
+				if ((Cell_Y(cell) + y) < Map.MapCellY) continue;
+				if ((Cell_Y(cell) + y) >= (Map.MapCellY + Map.MapCellHeight)) continue;
+
+				if ((Cell_X(cell) - radius) >= Map.MapCellX) {
+					newcell = XY_Cell(Cell_X(cell) - radius, Cell_Y(cell) + y);
+					if (Evaluate_Cell_For_Wall(newcell))
+					{
+						CellClass * cellptr = &Map[newcell];
+						return(::As_Target(cellptr->Cell_Number()));
+					}
+				}
+
+				if ((Cell_X(cell) + radius) < (Map.MapCellX + Map.MapCellWidth)) {
+					newcell = XY_Cell(Cell_X(cell) + radius, Cell_Y(cell) + y);
+					if (Evaluate_Cell_For_Wall(newcell))
+					{
+						CellClass * cellptr = &Map[newcell];
+						return(::As_Target(cellptr->Cell_Number()));
+					}
+				}
+			}
+		}
+	}
+
+	/*
+	**	If no target wall was found, then return with TARGET_NONE.
+	*/
+	return(TARGET_NONE);
+}
 
 /***********************************************************************************************
  * TechnoClass::Owner -- Who is the owner of this object?                                      *
@@ -4716,6 +4835,17 @@ bool TechnoClass::Target_Something_Nearby(ThreatType threat)
 	if (!Target_Legal(TarCom)) {
 		Assign_Target(Greatest_Threat(threat));
 	}
+	
+	/*
+	**	#MinorAIFixes -- J_D: Walls thing; only if feature is on
+	**	If still no target, then try to find the nearest enemy Wall in range.
+	**  Only check if Unit/Infantry, belongs to AI and has a weapon that can damage walls.
+	*/
+	if (ActiveCFEPatchConfig.AIvsWalls) {
+		if (!Target_Legal(TarCom) && Verify_Attack_Walls(false)) {
+			Assign_Target(Greatest_Threat_Wall(threat, false));
+		}
+	}
 
 	/*
 	**	Return with answer to question: Does this unit have a target?
@@ -5660,4 +5790,125 @@ bool TechnoClass::Is_Known_To_Exist_By_Player(HouseClass *player) const
 		return (IsKnownToExistByPlayerMask & (1 << shift)) ? true : false;
 	}	
 	return false;
+}
+
+/***********************************************************************************************
+ * TechnoClass::Evaluate_Cell_For_wall -- Determine if there's a Wall target present.          *
+ *                                                                                             *
+ *    This routine will examine the specified cell and return with the potential target        *
+ *    object if there is an enemy-placed Wall.                                                 *
+ *                                                                                             *
+ *    #MinorAIfFixes -- J_D                                                                    *
+ *                                                                                             *
+ * INPUT:   cell    -- Cell to look for Wall Overlays.                                         *
+ *                                                                                             *
+ *          object  -- Pointer to the Wall Object, if found.                                   *
+ *                                                                                             *
+ * OUTPUT:  Was a valid potential target found in this cell?                                   *
+ *                                                                                             *
+ * WARNINGS:   none                                                                            *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   30/04/2021 Created.                                                                       *
+ *=============================================================================================*/
+bool TechnoClass::Evaluate_Cell_For_Wall(CELL cell) const
+{
+	/*
+	**	If the cell is not on the legal map, then always ignore it.
+	*/
+	// J_D: megamaps
+	//if (cell & 0xF000) return(false);
+	if ((unsigned)cell > MAP_CELL_TOTAL) return(false);
+	if (!Map.In_Radar(cell)) return(false);
+
+	CellClass * cellptr = &Map[cell];
+	if (cellptr && cellptr->Overlay != OVERLAY_NONE) {
+		OverlayTypeClass const * optr = &OverlayTypeClass::As_Reference(cellptr->Overlay);
+
+		if (optr && optr->IsWall) {
+			if (What_Am_I() == RTTI_UNIT) {
+				UnitClass * u = (UnitClass *)this;
+				if (u->Class->Primary != WEAPON_NONE) {
+					WarheadTypeClass const * whead = &Warheads[BulletTypeClass::As_Reference(Weapons[u->Class->Primary].Fires).Warhead];
+					if (whead->IsWallDestroyer || (whead->IsWoodDestroyer && optr->IsWooden)) {
+						if (!House->IsHuman && !House->Is_Ally(cellptr->Owner) && !(cellptr->Owner == HOUSE_NONE) ) {
+							// We have found an enemy Wall and have a weapon to attack it.
+							//CCDebugString("Techno.ECFW - wall is Enemy \n");
+							return(true);
+						}
+					}
+				}
+			}
+
+			if (What_Am_I() == RTTI_INFANTRY) {
+				InfantryClass * i = (InfantryClass *)this;
+				if (i->Class->Primary != WEAPON_NONE) {
+					WarheadTypeClass const * whead = &Warheads[BulletTypeClass::As_Reference(Weapons[i->Class->Primary].Fires).Warhead];
+					if (whead->IsWallDestroyer || (whead->IsWoodDestroyer && optr->IsWooden)) {
+						if (!House->IsHuman && !House->Is_Ally(cellptr->Owner) && !(cellptr->Owner == HOUSE_NONE)) {
+							// We have found an enemy Wall and have a weapon to attack it.
+							//CCDebugString("Techno.ECFW - wall is Enemy \n");
+							return(true);
+						}
+					}
+				}
+			}
+		}
+	}
+	// Returning without having found a valid Wall to attack.
+	return(false);
+}
+
+/***********************************************************************************************
+ * TechnoClass::Verify_Attack_Walls -- Checks this Unit can attack Walls				       *
+ *                                                                                             *
+ *    This routine will verify if a Unit is capable of attacking Walls on it's own			   *
+ *    initiative. Checks that it's a Unit/Infantry, AI House and for Hunt/Rampage if it		   *
+ *	  appears the Unit is not currently moving                                                 *
+ *                                                                                             *
+ *		#MinorAIFixes -- J_D                                                                   *
+ *                                                                                             *
+ * INPUT:   speedcheck   -- Whether or not to test if the Unit/Infantry is stopped.			   *
+ *                                                                                             *
+ * OUTPUT:  Is this Unit/Infantry able to attack Walls on it's own initiative?                 *
+ *                                                                                             *
+ * WARNINGS:   none                                                                            *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   09/05/2021  : Created.                                                                    *
+ *=============================================================================================*/
+bool TechnoClass::Verify_Attack_Walls(bool speedcheck)
+{
+
+/*	Is this a Unit/Infantry, is it AI and is it stopped?	*/
+	if (
+            ((What_Am_I() == RTTI_UNIT) || (What_Am_I() == RTTI_INFANTRY)) &&
+            !House->IsHuman && 
+            (!speedcheck || ((((FootClass *)this)->Speed == 0) && !IsRotating))
+    ){
+		if (What_Am_I() == RTTI_UNIT) {
+			UnitClass * u = (UnitClass *)this;
+			if (u->Class->Primary != WEAPON_NONE) {
+				WarheadTypeClass const * whead = &Warheads[BulletTypeClass::As_Reference(Weapons[u->Class->Primary].Fires).Warhead];
+				/*	Does it have a weapon which can damage walls?	*/
+				if (whead->IsWallDestroyer || whead->IsWoodDestroyer) {
+					return(true);
+				}
+			}
+		}
+		if (What_Am_I() == RTTI_INFANTRY) {
+			InfantryClass * i = (InfantryClass *)this;
+			if (i->Class->Primary != WEAPON_NONE) {
+				WarheadTypeClass const * whead = &Warheads[BulletTypeClass::As_Reference(Weapons[i->Class->Primary].Fires).Warhead];
+				if (whead->IsWallDestroyer || whead->IsWoodDestroyer) {
+					return(true);
+				}
+			}
+		}
+	}
+
+	/*
+	**	This Techno object is not able to attack walls.
+	*/
+	return(false);
 }

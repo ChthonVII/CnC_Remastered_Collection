@@ -1709,17 +1709,41 @@ MoveType InfantryClass::Can_Enter_Cell(CELL cell, FacingType facing ) const
 	**	in it.
 	*/
 	if (cellptr->Overlay != OVERLAY_NONE) {
-		OverlayTypeClass const & otype = OverlayTypeClass::As_Reference(cellptr->Overlay);
+        OverlayTypeClass const * optr = &OverlayTypeClass::As_Reference(cellptr->Overlay);  // J_D: Walls thing - * optr instead of & otype, and then that &
+        if (optr){
 
-		if (otype.IsCrate && !House->IsHuman) {
-			return(MOVE_NO);
-		}
+            if (optr->IsCrate && !House->IsHuman) {  // J_D: Walls thing - optr-> instead of otype.
+                return(MOVE_NO);
+            }
 
-		if (otype.IsWall) {
-			if ((cellptr->OverlayData / 16) != otype.DamageLevels) {
-				return(MOVE_NO);
-			}
-		}
+            // #MinorAIFixes - Allow Infantry with correct weapons to pathfind through destroyable Walls. -- J_D: if the mod setting is on
+            if (ActiveCFEPatchConfig.AIvsWalls) {
+                if (optr->IsWall) {
+                    if (Class->Primary != WEAPON_NONE) {
+                        WarheadTypeClass const * whead = &Warheads[BulletTypeClass::As_Reference(Weapons[Class->Primary].Fires).Warhead];
+                        if (whead->IsWallDestroyer || (whead->IsWoodDestroyer && optr->IsWooden)) {
+                            if (!House->IsHuman && !House->Is_Ally(cellptr->Owner) && !(cellptr->Owner == HOUSE_NONE)) {
+                                return(MOVE_DESTROYABLE);
+                            }
+                            else {
+                                return(MOVE_NO);
+                            }
+                        }
+                        else {
+                            return(MOVE_NO);
+                        }
+                    }
+                    else {
+                        return(MOVE_NO);
+                    }
+                }
+            }
+            else if (optr->IsWall) {  // J_D: optr-> instead of otype.
+                if ((cellptr->OverlayData / 16) != optr->DamageLevels) {  // J_D: as above
+                    return(MOVE_NO);
+                }
+            }
+        }
 	}
 
 	/*

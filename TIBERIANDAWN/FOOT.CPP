@@ -2025,6 +2025,35 @@ TARGET FootClass::Greatest_Threat(ThreatType method) const
 	return(TechnoClass::Greatest_Threat(method|THREAT_GROUND));
 }
 
+/***********************************************************************************************
+ * FootClass::Greatest_Threat_Wall -- Finds a Wall Target given search criteria.               *
+ *                                                                                             *
+ *     #MinorAIFixes -- J_D                                                                    *
+ *                                                                                             *
+ *    Used to handball the call to it's Techno Object.					                       *
+ *                                                                                             *
+ * INPUT:   method   -- The method control parameter is used to control the type of target     *
+ *                      scan performed. It consists of a series of bit flags (see ThreatType)  *
+ *                      that are combined to form the target scan desired.                     *
+ *                                                                                             *
+ *			adjacent -- Will restrict the scan to a one Cell radius.                           *
+ *                                                                                             *
+ * OUTPUT:  Returns the target value of a suitable target. If no target was found then the     *
+ *          value TARGET_NONE is returned.                                                     *
+ *                                                                                             *
+ * WARNINGS:   none                                                                            *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   10/05/2021 Created.                                                                       *
+ *=============================================================================================*/
+TARGET FootClass::Greatest_Threat_Wall(ThreatType method, bool adjacent) const
+{
+	/*
+	**	Pass the call to it's Techno object.
+	*/
+	return(TechnoClass::Greatest_Threat_Wall(method, adjacent));
+}
+
 
 /***********************************************************************************************
  * FootClass::Detach -- Detaches a target from tracking systems.                               *
@@ -2765,4 +2794,28 @@ int FootClass::LeptonsPerTickSpeed(LandType landtype) const{
         
     return Fixed_To_Cardinal(myMPH, mythrottle); //from DriveClass::While_Moving() / InfantryClass::AI() / FlyClass::Physics()
     
+}
+
+/***********************************************************************************************
+ * FootClass::Verify_Attack_Walls -- Checks this Unit can attack Walls				           *
+ *                                                                                             *
+ *    This routine will verify if a Unit is capable of attacking Walls on it's own initiative. *
+ *                                                                                             *
+ *		#MinorAIFixes -- J_D                                                                    *
+ *                                                                                             *
+ * INPUT:   speedcheck   -- Whether or not to test if the Unit/Infantry is stopped.			   *
+ *                                                                                             *
+ * OUTPUT:  Is this Unit/Infantry able to attack Walls on it's own initiative?                 *
+ *                                                                                             *
+ * WARNINGS:   none                                                                            *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   10/05/2021  : Created.                                                                    *
+ *=============================================================================================*/
+bool FootClass::Verify_Attack_Walls(bool speedcheck)
+{
+	/*
+	**	Pass the call to it's Techno object.
+	*/
+	return(TechnoClass::Verify_Attack_Walls(speedcheck));
 }

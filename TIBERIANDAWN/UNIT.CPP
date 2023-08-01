@@ -3817,6 +3817,7 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType facing) const
 	**	Certain vehicles can drive over walls. Check for this case and
 	**	and return the appropriate flag. Other units treat walls as impassable.
 	*/
+    bool destructiblewall = false;
 	if (cellptr->Overlay != OVERLAY_NONE) {
 		OverlayTypeClass const * optr = &OverlayTypeClass::As_Reference(cellptr->Overlay);
 
@@ -3829,8 +3830,10 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType facing) const
 				WarheadTypeClass const * whead = &Warheads[BulletTypeClass::As_Reference(Weapons[Class->Primary].Fires).Warhead];
 
 				if (whead->IsWallDestroyer || (whead->IsWoodDestroyer && optr->IsWooden)) {
-					if (!House->IsHuman && !House->Is_Ally(cellptr->Owner)) {
+                    // #MinorAIFixes - Don't pathfind through neutral Walls. -- J_D
+					if (!House->IsHuman && !House->Is_Ally(cellptr->Owner) && ((cellptr->Owner != HOUSE_NONE) || !ActiveCFEPatchConfig.AIvsWalls)) {
 						if (retval < MOVE_DESTROYABLE) retval = MOVE_DESTROYABLE;
+                        destructiblewall = true;
 					} else {
 						return(MOVE_NO);
 					}
@@ -3847,13 +3850,21 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType facing) const
 	**	If the cell is out and out impassable because of underlying terrain, then
 	**	return this immutable fact.
 	*/
+	// J_D: for AI Can Attack Walls, change from MinorAIFixes used differently so as to also use conditional for if feature is on
 #ifdef ADVANCED
 	if (retval != MOVE_DESTROYABLE && !Ground[cellptr->Land_Type()].Cost[Class->Speed]) {
-#else
-	if (!Ground[cellptr->Land_Type()].Cost[Class->Speed]) {
-#endif
 		return(MOVE_NO);
 	}
+#else
+	if (ActiveCFEPatchConfig.AIvsWalls) {
+		if (!destructiblewall && !Ground[cellptr->Land_Type()].Cost[Class->Speed]) {
+			return(MOVE_NO);
+		}
+	}
+	else if (!Ground[cellptr->Land_Type()].Cost[Class->Speed]) {
+		return(MOVE_NO);
+	}
+#endif
 
 	/*
 	** Loop through all of the objects in the square setting a bit
