@@ -4841,7 +4841,7 @@ bool TechnoClass::Target_Something_Nearby(ThreatType threat)
 	**	If still no target, then try to find the nearest enemy Wall in range.
 	**  Only check if Unit/Infantry, belongs to AI and has a weapon that can damage walls.
 	*/
-	if (ActiveCFEPatchConfig.AIvsWalls) {
+	if (ActiveCFEPatchConfig.AIvsWalls && !House->IsHuman) {
         // if the target is out of range and we're adjacent to a wall, assume the wall is blocking and shoot it instead
         // (Ideally we'd check if the wall is really blocking access to the target, but that's a really hard problem)
         if (Target_Legal(TarCom) && !In_Range(TarCom) && Verify_Attack_Walls(true)){
