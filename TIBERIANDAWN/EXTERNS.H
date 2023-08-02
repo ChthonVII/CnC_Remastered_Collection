@@ -119,6 +119,7 @@ struct CFEPatchConfig
     bool EnableSellChanceFix = false;
     bool ForceLoanerCopters = false;
     bool AIvsWalls = false;
+    bool EnableHuntFix = false;
     bool ShroudRemover = false;
     
     bool OverrideAPCReqs = false;

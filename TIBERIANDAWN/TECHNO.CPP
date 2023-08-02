@@ -4855,6 +4855,114 @@ bool TechnoClass::Target_Something_Nearby(ThreatType threat)
 
 
 /***********************************************************************************************
+ * TechnoClass::Target_Something_Nearby_Hunt -- Handles finding and assigning a nearby target. *
+ *                                                                                             *
+ *    This routine will first search for a nearby target.								       *
+ *    If a nearby target cannot be found, it will look for any target.					       *
+ *		#MinorAIFixes                                                                          *
+ *                                                                                             *
+ * INPUT:   threat   -- The threat control parameter used to control the range searched. The   *
+ *                      only values recognized are THREAT_RANGE and THREAT_AREA.               *
+ *                                                                                             *
+ * OUTPUT:  Was a suitable target aquired and assigned to the TarCom?                          *
+ *                                                                                             *
+ * WARNINGS:   none                                                                            *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   23/11/2020  : Created.                                                                    *
+ *=============================================================================================*/
+bool TechnoClass::Target_Something_Nearby_Hunt(ThreatType threat)
+{
+	threat = threat & (THREAT_RANGE | THREAT_AREA);
+	
+	/*
+	**	#MinorAIFixes - If we're shooting a Cell, check the Overlay is still present. Seems to be a problem in Hunt.
+	*/
+	if (!House->IsHuman && Is_Target_Cell(TarCom)) {
+		CellClass * cellptr = &Map[As_Cell(TarCom)];
+		if (cellptr->Overlay == OVERLAY_NONE) {
+			//CCDebugString("Techno.TSNH - Appear to be shooting the ground, changing Target. \n");
+			Assign_Target(TARGET_NONE);
+		}
+	}
+	
+	// Chthon CFE Note: rewrote this
+    
+    // if current target is still in range, stick to it
+	if (Target_Legal(TarCom)){
+        if (In_Range(TarCom)) {
+            return true;
+        }
+        // if we were passed THREAT_AREA and the original target is within 2x weapon range
+        // keep the original target unless there's an immediately adjacent wall
+        // (Ideally we'd check if the wall is *blocking* access to the target, but that's a really hard problem)
+        // Threat_Range(1) should return 2x weapon range in leptons
+		// Distance(TARGET) should return distance in leptons
+        else if ((threat & THREAT_AREA) && (Threat_Range(1) >= Distance(TarCom))){
+            if (ActiveCFEPatchConfig.AIvsWalls && Verify_Attack_Walls(true)){
+                TARGET somewall = Greatest_Threat_Wall(THREAT_RANGE, true);
+                if (Target_Legal(somewall)){
+                    Assign_Target(somewall);
+                }
+            }
+            return true;
+        }
+    }
+    
+    // if we made it this far without returning, TarCom must be a dud
+    Assign_Target(TARGET_NONE);
+    
+    // figure out some target options
+    TARGET bestinrange = Greatest_Threat(THREAT_RANGE);
+    TARGET bestinarea = Greatest_Threat(THREAT_AREA);
+    TARGET adjacentwall = TARGET_NONE;
+    if (ActiveCFEPatchConfig.AIvsWalls && Verify_Attack_Walls(true)){
+        adjacentwall = Greatest_Threat_Wall(THREAT_RANGE, true);
+    }
+    
+    // if we were passed THREAT_RANGE and something is in range, done!
+    if ((threat & THREAT_RANGE) && Target_Legal(bestinrange)){
+        Assign_Target(bestinrange);
+    }
+    // if we were passed THREAT_AREA, or failed to find something in range, and there's something in the area
+    else if ((threat & (THREAT_RANGE || THREAT_AREA)) && Target_Legal(bestinarea)){
+        // if it's also in range, done!
+        if (In_Range(bestinarea)){
+            Assign_Target(bestinarea);
+        }
+        // if it's not in range, prefer an adjacent wall
+        // (ideally, we'd check if the wall were actually blocking access to the target, but that's a really ugly problem. Let's see if this performs acceptably...)
+        else if (Target_Legal(adjacentwall)){
+            Assign_Target(adjacentwall);
+        }
+        // if no wall, go for the unit
+        else {
+            Assign_Target(bestinarea);
+        }
+    }
+        
+    // if all we have is an adjacent wall, shoot it
+	if (!Target_Legal(TarCom) && Target_Legal(adjacentwall)) {
+		Assign_Target(adjacentwall);
+	}
+
+	/*
+	**	No Targets in range and not blocked by any Walls, so try to find any Target on the map.
+	*/
+	if (!Target_Legal(TarCom)) {
+		Assign_Target(Greatest_Threat(THREAT_NORMAL)); //THREAT_NORMAL is invalid input for Greatest_Threat(); will cause it to search whole map
+		if ((What_Am_I() != RTTI_UNIT) || (*((UnitClass *)this) != UNIT_GUNBOAT)) {
+			Assign_Destination(TarCom);
+		}
+	}
+
+	/*
+	**	Return with answer to question: Does this unit have a target?
+	*/
+	return(Target_Legal(TarCom));
+}
+
+/***********************************************************************************************
  * TechnoClass::Exit_Object -- Causes specified object to leave this object.                   *
  *                                                                                             *
  *    This routine is called when there is an attached object that should detach and leave     *

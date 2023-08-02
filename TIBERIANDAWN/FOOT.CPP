@@ -726,7 +726,17 @@ int FootClass::Mission_Guard(void)
  *=============================================================================================*/
 int FootClass::Mission_Hunt(void)
 {
-	if (!Target_Something_Nearby(THREAT_NORMAL)) {
+	// Chthon CFE Note: Fix inspired by screaming_chicken.
+    // THREAT_NORMAL is invalid input for Target_Something_Nearby(); results in a full-map scan.
+    // New function starts small and scales up the search until it finds something.
+    bool found = false;
+    if (ActiveCFEPatchConfig.EnableHuntFix){
+        found = Target_Something_Nearby_Hunt(THREAT_RANGE);
+    }
+    else{
+        found = Target_Something_Nearby(THREAT_NORMAL);
+    }
+    if (!found) {
 		Random_Animate();
 	} else {
 		if (What_Am_I() == RTTI_INFANTRY && ((InfantryTypeClass const &)Class_Of()).Type == INFANTRY_E7) {
