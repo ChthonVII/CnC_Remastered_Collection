@@ -2375,6 +2375,8 @@ typedef enum VocType : char{
     VOC_WIND_GUST, //Chthon CFE Note: add a sound for infantry stealth (mechanical sound sounds weird)
     VOC_CONSTRUCTION_CLONE, //Chthon CFE Note: clone so we can muck with xml in our own file
     VOC_CASHTURN_CLONE, //Chthon CFE Note: clone so we can muck with xml in our own file
+    VOC_SANDBAG, // Chthon CFE Note: copy sound from RA for wall crushing
+    VOC_WALLKILL2, // Chthon CFE Note: copy sound from RA for wall crushing
     
 #ifdef PETROGLYPH_EXAMPLE_MOD
 	VOC_NUKE_LOB,		// Modded unit firing sound

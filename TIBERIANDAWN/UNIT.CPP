@@ -2268,7 +2268,22 @@ void UnitClass::Per_Cell_Process(bool center)
 		}
 	}
 #endif
-
+    // Chthon CFE Note: Restore wall crushing
+    if (ActiveCFEPatchConfig.EnableWallCrush && (Class->IsCrusher || (VeterancyRank == 3 && *((UnitClass*)this) == UNIT_BUGGY))){
+        CellClass* cellptr = &Map[cell];
+        if (cellptr->Overlay != OVERLAY_NONE) {
+            OverlayTypeClass const * optr = &OverlayTypeClass::As_Reference(cellptr->Overlay);
+            if (optr->IsWall && optr->IsCrushable) {
+                if (optr->Type == OVERLAY_SANDBAG_WALL) {
+                    Sound_Effect(VOC_SANDBAG, Center_Coord());
+                } else {
+                    Sound_Effect(VOC_WALLKILL2, Center_Coord());
+                }
+                cellptr->Reduce_Wall(-1);
+            }
+        }
+    }
+    
 	/*
 	**	Check to see if crushing of any unfortunate infantry is warranted.
 	*/
@@ -3817,7 +3832,16 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType facing) const
 	**	Certain vehicles can drive over walls. Check for this case and
 	**	and return the appropriate flag. Other units treat walls as impassable.
 	*/
+    // Chthon CFE Note: make crushable walls actually work
+    // rank 3 veteran buggys can crush
+    bool cancrush = (Class->IsCrusher || (VeterancyRank == 3 && *((UnitClass*)this) == UNIT_BUGGY));
+    
+    
     bool destructiblewall = false;
+    bool wallshooting = ActiveCFEPatchConfig.AIvsWalls;
+#ifdef ADVANCED
+    wallshooting = true;
+#endif
 	if (cellptr->Overlay != OVERLAY_NONE) {
 		OverlayTypeClass const * optr = &OverlayTypeClass::As_Reference(cellptr->Overlay);
 
@@ -3826,12 +3850,15 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType facing) const
 		}
 
 		if (optr->IsWall) {
-			if (Class->Primary != WEAPON_NONE) {
+			if (ActiveCFEPatchConfig.EnableWallCrush && cancrush && optr->IsCrushable && !House->Is_Ally(cellptr->Owner) && (cellptr->Owner != HOUSE_NONE)){
+                destructiblewall = true;
+            }
+            else if (wallshooting && !House->IsHuman && (Class->Primary != WEAPON_NONE)) {
 				WarheadTypeClass const * whead = &Warheads[BulletTypeClass::As_Reference(Weapons[Class->Primary].Fires).Warhead];
 
 				if (whead->IsWallDestroyer || (whead->IsWoodDestroyer && optr->IsWooden)) {
                     // #MinorAIFixes - Don't pathfind through neutral Walls. -- J_D
-					if (!House->IsHuman && !House->Is_Ally(cellptr->Owner) && ((cellptr->Owner != HOUSE_NONE) || !ActiveCFEPatchConfig.AIvsWalls)) {
+					if (!House->Is_Ally(cellptr->Owner) && ((cellptr->Owner != HOUSE_NONE) || !ActiveCFEPatchConfig.AIvsWalls)) {
 						if (retval < MOVE_DESTROYABLE) retval = MOVE_DESTROYABLE;
                         destructiblewall = true;
 					} else {
@@ -3850,21 +3877,10 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType facing) const
 	**	If the cell is out and out impassable because of underlying terrain, then
 	**	return this immutable fact.
 	*/
-	// J_D: for AI Can Attack Walls, change from MinorAIFixes used differently so as to also use conditional for if feature is on
-#ifdef ADVANCED
-	if (retval != MOVE_DESTROYABLE && !Ground[cellptr->Land_Type()].Cost[Class->Speed]) {
-		return(MOVE_NO);
-	}
-#else
-	if (ActiveCFEPatchConfig.AIvsWalls) {
-		if (!destructiblewall && !Ground[cellptr->Land_Type()].Cost[Class->Speed]) {
-			return(MOVE_NO);
-		}
-	}
-	else if (!Ground[cellptr->Land_Type()].Cost[Class->Speed]) {
-		return(MOVE_NO);
-	}
-#endif
+    // Chthon CFE Note: reworked to handle two forms of wall destruction and the ADVANCED ifdef
+    if (!destructiblewall && !Ground[cellptr->Land_Type()].Cost[Class->Speed]) {
+        return(MOVE_NO);
+    }
 
 	/*
 	** Loop through all of the objects in the square setting a bit
@@ -3929,10 +3945,8 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType facing) const
 					**	doesn't contain a legitimate weapon.
 					*/
                     
-                    // Chthon CFE Note: rank 3 veteran buggys can crush
-                    bool buggycrusher = (VeterancyRank == 3 && What_Am_I() == RTTI_UNIT && *((UnitClass*)this) == UNIT_BUGGY);
-                    
-					if ((!Class->IsCrusher && !buggycrusher) || !obj->Class_Of().IsCrushable) {
+                    // Chthon CFE Note: rank 3 veteran buggys can crush                   
+					if (!cancrush || !obj->Class_Of().IsCrushable) {
 
 						/*
 						**	Any non-allied blockage is considered impassible if the unit
@@ -4005,10 +4019,8 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType facing) const
 				**	this vehicle should avoid the cell altogether.
 				*/
                 
-                // Chthon CFE Note: rank 3 veteran buggys can crush
-                bool buggycrusher = (VeterancyRank == 3 && What_Am_I() == RTTI_UNIT && *((UnitClass*)this) == UNIT_BUGGY);
-                
-				if (!Class->IsCrusher && !buggycrusher) {
+                // Chthon CFE Note: rank 3 veteran buggys can crush               
+				if (!cancrush) {
 					if (Class->Primary != WEAPON_NONE) {
 						retval = MOVE_DESTROYABLE;
 					} else {
@@ -4144,9 +4156,8 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType facing) const
                                     }
                                     else{
                                         // Even though we can't actually crush the infantry in this situation, it would be odd to let them block something that ordinarily could crush them.
-                                        // So we'll pretend we can crush them and hopefully get something that looks like a narrow escape from being crushed.
-                                        bool buggycrusher = (VeterancyRank == 3 && What_Am_I() == RTTI_UNIT && *((UnitClass*)this) == UNIT_BUGGY);                
-                                        if (!Class->IsCrusher && !buggycrusher) {
+                                        // So we'll pretend we can crush them and hopefully get something that looks like a narrow escape from being crushed.       
+                                        if (!cancrush) {
                                             if (xdfoot->Cloak == CLOAKED){
                                                 return MOVE_CLOAK;
                                             }

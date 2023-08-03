@@ -1580,7 +1580,8 @@ int CellClass::Reduce_Wall(int damage)
 			**	level (no more). Otherwise determine wall reduction based on a percentage chance
 			**	proportional to the damage received and the wall's strength.
 			*/
-			if (damage >= wall.DamagePoints) {
+            // Chthon CFE Note: Copy use of -1 damage to mean "instantly destroy" for wall crushing from RA
+			if ((damage >= wall.DamagePoints) || (damage == -1)) {
 				destroyed = true;
 			} else {
 				destroyed = Random_Pick(0, wall.DamagePoints) < damage;
@@ -1588,7 +1589,7 @@ int CellClass::Reduce_Wall(int damage)
 
 			if (destroyed) {
 				OverlayData+=16;
-				if ((OverlayData>>4) >= wall.DamageLevels) {
+				if (((OverlayData>>4) >= wall.DamageLevels) || (damage == -1)) {
 					ObjectClass::Detach_This_From_All(As_Target());
 					Owner = HOUSE_NONE;
 					Overlay = OVERLAY_NONE;

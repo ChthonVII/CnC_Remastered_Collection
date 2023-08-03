@@ -269,6 +269,12 @@ struct SoundEffectNameStruct {
     //Chthon CFE Note: clone so we can muck with xml in our own file
     {"CASHTCLN", 	1,		IN_NOVAR},	//	VOC_CASHTURN_CLONE		Sound of money being piled up.
     
+    // Chthon CFE Note: copy sound from RA for wall crushing
+    {"SANDBAG2",	5,		IN_NOVAR},	// VOC_SANDBAG			sand bag crunch
+    
+    // Chthon CFE Note: copy sound from RA for wall crushing
+    {"WALLKIL2",	5,		IN_NOVAR},	//	VOC_WALLKILL2			Crushing wall sound.
+    
 #ifdef PETROGLYPH_EXAMPLE_MOD
 	{"NUKE_LOB", 	10,	IN_NOVAR}	//	VOC_NUKE_LOB		Mod expansion unit firing sound
 #endif //PETROGLYPH_EXAMPLE_MOD

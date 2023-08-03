@@ -79,6 +79,34 @@
       <QueueIfCantPlay> True </QueueIfCantPlay>
    </LocalizedSFXEvent>
    
+   <SFXEvent Name="TDC_SFX_sandbag2" Preset="_PRESET_MD_MOBIUS_2D">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> TDC_SFX_sandbag2.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
+    
+    <SFXEvent Name="TDR_SFX_sandbag2" Preset="_PRESET_MD_MOBIUS_2D">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> TDR_SFX_sandbag2.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
+    
+    <SFXEvent Name="TDC_SFX_wallkil2" Preset="_PRESET_MD_MOBIUS_2D">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> TDC_SFX_wallkil2.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
+    
+    <SFXEvent Name="TDR_SFX_wallkil2" Preset="_PRESET_MD_MOBIUS_2D">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> TDR_SFX_wallkil2.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
+   
 </SFXEvents>
 
 

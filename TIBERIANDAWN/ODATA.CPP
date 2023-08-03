@@ -92,7 +92,7 @@ static OverlayTypeClass const Sandbag(
 	true,							// Visible on the radar map?
 	false,						// Is it a wooden overlay (affected by fire)?
 	true,							// Targetable as a destroyable overlay?
-	false,						// Crushable by tracked vehicle?
+	true,						// Crushable by tracked vehicle?
 	false,						// Is this harvestable Tiberium?
 	false,						// Stops low level bullets in flight?
 	false,						// Theater specific art?
