@@ -4842,11 +4842,11 @@ bool TechnoClass::Target_Something_Nearby(ThreatType threat)
 	**  Only check if Unit/Infantry, belongs to AI and has a weapon that can damage walls.
 	*/
 	if (ActiveCFEPatchConfig.AIvsWalls && !House->IsHuman) {
-        // if the target is out of range and we're adjacent to a wall, assume the wall is blocking and shoot it instead
-        // (Ideally we'd check if the wall is really blocking access to the target, but that's a really hard problem)
+        // if the target is out of range and we're adjacent to a wall, and the wall is closer to the target than you are to the target, then assume the wall is blocking and shoot it instead
+        // (This isn't a perfect blocking check, but it's a really hard, compute-heavy problem)
         if (Target_Legal(TarCom) && !In_Range(TarCom) && Verify_Attack_Walls(true)){
             TARGET somewall = Greatest_Threat_Wall(THREAT_RANGE, true);
-            if (Target_Legal(somewall)){
+            if (Target_Legal(somewall) && (Distance(TarCom) > As_Object(TarCom)->Distance(somewall))){
                 Assign_Target(somewall);
             }
         }
@@ -4904,14 +4904,14 @@ bool TechnoClass::Target_Something_Nearby_Hunt(ThreatType threat)
             return true;
         }
         // if we were passed THREAT_AREA and the original target is within 2x weapon range
-        // keep the original target unless there's an immediately adjacent wall
-        // (Ideally we'd check if the wall is *blocking* access to the target, but that's a really hard problem)
+        // keep the original target unless there's an immediately adjacent wall that's closer to the target than you are
+        // (This isn't a perfect blocking check, but it's a really hard, compute-heavy problem)
         // Threat_Range(1) should return 2x weapon range in leptons
 		// Distance(TARGET) should return distance in leptons
         else if ((threat & THREAT_AREA) && (Threat_Range(1) >= Distance(TarCom))){
             if (ActiveCFEPatchConfig.AIvsWalls && Verify_Attack_Walls(true)){
                 TARGET somewall = Greatest_Threat_Wall(THREAT_RANGE, true);
-                if (Target_Legal(somewall)){
+                if (Target_Legal(somewall) && (Distance(TarCom) > As_Object(TarCom)->Distance(somewall))){
                     Assign_Target(somewall);
                 }
             }
@@ -4940,9 +4940,9 @@ bool TechnoClass::Target_Something_Nearby_Hunt(ThreatType threat)
         if (In_Range(bestinarea)){
             Assign_Target(bestinarea);
         }
-        // if it's not in range, prefer an adjacent wall
-        // (ideally, we'd check if the wall were actually blocking access to the target, but that's a really ugly problem. Let's see if this performs acceptably...)
-        else if (Target_Legal(adjacentwall)){
+        // if it's not in range, prefer an adjacent wall that's closer to the target than you are
+        // (This isn't a perfect blocking check, but it's a really hard, compute-heavy problem)
+        else if (Target_Legal(adjacentwall) && (Distance(bestinarea) > As_Object(bestinarea)->Distance(somewall))){
             Assign_Target(adjacentwall);
         }
         // if no wall, go for the unit
