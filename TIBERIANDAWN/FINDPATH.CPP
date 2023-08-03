@@ -2088,17 +2088,19 @@ float FootClass::CFE_Passable_Cell(CELL cell, FacingType face, int depth, float 
         // handle the case where the blockage is a wall
         if (cellptr->Overlay != OVERLAY_NONE) {
             OverlayTypeClass const * optr = &OverlayTypeClass::As_Reference(cellptr->Overlay);
-                if (optr && optr->IsWall) {
-                    // don't destroy friendly walls
-                    if (House->Is_Ally(cellptr->Owner)){
-                        return 0;
-                    }
-                    wallthere = true;
-                    // assume things take 1.5 ticks per hp to destroy
-                    // wall hp is stored in a weird, weird way; see Reduce_Wall()
-                    shootticks = optr->DamagePoints * (optr->DamageLevels - (cellptr->OverlayData >> 4)) * 1.5f;
-                    offsetshootticks = false; // can't shoot it until we get there
-                }
+            // this should only be reachable for CPU units if AIvsWalls is on (crushable walls should return MOVE_OK)
+            if (optr && optr->IsWall) {
+                // don't destroy friendly walls or neutral walls
+                // this was already checked in Can_Enter_Cell()
+                //if (House->Is_Ally(cellptr->Owner) || (cellptr->Owner == HOUSE_NONE)){
+                //    return 0;
+                //}
+                wallthere = true;
+                // assume things take 1.5 ticks per hp to destroy
+                // wall hp is stored in a weird, weird way; see Reduce_Wall()
+                shootticks = optr->DamagePoints * (optr->DamageLevels - (cellptr->OverlayData >> 4)) * 1.5f;
+                offsetshootticks = false; // can't shoot it until we get there
+            }
         }
         
         // handle the case where the blockage is some TechnoClass thing
