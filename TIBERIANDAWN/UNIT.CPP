@@ -1592,7 +1592,12 @@ void UnitClass::Enter_Idle_Mode(bool initial)
                     if (HarvesterIsUnsticking){
                         HarvesterIsUnsticking = 0;
                         if ((Tiberium_Load() < 0x0100) && Target_Legal(ArchiveTarget)){
-                            Assign_Destination(ArchiveTarget);
+                            if (Can_Enter_Cell(As_Cell(ArchiveTarget)) <= MOVE_TEMP){
+                                Assign_Destination(ArchiveTarget);
+                            }
+                            else {
+                                Goto_Tiberium();
+                            }
                             ArchiveTarget = TARGET_NONE;
                         }
                     }
