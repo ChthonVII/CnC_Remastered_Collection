@@ -120,6 +120,7 @@ struct CFEPatchConfig
     bool ForceLoanerCopters = false;
     bool AIvsWalls = false;
     bool EnableWallCrush = false;
+    bool EnableAdvancedWallOwnership = false;
     bool EnableHuntFix = false;
     bool ShroudRemover = false;
     

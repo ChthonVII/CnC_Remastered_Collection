@@ -317,6 +317,7 @@ class BuildingClass : public TechnoClass
         
 public:
         void FlushRefineryBib();
+        void FlipWalls();
 private:
 
 		/*

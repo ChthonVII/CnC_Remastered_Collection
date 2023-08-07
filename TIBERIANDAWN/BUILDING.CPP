@@ -1954,6 +1954,10 @@ bool BuildingClass::Unlimbo(COORDINATE coord, DirType dir)
 			Map.PowerClass::IsToRedraw = true;
 			Map.Flag_To_Redraw(false);
 		}
+		
+		// Chthon CFE Note: flag nearby walls for ownership evaluation
+        FlipWalls();
+		
 		return(true);
 	}
 	return(false);
@@ -2116,6 +2120,10 @@ ResultType BuildingClass::Take_Damage(int & damage, int distance, WarheadType wa
 				if (House) {
 					House->Check_Pertinent_Structures();
 				}
+				
+				// Chthon CFE Note: flag nearby walls for ownership evaluation
+				FlipWalls();
+				
 				break;
 
 			case RESULT_HALF:
@@ -4438,6 +4446,9 @@ bool BuildingClass::Captured(HouseClass * newowner)
 		// Chthon CFE Note -- clear out rally point and inverse placement markers
 		RallyPoint = TARGET_NONE;
         ShowInverseWallPreviewMarkers = 0;
+        
+        // Chthon CFE Note: flag nearby walls for ownership evaluation
+        FlipWalls();
 		
 		return(true);
 	}
@@ -4858,6 +4869,9 @@ int BuildingClass::Mission_Deconstruction(void)
 		case DURING:
 			if (IsReadyToCommence) {
 
+                // Chthon CFE Note: flag nearby walls for ownership evaluation
+				FlipWalls();
+                
 				/*
 				**	Construction yards that deconstruct, really just revert back
 				**	to an MCV.
@@ -6534,6 +6548,37 @@ void BuildingClass::FlushRefineryBib(){
                 obj = obj->Next;
             }
             flushcell = Adjacent_Cell(flushcell, FACING_E);
+        }
+    }
+    return;
+}
+
+void BuildingClass::FlipWalls(){
+    const int gap = ActiveCFEPatchConfig.BuildingGap;
+    short const *offset = Occupy_List();
+    CELL mycell = Coord_Cell(Coord);
+    while (*offset != REFRESH_EOL) {
+        CELL cell = mycell + *offset++;
+        int x = Cell_X(cell);
+        int y = Cell_Y(cell);
+        int minx = x - gap;
+        if (minx < 0) minx = 0;
+        int maxx = x + gap;
+        if (maxx >= MAP_CELL_W) maxx = MAP_CELL_W - 1;
+        int miny = y - gap;
+        if (miny < 0) miny = 0;
+        int maxy = y + gap;
+        if (maxy >= MAP_CELL_H) maxy = MAP_CELL_H - 1;
+        for (int i = minx; i <= maxx; i++){
+            for (int j = miny; j <= maxy; j++){
+                CELL newcell = XY_Cell(i, j);
+                if (Map.In_Radar(newcell)){
+                    CellClass* newcellptr = &Map[newcell];
+                    if (newcellptr){
+                        newcellptr->BigFlipCheck = 1;
+                    }
+                }
+            }
         }
     }
     return;

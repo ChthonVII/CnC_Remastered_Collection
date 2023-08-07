@@ -4935,14 +4935,14 @@ bool TechnoClass::Target_Something_Nearby_Hunt(ThreatType threat)
         Assign_Target(bestinrange);
     }
     // if we were passed THREAT_AREA, or failed to find something in range, and there's something in the area
-    else if ((threat & (THREAT_RANGE || THREAT_AREA)) && Target_Legal(bestinarea)){
+    else if ((threat & (THREAT_RANGE | THREAT_AREA)) && Target_Legal(bestinarea)){
         // if it's also in range, done!
         if (In_Range(bestinarea)){
             Assign_Target(bestinarea);
         }
         // if it's not in range, prefer an adjacent wall that's closer to the target than you are
         // (This isn't a perfect blocking check, but it's a really hard, compute-heavy problem)
-        else if (Target_Legal(adjacentwall) && (Distance(bestinarea) > As_Object(bestinarea)->Distance(somewall))){
+        else if (Target_Legal(adjacentwall) && (Distance(bestinarea) > As_Object(bestinarea)->Distance(adjacentwall))){
             Assign_Target(adjacentwall);
         }
         // if no wall, go for the unit
@@ -6002,7 +6002,7 @@ bool TechnoClass::Verify_Attack_Walls(bool speedcheck)
 	if (
             ((What_Am_I() == RTTI_UNIT) || (What_Am_I() == RTTI_INFANTRY)) &&
             !House->IsHuman && 
-            (!speedcheck || ((((FootClass *)this)->Speed == 0) && !IsRotating))
+            (!speedcheck || ((((FootClass *)this)->Speed == 0) && !((FootClass *)this)->IsRotating))
     ){
 		if (What_Am_I() == RTTI_UNIT) {
 			UnitClass * u = (UnitClass *)this;

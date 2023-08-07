@@ -333,10 +333,14 @@ class CellClass
         */
         int LongtermBlockage() const;
         
-        // we need to fix the cell reservation system at least insofar that we who *who* reserved a cell
+        // we need to fix the cell reservation system at least insofar that we know *who* reserved a cell
         DriveClass* ReservingVehicle;
         int TibResurgenceBuildup;
         int TibResurgenceCountdown;
+        unsigned char BigFlipCheck;
+        unsigned char LockOwner;
+        unsigned char OwnershipQuantum;
+        
         
     private:
     

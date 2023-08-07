@@ -252,6 +252,11 @@ bool OverlayClass::Mark(MarkType mark)
 						if (ToOwn != HOUSE_NONE) {
 							cellptr->Owner = ToOwn;
 						}
+						
+						// Chthon CFE Note: advanced wall ownership stuff
+						cellptr->BigFlipCheck = 1;
+                        cellptr->LockOwner = 0;
+                        cellptr->OwnershipQuantum = 0;
 
 					} else {
 						Delete_This();

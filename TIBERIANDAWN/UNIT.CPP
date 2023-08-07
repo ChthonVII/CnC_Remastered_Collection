@@ -3857,8 +3857,8 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType facing) const
 				WarheadTypeClass const * whead = &Warheads[BulletTypeClass::As_Reference(Weapons[Class->Primary].Fires).Warhead];
 
 				if (whead->IsWallDestroyer || (whead->IsWoodDestroyer && optr->IsWooden)) {
-                    // #MinorAIFixes - Don't pathfind through neutral Walls. -- J_D
-					if (!House->Is_Ally(cellptr->Owner) && ((cellptr->Owner != HOUSE_NONE) || !ActiveCFEPatchConfig.AIvsWalls)) {
+                    // #MinorAIFixes - Don't pathfind through neutral Walls. -- J_D; but do if advanced ownership is on -- Chthon
+					if (!House->Is_Ally(cellptr->Owner) && ((cellptr->Owner != HOUSE_NONE) || ActiveCFEPatchConfig.EnableAdvancedWallOwnership || !ActiveCFEPatchConfig.AIvsWalls)) {
 						if (retval < MOVE_DESTROYABLE) retval = MOVE_DESTROYABLE;
                         destructiblewall = true;
 					} else {

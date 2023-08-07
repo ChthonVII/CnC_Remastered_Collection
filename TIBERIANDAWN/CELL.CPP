@@ -146,6 +146,10 @@ CellClass::CellClass(void)
     TibResurgenceBuildup = 0;
     TibResurgenceCountdown = 0;
     ReservingVehicle = nullptr;
+    
+    BigFlipCheck = 0;
+    LockOwner = 0;
+    OwnershipQuantum = 0;
 }
 
 
@@ -1604,6 +1608,10 @@ int CellClass::Reduce_Wall(int damage)
 					if (scell) scell->Wall_Update();
 					CellClass * ecell = Adjacent_Cell(FACING_E);
 					if (ecell) ecell->Wall_Update();
+                    // Chthon CFE Note: advance wall ownership stuff
+                    BigFlipCheck = 0;
+                    LockOwner = 0;
+                    OwnershipQuantum = 0;
 					return(true);
 				}
 			}

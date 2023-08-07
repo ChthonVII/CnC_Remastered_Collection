@@ -4911,6 +4911,10 @@ void HouseClass::Sell_Wall(CELL cell)
 					Map[cell].Recalc_Attributes();
 					Map[cell].Redraw_Objects();
 					ObjectClass::Detach_This_From_All(::As_Target(cell), true);
+                    // Chthon CFE Note: advance wall ownership stuff
+                    Map[cell].BigFlipCheck = 0;
+                    Map[cell].LockOwner = 0;
+                    Map[cell].OwnershipQuantum = 0;
 				}
 			}
 		}

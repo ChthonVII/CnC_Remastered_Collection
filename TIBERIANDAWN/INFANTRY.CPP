@@ -1722,7 +1722,7 @@ MoveType InfantryClass::Can_Enter_Cell(CELL cell, FacingType facing ) const
                     if (Class->Primary != WEAPON_NONE) {
                         WarheadTypeClass const * whead = &Warheads[BulletTypeClass::As_Reference(Weapons[Class->Primary].Fires).Warhead];
                         if (whead->IsWallDestroyer || (whead->IsWoodDestroyer && optr->IsWooden)) {
-                            if (!House->IsHuman && !House->Is_Ally(cellptr->Owner) && !(cellptr->Owner == HOUSE_NONE)) {
+                            if (!House->IsHuman && !House->Is_Ally(cellptr->Owner) && ((cellptr->Owner != HOUSE_NONE) || ActiveCFEPatchConfig.EnableAdvancedWallOwnership)) {
                                 return(MOVE_DESTROYABLE);
                             }
                             else {

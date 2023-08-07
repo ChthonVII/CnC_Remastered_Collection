@@ -116,6 +116,9 @@ class MapClass: public GScreenClass
 		//int Scan_For_Overlay(const CELL origin, const FacingType dir, const OverlayType overlay, const int maxLength) const;
         int Scan_For_Overlay(const CELL origin, const FacingType dir, const OverlayType overlay, const int maxLength, const bool limittohouse = false, const HousesType whichhouse = HOUSE_NONE) const;
         
+        // Chthon CFE Note: For advanced wall ownership        
+        void FlipWalls();
+        
 		/*
 		**	This is the dimensions and position of the sub section of the global map.
 		**	It is this region that appears on the radar map and constrains normal
