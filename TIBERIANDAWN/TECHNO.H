@@ -419,6 +419,8 @@ void Set_Undiscovered_By_Player(HouseClass *player = NULL);
 
 bool Is_Known_To_Exist_By_Player(HouseClass *player = NULL) const;
 
+bool Target_Something_Nearby_Hunt(ThreatType threat=THREAT_RANGE);
+
 // #MinorAIFixes -- J_D: Walls thing
 bool Verify_Attack_Walls(bool speedcheck);
 virtual TARGET Greatest_Threat_Wall(ThreatType method, bool adjacent) const;
