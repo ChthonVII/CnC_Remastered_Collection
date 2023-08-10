@@ -213,6 +213,7 @@ public:
         // Chthon CFE Note: counter for visceroid spawn animation duration
 		unsigned char SquidgySpawningTimer = 0;
         unsigned char HarvesterIsUnsticking;
+        unsigned char HarvCanWake;
         CELL LastHarvesterCell;
 
 private:

@@ -1481,6 +1481,7 @@ UnitClass::UnitClass(UnitType classid, HousesType house) :
     
     HarvesterIsUnsticking = 0;
     LastHarvesterCell = 0;
+    HarvCanWake = 0;
 }
 
 
@@ -3392,6 +3393,7 @@ int UnitClass::Mission_Harvest(void)
                 TiberiumUnloadRefinery = NULL;
             }
 			Assign_Mission(MISSION_GUARD);
+            HarvCanWake = 1;
 			break;
 
 	}
@@ -4905,7 +4907,7 @@ int UnitClass::Mission_Guard(void)
 	}
 
 	// Chthon CFE Note: Wake up "smarter harvesters" once per minute 
-	if (*this == UNIT_HARVESTER && (!House->IsHuman || (ActiveCFEPatchConfig.EnableSmarterHarvesters && (FrameMB() % TICKS_PER_MINUTE == 0)))) {
+	if (*this == UNIT_HARVESTER && (!House->IsHuman || (ActiveCFEPatchConfig.EnableSmarterHarvesters && HarvCanWake && (FrameMB() % TICKS_PER_MINUTE == 0)))) {
 		Assign_Mission(MISSION_HARVEST);
 		return(TICKS_PER_SECOND);
 	}

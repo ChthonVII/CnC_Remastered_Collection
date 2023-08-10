@@ -1172,6 +1172,9 @@ void FootClass::Assign_Mission(MissionType order)
 	if (What_Am_I() != RTTI_UNIT || *(UnitClass*)this != UNIT_GUNBOAT) {
 		Path[0] = FACING_NONE;
 	}
+	else if (What_Am_I() == RTTI_UNIT){
+        ((UnitClass*)this)->HarvCanWake = 0;
+    }
 	TechnoClass::Assign_Mission(order);
 }
 
