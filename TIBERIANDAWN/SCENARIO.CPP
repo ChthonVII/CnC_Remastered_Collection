@@ -830,7 +830,7 @@ void Fixup_Scenario(bool issavedgameload) // Chthon CFE Note: added parameter so
 	// Chthon CFE Note: Balance mods.
 	if ((GameToPlay != GAME_NORMAL) || ActiveCFEPatchConfig.ApplyMPBalanceToSP){
         
-        if (ActiveCFEPatchConfig.OverrideAPCReqs){
+        if (ActiveCFEPatchConfig.OverrideAPCReqs || ActiveCFEPatchConfig.JDExtraAdjustments){
             ((UnitTypeClass&)UnitTypeClass::As_Reference(UNIT_APC)).Pre &= ~STRUCTF_REPAIR;
         }
         
@@ -846,7 +846,7 @@ void Fixup_Scenario(bool issavedgameload) // Chthon CFE Note: added parameter so
             ((UnitTypeClass&)UnitTypeClass::As_Reference(UNIT_ARTY)).ROT = ActiveCFEPatchConfig.OverrideArtyTurn_Value;
         }
         
-        if (ActiveCFEPatchConfig.OverrideMLRSReqs){
+        if (ActiveCFEPatchConfig.OverrideMLRSReqs || ActiveCFEPatchConfig.JDExtraAdjustments){
             ((UnitTypeClass&)UnitTypeClass::As_Reference(UNIT_MLRS)).Pre |= STRUCTF_RADAR;
             ((UnitTypeClass&)UnitTypeClass::As_Reference(UNIT_MLRS)).Pre &= ~STRUCTF_EYE;
         }
@@ -889,7 +889,46 @@ void Fixup_Scenario(bool issavedgameload) // Chthon CFE Note: added parameter so
         
     } // end of balance mods
     
+    // J_D: for "Extra Adjustments to Buildables"
+	if (ActiveCFEPatchConfig.JDExtraAdjustments) {
+		((UnitTypeClass&)UnitTypeClass::As_Reference(UNIT_HARVESTER)).Scenario = 5;
+		((UnitTypeClass&)UnitTypeClass::As_Reference(UNIT_HTANK)).Scenario = 12;
+		((UnitTypeClass&)UnitTypeClass::As_Reference(UNIT_ARTY)).Scenario = 8;
+		((BuildingTypeClass&)BuildingTypeClass::As_Reference(STRUCT_CYCLONE_WALL)).Scenario = 8;
+		((BuildingTypeClass&)BuildingTypeClass::As_Reference(STRUCT_BRICK_WALL)).Scenario = 11;
+		((BuildingTypeClass&)BuildingTypeClass::As_Reference(STRUCT_ATOWER)).Scenario = 12;
+		((BuildingTypeClass&)BuildingTypeClass::As_Reference(STRUCT_ADVANCED_POWER)).Scenario = 12;
+		((BuildingTypeClass&)BuildingTypeClass::As_Reference(STRUCT_HAND)).Scenario = 1;
 
+		((UnitTypeClass&)UnitTypeClass::As_Reference(UNIT_MSAM)).Pre |= STRUCTF_RADAR;
+		((UnitTypeClass&)UnitTypeClass::As_Reference(UNIT_MSAM)).Pre &= ~STRUCTF_ATOWER;
+		((BuildingTypeClass&)BuildingTypeClass::As_Reference(STRUCT_RADAR)).Pre |= STRUCTF_POWER;
+        ((BuildingTypeClass&)BuildingTypeClass::As_Reference(STRUCT_RADAR)).Pre &= ~STRUCTF_REFINERY;
+		((BuildingTypeClass&)BuildingTypeClass::As_Reference(STRUCT_WEAP)).Pre |= STRUCTF_BARRACKS;
+        ((BuildingTypeClass&)BuildingTypeClass::As_Reference(STRUCT_WEAP)).Pre &= ~STRUCTF_REFINERY;
+		((BuildingTypeClass&)BuildingTypeClass::As_Reference(STRUCT_AIRSTRIP)).Pre |= STRUCTF_BARRACKS;
+        ((BuildingTypeClass&)BuildingTypeClass::As_Reference(STRUCT_AIRSTRIP)).Pre &= ~STRUCTF_REFINERY;
+		((BuildingTypeClass&)BuildingTypeClass::As_Reference(STRUCT_HELIPAD)).Pre |= STRUCTF_RADAR;
+        ((BuildingTypeClass&)BuildingTypeClass::As_Reference(STRUCT_HELIPAD)).Pre &= ~STRUCTF_BARRACKS;
+
+		((InfantryTypeClass&)InfantryTypeClass::As_Reference(INFANTRY_E1)).SightRange = 2;
+		((InfantryTypeClass&)InfantryTypeClass::As_Reference(INFANTRY_E2)).SightRange = 2;
+		((InfantryTypeClass&)InfantryTypeClass::As_Reference(INFANTRY_E4)).SightRange = 2;
+		((InfantryTypeClass&)InfantryTypeClass::As_Reference(INFANTRY_E5)).SightRange = 2;
+		((UnitTypeClass&)UnitTypeClass::As_Reference(UNIT_JEEP)).SightRange = 3;
+		((UnitTypeClass&)UnitTypeClass::As_Reference(UNIT_BUGGY)).SightRange = 3;
+		((UnitTypeClass&)UnitTypeClass::As_Reference(UNIT_BIKE)).SightRange = 3;
+		((BuildingTypeClass&)BuildingTypeClass::As_Reference(STRUCT_GTOWER)).SightRange = 4;
+		
+		// MLRS with changed prerequisite kind of "enforced" in SP if with Extra Adjustments even if Chthon's Modern Balance in SP is off
+		// Also here the APC reqs override; shouldn't be needed in SP, but just to be sure
+		if ((GameToPlay == GAME_NORMAL) && !ActiveCFEPatchConfig.ApplyMPBalanceToSP) {
+			((UnitTypeClass&)UnitTypeClass::As_Reference(UNIT_MLRS)).Pre |= STRUCTF_RADAR;
+            ((UnitTypeClass&)UnitTypeClass::As_Reference(UNIT_MLRS)).Pre &= ~STRUCTF_EYE;
+			((UnitTypeClass&)UnitTypeClass::As_Reference(UNIT_APC)).Pre &= ~STRUCTF_REPAIR;
+		}
+	}
+    
     // Chthon CFE Note: Make MP units available in SP
     if ((GameToPlay == GAME_NORMAL) && ActiveCFEPatchConfig.MPUnitsInSP){
         
@@ -902,13 +941,22 @@ void Fixup_Scenario(bool issavedgameload) // Chthon CFE Note: added parameter so
         }
         
         // chinooks and commando in final missions
+        // J_D: If "Extra Adjustments to Buildables" is also enabled, chinooks are since missions 10 instead
         if (PlayerPtr->ActLike == HOUSE_GOOD){
-            ((AircraftTypeClass&)AircraftTypeClass::As_Reference(AIRCRAFT_TRANSPORT)).Scenario = 15;
             ((InfantryTypeClass&)InfantryTypeClass::As_Reference(INFANTRY_RAMBO)).Scenario = 15;
+            if (ActiveCFEPatchConfig.JDExtraAdjustments) {
+				((AircraftTypeClass&)AircraftTypeClass::As_Reference(AIRCRAFT_TRANSPORT)).Scenario = 10;
+			} else {
+				((AircraftTypeClass&)AircraftTypeClass::As_Reference(AIRCRAFT_TRANSPORT)).Scenario = 15;
+			}
         }
         else {
-            ((AircraftTypeClass&)AircraftTypeClass::As_Reference(AIRCRAFT_TRANSPORT)).Scenario = 13;
             ((InfantryTypeClass&)InfantryTypeClass::As_Reference(INFANTRY_RAMBO)).Scenario = 13;
+            if (ActiveCFEPatchConfig.JDExtraAdjustments) {
+				((AircraftTypeClass&)AircraftTypeClass::As_Reference(AIRCRAFT_TRANSPORT)).Scenario = 10;
+			} else {
+				((AircraftTypeClass&)AircraftTypeClass::As_Reference(AIRCRAFT_TRANSPORT)).Scenario = 13;
+			}
         }
         
         // SSM from mission 13+

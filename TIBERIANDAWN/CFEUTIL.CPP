@@ -145,6 +145,8 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     GetSetting(ActiveCFEPatchConfig.OverrideRocketGuyCost_Value         , "BALANCE", "ROCKEYGUY_COST_OVERRIDE");
     GetSetting(ActiveCFEPatchConfig.ApplyMPBalanceToSP         , "BALANCE", "APPLY_BALANCE_TO_SINGLE_PLAYER");
     GetSetting(ActiveCFEPatchConfig.MPUnitsInSP         , "BALANCE", "MULTIPLAYER_UNITS_IN_SINGLE_PLAYER");
+    GetSetting(ActiveCFEPatchConfig.JDExtraAdjustments         , "BALANCE", "JD_EXTRA_ADJUSTMENTS");
+    
     
     // Multiplayer
     // This works if you use first 11 chars of SteamID for your name.

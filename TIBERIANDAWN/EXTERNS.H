@@ -137,6 +137,7 @@ struct CFEPatchConfig
     bool OverrideRocketGuyCost = false;
     bool ApplyMPBalanceToSP = false;
     bool MPUnitsInSP = false;
+    bool JDExtraAdjustments = false;
     
     int DefaultCustomMissionScenarioNumber = 1;
     int EnableVeterancy = 0;

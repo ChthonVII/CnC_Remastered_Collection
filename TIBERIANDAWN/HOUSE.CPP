@@ -629,10 +629,12 @@ bool HouseClass::Can_Build(TechnoTypeClass const * type, HousesType house) const
 	**	Special case check to ensure that GDI doesn't get the bazooka guy
 	**	until mission #8.
 	*/
+    // J_D: until mission 7, they mean; changed so if "Extra Adjustments to Buildables" is on, it's until mission 5 only
+    int gdiE3thresh = (ActiveCFEPatchConfig.JDExtraAdjustments) ? 5 : 7;
 	if (house == HOUSE_GOOD &&
 		type->What_Am_I() == RTTI_INFANTRYTYPE &&
 		((InfantryTypeClass const *)type)->Type == INFANTRY_E3 &&
-		level < 7) {
+		level < gdiE3thresh) {
 
 		return(false);
 	}
@@ -717,10 +719,13 @@ bool HouseClass::Can_Build(TechnoTypeClass const * type, HousesType house) const
 	/*
 	**	GDI can build the sandbag wall only from scenario #9 onwards.
 	*/
-	if (house == HOUSE_GOOD &&
-		level < 8 &&
-		type->What_Am_I() == RTTI_BUILDINGTYPE &&
-		((BuildingTypeClass const *)type)->Type == STRUCT_SANDBAG_WALL) {
+    // J_D: scenario 8 onwards, they mean; changed so if "Extra Adjustments to Buildables" is on, this GoodGuy-only restriction doesn't apply
+	if (!ActiveCFEPatchConfig.JDExtraAdjustments &&
+        (house == HOUSE_GOOD) &&
+		(level < 8) &&
+		(type->What_Am_I() == RTTI_BUILDINGTYPE) &&
+		(((BuildingTypeClass const *)type)->Type == STRUCT_SANDBAG_WALL)
+    ) {
 
 		return(false);
 	}
