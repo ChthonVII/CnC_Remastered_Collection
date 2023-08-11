@@ -2084,18 +2084,19 @@ void MapClass::CFELogic(void){
                         ptr->TibResurgenceBuildup = ptr->TibResurgenceBuildup + 8 - Random_Pick(0, nearbytibcount);
                         if (ptr->TibResurgenceBuildup >= 54000){ // 8 * 15 ticks/sec * 60 sec/min * 7.5 min
                             ptr->TibResurgenceBuildup = 0;
-                            ptr->TibResurgenceCountdown = 384;
+                            ptr->TibResurgenceCountdown = 480;
                         }
                     }
                 }
                 // spread tiberium until counter expires
                 // wait to start until a sporing animation happens
-                else if ((ptr->TibResurgenceCountdown > 0) && ((ptr->TibResurgenceCountdown < 384) || terrain->IsSporing)) {
+                else if ((ptr->TibResurgenceCountdown > 0) && ((ptr->TibResurgenceCountdown < 480) || terrain->IsSporing)) {
                     ptr->TibResurgenceCountdown--;
                     FacingType offset = Random_Pick(FACING_N, FACING_NW); // 0 to 7
                     // starting from a random direction, iterate through the possible directions and check the adjacent cells
                     for (FacingType j = FACING_N; j < FACING_COUNT; j++) {
-                        if (Random_Pick(0, 31) > 0){
+                        // decrease the odds over time so that growth bursts then slows down
+                        if (Random_Pick(0, 638 - ptr->TibResurgenceCountdown) > 9){
                             continue;
                         }
                         FacingType facingindex = j + offset; // FacingType + operator has been redefined as modulo! (so this is OK)
