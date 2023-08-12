@@ -2319,14 +2319,16 @@ void MapClass::FlipWalls(){
                             CELL testcell = XY_Cell(i, j);
                             if (Map.In_Radar(testcell)){
                                 CellClass* testptr = &(*this)[testcell];
-                                BuildingClass* somebuilding = testptr->Cell_Building();
-                                if (somebuilding && somebuilding->IsActive && !somebuilding->IsInLimbo && somebuilding->Strength){
-                                    HousesType somehouse = somebuilding->Owner();
-                                    if (fliphouse != somehouse){
-                                        fliphouse = somehouse;
-                                        bcount++;
-                                        if (bcount > 1){
-                                            break;
+                                if (testptr){
+                                    BuildingClass* somebuilding = testptr->Cell_Building();
+                                    if (somebuilding && somebuilding->IsActive && !somebuilding->IsInLimbo && somebuilding->Strength){
+                                        HousesType somehouse = somebuilding->Owner();
+                                        if ((fliphouse != somehouse) && (somehouse != HOUSE_NONE)){
+                                            fliphouse = somehouse;
+                                            bcount++;
+                                            if (bcount > 1){
+                                                break;
+                                            }
                                         }
                                     }
                                 }
