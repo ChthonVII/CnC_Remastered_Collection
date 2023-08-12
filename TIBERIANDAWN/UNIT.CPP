@@ -1593,7 +1593,10 @@ void UnitClass::Enter_Idle_Mode(bool initial)
                     if (HarvesterIsUnsticking){
                         HarvesterIsUnsticking = 0;
                         if ((Tiberium_Load() < 0x0100) && Target_Legal(ArchiveTarget)){
-                            if (Can_Enter_Cell(As_Cell(ArchiveTarget)) <= MOVE_TEMP){
+                            // Chthon CFE Note: Don't assign archive target if the cell is now permanently blocked. Try Goto_Tiberium() instead.
+                            MoveType atenter = Can_Enter_Cell(As_Cell(ArchiveTarget));
+                            CellClass* atptr = &Map[As_Cell(ArchiveTarget)];
+                            if ((atenter <= MOVE_MOVING_BLOCK) || (atenter == MOVE_TEMP) || ((atenter == MOVE_DESTROYABLE) && !atptr->Cell_Building() && !atptr->Cell_Terrain())){
                                 Assign_Destination(ArchiveTarget);
                             }
                             else {
@@ -2148,7 +2151,15 @@ void UnitClass::Per_Cell_Process(bool center)
 				if (*this == UNIT_HARVESTER) {
 					if (Target_Legal(ArchiveTarget)) {
 						Assign_Mission(MISSION_HARVEST);
-						Assign_Destination(ArchiveTarget);
+                        // Chthon CFE Note: Don't assign archive target if the cell is now permanently blocked. Try Goto_Tiberium() instead.
+                        MoveType atenter = Can_Enter_Cell(As_Cell(ArchiveTarget));
+                        CellClass* atptr = &Map[As_Cell(ArchiveTarget)];
+                        if ((atenter <= MOVE_MOVING_BLOCK) || (atenter == MOVE_TEMP) || ((atenter == MOVE_DESTROYABLE) && !atptr->Cell_Building() && !atptr->Cell_Terrain())){
+                            Assign_Destination(ArchiveTarget);
+                        }
+                        else {
+                            Goto_Tiberium();
+                        }
 						ArchiveTarget = TARGET_NONE;
 					} else {
 
