@@ -1425,7 +1425,8 @@ ResultType ObjectClass::Take_Damage(int & damage, int distance, WarheadType warh
             // So let's implement it and try to fix the problems that probably led to it being removed.
             int overkill = damage - oldstrength;
             if (    ActiveCFEPatchConfig.EnableDeathsDoorFix &&
-                    (rawdamage < 100) &&                    // big stuff like airstrikes (100 damage) should also do expected damage. Otherwise we may break missions.
+                    Is_Techno() &&                                 // we don't want this for trees
+                    (rawdamage < 100) &&                    // big stuff like airstrikes (100 damage) should always do expected damage. Otherwise we may break missions.
                     (damage < maxstrength / 2) &&       // one-shot kills should still be one-shot kills (ditto two-shot kills)
                     (overkill < damage / 2) &&                // prohibit death's door save if doing so would negate half or more of the incoming damage
                     (overkill < maxstrength / 10) &&        // prohibit death's door save if incoming damage would have made this object 110% dead
