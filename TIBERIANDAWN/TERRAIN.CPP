@@ -150,14 +150,16 @@ TerrainClass::~TerrainClass(void)
  *=============================================================================================*/
 ResultType TerrainClass::Take_Damage(int & damage, int distance, WarheadType warhead, TechnoClass * source, ArmorPenType specialarmorpen, bool givesxp)
 {
-	Validate();
+    
+    Validate();
 	ResultType res = RESULT_NONE;
-
+    
 	/*
 	**	Small arms can never destroy a terrain element.
 	*/
-    // burning trees can take damage from non-fire sources since the tweak to ObjectClass::TakeDamage() will prevent fatal damage while on fire.
-	if ((!IsOnFire || (warhead == WARHEAD_FIRE) || ActiveCFEPatchConfig.EnableBurningTreeFix) && warhead != WARHEAD_SA && !Class->IsImmune) {
+    // Chthon CFE Note: burning trees can take damage from non-fire sources since the tweak to ObjectClass::TakeDamage() will prevent fatal damage while on fire.
+    // should check for crumbling state and disallow damage processing -- it's already dead
+	if (!IsCrumbling && (!IsOnFire || (warhead == WARHEAD_FIRE) || ActiveCFEPatchConfig.EnableBurningTreeFix) && warhead != WARHEAD_SA && !Class->IsImmune) {
 
         /*
         // Chthon CFE Note: There's a bug with burning trees living on as indestructible zombies.
@@ -177,9 +179,7 @@ ResultType TerrainClass::Take_Damage(int & damage, int distance, WarheadType war
             Set hp to 0 and start the crumbling procedure if Fire_Out() is called when the tree is at 1hp.
             Add the mising Limbo() call.
         */
-                
 		res = ObjectClass::Take_Damage(damage, distance, warhead, source, specialarmorpen, givesxp);
-
 		if (damage && warhead == WARHEAD_FIRE) {
 			Catch_Fire();
 		}
@@ -206,7 +206,7 @@ ResultType TerrainClass::Take_Damage(int & damage, int distance, WarheadType war
 				Shorten_Attached_Anims(this);
 			} else {
             */
-            if (!IsOnFire){    
+            if (!IsOnFire){
                 //Detach_All(); // Redundant. ObjectClass::Take_Damage() just did that.
                 Mark();
 				Start_To_Crumble();
