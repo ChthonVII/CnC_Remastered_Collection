@@ -54,7 +54,7 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include	"function.h"
-//#include "CFEDEBUG.H"
+#include "CFEDEBUG.H"
 
 /*
 ** This contains the value of the Virtual Function Table Pointer
@@ -691,24 +691,40 @@ AnimClass::~AnimClass(void)
 			**	this animation is attached to. If there are no others, then inform the
 			**	attached object of this fact.
 			*/
-			int index;
+            // Chthon CFE Note: Vanilla check is buggy. Not sure why, but it triggers on the *first* attached anim to deconstruct.
+            // Replace with explicit bool and check IsActive.
+			bool onlyme = true;
+            int index;
 			for (index = 0; index < Anims.Count(); index++) {
-				if (Anims.Ptr(index) != this && Anims.Ptr(index)->Object == Object) break;
+				//if (Anims.Ptr(index) != this && Anims.Ptr(index)->Object == Object) break;
+                AnimClass* someanim = Anims.Ptr(index);
+                if (someanim && (someanim != this) && someanim->IsActive && (someanim->Object == Object)){
+                    onlyme = false;
+                    break;
+                }
 			}
 
 			/*
 			**	Tell the object that it is no longer being damaged.
 			*/
-			if (index == Anims.Count()) {
-				Object->Fire_Out();
-				if (Object->In_Which_Layer() == LAYER_GROUND) Object->Mark(MARK_OVERLAP_UP);
-				Object->IsAnimAttached = false;
-				if (Object->In_Which_Layer() == LAYER_GROUND) Object->Mark(MARK_OVERLAP_DOWN);
+            // ChthonCFE Note: Object will be set to NULL when Fire_Out() calls Detach_All()
+            // so we need to remember it or we'll start dereferencing a null pointer
+            ObjectClass* memobject = Object;
+			//if (index == Anims.Count()) {
+            if (onlyme) {
+				//Object->Fire_Out();
+				//if (Object->In_Which_Layer() == LAYER_GROUND) Object->Mark(MARK_OVERLAP_UP);
+				//Object->IsAnimAttached = false;
+				//if (Object->In_Which_Layer() == LAYER_GROUND) Object->Mark(MARK_OVERLAP_DOWN);
+				memobject->Fire_Out();
+				if (memobject->In_Which_Layer() == LAYER_GROUND) memobject->Mark(MARK_OVERLAP_UP);
+				memobject->IsAnimAttached = false;
+				if (memobject->In_Which_Layer() == LAYER_GROUND) memobject->Mark(MARK_OVERLAP_DOWN);
 			}
-			Coord = Coord_Add(Object->Center_Coord(), Coord);
+			//Coord = Coord_Add(Object->Center_Coord(), Coord);
+			Coord = Coord_Add(memobject->Center_Coord(), Coord);
 			Object = NULL;
 		}
-
 		Limbo();
 	}
 }
