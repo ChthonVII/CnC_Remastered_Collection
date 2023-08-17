@@ -89,6 +89,8 @@
 
 #include	"function.h"
 
+#include "CFEDEBUG.H" 
+
 /*
 ** This contains the value of the Virtual Function Table Pointer
 */
@@ -721,6 +723,47 @@ int AircraftClass::Mission_Hunt(void)
 void AircraftClass::AI(void)
 {
 	Validate();
+    
+    if ((*this == AIRCRAFT_TRANSPORT) && In_Radio_Contact() && (Contact_With_Whom()->What_Am_I() == RTTI_INFANTRY)){
+        CELL mycell = Coord_Cell(Coord);
+        InfantryClass* guy = (InfantryClass*)Contact_With_Whom();
+        CELL theircell = Coord_Cell(guy->Coord);
+        CELL theirdest = Coord_Cell(guy->Head_To_Coord());
+        
+        int destX = 0;
+        int destY = 0;
+        char cellcenter = 0;
+        char cellNW = 0;
+        char cellNE = 0;
+        char cellSW= 0;
+        char cellSE = 0;
+        char cellVehicle = 0;		// Reserved for vehicle occupation.
+		char cellMonolith = 0;		// Some immovable blockage is in cell.
+        char cellBuilding = 0;		// A building of some time (usually blocks movement).
+        DriveClass* cellReservingVehicle = nullptr;
+        MoveType theirmove = MOVE_OK;
+        bool datapopulated = false;
+        
+        if (Map.In_Radar(theirdest)){
+            datapopulated = true;
+            CellClass* cellptr = &Map[theirdest];
+            destX = Cell_X(theirdest);
+            destY = Cell_Y(theirdest);
+            cellcenter = cellptr->Flag.Occupy.Center;
+            cellNW = cellptr->Flag.Occupy.NW;
+            cellNE = cellptr->Flag.Occupy.NE;
+            cellSW = cellptr->Flag.Occupy.SW;
+            cellSE = cellptr->Flag.Occupy.SE;
+            cellVehicle = cellptr->Flag.Occupy.Vehicle;
+            cellMonolith = cellptr->Flag.Occupy.Monolith;
+            cellBuilding = cellptr->Flag.Occupy.Building;
+            cellReservingVehicle = cellptr->ReservingVehicle;
+            theirmove = guy->Can_Enter_Cell(theirdest, guy->Path[0]);
+        }
+        
+        CFE_Debug_Printf("Frame %i, Transport 0x%X is in contact with Infantry 0x%X. Am I tethered? %i. Are they? %i. My position is %i, %i. Their position is %i, %i. Their NavCom 0x%X. Their ArchiveTarget 0x%X. Me as a Target 0x%X. Remaining data populated? %i. Their headto is %i, %i. Center spot %i, NW spot %i, NE spot %i, SW spot %i, SE spot %i, Vehicle %i, Monolith %i, Building %i, ReservingVehicle 0x%X, Can Enter? %i", Frame, this, guy, IsTethered, guy->IsTethered, Cell_X(mycell), Cell_Y(mycell), Cell_X(theircell), Cell_Y(theircell), guy->NavCom, guy->ArchiveTarget, As_Target(), datapopulated, Cell_X(theirdest), Cell_Y(theirdest), cellcenter, cellNW, cellNE, cellSW, cellSE, cellVehicle, cellMonolith, cellBuilding, cellReservingVehicle, theirmove);
+        
+    }
     
     // Chthon CFE Note: rank 3 veteran helicopters repair for free while docked (at half the rate as repair bay)
     if (VeterancyRank == 3 && Altitude == 0 && !IsLanding && !IsTakingOff && Health_Ratio() < 0x0100){
@@ -2797,7 +2840,9 @@ RadioMessageType AircraftClass::Receive_Message(RadioClass * from, RadioMessageT
 		**	entered the transport.
 		*/
 		case RADIO_IM_IN:
+            CFE_Debug_Printf("Frame %i, Aircraft 0x%X received IM_IN from object 0x%X, passengers %i of %i", Frame, this, from, How_Many(), Class->Max_Passengers());
 			if (How_Many() == Class->Max_Passengers()) {
+                 CFE_Debug_Printf("Frame %i, Aircraft 0x%X received IM_IN from object 0x%X closing door", Frame, this, from);
 				Close_Door(5, 4);
 			}
 
@@ -2815,18 +2860,22 @@ RadioMessageType AircraftClass::Receive_Message(RadioClass * from, RadioMessageT
 		**	to the impatient unit.
 		*/
 		case RADIO_DOCKING:
+            CFE_Debug_Printf("Frame %i, Aircraft 0x%X received RADIO_DOCKING from object 0x%X", Frame, this, from);
 			if (Class->IsTransporter && How_Many() < Class->Max_Passengers()) {
+                CFE_Debug_Printf("Frame %i, Aircraft 0x%X received RADIO_DOCKING from object 0x%X top block", Frame, this, from);
 				FootClass::Receive_Message(from, message, param);
 
 				if (!IsTethered && !IsLanding && !IsTakingOff && Altitude == 0) {
-
+                    CFE_Debug_Printf("Frame %i, Aircraft 0x%X received RADIO_DOCKING from object 0x%X door open block", Frame, this, from);
 					Open_Door(5, 4);
 
 					/*
 					**	If the potential passenger needs someplace to go, then figure out a good
 					**	spot and tell it to go.
 					*/
+                    CFE_Debug_Printf("Frame %i, Aircraft 0x%X received RADIO_DOCKING from object 0x%X transmitting need to move", Frame, this, from);
 					if (Transmit_Message(RADIO_NEED_TO_MOVE, from) == RADIO_ROGER) {
+                        CFE_Debug_Printf("Frame %i, Aircraft 0x%X received RADIO_DOCKING from object 0x%X need to move got roger ", Frame, this, from);
 						CELL cell;
 						DirType dir = Desired_Load_Dir(from, cell);
 
@@ -2835,8 +2884,10 @@ RadioMessageType AircraftClass::Receive_Message(RadioClass * from, RadioMessageT
 						**	cannot occur. Break radio contact.
 						*/
 						if (cell == 0) {
+                            CFE_Debug_Printf("Frame %i, Aircraft 0x%X received RADIO_DOCKING from object 0x%X cell == 0", Frame, this, from);
 							Transmit_Message(RADIO_OVER_OUT, from);
 						} else {
+                            CFE_Debug_Printf("Frame %i, Aircraft 0x%X received RADIO_DOCKING from object 0x%X cell good", Frame, this, from);
 							param = (long)::As_Target(cell);
 
 							/*
@@ -2844,18 +2895,23 @@ RadioMessageType AircraftClass::Receive_Message(RadioClass * from, RadioMessageT
 							**	already at the staging location, then tell it to move onto the transport
 							**	directly.
 							*/
+                            CFE_Debug_Printf("Frame %i, Aircraft 0x%X received RADIO_DOCKING from object 0x%X sending move here", Frame, this, from);
 							if (Transmit_Message(RADIO_MOVE_HERE, param, from) == RADIO_YEA_NOW_WHAT) {
+                                CFE_Debug_Printf("Frame %i, Aircraft 0x%X received RADIO_DOCKING from object 0x%X move here got now what. Sending tether and move here", Frame, this, from);
 								param = (long)As_Target();
 								Transmit_Message(RADIO_TETHER);
 								if (Transmit_Message(RADIO_MOVE_HERE, param, from) != RADIO_ROGER) {
+                                    CFE_Debug_Printf("Frame %i, Aircraft 0x%X received RADIO_DOCKING from object 0x%X move here was not roger", Frame, this, from);
 									Transmit_Message(RADIO_OVER_OUT, from);
 								} else {
+                                    CFE_Debug_Printf("Frame %i, Aircraft 0x%X received RADIO_DOCKING from object 0x%X mov ehere was roger", Frame, this, from);
 									Contact_With_Whom()->Unselect();
 								}
 							}
 						}
 					}
 				}
+				CFE_Debug_Printf("Frame %i, Aircraft 0x%X received RADIO_DOCKING from object 0x%X sending roger", Frame, this, from);
 				return(RADIO_ROGER);
 			}
 			break;
