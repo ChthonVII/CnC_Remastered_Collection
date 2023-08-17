@@ -80,8 +80,6 @@
 
 #include	"function.h"
 
-#include "CFEDEBUG.H"
-
 #ifndef ARRAY_SIZE
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 #endif
@@ -1015,12 +1013,11 @@ void InfantryClass::Assign_Destination(TARGET target)
 				**	Determine if the transport is already in radio contact. If so, then just move
 				**	toward the transport and try to establish contact at a later time.
 				*/
-                ArchiveTarget = target;
 				if (techno->In_Radio_Contact()) {
 
 // TCTCTC -- call for an update from the transport to get a good rondezvous position.
 
-					//ArchiveTarget = target;
+					ArchiveTarget = target;
 				} else {
 					if (Transmit_Message(RADIO_HELLO, techno) == RADIO_ROGER) {
 						if (Transmit_Message(RADIO_DOCKING) != RADIO_ROGER) {
@@ -1780,9 +1777,6 @@ MoveType InfantryClass::Can_Enter_Cell(CELL cell, FacingType facing ) const
 				**	Special check to always allow entry into the building that this infantry
 				**	is trying to capture.
 				*/
-                if (IsTethered){
-                    CFE_Debug_Printf("Frame %i, InfantryClass 0x%X, I'm tethered and Mission is %i, obj as target is 0x%X, navcom is 0x%X, achivetarget is 0x%X", Frame, this, Mission, obj->As_Target(), NavCom, ArchiveTarget);
-                }
 				if (Mission == MISSION_ENTER && obj->As_Target() == NavCom && IsTethered) {
 					return(MOVE_OK);
 				}

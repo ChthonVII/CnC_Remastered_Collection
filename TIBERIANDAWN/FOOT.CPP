@@ -1772,21 +1772,12 @@ int FootClass::Mission_Enter(void)
 		**	likely say all is 'ok' with the "RADIO ROGER", then try again later.
 		*/
 		if (Transmit_Message(RADIO_DOCKING, contact) != RADIO_ROGER && !IsTethered) {
-            CFE_Debug_Printf("Frame %i, FootClass 0x%X was told to fuck off.", Frame, this);
 			Transmit_Message(RADIO_OVER_OUT);
 			Enter_Idle_Mode();
 		}
 
 	} else {
-        CFE_Debug_Printf("Frame %i, FootClass 0x%X does not have a contact.", Frame, this);
-        if (What_Am_I() == RTTI_INFANTRY){
-            if (   *((InfantryClass*)(this)) == INFANTRY_E7){
-                CFE_Debug_Printf("Yep, engineer");
-            }
-            else {
-                CFE_Debug_Printf("Not engineer");
-            }
-        }
+
 		/*
 		**	Since there is no potential object to enter, then abort this
 		**	mission with some default standby mission.
