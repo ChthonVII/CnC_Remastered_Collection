@@ -2352,7 +2352,7 @@ void MapClass::FlipWalls(){
                         if (!allyblock){
                             cellptr->Owner = fliphouse;
                             cellptr->LockOwner = 1;
-                            cellptr->OwnershipQuantum = 10;
+                            cellptr->OwnershipQuantum = 20;
                         }
                     }
                     // unlock ownership if no building in range 
