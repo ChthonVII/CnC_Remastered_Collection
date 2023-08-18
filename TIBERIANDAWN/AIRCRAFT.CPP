@@ -739,7 +739,7 @@ void AircraftClass::AI(void)
                     TARGET metarget = As_Target();
                     if ((guy->NavCom == metarget) || (guy->ArchiveTarget == metarget)){
                         // if the guy is still moving, don't worry yet
-                        if (!guy->Head_To_Coord() || Target_Legal(guy->NavCom)){
+                        if (!guy->Head_To_Coord() && !Target_Legal(guy->NavCom)){
                             // if the guy is more than 1 cell away, don't worry yet
                             // (remember that Distance() is confusingly overloaded, with some forms that return a value in cells and others in leptons)
                             if (::Distance(Coord_Cell(Coord), Coord_Cell(guy->Coord)) < 2){
