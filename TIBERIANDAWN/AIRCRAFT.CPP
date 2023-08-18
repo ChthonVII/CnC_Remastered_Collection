@@ -89,6 +89,8 @@
 
 #include	"function.h"
 
+//#include "CFEDEBUG.H"
+
 /*
 ** This contains the value of the Virtual Function Table Pointer
 */
@@ -722,6 +724,100 @@ void AircraftClass::AI(void)
 {
 	Validate();
     
+    // Chthon CFE Note: Transport helicopters sometimes end up in radio contact with a guy who isn't tethered and can't/won't load
+    // And that blocks everyone else from loading and the helicopter from doing anything at all
+    // Likely cause is some race condition I cannot figure out.
+    // This is an ugly fix, but it's the best I can do without understanding how the guy is getting into that state.
+    // It doesn't seem like APCs have the same problem. Might add this in the future if it turns out they do.
+    if ((*this == AIRCRAFT_TRANSPORT) && !IsLanding && !IsTakingOff && (Altitude == 0) && !IsTethered && (Mission != MISSION_UNLOAD)){
+        if (In_Radio_Contact()){
+            TechnoClass* contactee = Contact_With_Whom();
+            if (contactee && contactee->IsActive && !contactee->IsInLimbo && contactee->Strength){
+                // we only care if this is an infantry
+                if (contactee->What_Am_I() == RTTI_INFANTRY){
+                    InfantryClass* guy = (InfantryClass*)contactee;
+                    TARGET metarget = As_Target();
+                    if ((guy->NavCom == metarget) || (guy->ArchiveTarget == metarget)){
+                        // if the guy is still moving, don't worry yet
+                        if (!guy->Head_To_Coord() || Target_Legal(guy->NavCom)){
+                            // if the guy is more than 1 cell away, don't worry yet
+                            // (remember that Distance() is confusingly overloaded, with some forms that return a value in cells and others in leptons)
+                            if (::Distance(Coord_Cell(Coord), Coord_Cell(guy->Coord)) < 2){
+                                // open the door
+                                Open_Door(5, 4);
+                                bool tryplanb = false;
+                                // try telling guy to move to desired loading site
+                                if (Transmit_Message(RADIO_NEED_TO_MOVE) == RADIO_ROGER) {
+                                    CELL cell;
+                                    DirType dir = Desired_Load_Dir(guy, cell);
+                                    if (cell == 0) {
+                                        tryplanb = true;
+                                    }
+                                    else {
+                                        long param = (long)::As_Target(cell);
+                                        if (Transmit_Message(RADIO_MOVE_HERE, param) == RADIO_YEA_NOW_WHAT) {
+                                            tryplanb = true;
+                                        }
+                                    }
+                                }
+                                // if guy wouldn't go to desired spot, or was already there, just go straight into chopper
+                                else {
+                                    tryplanb = true;
+                                }
+                                if (tryplanb){
+                                    Transmit_Message(RADIO_TETHER);
+                                    if (Transmit_Message(RADIO_MOVE_HERE, metarget) != RADIO_ROGER) {
+                                        //CFE_Debug_Printf("Frame %i, AircraftClass 0x%X says: RADIO_MOVE_HERE rejected!", Frame, this, guy);
+                                        Transmit_Message(RADIO_UNTETHER);
+                                        Transmit_Message(RADIO_OVER_OUT);
+                                    } else {
+                                        //CFE_Debug_Printf("Frame %i, AircraftClass 0x%X says: RADIO_MOVE_HERE accepted.", Frame, this, guy);
+                                        guy->Unselect();
+                                    }
+                                }
+                                
+                            }
+                        }
+                    }
+                    // the infantry isn't trying to load here!
+                    else {
+                        Transmit_Message(RADIO_OVER_OUT);
+                    }
+                }
+            }
+            // the contactee isn't valid!
+            else {
+                Radio_Off();
+            }
+        }
+        
+        // we also want to close the door if it's been left open
+        // will be left open after unloading, or if a unit fails to load (e.g. dies on the way)
+        else if (Is_Door_Open()){
+            // earlier conditionals have already checked that we're grounded, not unloading, not tethered, and not in radio contact
+            // don't close door if there's still infantry in this cell
+            CELL mycell = Coord_Cell(Coord);
+            CellClass* cellptr = &Map[mycell];
+            if (cellptr && !cellptr->Cell_Infantry()){
+                // don't close door if anyone is trying to load
+                bool allaboard = true;
+                TARGET metarget = As_Target();
+                for (int index = 0; index < Infantry.Count(); index++) {
+                    InfantryClass* guy = Infantry.Ptr(index);
+                    TARGET metarget = As_Target();
+                    if (guy && guy->IsActive && !guy->IsInLimbo && guy->Strength && House->Is_Ally(guy) && ((guy->NavCom == metarget) || (guy->ArchiveTarget == metarget))){
+                        allaboard = false;
+                        break;
+                    }
+                }
+                if (allaboard){
+                    Close_Door(5, 4);
+                }
+            }
+        }
+    }
+    
+    
     // Chthon CFE Note: rank 3 veteran helicopters repair for free while docked (at half the rate as repair bay)
     if (VeterancyRank == 3 && Altitude == 0 && !IsLanding && !IsTakingOff && Health_Ratio() < 0x0100){
         TechnoClass * tech = Contact_With_Whom();
@@ -1300,6 +1396,10 @@ int AircraftClass::Mission_Unload(void)
 			case UNLOAD_PASSENGERS:
 				if (!IsTethered) {
 					if (Is_Something_Attached()) {
+                        // Chthon CFE Note: open and close the door
+                        if (*this == AIRCRAFT_TRANSPORT){
+                            Open_Door(5, 4);
+                        }
 						FootClass * unit = (FootClass *)Detach_Object();
 
 						/*
@@ -1318,6 +1418,11 @@ int AircraftClass::Mission_Unload(void)
 						Map.Place_Down(Coord_Cell(Coord), this);
 
 						if (!Is_Something_Attached()) {
+                            // Chthon CFE Note: open and close the door
+                            // don't do this here -- it closes too fast
+                            //if (*this == AIRCRAFT_TRANSPORT){
+                            //    Close_Door(5, 4);
+                            //}
 							Enter_Idle_Mode();
 						}
 
@@ -2797,9 +2902,26 @@ RadioMessageType AircraftClass::Receive_Message(RadioClass * from, RadioMessageT
 		**	entered the transport.
 		*/
 		case RADIO_IM_IN:
-			if (How_Many() == Class->Max_Passengers()) {
+            // Chthon CFE Note: The passenger count hasn't yet been updated when RADIO_IM_IN is sent
+			if (How_Many() == Class->Max_Passengers() - 1) {
 				Close_Door(5, 4);
 			}
+			// Chthon CFE Note: It's also possible that no one else is coming, so close the door now
+			else {
+                bool allaboard = true;
+                for (int index = 0; index < Infantry.Count(); index++) {
+                    InfantryClass* guy = Infantry.Ptr(index);
+                    TARGET metarget = As_Target();
+                    if (guy && (guy != from) && guy->IsActive && !guy->IsInLimbo && guy->Strength && House->Is_Ally(guy) && ((guy->NavCom == metarget) || (guy->ArchiveTarget == metarget))){
+                        allaboard = false;
+                        break;
+                    }
+                }
+                if (allaboard){
+                    Close_Door(5, 4);
+                }
+            }
+            
 
 			/*
 			**	If a civilian has entered the transport, then the transport will immediately
@@ -2898,6 +3020,13 @@ RadioMessageType AircraftClass::Receive_Message(RadioClass * from, RadioMessageT
  *=============================================================================================*/
 DirType AircraftClass::Desired_Load_Dir(ObjectClass * object, CELL & moveto) const
 {
+    // Chthon CFE Note: This is a buggy mess
+    // The calling code expects moveto to be 0 if no suitable cell, but that doesn't happen
+    // Is_Generally_Clear doesn't do what this function wants
+    // Checking object's Coord doesn't do what this function wants because the guy may be reserving a spot in his desitnation cell, but isn't yet there.
+    // Calling code ignores the return value.
+    // Going to rewrite inspired by UnitClass's function
+    /*
 	Validate();
 	CELL center = Coord_Cell(Center_Coord());
 	for (int sweep = FACING_N; sweep < FACING_S; sweep++) {
@@ -2908,6 +3037,70 @@ DirType AircraftClass::Desired_Load_Dir(ObjectClass * object, CELL & moveto) con
 		if (Map.In_Radar(moveto) && (Coord_Cell(object->Center_Coord()) == moveto || Map[moveto].Is_Generally_Clear())) return(DIR_N);
 	}
 	return(DIR_N);
+	*/
+    Validate();
+	CELL center = Coord_Cell(Center_Coord());
+    CELL ocenter = Coord_Cell(object->Center_Coord());
+    CELL oheadto = 0;
+    CELL navcell = 0;
+    if (object->What_Am_I() == RTTI_INFANTRY){
+        InfantryClass* guy = (InfantryClass*)object;
+        COORDINATE guyheadto = guy->Head_To_Coord();
+        if (guyheadto){
+            oheadto = Coord_Cell(guyheadto);
+        }
+        if (Target_Legal(guy->NavCom)){
+            navcell = As_Cell(guy->NavCom);
+        }
+    }
+    
+    moveto = 0; // set to zero unless we succeed
+    int bestscore = 0;
+    CELL bestcell = 0;
+    bool onegood = false;
+    for (FacingType sweep = FACING_N; sweep < FACING_COUNT; sweep++) {
+        CELL cell = Adjacent_Cell(center, sweep);
+        if (Map.In_Radar(cell)){
+            bool alreadythere = ((cell == ocenter) || (cell == oheadto));
+            CellClass* cellptr = &Map[cell];
+            if (cellptr){
+                // borrow impassability rule from UnitClass's function.
+                // We could test for friendlies that could scatter for us, but let's stay consistent with APCs
+                if ((Ground[cellptr->Land_Type()].Cost[SPEED_FOOT] == 0) || cellptr->Flag.Occupy.Building || cellptr->Flag.Occupy.Monolith || cellptr->Flag.Occupy.Vehicle || (((cellptr->Flag.Composite & 0x01F) == 0x01F) && !alreadythere)) {
+                    continue;
+                }
+                int score = 0;
+                // bonus according to direction -- we really want to load from south since that's how the art works
+                if (sweep == FACING_S){
+                    score += 100;
+                }
+                if ((sweep == FACING_SW) || (sweep == FACING_SE)){
+                    score += 5;
+                }
+                if ((sweep == FACING_E) || (sweep == FACING_W)){
+                    score += 1;
+                }
+                // bonus for cell the guy is already in
+                if (alreadythere){
+                    score += 1;
+                }
+                // bonus for cell the guy was previously directed to
+                if ((navcell != 0) && (navcell == cell)){
+                    score += 2;
+                }
+                // best score?
+                if (score >= bestscore){
+                    bestscore = score;
+                    bestcell = cell;
+                    onegood = true;
+                }
+            }
+        }
+    }
+    if (onegood){
+        moveto = bestcell;
+    }
+    return(DIR_N); // the calling code ignores this, so just do what the original code does
 }
 
 

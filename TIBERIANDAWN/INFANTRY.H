@@ -227,6 +227,9 @@ class InfantryClass : public FootClass
 		*/
 		int Validate(void) const;
 
+        // Chthon CFE Note: We need this for fixing bugs with mission enter
+        virtual void Player_Assign_Mission(MissionType mission, TARGET target=TARGET_NONE, TARGET destination=TARGET_NONE);
+        
 		/*
 		**	Translation table to convert facing into infantry shape number. This special
 		**	table is needed since several facing stages are reused and flipped about the Y

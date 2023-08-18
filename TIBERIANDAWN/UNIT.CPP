@@ -747,9 +747,25 @@ RadioMessageType UnitClass::Receive_Message(RadioClass * from, RadioMessageType 
 		**	entered the transport.
 		*/
 		case RADIO_IM_IN:
-			if (How_Many() == Class->Max_Passengers()) {
+            // Chthon CFE Note: The passenger count hasn't yet been updated when RADIO_IM_IN is sent
+			if (How_Many() == Class->Max_Passengers() - 1) {
 				APC_Close_Door();
 			}
+            // Chthon CFE Note: It's also possible that no one else is coming, so close the door now
+			else {
+                bool allaboard = true;
+                for (int index = 0; index < Infantry.Count(); index++) {
+                    InfantryClass* guy = Infantry.Ptr(index);
+                    TARGET metarget = As_Target();
+                    if (guy && (guy != from) && guy->IsActive && !guy->IsInLimbo && guy->Strength && House->Is_Ally(guy) && ((guy->NavCom == metarget) || (guy->ArchiveTarget == metarget))){
+                        allaboard = false;
+                        break;
+                    }
+                }
+                if (allaboard){
+                    APC_Close_Door();
+                }
+            }
 			return(RADIO_ATTACH);
 
 		/*

@@ -757,6 +757,7 @@ void InfantryClass::Per_Cell_Process(bool center)
 	TechnoClass * techno = Contact_With_Whom();
 	if (center && Mission == MISSION_ENTER && techno && Coord_Cell(Coord) == Coord_Cell(techno->Coord) && techno == As_Techno(NavCom)) {
 		if (Transmit_Message(RADIO_IM_IN) == RADIO_ATTACH) {
+            ArchiveTarget = TARGET_NONE; // Chthon CFE Note: Always unset the archive target
 			Limbo();
 			techno->Attach(this);
 		}
@@ -1013,12 +1014,15 @@ void InfantryClass::Assign_Destination(TARGET target)
 				**	Determine if the transport is already in radio contact. If so, then just move
 				**	toward the transport and try to establish contact at a later time.
 				*/
-				if (techno->In_Radio_Contact()) {
+                // Chthon CFE Note: ALWAYS set the ArchiveTarget
+                ArchiveTarget = target;
+				//if (techno->In_Radio_Contact()) {
 
 // TCTCTC -- call for an update from the transport to get a good rondezvous position.
 
-					ArchiveTarget = target;
-				} else {
+					//ArchiveTarget = target;
+				//} else {
+                if (!techno->In_Radio_Contact()) {
 					if (Transmit_Message(RADIO_HELLO, techno) == RADIO_ROGER) {
 						if (Transmit_Message(RADIO_DOCKING) != RADIO_ROGER) {
 							Transmit_Message(RADIO_OVER_OUT);
@@ -1075,7 +1079,7 @@ void InfantryClass::Assign_Target(TARGET target)
 		// Also check for chinook
 		else {
             AircraftClass* aircraft = As_Aircraft(target);
-            if (aircraft && /*aircraft->IsActive &&*/ !aircraft->IsInLimbo && aircraft->Strength && (*aircraft == AIRCRAFT_TRANSPORT) && (aircraft->Pip_Count() == 0) && (aircraft->Altitude == 0)){
+            if (aircraft && /*aircraft->IsActive &&*/ !aircraft->IsInLimbo && aircraft->Strength && (*aircraft == AIRCRAFT_TRANSPORT) && (aircraft->Pip_Count() == 0) && (aircraft->Altitude == 0) && (Owner() != aircraft->Owner())){
                 Assign_Destination(target);
             }
         }
@@ -3742,4 +3746,15 @@ bool InfantryClass::Is_Infantry(void) const
 {
 	Validate();
 	return(true);
+}
+
+
+// Chthon CFE Note: We need this to fix bugs with mision enter
+void InfantryClass::Player_Assign_Mission(MissionType mission, TARGET target, TARGET destination)
+{
+	Validate();
+	// Always clear the archive target when the player assigns a new mission
+    // We'd want to do this for CPU-controlled units too, but the AI doesn't load infantry into transports
+    ArchiveTarget = TARGET_NONE;
+	TechnoClass::Player_Assign_Mission(mission, target, destination);
 }
