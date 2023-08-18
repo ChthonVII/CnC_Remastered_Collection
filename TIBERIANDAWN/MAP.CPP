@@ -2082,7 +2082,7 @@ void MapClass::CFELogic(void){
                     }
                     if (!toomuch){
                         ptr->TibResurgenceBuildup = ptr->TibResurgenceBuildup + 8 - Random_Pick(0, nearbytibcount);
-                        if (ptr->TibResurgenceBuildup >= 54000){ // 8 * 15 ticks/sec * 60 sec/min * 7.5 min
+                        if (ptr->TibResurgenceBuildup >= 43200){ // 8 * 15 ticks/sec * 60 sec/min * 6 min
                             ptr->TibResurgenceBuildup = 0;
                             ptr->TibResurgenceCountdown = 480;
                         }
