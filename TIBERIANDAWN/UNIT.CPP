@@ -435,7 +435,7 @@ void UnitClass::AI(void)
 	/*
 	**	Clear the unload refinery if not haresting or entering a refinery.
 	*/
-	if (Class->IsToHarvest && (ActiveCFEPatchConfig.EnableHarvyLoadBalancing || ActiveCFEPatchConfig.EnableHarvyOptimize)) {
+	if (Class->IsToHarvest && (ActiveCFEPatchConfig.EnableHarvyLoadBalancing || ActiveCFEPatchConfig.EnableHarvyOptimize) && (House->IsHuman || (GameToPlay != GAME_NORMAL))) {
 		if (Mission != MISSION_HARVEST) {
 			if (Mission != MISSION_ENTER ||
 				!In_Radio_Contact() ||
@@ -2807,7 +2807,7 @@ BuildingClass* UnitClass::Find_Best_Refinery(void) const
     */
     
     // default behavior from 9/24/2020 hotfix
-    if (!ActiveCFEPatchConfig.EnableHarvyLoadBalancing && !ActiveCFEPatchConfig.EnableHarvyOptimize){
+    if ((!ActiveCFEPatchConfig.EnableHarvyLoadBalancing && !ActiveCFEPatchConfig.EnableHarvyOptimize) || (!House->IsHuman && (GameToPlay == GAME_NORMAL))){
         /*
         **	Remember our last refinery and prefer that one, if still available and valid.
         */
@@ -3283,12 +3283,12 @@ int UnitClass::Mission_Harvest(void)
 		*/
 		case LOOKING:
 			//cfehunter 09th June 2020. Honestly this should probably be here anyway, but don't change normal behaviour unless the feature is turned on
-			if ((ActiveCFEPatchConfig.EnableHarvyQueueJump || ActiveCFEPatchConfig.EnableHarvyOptimize || ActiveCFEPatchConfig.EnableHarvyLoadBalancing) && Tiberium_Load() == 0x0100) {
+			if ((ActiveCFEPatchConfig.EnableHarvyQueueJump || ActiveCFEPatchConfig.EnableHarvyOptimize || ActiveCFEPatchConfig.EnableHarvyLoadBalancing) && (Tiberium_Load() == 0x0100)) {
 				IsHarvesting = false;
 				Status = FINDHOME;
 				Assign_Target(TARGET_NONE); //Clear out the target or it'll assume it already has a refinery to go towards
                 // Only blank the unload refinery if we're using "load balancing" rather than "refinery remembering"
-                if (ActiveCFEPatchConfig.EnableHarvyLoadBalancing || ActiveCFEPatchConfig.EnableHarvyOptimize){
+                if ((ActiveCFEPatchConfig.EnableHarvyLoadBalancing || ActiveCFEPatchConfig.EnableHarvyOptimize) && (House->IsHuman || (GameToPlay != GAME_NORMAL))){
                     TiberiumUnloadRefinery = NULL;
                 }
 				return 1;
@@ -3372,7 +3372,7 @@ int UnitClass::Mission_Harvest(void)
 				**	Find best refinery.
 				*/
                 BuildingClass * nearest = Find_Best_Refinery();
-                if (ActiveCFEPatchConfig.EnableHarvyLoadBalancing || ActiveCFEPatchConfig.EnableHarvyOptimize){
+                if ((ActiveCFEPatchConfig.EnableHarvyLoadBalancing || ActiveCFEPatchConfig.EnableHarvyOptimize) && (House->IsHuman || (GameToPlay != GAME_NORMAL))){
                     if (nearest) {
                         TiberiumUnloadRefinery = nearest;
                         if (Transmit_Message(RADIO_HELLO, nearest) == RADIO_ROGER) {
@@ -3394,7 +3394,7 @@ int UnitClass::Mission_Harvest(void)
                         nearest = Find_Best_Refinery();
                         ScenarioInit--;
                         if (nearest) {
-                            if (ActiveCFEPatchConfig.EnableHarvyQueueJump && Transmit_Message(RADIO_HELLO, nearest) == RADIO_ROGER) {
+                            if (ActiveCFEPatchConfig.EnableHarvyQueueJump && (House->IsHuman || (GameToPlay != GAME_NORMAL)) && Transmit_Message(RADIO_HELLO, nearest) == RADIO_ROGER) {
                                 Status = HEADINGHOME;
                             }
                             else {
@@ -3416,7 +3416,7 @@ int UnitClass::Mission_Harvest(void)
 			return(1);
 
 		case GOINGTOIDLE:
-            if (ActiveCFEPatchConfig.EnableHarvyLoadBalancing || ActiveCFEPatchConfig.EnableHarvyOptimize){
+            if ((ActiveCFEPatchConfig.EnableHarvyLoadBalancing || ActiveCFEPatchConfig.EnableHarvyOptimize) && (House->IsHuman || (GameToPlay != GAME_NORMAL))){
                 TiberiumUnloadRefinery = NULL;
             }
 			Assign_Mission(MISSION_GUARD);
@@ -3609,7 +3609,7 @@ int UnitClass::Mission_Hunt(void)
 
 int UnitClass::Mission_Enter(void)
 {
-    if (ActiveCFEPatchConfig.EnableHarvyLoadBalancing || ActiveCFEPatchConfig.EnableHarvyOptimize){
+    if ((ActiveCFEPatchConfig.EnableHarvyLoadBalancing || ActiveCFEPatchConfig.EnableHarvyOptimize) && (House->IsHuman || (GameToPlay != GAME_NORMAL))){
         return(TarComClass::Mission_Enter());
     }
     

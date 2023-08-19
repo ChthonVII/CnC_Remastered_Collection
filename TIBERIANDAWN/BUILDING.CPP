@@ -256,7 +256,7 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass * from, RadioMessageT
 			if (Mission == MISSION_HARVEST) {
 				return(RADIO_NEGATIVE);
 			}
-			else if (Class->Type == STRUCT_REFINERY && ActiveCFEPatchConfig.EnableHarvyQueueJump && In_Radio_Contact()) {
+			else if (Class->Type == STRUCT_REFINERY && ActiveCFEPatchConfig.EnableHarvyQueueJump && (House->IsHuman || (GameToPlay != GAME_NORMAL)) && In_Radio_Contact()) {
 				if (from->What_Am_I() == RTTI_UNIT && *((UnitClass*)from) == UNIT_HARVESTER) {
 
 					UnitClass& currentHarvy = *static_cast<UnitClass*>(Contact_With_Whom());
