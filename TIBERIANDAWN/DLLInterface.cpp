@@ -3165,9 +3165,9 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number, int x, int y, int widt
 		new_object.MaxPips = 0;
 		new_object.CanDemolish = object->Can_Demolish();
 		new_object.CanDemolishUnit = object->Can_Demolish_Unit();
-		// Chthon CFE Note: Bugfix for missing scold sound. (Maybe.) Make GlyphX think you can repair full-health buildings so it will allow you to invoke the repair routine and get the scold sound
-        //new_object.CanRepair = object->Can_Repair();
-		new_object.CanRepair = (new_object.Type == BUILDING) && ((BuildingClass*)object)->Techno_Type_Class()->IsRepairable;
+		// Chthon CFE Note: Bugfix for missing scold sound. (Maybe.) Make GlyphX think you can repair full-health buildings so it will allow you to invoke the repair routine and get the scold sound -- but this breaks the cursor, which is worse than the missing sound
+        new_object.CanRepair = object->Can_Repair();
+		//new_object.CanRepair = (new_object.Type == BUILDING) && ((BuildingClass*)object)->Techno_Type_Class()->IsRepairable;
         memset(new_object.CanMove, false, sizeof(new_object.CanMove));
 		memset(new_object.CanFire, false, sizeof(new_object.CanFire));
 		memset(new_object.ActionWithSelected, DAT_NONE, sizeof(new_object.ActionWithSelected));
