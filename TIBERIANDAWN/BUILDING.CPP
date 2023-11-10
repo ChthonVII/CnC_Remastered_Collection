@@ -3949,7 +3949,7 @@ void BuildingClass::Read_INI(char *buffer)
 						strength = MIN(strength, 0x100);
 						strength = Fixed_To_Cardinal(b->Class->MaxStrength, strength);
 						b->Strength = strength;
-						b->IsALemon = false;
+						//b->IsALemon = false; // Chthon CFE Note: remove unused member to make more room
 						b->Trigger = TriggerClass::As_Pointer(trigname);
 						if (b->Trigger) {
 							b->Trigger->AttachCount++;

@@ -616,6 +616,7 @@ class HouseClass {
 		**	This vector holds the recorded status of the map regions. It is through
 		**	this region information that team paths are calculated.
 		*/
+        // Chthon CFE Note: The change to megamaps makes this object massively bigger
 		RegionClass Regions[MAP_TOTAL_REGIONS];
 
 #ifdef OBSOLETE
@@ -903,7 +904,11 @@ class HouseClass {
 		/*
 		** Some additional padding in case we need to add data to the class and maintain backwards compatibility for save/load
 		*/
-		unsigned char SaveLoadPadding[256];
+        // Chthon CFE Note: original padding was 256
+        // Object size is radically larger due to megamaps
+        // adjust padding to make object size bigger by a multiple of 8
+        // original object size: 2701, new object size: 6053, difference: 3353; difference % 8: 0
+		unsigned char SaveLoadPadding[255];
 
 };
 #endif

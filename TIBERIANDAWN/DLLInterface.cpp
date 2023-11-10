@@ -1504,22 +1504,62 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
         CFE_Debug_Printf("\tFlyClass %i bytes.", sizeof(FlyClass));
         CFE_Debug_Printf("\tFootClass %i bytes.", sizeof(FootClass));
         CFE_Debug_Printf("\tDriveClass %i bytes.", sizeof(DriveClass));
+        CFE_Debug_Printf("\tFuseClass %i bytes.", sizeof(FuseClass));
+        CFE_Debug_Printf("\tMissionClass %i bytes.", sizeof(MissionClass));
+        CFE_Debug_Printf("\tRadioClass %i bytes.", sizeof(RadioClass));
+        CFE_Debug_Printf("\tTurretClass %i bytes.", sizeof(TurretClass));
+        //CFE_Debug_Printf("\tTargetClass %i bytes.", sizeof(TargetClass)); //TargetClass is dead code; won't compile
+        CFE_Debug_Printf("\tTarComClass %i bytes.", sizeof(TarComClass));
+        CFE_Debug_Printf("\tSuperClass %i bytes.", sizeof(SuperClass));
+        CFE_Debug_Printf("\tSpecialClass %i bytes.", sizeof(SpecialClass));
         
         CFE_Debug_Printf("\tTCountDownTimerClass %i bytes.", sizeof(TCountDownTimerClass));
         
-        
+        CFE_Debug_Printf("\tHouseClass %i bytes.", sizeof(HouseClass));
+        CFE_Debug_Printf("\tTeamTypeClass %i bytes.", sizeof(TeamTypeClass));
+        CFE_Debug_Printf("\tTeamClass %i bytes.", sizeof(TeamClass));
         CFE_Debug_Printf("\tAnimClass %i bytes.", sizeof(AnimClass));
         CFE_Debug_Printf("\tAircraftClass %i bytes.", sizeof(AircraftClass));
         CFE_Debug_Printf("\tBuildingClass %i bytes.", sizeof(BuildingClass));
+        CFE_Debug_Printf("\tInfantryClass %i bytes.", sizeof(InfantryClass));
+        CFE_Debug_Printf("\tUnitClass %i bytes.", sizeof(UnitClass));
         CFE_Debug_Printf("\tBulletClass %i bytes.", sizeof(BulletClass));
+        CFE_Debug_Printf("\tTerrainClass %i bytes.", sizeof(TerrainClass));
         
+        CFE_Debug_Printf("\tBaseClass %i bytes.", sizeof(BaseClass));
         CFE_Debug_Printf("\tBaseNodeClass %i bytes.", sizeof(BaseNodeClass));
         CFE_Debug_Printf("\tCellClass %i bytes.", sizeof(CellClass));
+        CFE_Debug_Printf("\tOverlayClass %i bytes.", sizeof(OverlayClass));
+        CFE_Debug_Printf("\tSmudgeClass %i bytes.", sizeof(SmudgeClass));
+        CFE_Debug_Printf("\tTriggerClass %i bytes.", sizeof(TriggerClass));
+        
+        CFE_Debug_Printf("\tTemplateClass %i bytes.", sizeof(TemplateClass));
         
         // not done yet. Will be large pain for small gain
         CFE_Debug_Printf("\tDisplayClass %i bytes.", sizeof(DisplayClass));
+        CFE_Debug_Printf("\tGScreenClass %i bytes.", sizeof(GScreenClass));
+        CFE_Debug_Printf("\tMapClass %i bytes.", sizeof(MapClass));
+        CFE_Debug_Printf("\tMouseClass %i bytes.", sizeof(MouseClass)); // Map is one of these
+        CFE_Debug_Printf("\tLayerClass %i bytes.", sizeof(LayerClass));
+        
+        CFE_Debug_Printf("\tSidebarGlyphxClass %i bytes.", sizeof(SidebarGlyphxClass));
+        
+        CFE_Debug_Printf("\tFactoryClass %i bytes.", sizeof(FactoryClass));
+        
+        
+        CFE_Debug_Printf("\tPowerClass %i bytes.", sizeof(PowerClass));
+        CFE_Debug_Printf("\tRadarClass %i bytes.", sizeof(RadarClass));
+        //CFE_Debug_Printf("\tScreenClass %i bytes.", sizeof(ScreenClass)); // ScreenClass is dead code; won't compile
+        CFE_Debug_Printf("\tDifficultyClass %i bytes.", sizeof(DifficultyClass));
+        CFE_Debug_Printf("\tRulesClass %i bytes.", sizeof(RulesClass));
+        CFE_Debug_Printf("\tRegionClass %i bytes.", sizeof(RegionClass));
+        
+        CFE_Debug_Printf("\tBriefingText %i bytes.", sizeof(BriefingText));
+        CFE_Debug_Printf("\tWaypoint %i bytes.", sizeof(Waypoint));
+        */
+        
     }
-    */
+    
 
 	/*
 	** Shouldn't really need to do this, but I like the idea of always running the main loop in the context of the same player.

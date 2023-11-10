@@ -525,6 +525,7 @@ HouseClass::HouseClass(HousesType house) :
     
     // Chthon CFE Note: Q-Move port
     IsQueuedMovementToggle = false;
+    QueuedMovementToggleTimeout = 0;
 
 #endif
 

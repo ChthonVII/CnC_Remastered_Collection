@@ -133,7 +133,9 @@ class TechnoClass :	public RadioClass,
 		**	Some game objects can be of the "lemon" variety. This means that they take damage
 		**	even when everything is ok. This adds a little variety to the game.
 		*/
-		unsigned IsALemon:1;
+        // Chthon CFE Note: remove unused member to make more room
+		//unsigned IsALemon:1;
+		mutable unsigned int ReadyQuadShot : 1; // Chthon CFE Note: put this here to keep next vanilla member in same position
 
 		/*
 		**	This flag is used to control second shot processing for those units or buildings
@@ -142,6 +144,16 @@ class TechnoClass :	public RadioClass,
 		**	is used rather than the short rearm time.
 		*/
 		unsigned IsSecondShot:1;
+        
+        
+        // Chthon CFE Note: Visual Studio doesn't pack bitfields correctly.
+        // It always uses a long, even if you put them in a union with something smaller
+        // So were are going to use this extra space here for mod variables
+        mutable unsigned int VeterancyRank : 2;
+        mutable unsigned int VeteranTwoShooter: 1;
+        mutable unsigned int VeteranQuadShooter: 1;
+        
+        unsigned int VeterancyXP: 16;
 
 		/*
 		**	For units in area guard mode, this is the recorded home position. The guarding
@@ -186,7 +198,8 @@ class TechnoClass :	public RadioClass,
 		**	value is zero, then firing is not allowed. If -1, then there is no ammunition
 		**	limit.
 		*/
-		int Ammo;
+		//int Ammo; // I think we can reduce this to a short without breaking anything. So we can match vanilla object size.
+        short int Ammo;
 
 		/*
 		**	Used by the Obelisk laser to cache its laser weapon rendering data.
@@ -208,48 +221,25 @@ class TechnoClass :	public RadioClass,
 		/*
 		**	Per-player view of whether a techno object is discovered. One bit for each house type. ST - 3/6/2019 11:15AM
 		*/
-		unsigned int IsDiscoveredByPlayerMask;
+		//unsigned int IsDiscoveredByPlayerMask;  // Chthon CFE Note this can be a short; there are only 12 houses
+		unsigned short int IsDiscoveredByPlayerMask;
 
         //Chthon CFE Note: Port per-unit firepower and armor biases from RA so we can use them for vetrancy and stuff
         float ArmorBias = 1.0;
 		float FirepowerBias = 1.0;
         float LocalROFBias = 1.0;
-        
-        // Attack Move rework by ChthonVII --  Remember the intial destination in case of appearing enemies during an attack move
-		mutable TARGET RememberedNavCom; //this is unsigned short in TD, so only 2 bytes (now 4 bytes b/c megamaps)
-		
+        		
 		// Veterancy by ChthonVII
-		unsigned short int VeterancyXP = 0;
-		
-        // Converted most attack-move variables into bit fields to save space, but then ended up removing most of them during attack-move rework
-        // Keep the bitfield arrangment anyway so we can use the space for future mod features.
-		// We need the anonymous union & struct so we can force the zero initialization.
-		// Compatibility note: MSVC is happy with this, but apparently gcc needs extensions for it.
-        // mutable makes them modifiable from inside const functions (the inability to do this greatly complicated Butch's attack move implementation)
-        union{
-			mutable unsigned char CFEPatchFlags = 0;
-			struct{
-				mutable unsigned int AttackMove : 1;
-                mutable unsigned int VeterancyRank : 2;
-                mutable unsigned int ReadyQuadShot : 1;
-                mutable unsigned int VeteranTwoShooter: 1;
-                mutable unsigned int VeteranQuadShooter: 1;
-				mutable unsigned int CFEPatchFlagsPadding : 2; //round out to 1 byte, we can use this space later.
-			};
-		};
-        
-        unsigned int IsKnownToExistByPlayerMask;
+		//unsigned short int VeterancyXP = 0; // moved up
+		        
+        unsigned short int IsKnownToExistByPlayerMask; // this can be a short; there are only 12 houses
         
 		/*
 		** Some additional padding in case we need to add data to the class and maintain backwards compatibility for save/load
 		*/
         // Chthon CFE Note: Original padding was 16
-        // firepower and armor biases eat 8 bytes
-        // Attack Move rework by ChthonVII eats 3 bytes (including CFEPatchFlags)
-        // megamaps -> TARGET type for attack-move now takes 4 bytes
-        // Veterancy eats 2 bytes (not including CFEPatchFlags since that's counted with attack move)
-        // RESET PADDING in v1.8 b/c we're breaking save compatibility anyway
-		unsigned char SaveLoadPadding[16];
+        // with other ajustments, we can just get back to the same size with no padding
+		//unsigned char SaveLoadPadding[16];
 
 		/*---------------------------------------------------------------------
 		**	Constructors, Destructors, and overloaded operators.
@@ -405,11 +395,6 @@ class TechnoClass :	public RadioClass,
 		*/
 		static int const BodyShape[32];
 //		static int const TurretShape[32];
-
-// Attack Move rework by ChthonVII -- Reset Attack Move parameters, ending attack-move status.
-void ResetAttackMove();
-void AttackMoveEnterMoveMode();
-void AttackMoveEnterAttackMode();
 
 void GainVeterancyXP(unsigned short int XP);
 

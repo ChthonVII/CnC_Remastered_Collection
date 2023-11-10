@@ -347,7 +347,14 @@ class CellClass
 		/*
 		** Some additional padding in case we need to add data to the class and maintain backwards compatibility for save/load
 		*/
-		unsigned char SaveLoadPadding[28];
+        // Chthon CFE Note: Original padding was 28
+        // ReservingVehicle ate 4 bytes
+        // TibResurgenceBuildup ate 4 bytes
+        // BigFlipCheck ate 1 byte
+        // LockOwner ate 1 byte
+        // OwnershipQuantum ate 1 byte
+        // So reduce padding to 13
+		unsigned char SaveLoadPadding[13];
 };
 
 #endif

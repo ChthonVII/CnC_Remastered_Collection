@@ -118,6 +118,7 @@ FootClass::FootClass(void) : Speed(0)
 	}
 	Group = -1;
     
+    SpeedBias = 1.0;
     // Chthon CFE Note: Q-Move port
     for (int index = 0; index < ARRAY_SIZE(NavQueue); index++) {
 		NavQueue[index] = TARGET_NONE;
@@ -130,6 +131,9 @@ FootClass::FootClass(void) : Speed(0)
     MemorizedNavQueueSize = 0;
     UnmodifiedNavCom = TARGET_NONE;
     CFEPatchNavQFlags = 0;
+    
+    AttackMove = 0;
+    RememberedNavCom = TARGET_NONE;
 }
 
 
@@ -193,12 +197,23 @@ FootClass::FootClass(HousesType house) :
 	TryTryAgain = PATH_RETRY;
 	House->CurUnits++;
     
+    SpeedBias = 1.0;
     // Chthon CFE Note: Q-Move port
     for (int index = 0; index < ARRAY_SIZE(NavQueue); index++) {
 		NavQueue[index] = TARGET_NONE;
         MemorizedNavQueue[index] = TARGET_NONE;
 	}
     RepathDelay = 4;
+    
+    PriorCell = 0;
+    NavQueueIndex = 0;
+    NavQueueSize = 0;
+    MemorizedNavQueueSize = 0;
+    UnmodifiedNavCom = TARGET_NONE;
+    CFEPatchNavQFlags = 0;
+    
+    AttackMove = 0;
+    RememberedNavCom = TARGET_NONE;
 }
 
 
@@ -929,7 +944,8 @@ COORDINATE FootClass::Sort_Y(void) const
  *=============================================================================================*/
 void FootClass::Stun(void)
 {
-	Assign_Destination(TARGET_NONE);
+	ResetAttackMove(); //Chthon CFE Note -- make sure attack-move can't interrupt death animations
+    Assign_Destination(TARGET_NONE);
 	Path[0] = FACING_NONE;
 	Stop_Driver();
 	TechnoClass::Stun();
@@ -2831,4 +2847,85 @@ bool FootClass::Verify_Attack_Walls(bool speedcheck)
 	**	Pass the call to it's Techno object.
 	*/
 	return(TechnoClass::Verify_Attack_Walls(speedcheck));
+}
+
+
+// Chthon CFE Note: Add FootClass level AI() for attack-move stuff
+void FootClass::AI(void){
+    
+    // Attack Move rework by ChthonVII
+    if (AttackMove && Strength) {
+
+        // If something is already targeted, but not in range, try for a closer target
+        // But not for aircraft because the result of a constantly retargetting aircraft is disasterous (if comical)
+        if (Target_Legal(TarCom) && (What_Am_I() != RTTI_AIRCRAFT)) {
+            // remember our current target
+            TARGET oldtarcom = TarCom;
+            // Target_Something_Nearby() picks a nearby target, potentially dumping the current target if it's out of range, sets TarCom, then returns Target_Legal(TarCom)
+            if (Target_Something_Nearby(THREAT_RANGE)){ 
+                if (TarCom != oldtarcom){
+                    AttackMoveEnterAttackMode();
+                }
+            }
+        }
+        // If we didn't have a target to begin with, look for one            
+        if (!Target_Legal(TarCom)){
+            if (Target_Something_Nearby(THREAT_RANGE)){
+                AttackMoveEnterAttackMode();
+            }
+        }
+        // Later, when the target dies, Mission_Attack() will snap us back to MISSION_MOVE
+
+        // backstop in case we somehow got into a different mission
+        if (   (What_Am_I() != RTTI_AIRCRAFT) &&
+                (Mission != MISSION_MOVE) &&
+                (Mission != MISSION_ATTACK) &&
+                (MissionQueue != MISSION_MOVE) &&
+                (MissionQueue != MISSION_ATTACK) &&
+                RememberedNavCom &&
+                Target_Legal(RememberedNavCom) &&
+                (Distance(RememberedNavCom) > 3*CELL_LEPTON_W)
+        ){
+            AttackMoveEnterMoveMode();
+        }
+        
+    } // end of AttackMove stuff
+    
+    TechnoClass::AI();
+}
+
+// Attack Move rework by ChthonVII
+void FootClass::ResetAttackMove()
+{
+	RememberedNavCom = TARGET_NONE;
+	AttackMove = 0;
+}
+
+void FootClass::AttackMoveEnterMoveMode(){
+
+    // If we somehow lost the destination, abort attack move
+    if (!Target_Legal(RememberedNavCom)){
+        ResetAttackMove();
+        Enter_Idle_Mode();
+        return;
+    }
+
+    Assign_Target(TARGET_NONE); // this was added to RA in 1.7 for reasons I don't remember
+    // maybe for fixing the twitchy bazooka guys -- in which case TD wouldn't *need* it
+    // but let's put it here unless it breaks something
+    
+    Assign_Mission(MISSION_MOVE); //Set_Mission() is bad because it makes Commence() not work, and then we end up with units in impossible mission/status combinations
+    Assign_Destination(RememberedNavCom);
+    // aircraft can commence though -- and should so we can skip status ahead past takeoff
+    if (What_Am_I() == RTTI_AIRCRAFT){
+        AircraftClass* meplane = (AircraftClass*)this;
+        if (!meplane->IsLanding && !meplane->IsTakingOff){
+            Commence();
+        }
+    }
+}
+
+void FootClass::AttackMoveEnterAttackMode(){
+    Assign_Destination(TARGET_NONE);
+    Assign_Mission(MISSION_ATTACK); //Set_Mission() is bad because it makes Commence() not work, and then we end up with units in impossible mission/status combinations
 }

@@ -75,7 +75,12 @@ class FlasherClass {
 
 		// 2019/09/20 JAS - Flashing info needs to exist per player
 		unsigned int Get_Flashing_Flags() const;
-		unsigned int FlashCountPerPlayer[HOUSE_COUNT];
+		// Chthon CFE Note: Due to increased house count, this went from 10x 4bytes to 12x 4bytes
+        // But... this is never used with a value greater than 20.
+        // So we can make it into 12x 2 byte, then add 16 bytes of padding to get back to original size
+        //unsigned int FlashCountPerPlayer[HOUSE_COUNT];
+        unsigned short int FlashCountPerPlayer[HOUSE_COUNT];
+        unsigned char SaveLoadPadding[16];
 };
 
 #endif

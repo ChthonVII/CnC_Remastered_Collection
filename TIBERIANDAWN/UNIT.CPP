@@ -1495,6 +1495,7 @@ UnitClass::UnitClass(UnitType classid, HousesType house) :
 	House->Tracking_Add(this);
 #endif // USE_RA_AI
     
+    SquidgySpawningTimer = 0;
     HarvesterIsUnsticking = 0;
     LastHarvesterCell = 0;
     HarvCanWake = 0;

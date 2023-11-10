@@ -152,8 +152,9 @@ class BulletClass :	public ObjectClass,
 		*/
         // Chthon CFE Note: original padding was 32 bytes
         // SpecialArmorPen ate 1 byte
-        // RESET PADDING in v1.8 b/c we're breaking save compatibility anyway
-		unsigned char SaveLoadPadding[32];
+        // Change of TARGET from 2 bytes to 4 ate 2 bytes
+        // So reduce padding by 3 bytes
+		unsigned char SaveLoadPadding[29];
 
 		/*
 		** This contains the value of the Virtual Function Table Pointer

@@ -324,12 +324,8 @@ private:
 		** Some additional padding in case we need to add data to the class and maintain backwards compatibility for save/load
 		*/
         // Chthon CFE Note: original padding was 32 bytes
-        // Rally points eat 2 bytes
-        // megamaps -> TARGET type for rally pointnow takes 4 bytes
-        // Smarter SAMS eat 3 bytes
-        // ShowInverseWallPreviewMarkers eats 1 byte
-        // RESET PADDING in v1.8 b/c we're breaking save compatibility anyway
-		unsigned char SaveLoadPadding[32];
+        // Reduce padding to keep same object size as vanilla
+		unsigned char SaveLoadPadding[21];
 
 		static COORDINATE const CenterOffset[BSIZE_COUNT];
 

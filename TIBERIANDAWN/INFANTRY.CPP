@@ -285,6 +285,8 @@ InfantryClass::InfantryClass(InfantryType classid, HousesType house) :
 #endif // USE_RA_AI
 
 	StopDriverFrame = -1;
+    
+    DeathByTiberium = 0;
 }
 
 

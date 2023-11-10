@@ -134,7 +134,8 @@ class ObjectClass : public AbstractClass
 		/*
 		** Some additional padding in case we need to add data to the class and maintain backwards compatibility for save/load
 		*/
-		unsigned char SaveLoadPadding[16];
+        // Chthon CFE Note: Original padding was 16. BirthdayFrame consumes 4 
+		unsigned char SaveLoadPadding[12];
 
 		/*-----------------------------------------------------------------------------------
 		**	Constructor & destructors.

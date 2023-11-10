@@ -634,32 +634,43 @@ CCDebugString ("C&C95 - Primary building packet received\n");
                 if (ActiveCFEPatchConfig.EnableAttackMove){
                     if ((Data.MegaMission.Mission == MISSION_ATTACKMOVE) || (Data.MegaMission.Mission == MISSION_QATTACKMOVE)){
                         techno->Assign_Mission(MISSION_MOVE);
-                        techno->AttackMove = 1;
-                        //techno->RememberedNavCom = Data.MegaMission.Destination;
-                        if (Data.MegaMission.Mission == MISSION_ATTACKMOVE){
-                            techno->RememberedNavCom = Data.MegaMission.Destination;
-                        }
-                        // if this is queue attack move, don't set RememberedNavCom if it's already set
-                        else if (!Target_Legal(techno->RememberedNavCom)){
-                            // if we're already moving towards a destination, make that our RememberedNavCom (this command must be adding to an existing queue)
-                            if ((techno->What_Am_I() == RTTI_INFANTRY || techno->What_Am_I() == RTTI_UNIT || techno->What_Am_I() == RTTI_AIRCRAFT) && Target_Legal(((FootClass*)techno)->NavCom)){
-                                techno->RememberedNavCom = ((FootClass*)techno)->NavCom;
+                        if (techno->What_Am_I() == RTTI_INFANTRY || techno->What_Am_I() == RTTI_UNIT || techno->What_Am_I() == RTTI_AIRCRAFT){
+                            FootClass* footno = (FootClass*)techno;
+                            footno->AttackMove = 1;
+                            if (Data.MegaMission.Mission == MISSION_ATTACKMOVE){
+                                footno->RememberedNavCom = Data.MegaMission.Destination;
                             }
-                            // otherwise, this must be the first destination, so make it our RememberedNavCom
-                            else {
-                                techno->RememberedNavCom = Data.MegaMission.Destination;
+                            // if this is queue attack move, don't set RememberedNavCom if it's already set
+                            else if (!Target_Legal(footno->RememberedNavCom)){
+                                // if we're already moving towards a destination, make that our RememberedNavCom (this command must be adding to an existing queue)
+                                if (Target_Legal(footno->NavCom)){
+                                    footno->RememberedNavCom = footno->NavCom;
+                                }
+                                // otherwise, this must be the first destination, so make it our RememberedNavCom
+                                else {
+                                    footno->RememberedNavCom = Data.MegaMission.Destination;
+                                }
                             }
                         }
+
                     }
                     // if we assigned any other mission, terminate attack-move
                     else {
                         // if we're in the middle of an attack phase of q-attack-move and get a regular q-move order, set the reset the current destination before terminating attack move
-                        if (techno->AttackMove && (techno->Mission == MISSION_ATTACK) && (techno->What_Am_I() == RTTI_INFANTRY || techno->What_Am_I() == RTTI_UNIT || techno->What_Am_I() == RTTI_AIRCRAFT) && Target_Legal(((FootClass*)techno)->NavCom) && (Data.MegaMission.Mission == MISSION_QMOVE) && Target_Legal(techno->RememberedNavCom)){
-                            techno->Assign_Destination(techno->RememberedNavCom);
+                        bool isfoot = false;
+                        FootClass* footno = nullptr;
+                        if (techno->What_Am_I() == RTTI_INFANTRY || techno->What_Am_I() == RTTI_UNIT || techno->What_Am_I() == RTTI_AIRCRAFT){
+                            isfoot = true;
+                            footno = (FootClass*)techno;
+                        }
+                        if (isfoot && footno->AttackMove && (techno->Mission == MISSION_ATTACK) && Target_Legal(footno->NavCom) && (Data.MegaMission.Mission == MISSION_QMOVE) && Target_Legal(footno->RememberedNavCom)){
+                            techno->Assign_Destination(footno->RememberedNavCom);
                         }
                         
                         techno->Assign_Mission(Data.MegaMission.Mission);
-                        techno->ResetAttackMove();
+                        if (isfoot){
+                            footno->ResetAttackMove();
+                        }
                     }
                 }
                 // original code
@@ -721,17 +732,22 @@ CCDebugString ("C&C95 - Primary building packet received\n");
 		case IDLE:
 			techno = As_Techno(Data.Target.Whom);
             if (techno && techno->IsActive && !techno->IsInLimbo) {
+                bool isfoot = (techno->What_Am_I() == RTTI_INFANTRY || techno->What_Am_I() == RTTI_UNIT || techno->What_Am_I() == RTTI_AIRCRAFT);
+                FootClass* footno = nullptr;
+                if (isfoot){
+                    footno = (FootClass*)techno;
+                }
                 // Attack Move rework by ChthonVII -- exit attack-move because we got a new order
-                if (techno && ActiveCFEPatchConfig.EnableAttackMove){
-                    techno->ResetAttackMove();
+                if (isfoot && ActiveCFEPatchConfig.EnableAttackMove){
+                    footno->ResetAttackMove();
                 }
                 if (!techno->IsTethered) {
                     techno->Assign_Destination(TARGET_NONE);
                     techno->Assign_Target(TARGET_NONE);
                     // Chthon CFE Note: Q-Move port
-                    if (techno->What_Am_I() == RTTI_INFANTRY || techno->What_Am_I() == RTTI_UNIT || techno->What_Am_I() == RTTI_AIRCRAFT) {
-                        ((FootClass *)techno)->Clear_Navigation_List();
-                        ((FootClass *)techno)->Clear_Memorized_Navigation_List();
+                    if (isfoot) {
+                        footno->Clear_Navigation_List();
+                        footno->Clear_Memorized_Navigation_List();
                     }
                     techno->Enter_Idle_Mode();
                 }

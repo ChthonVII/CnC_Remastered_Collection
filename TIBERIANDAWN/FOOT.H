@@ -72,7 +72,7 @@ class FootClass :	public TechnoClass
 		**	movement. This flag is cleared if any movement was able to be performed.
 		**	It never gets set for computer controlled units.
 		*/
-		//unsigned IsNewNavCom:1; // Chthon CFE Note: dead code -- It's NEVER set to true ANYWHERE, so it does nothing! (Also, it you fix it, the beep is so fucking annoying it makes you unfix it.)
+		//unsigned IsNewNavCom:1; // Chthon CFE Note: dead code -- It's NEVER set to true ANYWHERE, so it does nothing! (Also, if you fix it, the beep is so fucking annoying it makes you unfix it.)
 
 		/*
 		**	There are certain cases where a unit should perform a full scan rather than
@@ -238,6 +238,7 @@ class FootClass :	public TechnoClass
 		/*
 		**	AI.
 		*/
+        virtual void AI(void); // Chthon CFE Note: Add this here so we can do attack move AI at the FootClass level
 		virtual void Sell_Back(int control);
 		virtual int Offload_Tiberium_Bail(void);
 		virtual TARGET Greatest_Threat(ThreatType method) const;
@@ -302,6 +303,11 @@ class FootClass :	public TechnoClass
 		TARGET Greatest_Threat_Wall(ThreatType method, bool adjacent) const;
         bool Verify_Attack_Walls(bool speedcheck);
         
+        // Attack Move rework by ChthonVII -- Reset Attack Move parameters, ending attack-move status.
+        void ResetAttackMove();
+        void AttackMoveEnterMoveMode();
+        void AttackMoveEnterAttackMode();
+        
 	private:
 		int Passable_Cell(CELL cell, FacingType face, int threat, MoveType threshhold) const;
 		PathType * Find_Path(CELL dest, FacingType *final_moves, int maxlen, MoveType threshhold);
@@ -327,7 +333,10 @@ public:
         float SpeedBias = 1.0;
         
         // periodic repathing
-        unsigned int RepathDelay = 4;
+        unsigned char RepathDelay = 4;
+        
+        // Attack Move rework by ChthonVII --  Remember the intial destination in case of appearing enemies during an attack move
+		mutable TARGET RememberedNavCom; //this is unsigned short in TD, so only 2 bytes (now 4 bytes b/c megamaps)
         
         // Q-Move port stuff. Not offsetting this from padding b/c it's too big, so we just have to break savegame compatibility
         unsigned char NavQueueIndex;
@@ -339,11 +348,12 @@ public:
         union{
 			mutable unsigned char CFEPatchNavQFlags = 0;
 			struct{
-				mutable unsigned int SkipNavQueueUpdate : 1;
-                mutable unsigned int IsNavQueueLoop : 1;
-                mutable unsigned int HasMemorizedNavQueue : 1;
-                mutable unsigned int JustModifiedNavCom : 1;
-				mutable unsigned int CFEPatchNavQFlagsPadding : 4; //round out to 1 byte, we can use this space later.
+				mutable unsigned char SkipNavQueueUpdate : 1;
+                mutable unsigned char IsNavQueueLoop : 1;
+                mutable unsigned char HasMemorizedNavQueue : 1;
+                mutable unsigned char JustModifiedNavCom : 1;
+                mutable unsigned char AttackMove : 1; // put this here to keep next vanilla membe rin same position
+				mutable unsigned char CFEPatchNavQFlagsPadding : 3; //round out to 1 byte, we can use this space later.
 			};
 		};
         
@@ -356,9 +366,10 @@ private:
 		** Some additional padding in case we need to add data to the class and maintain backwards compatibility for save/load
 		*/
         // Chthon CFE Note: Original padding was 16 bytes
-        // speed bias eats 4 bytes
-        // RESET PADDING in v1.8 b/c we're breaking save compatibility anyway
-		unsigned char SaveLoadPadding[16];
+        // Q-Move is too big to possibly maintain original object size
+        // So aim for bigger by a multple of 8
+        // Original obect: 330; new object 426; difference: 96; difference % 8: 0
+		unsigned char SaveLoadPadding[9];
 };
 
 #endif

@@ -206,7 +206,10 @@ private:
 		/*
 		** Some additional padding in case we need to add data to the class and maintain backwards compatibility for save/load
 		*/
-		unsigned char SaveLoadPadding[24];
+        // Chthon CFE Note: Original padding was 24
+        // TARGET went from 2 bytes to 4
+        // There is 1 TARGET member, so reduce padding by 2
+		unsigned char SaveLoadPadding[22];
 };
 
 

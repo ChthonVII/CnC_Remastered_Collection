@@ -154,6 +154,8 @@ void MapClass::Init_Clear(void)
 	IsForwardScan = true;
 	TiberiumGrowthCount = 0;
 	TiberiumSpreadCount = 0;
+    VisceroidOffalCount = 0;
+    VisceroidTreeFrustrationCount = 0;
 }
 
 

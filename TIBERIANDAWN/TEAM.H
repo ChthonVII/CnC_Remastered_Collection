@@ -236,7 +236,10 @@ class TeamClass : public AbstractClass
 		/*
 		** Some additional padding in case we need to add data to the class and maintain backwards compatibility for save/load
 		*/
-		unsigned char SaveLoadPadding[32];
+        // Chthon CFE Note: Original padding was 32.
+        // Size increased because TARGET went from 2 bytes to 4.
+        // There are two TARGET members, so reduce padding by 4
+		unsigned char SaveLoadPadding[28];
 
 		/*
 		**	This records the success of each team type. As the team carries out its

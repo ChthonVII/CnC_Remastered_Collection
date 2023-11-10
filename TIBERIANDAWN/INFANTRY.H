@@ -253,9 +253,10 @@ class InfantryClass : public FootClass
 		** Some additional padding in case we need to add data to the class and maintain backwards compatibility for save/load
 		*/
         // Chthon CFE Note: original padding was 32 bytes.
-        // DeathByTiberium ate 1 byte
-        // RESET PADDING in v1.8 b/c we're breaking save compatibility anyway
-		unsigned char SaveLoadPadding[32];
+        // We can't maintain original object size because Q-Move in foot class is too big
+        // So aim for bigger by a multple of 8
+        // original object size: 384; new object size: 480; difference: 96; difference % 8: 0
+		unsigned char SaveLoadPadding[31];
 };
 
 #endif

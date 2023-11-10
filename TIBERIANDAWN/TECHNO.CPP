@@ -508,7 +508,7 @@ TechnoClass::TechnoClass(void) :
 	CloakingDevice.Set_Stage(1);
 	CloakingDevice.Set_Rate(0);
 	IsCloakable = false;
-	IsALemon = false;
+	//IsALemon = false; // Chthon CFE Note: remove unused member to make more room
 	IsALoaner = false;
 	IsDiscoveredByPlayer = false;
 	IsDiscoveredByComputer = false;
@@ -524,6 +524,14 @@ TechnoClass::TechnoClass(void) :
 	// Added for multiplayer changes. ST - 3/6/2019 11:34AM
 	IsDiscoveredByPlayerMask = 0;
     
+    VeterancyXP = 0;
+    VeterancyRank = 0;
+    ReadyQuadShot = 0;
+    VeteranTwoShooter = 0;
+    VeteranQuadShooter = 0;
+    ArmorBias = 1.0;
+	FirepowerBias = 1.0;
+    LocalROFBias = 1.0;
     IsKnownToExistByPlayerMask = 0;
     
 }
@@ -955,7 +963,7 @@ TechnoClass::TechnoClass(HousesType house) :
 	CloakingDevice.Set_Stage(1);
 	CloakingDevice.Set_Rate(0);
 	IsCloakable = false;
-	IsALemon = false;
+	//IsALemon = false; // Chthon CFE Note: remove unused member to make more room
 	IsALoaner = false;
 	IsDiscoveredByComputer = false;
 	//IsOwnedByPlayer = (house == PlayerPtr->Class->House);  // ST - 4/24/2019 10:41AM		
@@ -981,9 +989,22 @@ TechnoClass::TechnoClass(HousesType house) :
 	/*
 	**	There is a chance that a vehicle will be a "lemon".
 	*/
+    // Chthon CFE Note: remove unused member to make more room
+    /*
 	if (Random_Pick(0, 255) < (int)House->Class->Lemon) {
 		IsALemon = true;
 	}
+	*/
+	
+    VeterancyXP = 0;
+    VeterancyRank = 0;
+    ReadyQuadShot = 0;
+    VeteranTwoShooter = 0;
+    VeteranQuadShooter = 0;
+    ArmorBias = 1.0;
+	FirepowerBias = 1.0;
+    LocalROFBias = 1.0;
+    IsKnownToExistByPlayerMask = 0;
 }
 
 
@@ -2124,44 +2145,6 @@ void TechnoClass::AI(void)
 	CargoClass::AI();
 	RadioClass::AI();
 	DoorClass::AI();
-
-    // Attack Move rework by ChthonVII
-    if (AttackMove && Strength && (What_Am_I() == RTTI_UNIT || What_Am_I() == RTTI_INFANTRY || What_Am_I() == RTTI_AIRCRAFT)) {
-
-        // If something is already targeted, but not in range, try for a closer target
-        // But not for aircraft because the result of a constantly retargetting aircraft is disasterous (if comical)
-        if (Target_Legal(TarCom) && (What_Am_I() != RTTI_AIRCRAFT)) {
-            // remember our current target
-            TARGET oldtarcom = TarCom;
-            // Target_Something_Nearby() picks a nearby target, potentially dumping the current target if it's out of range, sets TarCom, then returns Target_Legal(TarCom)
-            if (Target_Something_Nearby(THREAT_RANGE)){ 
-                if (TarCom != oldtarcom){
-                    AttackMoveEnterAttackMode();
-                }
-            }
-        }
-        // If we didn't have a target to begin with, look for one            
-        if (!Target_Legal(TarCom)){
-            if (Target_Something_Nearby(THREAT_RANGE)){
-                AttackMoveEnterAttackMode();
-            }
-        }
-        // Later, when the target dies, Mission_Attack() will snap us back to MISSION_MOVE
-
-        // backstop in case we somehow got into a different mission
-        if (   (What_Am_I() != RTTI_AIRCRAFT) &&
-                (Mission != MISSION_MOVE) &&
-                (Mission != MISSION_ATTACK) &&
-                (MissionQueue != MISSION_MOVE) &&
-                (MissionQueue != MISSION_ATTACK) &&
-                RememberedNavCom &&
-                Target_Legal(RememberedNavCom) &&
-                (Distance(RememberedNavCom) > 3*CELL_LEPTON_W)
-        ){
-            AttackMoveEnterMoveMode();
-        }
-        
-    } // end of AttackMove stuff
     
     // Chthon CFE Note: Do healing for veteran units
     // 1 hp per 16 frames turned out to be insanely strong for low HP units,
@@ -2546,7 +2529,6 @@ void TechnoClass::Stun(void)
 	Assign_Target(TARGET_NONE);
 	Assign_Destination(TARGET_NONE);
 	Transmit_Message(RADIO_OVER_OUT);
-    ResetAttackMove(); //Chthon CFE Note -- make sure attack-move can't interrupt death animations
 	Detach_All();
 	//Unselect();
 	//When an object is stunned it needs to be deselected from all players, not just the current PlayerPtr.
@@ -5597,52 +5579,6 @@ int TechnoTypeClass::Legal_Placement(CELL pos) const
 }
 #endif //USE_RA_AI
 
-// Attack Move rework by ChthonVII
-void TechnoClass::ResetAttackMove()
-{
-	RememberedNavCom = TARGET_NONE; //0
-	AttackMove = 0;
-}
-
-void TechnoClass::AttackMoveEnterMoveMode(){
-
-    // If we somehow lost the destination, abort attack move
-    if (!Target_Legal(RememberedNavCom)){
-        ResetAttackMove();
-        Enter_Idle_Mode();
-        return;
-    }
-
-    //if (What_Am_I() == RTTI_INFANTRY){
-    //    ((FootClass*)this)->Stop_Driver(); // Butch had this for infantry only, it seems to be causing problems for other unit types
-    //}
-    Assign_Target(TARGET_NONE); // this was added to RA in 1.7 for reasons I don't remember
-    // maybe for fixing the twitchy bazooka guys -- in which case TD wouldn't *need* it
-    // but let's put it here unless it breaks something
-    
-    Assign_Mission(MISSION_MOVE); //Set_Mission() is bad because it makes Commence() not work, and then we end up with units in impossible mission/status combinations
-    Assign_Destination(RememberedNavCom);
-    //Commence();
-    // aircraft can commence though -- and should so we can skip status ahead past takeoff
-    if (What_Am_I() == RTTI_AIRCRAFT){
-        AircraftClass* meplane = (AircraftClass*)this;
-        if (!meplane->IsLanding && !meplane->IsTakingOff){
-            Commence();
-        }
-    }
-}
-
-void TechnoClass::AttackMoveEnterAttackMode(){
-    Assign_Destination(TARGET_NONE);
-    //if (What_Am_I() == RTTI_INFANTRY){
-    //    ((FootClass*)this)->Stop_Driver(); // Butch had this for infantry only, it seems to be causing problems for other unit types
-    //}
-    //((FootClass*)this)->Approach_Target(); // MissionAttack() will do this
-    Assign_Mission(MISSION_ATTACK); //Set_Mission() is bad because it makes Commence() not work, and then we end up with units in impossible mission/status combinations
-    //Commence();
-}
-
-
 
 void TechnoClass::GainVeterancyXP(unsigned short int XP){
     // bail if veterancy disabled
@@ -5663,12 +5599,14 @@ void TechnoClass::GainVeterancyXP(unsigned short int XP){
     }
     
     // gain XP
+    unsigned int oldXP = VeterancyXP;
     VeterancyXP += XP;
     int oldrank = VeterancyRank;
+    bool rolledover = (oldXP > VeterancyXP); // check for rollover. With 15 bytes, we ought to be able to handle a max cost of ~5400.
     
     // rank up to 3
     //if (VeterancyRank < 3 && VeterancyXP >= Class_Of().Cost_Of()){ // just for now jump straight to rank 3 for testing
-    if (VeterancyRank < 3 && VeterancyXP >= 6 * Class_Of().Cost_Of()){
+    if (VeterancyRank < 3 && ((VeterancyXP >= (unsigned int)(6 * Class_Of().Cost_Of())) || rolledover)){
         VeterancyRank = 3;
         
         // special bonuses for reaching rank 3:
@@ -5778,11 +5716,11 @@ void TechnoClass::GainVeterancyXP(unsigned short int XP){
         
     }
     // rank up to 2
-    else if (VeterancyRank < 2 && VeterancyXP >= 3 * Class_Of().Cost_Of()){
+    else if (VeterancyRank < 2 && VeterancyXP >= (unsigned int)(3 * Class_Of().Cost_Of())){
         VeterancyRank = 2;
     }
     // rank up to 1
-    else if (VeterancyRank < 1 && VeterancyXP >= Class_Of().Cost_Of()){
+    else if (VeterancyRank < 1 && VeterancyXP >= (unsigned int)Class_Of().Cost_Of()){
         VeterancyRank = 1;
     }
     
