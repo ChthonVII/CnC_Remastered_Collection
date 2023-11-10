@@ -7867,6 +7867,7 @@ bool DLLExportClass::Save(FileClass & file)
 		return false;
 	}
 
+	// Chthon CFE Note: This is always zero...
 	if (file.Write(&GlyphXClientSidebarWidthInLeptons, sizeof(GlyphXClientSidebarWidthInLeptons)) != sizeof(GlyphXClientSidebarWidthInLeptons)) {
 		return false;
 	}
@@ -7875,6 +7876,7 @@ bool DLLExportClass::Save(FileClass & file)
 		return false;
 	}
 
+	// Chthon CFE Note: This is duplicate!
 	if (file.Write(MultiplayerStartPositions, sizeof(MultiplayerStartPositions)) != sizeof(MultiplayerStartPositions)) {
 		return false;
 	}
@@ -7931,6 +7933,7 @@ bool DLLExportClass::Save(FileClass & file)
 		return false;
 	}
 
+	// Chthon CFE Note: Another duplicate!
 	if (file.Write(MPlayerIsHuman, sizeof(MPlayerIsHuman)) != sizeof(MPlayerIsHuman)) {
 		return false;
 	}
@@ -7954,7 +7957,21 @@ bool DLLExportClass::Save(FileClass & file)
 	/*
 	** Room for save game expansion
 	*/
-	unsigned char padding[4095];
+    // Chthon CFE Note: Size changed due to megamaps and 8 players!
+    // MultiplayerStartPositions - increased by 2x sizeof(CELL) = 4
+    // GlyphxPlayerIDs - increased by 2x uint64 = 128
+    // MPlayerIsHuman - increased by 2x sizeof(bool) = 2
+    // MultiplayerStartPositions AGAIN - increased by 2x sizeof(CELL) = 4
+    // PlacementType - increased by 2x sizeof(pointer) = 8
+    // MPlayerHouses--  increased by 2x sizeof(HousesType) = 4
+    // MPlayerNames -- increased by 2x sizeof(char) x MPLAYER_NAME_MAX = 24
+    // MPlayerID -- increased by 2x sizeof(unsigned char) = 2
+     // MPlayerIsHuman AGAIN - increased by 2x sizeof(bool) = 2
+     // Sidebar_Glyphx_Save -- increase dby 2x sizeof(SidebarGlyphxClass) = 1288
+     // total  increase = 1466
+    
+    // original padding was 4095. subtract 1466 to account for megamaps and 8 players
+	unsigned char padding[2629];
 	memset(padding, 0, sizeof(padding));
 
 	if (file.Write(padding, sizeof(padding)) != sizeof(padding)) {
@@ -8078,7 +8095,9 @@ bool DLLExportClass::Load(FileClass & file)
 	}
 	Rule.AllowSuperWeapons = !not_allow_super_weapons;
 
-	unsigned char padding[4095];
+    // Chthon CFE Note: padding size changed to account for megamaps and 8 players
+    // original padding was 4095. subtract 1466 to account for megamaps and 8 players
+	unsigned char padding[2629];
 
 	if (file.Read(padding, sizeof(padding)) != sizeof(padding)) {
 		return false;
