@@ -36,6 +36,7 @@
 #include "SidebarGlyphx.h"
 
 #include "CFEDEBUG.H"
+#include <windows.h> // for Sleep()
 
 
 /*
@@ -1826,6 +1827,8 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Save_Load(bool save, const cha
 		VisiblePage.Clear();
 		Map.Flag_To_Redraw(true);
 		if (DLLExportClass::Legacy_Render_Enabled()) {
+            // Chthon CFE Note: Let's try  a delay in case a race condition in the GlyphX client is responsible for the crash
+            Sleep(1000);
 			Map.Render();
 		}
 		Set_Palette(GamePalette);
