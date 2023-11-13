@@ -3419,7 +3419,7 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number, int x, int y, int widt
     }
     
     // Chthon CFE Note: Override scale on newly-spawned viseroids to fake a spawn animation
-    if (object && (object->What_Am_I() == RTTI_UNIT)){
+    if (object && (object->What_Am_I() == RTTI_UNIT) && InMainLoop){
 		UnitClass* squidgy = static_cast<UnitClass*>(object);
 		if ((squidgy->Class->Type == UNIT_VICE) && (squidgy->SquidgySpawningTimer > 0)){
 			// replace with simple parametric easing function over 1 sec
@@ -6315,7 +6315,7 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct *dynamic_map, int &e
 	*getting it to render in glyphX has been difficult
 	*/
     
-	if (cell_ptr->IsCursorHere && Map.PendingObject && CFE_Patch_Is_Wall(*Map.PendingObject) && Map.ZoneCell != cell_ptr->Cell_Number()) {
+	if (cell_ptr->IsCursorHere && Map.PendingObject && CFE_Patch_Is_Wall(*Map.PendingObject) && Map.ZoneCell != cell_ptr->Cell_Number() && InMainLoop) {
 		CNCDynamicMapEntryStruct& cursorEntry = dynamic_map->Entries[entry_index++];
 
 		strncpy(cursorEntry.AssetName, cell_ptr->Is_Generally_Clear() ? "PLACEMENT_EXTRA" : "PLACEMENT_BAD", CNC_OBJECT_ASSET_NAME_LENGTH);
