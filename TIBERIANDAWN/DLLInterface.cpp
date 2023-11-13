@@ -1817,9 +1817,10 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Save_Load(bool save, const cha
 		}
 
 		DLLExportClass::Set_Player_Context(DLLExportClass::GlyphxPlayerIDs[0], true);
-		DLLExportClass::Recalculate_Placement_Distances();
+		//DLLExportClass::Recalculate_Placement_Distances();
         // Chthon CFE NOTE: The above line is (I think) from CFEpatch. The below line is from official 9/16/2020 patch.
         // Not sure if they conflict, or what proper order is.
+        // On second thought, just cancel, don't recalculate.
 		DLLExportClass::Cancel_Placement(DLLExportClass::GlyphxPlayerIDs[0], -1, -1);
 		Set_Logic_Page(SeenBuff);
 		VisiblePage.Clear();
