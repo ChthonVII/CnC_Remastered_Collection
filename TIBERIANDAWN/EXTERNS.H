@@ -123,6 +123,7 @@ struct CFEPatchConfig
     bool EnableAdvancedWallOwnership = false;
     bool EnableHuntFix = false;
     bool ShroudRemover = false;
+    bool ForceDisableLegacyRender = false;
     
     bool OverrideAPCReqs = false;
     bool OverrideWarFactoryHP = false;

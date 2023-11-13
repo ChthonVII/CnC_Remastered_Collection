@@ -7698,6 +7698,10 @@ bool Legacy_Render_Enabled(void){
 **************************************************************************************************/
 bool DLLExportClass::Legacy_Render_Enabled(void)
 {
+    if (ActiveCFEPatchConfig.ForceDisableLegacyRender){
+        return false;
+    }
+    
 	if (GameToPlay == GAME_GLYPHX_MULTIPLAYER) {
 		unsigned int num_humans = 0U;
 		for (int i = 0; i < MPlayerCount; ++i) {
