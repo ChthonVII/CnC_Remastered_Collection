@@ -3245,6 +3245,9 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number, int x, int y, int widt
 		new_object.OverrideDisplayName = "\0";
 
 		bool is_building = what_is_object == RTTI_BUILDING;
+        bool is_infantry = what_is_object == RTTI_INFANTRY;
+        bool is_unit = what_is_object == RTTI_UNIT;
+        bool is_aircraft = what_is_object == RTTI_AIRCRAFT;
 		if (is_building) {
 			BuildingClass* building = static_cast<BuildingClass*>(object);
 			new_object.IsRepairing = building->IsRepairing;
@@ -3256,7 +3259,14 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number, int x, int y, int widt
 			TechnoClass* techno_object = static_cast<TechnoClass*>(object);
 			const TechnoTypeClass *ttype = techno_object->Techno_Type_Class();
 
-			new_object.MaxSpeed = (unsigned char)ttype->MaxSpeed;
+            // Chthon CFE Note: Use the modified speed including house bonus and veterancy bonus
+            if (is_infantry || is_unit || is_aircraft){
+                FootClass* somefoot = static_cast<FootClass*>(object);
+                new_object.MaxSpeed = (unsigned char)MPHType(min((int)(ttype->MaxSpeed * somefoot->SpeedBias * somefoot->House->GroundspeedBias), (int)MPH_LIGHT_SPEED));
+            }
+            else {
+                new_object.MaxSpeed = (unsigned char)ttype->MaxSpeed;
+            }
 			new_object.IsALoaner = techno_object->IsALoaner;
 			new_object.IsNominal = ttype->IsNominal;
 			new_object.MaxPips = ttype->Max_Pips();
@@ -3278,7 +3288,7 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number, int x, int y, int widt
 
 		new_object.ControlGroup = (unsigned char)(-1);
 		new_object.CanPlaceBombs = false;
-		bool is_infantry = what_is_object == RTTI_INFANTRY;
+		//bool is_infantry = what_is_object == RTTI_INFANTRY;
 		if (is_infantry) {
 			InfantryClass* infantry = static_cast<InfantryClass*>(object);
 			new_object.ControlGroup = infantry->Group;
@@ -3286,7 +3296,7 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number, int x, int y, int widt
 		}
 
 		new_object.CanHarvest = false;
-		bool is_unit = what_is_object == RTTI_UNIT;
+		//bool is_unit = what_is_object == RTTI_UNIT;
 		if (is_unit) {
 			UnitClass* unit = static_cast<UnitClass*>(object);
 			if (unit->Class->Type == UNIT_HARVESTER) {
@@ -3297,7 +3307,7 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number, int x, int y, int widt
 		}
 
 		new_object.IsFixedWingedAircraft = false;
-		bool is_aircraft = what_is_object == RTTI_AIRCRAFT;
+		//bool is_aircraft = what_is_object == RTTI_AIRCRAFT;
 		if (is_aircraft) {
 			AircraftClass* aircraft = static_cast<AircraftClass*>(object);
 			new_object.Altitude = Pixel_To_Lepton(aircraft->Altitude);
@@ -7967,7 +7977,7 @@ bool DLLExportClass::Save(FileClass & file)
     // MPlayerNames -- increased by 2x sizeof(char) x MPLAYER_NAME_MAX = 24
     // MPlayerID -- increased by 2x sizeof(unsigned char) = 2
      // MPlayerIsHuman AGAIN - increased by 2x sizeof(bool) = 2
-     // Sidebar_Glyphx_Save -- increase dby 2x sizeof(SidebarGlyphxClass) = 1288
+     // Sidebar_Glyphx_Save -- increased by 2x sizeof(SidebarGlyphxClass) = 1288
      // total  increase = 1466
     
     // original padding was 4095. subtract 1466 to account for megamaps and 8 players
