@@ -114,6 +114,7 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     GetSetting(ActiveCFEPatchConfig.HarvyOptimizeCommunalismNumerator      , "SETTINGS", "HARVY_OPTIMIZE_COMMUNALISM_NUMERATOR");
     GetSetting(ActiveCFEPatchConfig.HarvyOptimizeCommunalismDenominator      , "SETTINGS", "HARVY_OPTIMIZE_COMMUNALISM_DENOMINATOR");
 	GetSetting(ActiveCFEPatchConfig.TibGrowthScale            , "SETTINGS", "TIB_GROWTH_SCALE");
+    GetSetting(ActiveCFEPatchConfig.TibResurgeDelay            , "SETTINGS", "TIB_RESURGE_DELAY");
     GetSetting(ActiveCFEPatchConfig.TreeVisceroidSpawnMode      , "SETTINGS", "TREE_VISCEROID_SPAWN_MODE");
     GetSetting(ActiveCFEPatchConfig.MeanerVisceroids      , "SETTINGS", "MEANER_VISCEROIDS");
 	GetSetting(ActiveCFEPatchConfig.WallBuildLength           , "SETTINGS", "WALL_BUILD_LENGTH");

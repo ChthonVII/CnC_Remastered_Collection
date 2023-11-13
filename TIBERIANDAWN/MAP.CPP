@@ -2065,7 +2065,7 @@ void MapClass::CFELogic(void){
             CellClass *ptr = &(*this)[cell];
             TerrainClass * terrain = ptr->Cell_Terrain();
             if (terrain && terrain->Class->IsTiberiumSpawn){
-                // build up ~8 minutes of no tiberium
+                // build up configurable time of no tiberium
                 if (ptr->TibResurgenceCountdown == 0){
                     int nearbytibcount = 0;
                     bool toomuch = false;
@@ -2084,7 +2084,7 @@ void MapClass::CFELogic(void){
                     }
                     if (!toomuch){
                         ptr->TibResurgenceBuildup = ptr->TibResurgenceBuildup + 8 - Random_Pick(0, nearbytibcount);
-                        if (ptr->TibResurgenceBuildup >= 57600){ // 8 * 15 ticks/sec * 60 sec/min * 8 min
+                        if (ptr->TibResurgenceBuildup >= 8 * ActiveCFEPatchConfig.TibResurgeDelay){ // 8 * ticks
                             ptr->TibResurgenceBuildup = 0;
                             ptr->TibResurgenceCountdown = 480;
                         }
