@@ -1231,7 +1231,7 @@ void TechnoClass::Draw_It(int x, int y, WindowNumberType window)
 	}
 	
     // Chthon CFE Note -- draw vetrancy pips
-    if ((VeterancyRank > 0) && InMainLoop){
+    if ((VeterancyRank > 0) && ModDrawOK){
         int piprank = VeterancyRank - 1;
         // handle remastered and legacy graphics differently
         // remastered rendering

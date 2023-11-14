@@ -1070,3 +1070,6 @@ TheaterType		LastTheater = THEATER_NONE;
 
 
 bool RunningAsDLL = false;
+
+//Chthon CFE Note: for skipping some draws while loading save game
+bool ModDrawOK = true;

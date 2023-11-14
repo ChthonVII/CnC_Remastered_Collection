@@ -1486,6 +1486,9 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
 	//DLLExportClass::Set_Event_Callback(event_callback);
 	
 	InMainLoop = true;
+    
+    //Chthon CFE Note: for skipping some draws while loading save game
+    ModDrawOK = true;
 	
 	if (Frame <= 10) {		// Don't spam forever, but useful to know that we actually started advancing
 		GlyphX_Debug_Print("CNC_Advance_Instance - TD");
@@ -1808,6 +1811,9 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Save_Load(bool save, const cha
 				return false;
 			}
 		}
+		
+		// Chthon CFE Note: Block mod features from drawing during this initial render when loading a saved game
+		ModDrawOK = false;
 		
 		result = Load_Game(file_path_and_name);
 
@@ -3422,7 +3428,7 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number, int x, int y, int widt
     }
     
     // Chthon CFE Note: Override scale on newly-spawned viseroids to fake a spawn animation
-    if (object && (object->What_Am_I() == RTTI_UNIT) && InMainLoop){
+    if (object && (object->What_Am_I() == RTTI_UNIT) && ModDrawOK){
 		UnitClass* squidgy = static_cast<UnitClass*>(object);
 		if ((squidgy->Class->Type == UNIT_VICE) && (squidgy->SquidgySpawningTimer > 0)){
 			// replace with simple parametric easing function over 1 sec
@@ -6318,7 +6324,7 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct *dynamic_map, int &e
 	*getting it to render in glyphX has been difficult
 	*/
     
-	if (cell_ptr->IsCursorHere && Map.PendingObject && CFE_Patch_Is_Wall(*Map.PendingObject) && Map.ZoneCell != cell_ptr->Cell_Number() && InMainLoop) {
+	if (cell_ptr->IsCursorHere && Map.PendingObject && CFE_Patch_Is_Wall(*Map.PendingObject) && Map.ZoneCell != cell_ptr->Cell_Number() && ModDrawOK) {
 		CNCDynamicMapEntryStruct& cursorEntry = dynamic_map->Entries[entry_index++];
 
 		strncpy(cursorEntry.AssetName, cell_ptr->Is_Generally_Clear() ? "PLACEMENT_EXTRA" : "PLACEMENT_BAD", CNC_OBJECT_ASSET_NAME_LENGTH);

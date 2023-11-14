@@ -519,4 +519,7 @@ extern TheaterType LastTheater;
 
 extern bool ShareAllyVisibility;
 
+//Chthon CFE Note: for skipping some draws while loading save game
+extern bool ModDrawOK;
+
 #endif

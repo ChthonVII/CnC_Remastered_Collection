@@ -836,7 +836,7 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window)
 	}
 
 	// Chthon CFE Note: fixed to work in LAN multiplayer
-	if (Can_Have_Rally_Point() && Is_Selected_By_Player(House) && RallyPoint && Target_Legal(RallyPoint) && InMainLoop)
+	if (Can_Have_Rally_Point() && Is_Selected_By_Player(House) && RallyPoint && Target_Legal(RallyPoint) && ModDrawOK)
 	{
 		int startX, startY, endX, endY;
 		Map.Coord_To_Pixel(Center_Coord(), startX, startY);
@@ -887,7 +887,7 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window)
 	// Chthon CFE Note: Use the Construction Yard as the base object for drawing the inverse wall placement markers
 	// reworked because asking it to draw too many shapes could crash the GlyphX client
 	// only draw in remasted mode, since LAN multiplayer is the only mode normal TS-style markers don't work, and legacy render is disabled there
-	if ((ShowInverseWallPreviewMarkers == 2) && (window == WINDOW_VIRTUAL) && InMainLoop){
+	if ((ShowInverseWallPreviewMarkers == 2) && (window == WINDOW_VIRTUAL) && ModDrawOK){
         const HousesType myhousenumber = Owner();
         const bool singleplayer = Legacy_Render_Enabled();
         ObjectTypeClass const * pendingobject = nullptr;
