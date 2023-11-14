@@ -1557,10 +1557,9 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
         
         CFE_Debug_Printf("\tBriefingText %i bytes.", sizeof(BriefingText));
         CFE_Debug_Printf("\tWaypoint %i bytes.", sizeof(Waypoint));
-        */
-        
+
     }
-    
+    */
 
 	/*
 	** Shouldn't really need to do this, but I like the idea of always running the main loop in the context of the same player.
