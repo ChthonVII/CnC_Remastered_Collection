@@ -1488,6 +1488,12 @@ void MapClass::Clean(void)
 	const char *ini_name = NULL;
 	AbstractClass abstract_object;
 	unsigned long abstract_vtable = *(unsigned long*)&abstract_object;
+    
+    // Chthon CFE Note: merge cleanup of dangling occupy/reserve pointers save we only have to iterate the whole map once
+    int maxx = MapCellX + MapCellWidth;
+    int maxy = MapCellY + MapCellHeight;
+    int minx = MapCellX - 1;
+    int miny = MapCellY - 1;
 
 	/*------------------------------------------------------------------------
 	Check every cell on the map, even those that aren't displayed.
@@ -1575,6 +1581,50 @@ void MapClass::Clean(void)
 				}
 			}
 		}
+		
+		// Chthon CFE Note: merge cleanup of dangling occupy/reserve pointers save we only have to iterate the whole map once
+		// we need to remove vehicle occupy/reserve flags that got set but not cleared
+        // not sure where this is happening (movement system is such a mess)
+        // but user bug reports say it is happening, so, meh
+        
+        // check if we are in playable area or 1 row beyond
+        int cellx = Cell_X(cell);
+        int celly = Cell_Y(cell);
+        bool pastx = (cellx > maxx);
+        bool pasty =  (celly > maxy);
+        if (pastx || pasty || (cellx < minx) || (celly < miny)){
+            continue;
+        }
+		CellClass *cellptr = &(*this)[cell];
+        DriveClass* someunit = cellptr->ReservingVehicle;
+        
+        // no flags to clear
+        if (!someunit && !cellptr->Flag.Occupy.Vehicle){
+            continue;
+        }
+        
+        // cell currently has a vehicle in it
+        if (cellptr->Cell_Unit()){
+            continue;
+        }
+        
+        // reserving vehicle is alive, and...
+        if (someunit && someunit->IsActive){
+            // this cell is its headto, or...
+            if (Coord_Cell(someunit->Head_To_Coord()) == cell){
+                continue;
+            }
+            // this cell is the midpoint of a two-cell track (fugly)
+            // need to punt to drive class (unless I want to tear out a bunch of private specifiers)
+            if (someunit->Track_Midpoint_Cell() == cell){
+                continue;
+            }
+        }
+        
+        // if we haven't continued by this point, the flags must be bad
+        cellptr->ReservingVehicle = nullptr;
+        cellptr->Flag.Occupy.Vehicle = false;
+        
 	}
 }
 
@@ -2161,65 +2211,6 @@ void MapClass::CFELogic(void){
 
     
     
-    return;
-}
-
-// we need to remove vehicle occupy/reserve flags that got set but not cleared
-// not sure where this is happening (movement system is such a mess)
-// but user bug reports say it is happening, so, meh
-// Not happy about doing a full map scan every tick, but it can't be helped...
-void MapClass::CleanupZombieFlags(){
-    // we need to check up to one row beyond the playable area b/c units can drive on/off map
-    int maxx = MapCellX + MapCellWidth;
-    int maxy = MapCellY + MapCellHeight;
-    int minx = MapCellX - 1;
-    int miny = MapCellY - 1;
-    for (int index = 0; index < MAP_CELL_TOTAL; index++) {
-		CELL cell = index;
-        
-        // check if we are in playbale area or 1 row beyond
-        int cellx = Cell_X(cell);
-        int celly = Cell_Y(cell);
-        bool pastx = (cellx > maxx);
-        bool pasty =  (celly > maxy);
-        if (pastx && pasty){
-            // past the end of all used cells, so abort
-            break;
-        }
-        if (pastx || pasty || (cellx < minx) || (celly < miny)){
-            continue;
-        }
-		CellClass *cellptr = &(*this)[cell];
-        DriveClass* someunit = cellptr->ReservingVehicle;
-        
-        // no flags to clear
-        if (!someunit && !cellptr->Flag.Occupy.Vehicle){
-            continue;
-        }
-        
-        // cell currently has a vehicle in it
-        if (cellptr->Cell_Unit()){
-            continue;
-        }
-        
-        // reserving vehicle is alive, and...
-        if (someunit && someunit->IsActive){
-            // this cell is its headto, or...
-            if (Coord_Cell(someunit->Head_To_Coord()) == cell){
-                continue;
-            }
-            // this cell is the midpoint of a two-cell track (fugly)
-            // need to punt to drive class (unless I want to tear out a bunch of private specifiers)
-            if (someunit->Track_Midpoint_Cell() == cell){
-                continue;
-            }
-        }
-        
-        // if we haven't continued by this point, the flags must be bad
-        cellptr->ReservingVehicle = nullptr;
-        cellptr->Flag.Occupy.Vehicle = false;
-        
-    }
     return;
 }
 

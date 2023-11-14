@@ -204,8 +204,6 @@ class MapClass: public GScreenClass
     public:
         // generate visceroids if infantry died in interesting ways
         bool ProcessTiberiumDeath(CELL where, COORDINATE specifically_where, unsigned char how);
-        // we need to remove vehicle occupy/reserve flags that got set but not cleared
-        void CleanupZombieFlags();
         
         unsigned char VisceroidOffalCount = 0;
         unsigned char VisceroidTreeFrustrationCount = 0;

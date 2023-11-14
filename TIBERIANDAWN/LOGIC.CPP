@@ -251,7 +251,6 @@ void LogicClass::AI(void)
 	/*
 	**	Map related logic is performed.
 	*/
-    Map.CleanupZombieFlags(); // Chthon CFE Note: We need to clean up vehicle occupation/reservation flags that are set but never cleared
     if (ActiveCFEPatchConfig.BetterTibGrowth){
         Map.CFELogic();
     }
