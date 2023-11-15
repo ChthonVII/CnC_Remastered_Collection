@@ -1431,8 +1431,8 @@ ResultType ObjectClass::Take_Damage(int & damage, int distance, WarheadType warh
                     (overkill < damage / 2) &&                // prohibit death's door save if doing so would negate half or more of the incoming damage
                     (overkill < maxstrength / 10) &&        // prohibit death's door save if incoming damage would have made this object 110% dead
                     // now we need to prevent multiple death's door saves back-to-back
-                    (oldstrength > 3) && // passive and veterancy healing is 1hp/sec or less, so >3hp means at least 2 sec since last save
-                    ((What_Am_I() != RTTI_BUILDING) || (oldstrength > (2*((BuildingClass*)this)->Class->Repair_Step()) + 1 )) // buildings are presumptively under repair, so twice the repair step plus one should be at least 2 sec since last save
+                    (oldstrength > 4) && // passive and veterancy healing is 1hp/sec or less, so >4hp means at least 3 sec since last save
+                    ((What_Am_I() != RTTI_BUILDING) || (oldstrength > (3*((BuildingClass*)this)->Class->Repair_Step()) + 1 )) // buildings are presumptively under repair, so thrice the repair step plus one should be at least 3 sec since last save
             ){
                 damage = oldstrength - 1;
             }
