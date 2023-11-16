@@ -123,7 +123,6 @@ struct CFEPatchConfig
     bool EnableAdvancedWallOwnership = false;
     bool EnableHuntFix = false;
     bool ShroudRemover = false;
-    bool ForceDisableLegacyRender = false;
     
     bool OverrideAPCReqs = false;
     bool OverrideWarFactoryHP = false;
@@ -518,8 +517,5 @@ extern void Reset_Theater_Shapes(void);
 extern TheaterType LastTheater;
 
 extern bool ShareAllyVisibility;
-
-//Chthon CFE Note: for skipping some draws while loading save game
-extern bool ModDrawOK;
 
 #endif

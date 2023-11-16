@@ -95,8 +95,6 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     GetSetting(ActiveCFEPatchConfig.EnableAdvancedWallOwnership	, "FEATURES", "ADV_WALL_OWN");
     GetSetting(ActiveCFEPatchConfig.EnableHuntFix	, "FEATURES", "HUNT_FIX");
     GetSetting(ActiveCFEPatchConfig.ShroudRemover      , "FEATURES", "SHROUD_REMOVER");  // J_D's thing; thanks to Terra_Ex and screaming_chicken
-    GetSetting(ActiveCFEPatchConfig.ForceDisableLegacyRender      , "FEATURES", "FORCE_DISABLE_LEGACY_RENDER");  // Don't do the legacy rendering in the background
-    
     
     
 	//Settings

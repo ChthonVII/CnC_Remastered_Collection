@@ -716,7 +716,6 @@ bool Init_Game(int , char *[])
 	Options.Load_Settings();
 
 	Initialise_CFE_Patch_Config();
-    ModDrawOK = true;
 
 	return(true);
 }

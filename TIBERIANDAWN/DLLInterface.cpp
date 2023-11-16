@@ -36,7 +36,6 @@
 #include "SidebarGlyphx.h"
 
 #include "CFEDEBUG.H"
-#include <windows.h> // for Sleep()
 
 
 /*
@@ -1486,9 +1485,6 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
 	//DLLExportClass::Set_Event_Callback(event_callback);
 	
 	InMainLoop = true;
-    
-    //Chthon CFE Note: for skipping some draws while loading save game
-    ModDrawOK = true;
 	
 	if (Frame <= 10) {		// Don't spam forever, but useful to know that we actually started advancing
 		GlyphX_Debug_Print("CNC_Advance_Instance - TD");
@@ -1812,9 +1808,6 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Save_Load(bool save, const cha
 			}
 		}
 		
-		// Chthon CFE Note: Block mod features from drawing during this initial render when loading a saved game
-		ModDrawOK = false;
-		
 		result = Load_Game(file_path_and_name);
 
 		if (result == false)
@@ -1831,9 +1824,8 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Save_Load(bool save, const cha
 		Set_Logic_Page(SeenBuff);
 		VisiblePage.Clear();
 		Map.Flag_To_Redraw(true);
+        
 		if (DLLExportClass::Legacy_Render_Enabled()) {
-            // Chthon CFE Note: Let's try  a delay in case a race condition in the GlyphX client is responsible for the crash
-            Sleep(1000);
 			Map.Render();
 		}
 		Set_Palette(GamePalette);
@@ -3428,7 +3420,7 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number, int x, int y, int widt
     }
     
     // Chthon CFE Note: Override scale on newly-spawned viseroids to fake a spawn animation
-    if (object && (object->What_Am_I() == RTTI_UNIT) && ModDrawOK){
+    if (object && (object->What_Am_I() == RTTI_UNIT)){
 		UnitClass* squidgy = static_cast<UnitClass*>(object);
 		if ((squidgy->Class->Type == UNIT_VICE) && (squidgy->SquidgySpawningTimer > 0)){
 			// replace with simple parametric easing function over 1 sec
@@ -6324,7 +6316,7 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct *dynamic_map, int &e
 	*getting it to render in glyphX has been difficult
 	*/
     
-	if (cell_ptr->IsCursorHere && Map.PendingObject && CFE_Patch_Is_Wall(*Map.PendingObject) && Map.ZoneCell != cell_ptr->Cell_Number() && ModDrawOK) {
+	if (cell_ptr->IsCursorHere && Map.PendingObject && CFE_Patch_Is_Wall(*Map.PendingObject) && Map.ZoneCell != cell_ptr->Cell_Number()) {
 		CNCDynamicMapEntryStruct& cursorEntry = dynamic_map->Entries[entry_index++];
 
 		strncpy(cursorEntry.AssetName, cell_ptr->Is_Generally_Clear() ? "PLACEMENT_EXTRA" : "PLACEMENT_BAD", CNC_OBJECT_ASSET_NAME_LENGTH);
@@ -7703,10 +7695,12 @@ bool Legacy_Render_Enabled(void){
 **************************************************************************************************/
 bool DLLExportClass::Legacy_Render_Enabled(void)
 {
-    if (ActiveCFEPatchConfig.ForceDisableLegacyRender){
-        return false;
-    }
-    
+    // Chthon CFE Note: Some interaction between the legacy renderer and GlyphX client
+    // is responsible for the intermittent-crash-while-loading-saved-game bug.
+    // There seems to be no other solution than to outright kill the legacy rendering.
+    return false;
+
+    /*
 	if (GameToPlay == GAME_GLYPHX_MULTIPLAYER) {
 		unsigned int num_humans = 0U;
 		for (int i = 0; i < MPlayerCount; ++i) {
@@ -7720,6 +7714,7 @@ bool DLLExportClass::Legacy_Render_Enabled(void)
 
 	//return false;
 	return true;
+    */
 }
 
 
