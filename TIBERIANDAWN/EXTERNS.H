@@ -164,6 +164,7 @@ struct CFEPatchConfig
     int SmarterSAMBalanceDelay = 0;
     int MPPreplacedUnitOrderMode = 0; // 0=remsatered vanilla - enter idle mode (guard or guard area); 1=honor orders map file; 2=original game vanilla - hunt for infantry, timed hunt for vehicles (aircraft not affected; they DO honor orders regardless)
     int BuildingDeathAnnounceMode = 0; // 0=off; 1=owner notice only; 2=global notice; 3=global faction-based notice in SP; global faction-based notice in SP & MP
+    int QuieterAirstrips = 0; // 0=vanilla (announce "unit ready" & "reinf. arrived"); 1="unit ready" only; 2="reinf. arrived" only; 3="unit ready" only, but when cargo plane lands
     
     int OverrideWarFactoryHP_Value = 520;
     int OverrideStealthTankCost_Value = 700;

@@ -433,7 +433,17 @@ bool SidebarGlyphxClass::StripClass::AI(KeyNumType & input, int , int )
 								case RTTI_AIRCRAFT:
 									OutList.Add(EventClass(EventClass::PLACE, pending->What_Am_I(), -1));
 									if (!factory->Is_Blocked()) {
-										Speak(VOX_UNIT_READY);
+                                        // Chthon CFE Note: User may wish to silence doubled up "unit ready" and "reinforcments have arrived" announcements
+                                        bool talkok = ((ActiveCFEPatchConfig.QuieterAirstrips < 2) || (pending->What_Am_I() == RTTI_AIRCRAFT));
+                                        if (!talkok){
+                                            BuildingClass* builder = pending->Who_Can_Build_Me(false, false); // this is what HouseClass:Place_Object() uses to pick the factory to exit from
+                                            if (builder && (*builder != STRUCT_AIRSTRIP)){
+                                                talkok = true;
+                                            }
+                                        }
+                                        if (talkok){
+                                            Speak(VOX_UNIT_READY);
+                                        }
 									}
 									break;
 

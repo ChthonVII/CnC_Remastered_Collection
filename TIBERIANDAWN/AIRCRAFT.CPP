@@ -1281,8 +1281,14 @@ int AircraftClass::Mission_Unload(void)
 									//if (*this == AIRCRAFT_CARGO && House == PlayerPtr) {
 									//	Speak(VOX_REINFORCEMENTS, NULL, Cell_Coord(cell));
 									//}
-									if (*this == AIRCRAFT_CARGO && House->IsHuman) {
-										Speak(VOX_REINFORCEMENTS, House, Cell_Coord(cell));
+									// Chthon CFE Note: User may wish to silence doubled up "unit ready" and "reinforcments have arrived" announcements, or play "unit ready" when the cargo plane lands
+									if (*this == AIRCRAFT_CARGO && House->IsHuman && ((ActiveCFEPatchConfig.QuieterAirstrips == 0) || (ActiveCFEPatchConfig.QuieterAirstrips > 1))) {
+                                        if (ActiveCFEPatchConfig.QuieterAirstrips == 3){
+                                            Speak(VOX_UNIT_READY, House, Cell_Coord(cell));
+                                        }
+                                        else {
+                                            Speak(VOX_REINFORCEMENTS, House, Cell_Coord(cell));
+                                        }
 									}
 									unit->IsALoaner = false;
 									unit->IsLocked = true;

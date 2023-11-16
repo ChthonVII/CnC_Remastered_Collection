@@ -122,6 +122,7 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     GetSetting(ActiveCFEPatchConfig.SmarterSAMBalanceDelay   , "SETTINGS", "SMARTER_SAM_BALANCE_DELAY");
     GetSetting(ActiveCFEPatchConfig.MPPreplacedUnitOrderMode   , "SETTINGS", "MP_PREPLACED_UNIT_ORDER_MODE");
     GetSetting(ActiveCFEPatchConfig.BuildingDeathAnnounceMode   , "SETTINGS", "BUILDING_DEATH_ANNOUNCE_MODE");
+    GetSetting(ActiveCFEPatchConfig.QuieterAirstrips   , "SETTINGS", "QUIETER_AIRSTRIPS");
     
     //Balance
     GetSetting(ActiveCFEPatchConfig.OverrideAPCReqs         , "BALANCE", "DO_OVERRIDE_APC_NOREQ");
@@ -171,6 +172,9 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     
     // Clamp building death announce mode at 0-4
     ActiveCFEPatchConfig.BuildingDeathAnnounceMode = (std::max)(0, (std::min)(ActiveCFEPatchConfig.BuildingDeathAnnounceMode, 4));
+    
+    // Clamp quieter airstrips at 0-3
+    ActiveCFEPatchConfig.QuieterAirstrips = (std::max)(0, (std::min)(ActiveCFEPatchConfig.QuieterAirstrips, 3));
     
     // If A-Star isn't enabled, distance constants will be compared against leptons rather than cells, so convert here
     if (!ActiveCFEPatchConfig.EnableASPathing){
