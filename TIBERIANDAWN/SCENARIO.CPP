@@ -885,7 +885,11 @@ void Fixup_Scenario(bool issavedgameload) // Chthon CFE Note: added parameter so
             ((InfantryTypeClass&)InfantryTypeClass::As_Reference(INFANTRY_E5)).Pre &= ~STRUCTF_EYE;
         }
         // todo: chem guy, bio lab, bio lab cameo, bio lab cameo in mix file
-        //
+        
+        if (ActiveCFEPatchConfig.OverrideMinigunnerRange){
+            int* m16ptr = &Weapons[WEAPON_M16].Range;
+            *m16ptr = ActiveCFEPatchConfig.OverrideMinigunnerRange_Value;
+        }
         
     } // end of balance mods
     

@@ -135,6 +135,7 @@ struct CFEPatchConfig
     bool OverrideChemGuyBuff = false;
     bool OverrideRocketGuyHP = false;
     bool OverrideRocketGuyCost = false;
+    bool OverrideMinigunnerRange = false;
     bool ApplyMPBalanceToSP = false;
     bool MPUnitsInSP = false;
     bool JDExtraAdjustments = false;
@@ -174,6 +175,7 @@ struct CFEPatchConfig
     int OverrideConYardSight_Value = 6;
     int OverrideRocketGuyHP_Value = 35;
     int OverrideRocketGuyCost_Value = 250;
+    int OverrideMinigunnerRange_Value = 512;
     
 
     // fixup for LAN multiplayer
@@ -456,7 +458,7 @@ extern unsigned char const					RemapLtBlue[256];
 // 8players
 extern unsigned char const					RemapModBlue[256];
 extern unsigned char const					RemapModPurple[256];
-extern WeaponTypeClass const				Weapons[WEAPON_COUNT];
+extern WeaponTypeClass /*const*/				Weapons[WEAPON_COUNT]; // Chthon CFE Note: remove the const so we can change weapon range via balance tweaks 
 extern WarheadTypeClass const				Warheads[WARHEAD_COUNT];
 extern char const *							SourceName[SOURCE_COUNT];
 extern GroundType const 					Ground[LAND_COUNT];

@@ -144,6 +144,8 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     GetSetting(ActiveCFEPatchConfig.OverrideRocketGuyHP_Value         , "BALANCE", "ROCKEYGUY_HP_OVERRIDE");
     GetSetting(ActiveCFEPatchConfig.OverrideRocketGuyCost         , "BALANCE", "DO_OVERRIDE_ROCKEYGUY_COST");
     GetSetting(ActiveCFEPatchConfig.OverrideRocketGuyCost_Value         , "BALANCE", "ROCKEYGUY_COST_OVERRIDE");
+    GetSetting(ActiveCFEPatchConfig.OverrideMinigunnerRange         , "BALANCE", "DO_OVERRIDE_MINIGUNNER_RANGE");
+    GetSetting(ActiveCFEPatchConfig.OverrideMinigunnerRange_Value         , "BALANCE", "MINIGUNNER_RANGE_OVERRIDE");
     GetSetting(ActiveCFEPatchConfig.ApplyMPBalanceToSP         , "BALANCE", "APPLY_BALANCE_TO_SINGLE_PLAYER");
     GetSetting(ActiveCFEPatchConfig.MPUnitsInSP         , "BALANCE", "MULTIPLAYER_UNITS_IN_SINGLE_PLAYER");
     GetSetting(ActiveCFEPatchConfig.JDExtraAdjustments         , "BALANCE", "JD_EXTRA_ADJUSTMENTS");
@@ -232,6 +234,7 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     ActiveCFEPatchConfig.OverrideConYardSight_Value = (std::max)(1, ActiveCFEPatchConfig.OverrideConYardSight_Value);
     ActiveCFEPatchConfig.OverrideRocketGuyHP_Value = (std::max)(1, ActiveCFEPatchConfig.OverrideRocketGuyHP_Value);
     ActiveCFEPatchConfig.OverrideRocketGuyCost_Value = (std::max)(1, ActiveCFEPatchConfig.OverrideRocketGuyCost_Value);
+    ActiveCFEPatchConfig.OverrideMinigunnerRange_Value = (std::max)(1, ActiveCFEPatchConfig.OverrideMinigunnerRange_Value);
 }
 
 bool Create_CFE_Patch_Directory(const char* path)
