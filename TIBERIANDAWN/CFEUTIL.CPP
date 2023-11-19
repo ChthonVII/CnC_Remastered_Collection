@@ -235,6 +235,13 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     ActiveCFEPatchConfig.OverrideRocketGuyHP_Value = (std::max)(1, ActiveCFEPatchConfig.OverrideRocketGuyHP_Value);
     ActiveCFEPatchConfig.OverrideRocketGuyCost_Value = (std::max)(1, ActiveCFEPatchConfig.OverrideRocketGuyCost_Value);
     ActiveCFEPatchConfig.OverrideMinigunnerRange_Value = (std::max)(1, ActiveCFEPatchConfig.OverrideMinigunnerRange_Value);
+    
+    // JDExtraAdjustments should use JD's desired stealth tank price override
+    if (ActiveCFEPatchConfig.JDExtraAdjustments){
+        ActiveCFEPatchConfig.OverrideStealthTankCost = true;
+        ActiveCFEPatchConfig.OverrideStealthTankCost_Value = 800;
+    }
+    
 }
 
 bool Create_CFE_Patch_Directory(const char* path)
