@@ -918,7 +918,8 @@ COORDINATE FootClass::Sort_Y(void) const
 	if (IsUnloading) {
 		return(Coord_Add(Coord, 0x01000000L));
 	}
-	if (In_Radio_Contact() && IsTethered && Contact_With_Whom()->What_Am_I() == RTTI_UNIT) {
+	// Chthon CFE Note: Add missing null pointer check
+	if (In_Radio_Contact() && IsTethered && Contact_With_Whom() && Contact_With_Whom()->What_Am_I() == RTTI_UNIT) {
 		return(Coord_Add(Coord, 0x01000000L));
 	}
 	return(Coord_Add(Coord, 0x00300000L));
