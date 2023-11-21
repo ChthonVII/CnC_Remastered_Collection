@@ -92,240 +92,14 @@ bool LayerClass::Submit(ObjectClass const * object, bool sort)
  *=============================================================================================*/
 void LayerClass::Sort(void)
 {
-    CFE_Debug_Printf("Enter LayerClass::Sort()");
-    CFE_Debug_Printf("LayerClass::Sort() count is %i", Count());
-    CFE_Debug_Printf("LayerClass::Sort() self pointer check 0x%X", this);
-    CFE_Debug_Printf("LayerClass::Sort() pre-checking pointers...");
-    for (int index = 0; index < Count(); index++) {
-        //CFE_Debug_Printf("LayerClass::Sort() index is %i and pointer is 0x%X", index, (*this)[index]);
-        if (!(*this)[index]){
-            //CFE_Debug_Printf("HEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEY THERE! This is a null pointer.");
-            CFE_Debug_Printf("LayerClass::Sort() index is %i and pointer is 0x%X HEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEY THERE! This is a null pointer.", index, (*this)[index]);
-        }
-    }
-    //CFE_Debug_Printf("LayerClass::Sort() sleeping...");
-    //Sleep(5000);
-    CFE_Debug_Printf("LayerClass::Sort() pre-checking objects...");
-    for (int index = 0; index < Count(); index++) {
-        ObjectClass* obby = (*this)[index];
-        if (!obby){
-            CFE_Debug_Printf("LayerClass::Sort() object pre-check skipping null pointer at index %i", index);
-            continue;
-        }
-        //CFE_Debug_Printf("LayerClass::Sort() object pre-check for %i: IsActive=%i, IsInLimbo=%i, IsDown=%i", index, obby->IsActive, obby->IsInLimbo, obby->IsDown);
-        if (!obby->IsActive || obby->IsInLimbo || !obby->IsDown){
-            //CFE_Debug_Printf("HEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEY THERE! This object probably shouldn't be here!");
-            CFE_Debug_Printf("LayerClass::Sort() object pre-check for %i: IsActive=%i, IsInLimbo=%i, IsDown=%i HEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEY THERE! This object probably shouldn't be here!", index, obby->IsActive, obby->IsInLimbo, obby->IsDown);
-            bool knowntype = false;
-            void* vobby = reinterpret_cast<void*>(obby); 		
-            for (int i = 0; i<Units.Length(); i++){
-                //CFE_Debug_Printf("checking units 0x%X vs 0x%X", obby, Units.Raw_Ptr(i));
-                if (vobby == reinterpret_cast<void*>(Units.Raw_Ptr(i))){
-                    knowntype = true;
-                    CFE_Debug_Printf("This object is Unit");
-                    break;
-                }
-            }
-            if (!knowntype){
-                for (int i = 0; i<Factories.Length(); i++){
-                    //CFE_Debug_Printf("checking Factories 0x%X vs 0x%X", obby, Factories.Raw_Ptr(i));
-                    if (vobby == reinterpret_cast<void*>(Factories.Raw_Ptr(i))){
-                        knowntype = true;
-                        CFE_Debug_Printf("This object is Factory");
-                        break;
-                    }
-                }
-            }
-            if (!knowntype){
-                for (int i = 0; i<Terrains.Length(); i++){
-                    //CFE_Debug_Printf("checking terrains 0x%X vs 0x%X", obby, Terrains.Raw_Ptr(i));
-                    if (vobby == reinterpret_cast<void*>(Terrains.Raw_Ptr(i))){
-                        knowntype = true;
-                        CFE_Debug_Printf("This object is Terrain");
-                        break;
-                    }
-                }
-            }
-            if (!knowntype){
-                for (int i = 0; i<Templates.Length(); i++){
-                    //CFE_Debug_Printf("checking templates 0x%X vs 0x%X", obby, Templates.Raw_Ptr(i));
-                    if (vobby == reinterpret_cast<void*>(Templates.Raw_Ptr(i))){
-                        knowntype = true;
-                        CFE_Debug_Printf("This object is Template");
-                        break;
-                    }
-                }
-            }
-            if (!knowntype){
-                for (int i = 0; i<Smudges.Length(); i++){
-                    //CFE_Debug_Printf("checking smudges 0x%X vs 0x%X", obby, Smudges.Raw_Ptr(i));
-                    if (vobby == reinterpret_cast<void*>(Smudges.Raw_Ptr(i))){
-                        knowntype = true;
-                        CFE_Debug_Printf("This object is Smudge");
-                        break;
-                    }
-                }
-            }
-            if (!knowntype){
-                for (int i = 0; i<Overlays.Length(); i++){
-                    CFE_Debug_Printf("checking overlays 0x%X vs 0x%X", obby, Overlays.Raw_Ptr(i));
-                    if (vobby == reinterpret_cast<void*>(Overlays.Raw_Ptr(i))){
-                        knowntype = true;
-                        CFE_Debug_Printf("This object is Overlay");
-                        break;
-                    }
-                }
-            }
-            if (!knowntype){
-                for (int i = 0; i<Infantry.Length(); i++){
-                    //CFE_Debug_Printf("checking infantry 0x%X vs 0x%X", obby, Infantry.Raw_Ptr(i));
-                    if (vobby == reinterpret_cast<void*>(Infantry.Raw_Ptr(i))){
-                        knowntype = true;
-                        CFE_Debug_Printf("This object is Infantry");
-                        break;
-                    }
-                }
-            }
-            if (!knowntype){
-                for (int i = 0; i<Bullets.Length(); i++){
-                    //CFE_Debug_Printf("checking Bullets 0x%X vs 0x%X", obby, Bullets.Raw_Ptr(i));
-                    if (vobby == reinterpret_cast<void*>(Bullets.Raw_Ptr(i))){
-                        knowntype = true;
-                        CFE_Debug_Printf("This object is Bullet");
-                        break;
-                    }
-                }
-            }
-            if (!knowntype){
-                for (int i = 0; i<Buildings.Length(); i++){
-                    //CFE_Debug_Printf("checking Buildings 0x%X vs 0x%X", obby, Buildings.Raw_Ptr(i));
-                    if (vobby == reinterpret_cast<void*>(Buildings.Raw_Ptr(i))){
-                        knowntype = true;
-                        CFE_Debug_Printf("This object is Buildings");
-                        break;
-                    }
-                }
-            }
-            if (!knowntype){
-                for (int i = 0; i<Anims.Length(); i++){
-                    //CFE_Debug_Printf("checking Anims 0x%X vs 0x%X", obby, Anims.Raw_Ptr(i));
-                    if (vobby == reinterpret_cast<void*>(Anims.Raw_Ptr(i))){
-                        knowntype = true;
-                        CFE_Debug_Printf("This object is Anim");
-                        break;
-                    }
-                }
-            }
-            if (!knowntype){
-                for (int i = 0; i<Aircraft.Length(); i++){
-                    //CFE_Debug_Printf("checking Aircraft 0x%X vs 0x%X", obby, Aircrafts.Raw_Ptr(i));
-                    if (vobby == reinterpret_cast<void*>(Aircraft.Raw_Ptr(i))){
-                        knowntype = true;
-                        CFE_Debug_Printf("This object is Aircraft");
-                        break;
-                    }
-                }
-            }
-            if (!knowntype){
-                for (int i = 0; i<Triggers.Length(); i++){
-                    //CFE_Debug_Printf("checking Triggers 0x%X vs 0x%X", obby, Triggers.Raw_Ptr(i));
-                    if (vobby == reinterpret_cast<void*>(Triggers.Raw_Ptr(i))){
-                        knowntype = true;
-                        CFE_Debug_Printf("This object is Trigger");
-                        break;
-                    }
-                }
-            }
-            if (!knowntype){
-                for (int i = 0; i<TeamTypes.Length(); i++){
-                    //CFE_Debug_Printf("checking TeamTypes 0x%X vs 0x%X", obby, TeamTypes.Raw_Ptr(i));
-                    if (vobby == reinterpret_cast<void*>(TeamTypes.Raw_Ptr(i))){
-                        knowntype = true;
-                        CFE_Debug_Printf("This object is TeamType");
-                        break;
-                    }
-                }
-            }
-            if (!knowntype){
-                for (int i = 0; i<Teams.Length(); i++){
-                    //CFE_Debug_Printf("checking Teams 0x%X vs 0x%X", obby, Teams.Raw_Ptr(i));
-                    if (vobby == reinterpret_cast<void*>(Teams.Raw_Ptr(i))){
-                        knowntype = true;
-                        CFE_Debug_Printf("This object is Team");
-                        break;
-                    }
-                }
-            }
-            if (!knowntype){
-                for (int i = 0; i<Houses.Length(); i++){
-                    //CFE_Debug_Printf("checking Houses 0x%X vs 0x%X", obby, Houses.Raw_Ptr(i));
-                    if (vobby == reinterpret_cast<void*>(Houses.Raw_Ptr(i))){
-                        knowntype = true;
-                        CFE_Debug_Printf("This object is House");
-                        break;
-                    }
-                }
-            }
-            if (!knowntype){
-                CFE_Debug_Printf("Unexpected... Maybe a wild pointer");
-            }
-        }
-    }
-    //CFE_Debug_Printf("LayerClass::Sort() sleeping...");
-    //Sleep(5000);
-    /*
-    CFE_Debug_Printf("LayerClass::Sort() pre-checking Y Sorts...");
-    for (int index = 0; index < Count(); index++) {
-        ObjectClass* obby = (*this)[index];
-        if (!obby->IsActive || obby->IsInLimbo || !obby->IsDown){
-            CFE_Debug_Printf("Skipping bad object!!!");
-        }
-        else{
-            CFE_Debug_Printf("LayerClass::Sort() index is %i and Sort_Y is 0x%X and what am i? %i", index, obby->Sort_Y(), obby->What_Am_I());
-        }
-    }
-    */
-    //CFE_Debug_Printf("LayerClass::Sort() sleeping...");
-    //Sleep(5000);
-    
-    CFE_Debug_Printf("LayerClass::Sort() fixing problem...");
-    bool happy = false;
-    while (!happy){
-        happy = true;
-        for (int index = 0; index < Count()-1; index++) {
-            ObjectClass* obby = (*this)[index];
-            if (!obby->IsActive || obby->IsInLimbo || !obby->IsDown){
-                Delete(index);
-                happy = false;
-                break;
-            }
-        }
-    }
-    
-    CFE_Debug_Printf("LayerClass::Sort() starting loop...");
 	for (int index = 0; index < Count()-1; index++) {
-        //CFE_Debug_Printf("LayerClass::Sort() index is %i", index);
-        //CFE_Debug_Printf("LayerClass::Sort() first pointer is 0x%X", (*this)[index+1]);
-        //CFE_Debug_Printf("LayerClass::Sort() second pointer is 0x%X", (*this)[index]);
-        //CFE_Debug_Printf("LayerClass::Sort() dereferencing first pointer...");
-        //ObjectClass* obby1 = (*this)[index+1];
-        //CFE_Debug_Printf("LayerClass::Sort() first object type is %i", obby1->What_Am_I());
-        //CFE_Debug_Printf("LayerClass::Sort() first object active? %i", obby1->IsActive);
-        //CFE_Debug_Printf("LayerClass::Sort() first object Sort_Y() is %i", obby1->Sort_Y());
-        //CFE_Debug_Printf("LayerClass::Sort() dereferencing second pointer...");
-        //ObjectClass* obby2 = (*this)[index];
-        //CFE_Debug_Printf("LayerClass::Sort() second object type is %i", obby2->What_Am_I());
-        //CFE_Debug_Printf("LayerClass::Sort() second object active? %i", obby2->IsActive);
-        //CFE_Debug_Printf("LayerClass::Sort() second object Sort_Y() is %i", obby2->Sort_Y());
 		if (*(*this)[index+1] < *(*this)[index]) {
 			ObjectClass * temp;
-
 			temp = (*this)[index+1];
 			(*this)[index+1] = (*this)[index];
 			(*this)[index] = temp;
 		}
 	}
-	CFE_Debug_Printf("Exit LayerClass::Sort()");
 }
 
 
@@ -388,3 +162,73 @@ int LayerClass::Sorted_Add(ObjectClass const * const object)
 }	
 
 
+// Chthon CFE Note: Detect bad pointers and remove them from the Layer.
+// This is intended as a last resort against bad pointers in the Layers causes crashes when loading saved games.
+// This function is slow as ass, and so should not be used elsewhere.
+// returns true if the Layer was clean; false if corrections were made
+bool LayerClass::SanitizeLayer(){
+    
+    bool retval = true;
+    
+    // check for null and wild pointers
+    // There's a faster way to do this, but I don't trust WW's DIY vector implementation to iterate correctly if a removal is made mid-loop.
+    bool happy = false;
+    while (!happy){
+        happy = true;
+        for (int index = 0; index < Count(); index++) {
+            ObjectClass* obby = (*this)[index];
+            if (!obby){
+                CFE_Debug_Printf("SanitizeLayer() found a null pointer at index %i! (Please report this.)", index);
+                retval = false;
+                happy = false;
+                Delete(index);
+                break;
+            }
+            RTTIType thisrtti;
+            unsigned char thisextrartti;
+            if (!CFE_WildPointerCheck(reinterpret_cast<void*>(obby), thisrtti, thisextrartti)){
+                CFE_Debug_Printf("SanitizeLayer() found a wild pointer (0x%X) at index %i! (Please report this.)", obby, index);
+                retval = false;
+                happy = false;
+                Delete(index);
+                break;
+            }
+            if (!obby->IsActive){
+                CFE_Debug_Printf("SanitizeLayer() found a dangling pointer (0x%X, RTTI %i, extraRTTI %i) at index %i! (Please report this.)", obby, thisrtti, thisextrartti, index);
+                retval = false;
+                happy = false;
+                Delete(index);
+                break;
+            }
+            if (obby->IsInLimbo || !obby->IsDown){
+                CFE_Debug_Printf("SanitizeLayer() found an object (0x%X, RTTI %i, extraRTTI %i) that's not on the map (IsInLimbo %i, IsDown %i) at index %i! (Please report this.)", obby, thisrtti, thisextrartti, obby->IsInLimbo, obby->IsDown, index);
+                retval = false;
+                happy = false;
+                Delete(index);
+                break;
+            }
+        }
+    }
+    
+    // check for duplicates
+    for (int index = 0; index < Count()-1; index++) {
+        ObjectClass* obby = (*this)[index];
+        bool happy = false;
+        while (!happy){
+            happy = true;
+            for (int j = index+1; j < Count(); j++){
+                ObjectClass* jobby = (*this)[j];
+                if (obby == jobby){
+                    CFE_Debug_Printf("SanitizeLayer() found a duplicate (0x%X) at indices %i and %i! (Please report this.)", obby, index, j);
+                    retval = false;
+                    happy = false;
+                    Delete(j);
+                    break;
+                }
+            }
+        }
+    }
+    
+    
+    return retval;
+}

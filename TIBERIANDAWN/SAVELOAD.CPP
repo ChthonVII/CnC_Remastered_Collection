@@ -45,6 +45,7 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include	"function.h"
+#include "CFEDEBUG.H"
 
 extern bool DLLSave(FileClass &file);
 extern bool DLLLoad(FileClass &file);
@@ -154,6 +155,13 @@ bool Save_Game(const char *file_name, const char *descr)
 	scenario = Scenario;								// get current scenario #
 	house = PlayerPtr->Class->House;				// get current house
 
+	// Chthon CFE Note: Sanitize the layers before we save them.
+	CFE_Debug_Printf("Sanitizing map layers before saving...");
+	for (i = 0; i < LAYER_COUNT; i++) {
+        CFE_Debug_Printf("Sanitizing layer %i...", i);
+        Map.Layer[i].SanitizeLayer();
+	}
+	
 	/*
 	**	Code everybody's pointers
 	*/
@@ -536,6 +544,14 @@ bool Load_Game(const char *file_name)
 
 	file.Close();
 	Decode_All_Pointers();
+    
+    // Chthon CFE Note: Sanitize the layers before we use them.
+	CFE_Debug_Printf("Sanitizing map layers after loading saved game...");
+	for (i = 0; i < LAYER_COUNT; i++) {
+        CFE_Debug_Printf("Sanitizing layer %i...", i);
+        Map.Layer[i].SanitizeLayer();
+	}
+    
 	Map.Init_IO();
 	Map.Flag_To_Redraw(true);
 

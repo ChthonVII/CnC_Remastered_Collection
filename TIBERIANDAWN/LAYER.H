@@ -59,6 +59,14 @@ class LayerClass : public DynamicVectorClass<ObjectClass *>
 		bool Save(FileClass & file);
 		virtual void Code_Pointers(void);
 		virtual void Decode_Pointers(void);
+        
+        // Chthon CFE Note: Detect bad pointers and remove them from the Layer.
+        // This is intended as a last resort against bad pointers in the Layers causes crashes when loading saved games.
+        // This function is slow as ass, and so should not be used elsewhere.
+        // returns true if the Layer was clean; false if corrections were made
+        bool SanitizeLayer();
+    
+        
 };
 
 #endif

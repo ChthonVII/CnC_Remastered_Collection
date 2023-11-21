@@ -1,4 +1,5 @@
 #include "FUNCTION.H"
+#include "CFEDEBUG.H"
 
 extern bool DLL_Export_Get_Input_Key_State(KeyNumType key);
 //extern void Logic_Switch_Player_Context(HouseClass *house);
@@ -270,6 +271,119 @@ void  CFE_Patch_Speak_For_All_Humans(VoxType voice, COORDINATE coord, HouseClass
     }
 
     return;
+}
+
+// if pointer is a wild pointer or null pointer, then returns false and sets RTTIdiscover to RTTI_NONE
+// otherwise, returns true and sets RTTIdiscover as appropriate
+// extraRTTI is used for things that don't have an RTTIType: 0=has RTTIType, 1=factory, 2=trigger, 3=teamtype, 4=house
+// Note: This function is potnetially veeeery slow. It should only be used when saving/loading saved games, and for debugging
+// Note: This function does NOT check if the pointer is dangling. To check for dangling pointer, try checking ptr->IsActive before calling any member functions.
+bool CFE_WildPointerCheck(void* ptr, RTTIType &RTTIdiscover, unsigned char &extraRTTI){
+    
+    RTTIdiscover = RTTI_NONE;
+    extraRTTI = 0;
+    
+    // null pointer?
+    if (!ptr){
+        return false;
+    }
+    
+    // see if the pointer matches any of the addresses used by the heap arrays
+    for (int i = 0; i<Units.Length(); i++){
+        if (ptr == reinterpret_cast<void*>(Units.Raw_Ptr(i))){
+            RTTIdiscover = RTTI_UNIT;
+            return true;
+        }
+    }
+    for (int i = 0; i<Factories.Length(); i++){
+        if (ptr == reinterpret_cast<void*>(Factories.Raw_Ptr(i))){
+            extraRTTI = 1;
+            return true;
+        }
+    }
+    for (int i = 0; i<Terrains.Length(); i++){
+        if (ptr == reinterpret_cast<void*>(Terrains.Raw_Ptr(i))){
+            RTTIdiscover = RTTI_TERRAIN;
+            return true;
+        }
+    }
+    for (int i = 0; i<Templates.Length(); i++){
+        if (ptr == reinterpret_cast<void*>(Templates.Raw_Ptr(i))){
+            RTTIdiscover = RTTI_TEMPLATE;
+            return true;
+        }
+    }
+    for (int i = 0; i<Smudges.Length(); i++){
+        if (ptr == reinterpret_cast<void*>(Smudges.Raw_Ptr(i))){
+            RTTIdiscover = RTTI_SMUDGE;
+            return true;
+        }
+    }
+    for (int i = 0; i<Overlays.Length(); i++){
+        if (ptr == reinterpret_cast<void*>(Overlays.Raw_Ptr(i))){
+            RTTIdiscover = RTTI_OVERLAY;
+            return true;
+        }
+    }
+    for (int i = 0; i<Infantry.Length(); i++){
+        if (ptr == reinterpret_cast<void*>(Infantry.Raw_Ptr(i))){
+            RTTIdiscover = RTTI_INFANTRY;
+            return true;
+        }
+    }
+    for (int i = 0; i<Bullets.Length(); i++){
+        if (ptr == reinterpret_cast<void*>(Bullets.Raw_Ptr(i))){
+            RTTIdiscover = RTTI_BULLET;
+            return true;
+        }
+    }
+    for (int i = 0; i<Buildings.Length(); i++){
+        if (ptr == reinterpret_cast<void*>(Buildings.Raw_Ptr(i))){
+            RTTIdiscover = RTTI_BUILDING;
+            return true;
+        }
+    }
+    for (int i = 0; i<Anims.Length(); i++){
+        if (ptr == reinterpret_cast<void*>(Anims.Raw_Ptr(i))){
+            RTTIdiscover = RTTI_ANIM;
+            return true;
+        }
+    }
+    for (int i = 0; i<Aircraft.Length(); i++){
+        if (ptr == reinterpret_cast<void*>(Aircraft.Raw_Ptr(i))){
+            RTTIdiscover = RTTI_AIRCRAFT;
+            return true;
+        }
+    }
+    for (int i = 0; i<Triggers.Length(); i++){
+        if (ptr == reinterpret_cast<void*>(Triggers.Raw_Ptr(i))){
+            extraRTTI = 2;
+            return true;
+        }
+    }
+    for (int i = 0; i<TeamTypes.Length(); i++){
+        if (ptr == reinterpret_cast<void*>(TeamTypes.Raw_Ptr(i))){
+            extraRTTI = 3;
+            return true;
+        }
+    }
+    for (int i = 0; i<Teams.Length(); i++){
+        if (ptr == reinterpret_cast<void*>(Teams.Raw_Ptr(i))){
+            RTTIdiscover = RTTI_TEAM;
+            return true;
+        }
+    }
+    for (int i = 0; i<Houses.Length(); i++){
+        if (ptr == reinterpret_cast<void*>(Houses.Raw_Ptr(i))){
+            extraRTTI = 4;
+            return true;
+        }
+    }
+            
+    CFE_Debug_Printf("WARNING: 0x%X is a wild pointer!", ptr);
+    
+    return false;
+    
 }
 
 /* // Unfortunately, this works as intended (if you give it the first 11 characters of SteamID as your name) but doesn't solve the problem.
