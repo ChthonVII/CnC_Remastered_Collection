@@ -184,10 +184,17 @@ bool LayerClass::SanitizeLayer(){
                 Delete(index);
                 break;
             }
-            RTTIType thisrtti;
-            unsigned char thisextrartti;
+            RTTIType thisrtti = RTTI_NONE;
+            unsigned char thisextrartti = 0;
             if (!CFE_WildPointerCheck(reinterpret_cast<void*>(obby), thisrtti, thisextrartti)){
                 CFE_Debug_Printf("SanitizeLayer() found a wild pointer (0x%X) at index %i! (Please report this.)", obby, index);
+                retval = false;
+                happy = false;
+                Delete(index);
+                break;
+            }
+            if (thisextrartti > 0){
+                CFE_Debug_Printf("SanitizeLayer() found a pointer (0x%X, RTTI %i, extraRTTI %i) to something that isn't an ObjectClass at index %i! (Please report this.)", obby, thisrtti, thisextrartti, index);
                 retval = false;
                 happy = false;
                 Delete(index);
