@@ -1357,8 +1357,8 @@ void AnimClass::Detach(TARGET target, bool all)
 			}
 		}
 		if (Object && Object->As_Target() == target) {
-			Object = NULL;
             Map.Remove(this, In_Which_Layer());
+            Object = NULL;
             IsToDelete = true;
 		}
 	}
