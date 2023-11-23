@@ -3427,10 +3427,23 @@ int InfantryClass::Mission_Attack(void)
 		return(1);
 	}
 
-	if (Class->IsCapture && As_Building(TarCom) != NULL && As_Building(TarCom)->Can_Capture()) {
-		Assign_Destination(TarCom);
-		Assign_Mission(MISSION_CAPTURE);
-		return(1);
+	if (Class->IsCapture && As_Building(TarCom) != NULL){
+        if (As_Building(TarCom)->Can_Capture()) {
+            Assign_Destination(TarCom);
+            Assign_Mission(MISSION_CAPTURE);
+            return(1);
+        }
+        // Chthon CFE Note:
+        // If a CPU-controlled engineer is somehow in Mission_Attack with a NON-capturable target,
+        // find a captuarable one, then configure for mission capture
+        // (Unlike MinorAIFixes, we're going to limit this to CPU-controlled houses.
+        // Players might be unhappy with their engineers retargeting in a way that gets them killed.)
+        else if (!House->IsHuman) {
+            Assign_Target(Greatest_Threat(THREAT_CAPTURE));
+            Assign_Destination(TarCom);
+            Assign_Mission(MISSION_CAPTURE);
+            return(1);
+        }
 	}
 
 	return(FootClass::Mission_Attack());
