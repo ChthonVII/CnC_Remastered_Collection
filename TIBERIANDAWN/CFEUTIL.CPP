@@ -99,6 +99,7 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     
 	//Settings
     GetSetting(ActiveCFEPatchConfig.DefaultCustomMissionScenarioNumber      , "SETTINGS", "CUSTOM_MISSION_DEFAULT_SCENARIO");
+    GetSetting(ActiveCFEPatchConfig.LegacyRenderDisableMode      , "SETTINGS", "LEGACY_RENDER_DISABLE_MODE");
     GetSetting(ActiveCFEPatchConfig.EnableVeterancy      , "SETTINGS", "VETERANCY");
     GetSetting(ActiveCFEPatchConfig.EnableCommandoGuard       , "SETTINGS", "COMMANDO_GUARD");
     GetSetting(ActiveCFEPatchConfig.SafeSabotage        , "SETTINGS", "SAFE_SABOTAGE");
@@ -177,6 +178,9 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     
     // Clamp quieter airstrips at 0-3
     ActiveCFEPatchConfig.QuieterAirstrips = (std::max)(0, (std::min)(ActiveCFEPatchConfig.QuieterAirstrips, 3));
+    
+    // Clamp legcy render disable at 0-2
+    ActiveCFEPatchConfig.LegacyRenderDisableMode = (std::max)(0, (std::min)(ActiveCFEPatchConfig.LegacyRenderDisableMode, 2));
     
     // If A-Star isn't enabled, distance constants will be compared against leptons rather than cells, so convert here
     if (!ActiveCFEPatchConfig.EnableASPathing){

@@ -716,6 +716,9 @@ bool Init_Game(int , char *[])
 	Options.Load_Settings();
 
 	Initialise_CFE_Patch_Config();
+    
+    // Chthon CFE Note: Make sure this is initialized to false
+    IsSavedGame = false;
 
 	return(true);
 }

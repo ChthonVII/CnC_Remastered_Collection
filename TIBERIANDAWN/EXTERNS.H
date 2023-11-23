@@ -141,6 +141,7 @@ struct CFEPatchConfig
     bool JDExtraAdjustments = false;
     
     int DefaultCustomMissionScenarioNumber = 1;
+    int LegacyRenderDisableMode = 1;
     int EnableVeterancy = 0;
     int EnableCommandoGuard = 1;
     int SafeSabotage = 0;
@@ -520,5 +521,8 @@ extern void Reset_Theater_Shapes(void);
 extern TheaterType LastTheater;
 
 extern bool ShareAllyVisibility;
+
+// Chthon CFE Note: We want to know if this is a loaded saved game
+extern bool IsSavedGame;
 
 #endif

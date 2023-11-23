@@ -1070,3 +1070,6 @@ TheaterType		LastTheater = THEATER_NONE;
 
 
 bool RunningAsDLL = false;
+
+// Chthon CFE Note: We want to know if this is a loaded saved game
+bool IsSavedGame = false;

@@ -1793,6 +1793,9 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Save_Load(bool save, const cha
 		result = Save_Game(file_path_and_name, "internal");
 	} else {
 		
+        // Chthon CFE Note: We want to know if this is a loaded saved game
+        IsSavedGame = true;
+        
 		if (game_type == NULL) {
 			return false;
 		}
@@ -7696,11 +7699,20 @@ bool Legacy_Render_Enabled(void){
 bool DLLExportClass::Legacy_Render_Enabled(void)
 {
     // Chthon CFE Note: Some interaction between the legacy renderer and GlyphX client
-    // is responsible for the intermittent-crash-while-loading-saved-game bug.
+    // is responsible for the intermittent-crash-while-loading-saved-game bug with saved skirmishes.
     // There seems to be no other solution than to outright kill the legacy rendering.
-    return false;
+    
+    // disable entirely
+    if (ActiveCFEPatchConfig.LegacyRenderDisableMode == 2){
+        return false;
+    }
+    
+    // disable only if this is a saved skirmish
+    if (IsSavedGame && (ActiveCFEPatchConfig.LegacyRenderDisableMode == 1) && (GameToPlay != GAME_NORMAL)){
+        return false;
+    }
 
-    /*
+    // vanilla
 	if (GameToPlay == GAME_GLYPHX_MULTIPLAYER) {
 		unsigned int num_humans = 0U;
 		for (int i = 0; i < MPlayerCount; ++i) {
@@ -7714,7 +7726,6 @@ bool DLLExportClass::Legacy_Render_Enabled(void)
 
 	//return false;
 	return true;
-    */
 }
 
 
