@@ -1241,9 +1241,10 @@ void InfantryClass::Assign_Target(TARGET target)
 	**	If this is an infantry that can only capture, then also assign its destination to the
 	**	target specified.
 	*/
-	if (!Target_Legal(NavCom) && Class->IsCapture && !Is_Weapon_Equipped()) {
+    //Chthon CFE Note: Head towards building regardless of current navcom
+	if (/*!Target_Legal(NavCom) &&*/ Class->IsCapture && !Is_Weapon_Equipped()) {
 		BuildingClass const * building = As_Building(target);
-		if (building != NULL && building->Can_Capture()) {
+		if (building != NULL && building->Can_Capture()) { // Chthon CFE Note: we don't need to check for ownship b/c RA engineers can also repair
 			Assign_Destination(target);
 		}
 	}
