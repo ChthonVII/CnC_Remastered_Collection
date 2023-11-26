@@ -109,11 +109,17 @@ void Shorten_Attached_Anims(ObjectClass * obj)
 {
 	if (obj != NULL) {
 		for (int index = 0; index < Anims.Count(); index++) {
-			AnimClass & anim = * Anims.Ptr(index);
+            // Chthon CFE Note: Let's not dereference pointers without a null check
+            // (This code was unreachable until bugfix, so not 100% sure it's not crashy)
+			//AnimClass & anim = * Anims.Ptr(index);
 
-			if (As_Object(anim.xObject) == obj) {
-				anim.Loops = 0;
-			}
+			//if (As_Object(anim.xObject) == obj) {
+			//	anim.Loops = 0;
+			//}
+            AnimClass* animptr = Anims.Ptr(index);
+            if (animptr && animptr->IsActive && (animptr->Object == obj)){
+                animptr->Loops = 0;
+            }
 		}
 	}
 }
