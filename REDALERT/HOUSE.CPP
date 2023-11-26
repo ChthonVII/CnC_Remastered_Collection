@@ -924,6 +924,16 @@ void HouseClass::AI(void)
 	// Set PlayerPtr to be this house. ST - 8/7/2019 10:12AM
 	Logic_Switch_Player_Context(this);
 
+        // Chthon CFE Note: Announce mod version for all players
+    if ((Frame == 75) && IsHuman && ActiveCFEPatchConfig.EnableVersionAnnounce){
+#ifdef CFE_TEST_BUILD        
+        char text[] = "CFE Patch Redux version 1.9 TEST BUILD 6";
+#else
+        char text[] = "CFE Patch Redux version 1.9";
+#endif
+        On_Message(text, 20.0f, TXT_YOURGAME_OUTDATED);
+    }
+    
 	/*
 	**	If base building has been turned on by a trigger, then force the house to begin
 	**	production and team creation as well. This is also true if the IQ is high enough to

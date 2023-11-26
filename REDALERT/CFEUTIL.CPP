@@ -47,6 +47,7 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
 
 	//cfehunter 12/06/2020 It's really starting to get to the point where I should make feature flags
 	//Features
+    GetSetting(ActiveCFEPatchConfig.EnableVersionAnnounce      , "FEATURES", "VERSION_ANNOUNCE");
 	GetSetting(ActiveCFEPatchConfig.EnableASPathing			, "FEATURES", "ASTAR_PATHING");
 	GetSetting(ActiveCFEPatchConfig.EnableOOMRepair			, "FEATURES", "OOM_REPAIR");
 	GetSetting(ActiveCFEPatchConfig.EnableRallyPoints		, "FEATURES", "RALLY_POINTS");
@@ -198,8 +199,11 @@ bool Reconcile_Config_With_Default(const INIClass& default, INIClass& config)
 void Initialise_CFE_Patch_Config()
 {
 	static constexpr const char* DefaultININame = "DEFAULT.CFEPATCHREDUX_RA.INI";
-
-	const std::string ini_dir = Get_User_Mod_Dir() + "\\CFEPatchReduxRA";
+    
+    const std::string ini_dir = Get_User_Mod_Dir() + "\\CFEPatchReduxRATESTBUILD";
+#else
+    const std::string ini_dir = Get_User_Mod_Dir() + "\\CFEPatchReduxRA";
+#endif
 	const std::string ini_path = ini_dir + "\\CFEPATCHREDUX_RA.INI";
 
 	INIClass default_ini;
