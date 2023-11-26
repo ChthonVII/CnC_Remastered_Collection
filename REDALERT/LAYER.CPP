@@ -88,6 +88,10 @@ bool LayerClass::Submit(ObjectClass const * object, bool sort)
  *=============================================================================================*/
 void LayerClass::Sort(void)
 {
+    // Chthon CFE Note: This... does not result in a fully sorted list.
+    // Presumably for speed reasons.
+    // It's essentially a bubble sort that takes several frames to catch up... assuming that the objects hold still long enough
+    /*
 	for (int index = 0; index < Count()-1; index++) {
 		if (*(*this)[index+1] < *(*this)[index]) {
 			ObjectClass * temp;
@@ -97,6 +101,25 @@ void LayerClass::Sort(void)
 			(*this)[index] = temp;
 		}
 	}
+	*/
+    
+    // replace with a real bubble sort (should be efficient because input list is likely to be nearly sorted already)
+	bool happy = false;
+    int endpt = Count() - 1;
+    while (!happy){
+        happy = true;
+        for (int index = 0; index < endpt; index++) {
+            if (*(*this)[index+1] < *(*this)[index]) {
+                happy = false;
+                ObjectClass * temp;
+                temp = (*this)[index+1];
+                (*this)[index+1] = (*this)[index];
+                (*this)[index] = temp;
+            }
+        }
+        endpt--; // after N iterations of the outer loop, the back N items will be correct
+    }
+    
 }
 
 
