@@ -676,15 +676,24 @@ AnimClass::~AnimClass(void)
 			**	this animation is attached to. If there are no others, then inform the
 			**	attached object of this fact.
 			*/
+            // Chthon CFE Note: Vanilla check is buggy. Not sure why, but it triggers on the *first* attached anim to deconstruct.
+            // Replace with explicit bool and check IsActive.
 			int index;
+            bool onlyme = true;
 			for (index = 0; index < Anims.Count(); index++) {
-				if (Anims.Ptr(index) != this && Anims.Ptr(index)->xObject == xObject) break;
+				//if (Anims.Ptr(index) != this && Anims.Ptr(index)->xObject == xObject){
+                AnimClass* someanim = Anims.Ptr(index);
+                if (someanim && (someanim != this) && someanim->IsActive && (someanim->xObject == xObject)){
+                    onlyme = false;
+                    break;
+                }
 			}
 
 			/*
 			**	Tell the object that it is no longer being damaged.
 			*/
-			if (index == Anims.Count()) {
+			//if (index == Anims.Count()) {
+			if (onlyme){
 				to->Fire_Out();
 				if (to->In_Which_Layer() == LAYER_GROUND) to->Mark(MARK_OVERLAP_UP);
 				to->IsAnimAttached = false;
