@@ -1275,7 +1275,10 @@ void AnimClass::Do_Atom_Damage(HousesType ownerhouse, CELL cell)
 	**	order to properly enact retribution and record the kill for
 	**	score purposes.
 	*/
-	BuildingClass * building = NULL;
+    // Chthon CFE Note: Hey, let's not go casting some random TechnoClass* to a BuildingClass* when it might not be a building...
+    // Especially b/c the only place we use it needs a TechnoClass*
+	//BuildingClass * building = NULL;
+    TechnoClass* building = NULL;
 	TechnoClass * backup = NULL;
 	if (ownerhouse != HOUSE_NONE) {
 		for (int index = 0; index < Logic.Count(); index++) {
@@ -1284,13 +1287,15 @@ void AnimClass::Do_Atom_Damage(HousesType ownerhouse, CELL cell)
 			if (obj != NULL && obj->Is_Techno() && obj->Owner() == ownerhouse) {
 				backup = (TechnoClass *)obj;
 				if (obj->What_Am_I() == RTTI_BUILDING && *((BuildingClass *)obj) == STRUCT_MSLO) {
-					building = (BuildingClass *)obj;
+					//building = (BuildingClass *)obj;
+                    building = (TechnoClass*)obj;
 					break;
 				}
 			}
 		}
 
-		if (building == NULL) building = (BuildingClass *)backup;
+		//if (building == NULL) building = (BuildingClass *)backup;
+        if (building == NULL) building = backup;
 	}
 
 	int radius;
