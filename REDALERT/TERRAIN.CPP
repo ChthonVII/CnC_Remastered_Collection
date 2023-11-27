@@ -113,8 +113,28 @@ ResultType TerrainClass::Take_Damage(int & damage, int distance, WarheadType war
 	/*
 	**	Small arms can never destroy a terrain element.
 	*/
-	if ((!IsOnFire || warhead == WARHEAD_FIRE) && warhead != WARHEAD_SA && !Class->IsImmune) {
-
+    // Chthon CFE Note: burning trees can take damage from non-fire sources since the tweak to ObjectClass::TakeDamage() will prevent fatal damage while on fire.
+    // should check for crumbling state and disallow damage processing -- it's already dead
+	//if ((!IsOnFire || warhead == WARHEAD_FIRE) && warhead != WARHEAD_SA && !Class->IsImmune) {
+	if (!IsCrumbling && (!IsOnFire || (warhead == WARHEAD_FIRE) || ActiveCFEPatchConfig.EnableBurningTreeFix) && warhead != WARHEAD_SA && !Class->IsImmune) {
+        /*
+        // Chthon CFE Note: There's a bug with burning trees living on as indestructible zombies.
+        (In addition to trees just not burning down, this creates problems for pathfinding since flame guys/tanks continue to think they can move through an indestructable obstacle.)
+        It's an utter mess.
+        The original intent was that:
+            TerrainClass::Take_Damage() would leave the tree existing with 0hp and force the attached animations to Loops=0
+            Then when the last attached animation ended, its destructor would tell the tree to call Fire_Out()
+            Then Fire_Out() would start the crumbling procedure that would finally remove the tree.
+        This doesn't work for several reasons:
+            If the tree will be destroyed, then ObjectClass::Take_Damage() will call Detach_All(), leaving no attached animations to work with.
+            TerrainClass::Take_Damage() will also call Detach_All(), leaving no attached animations to work with.
+            Much code in ANIM.CPP just assumes a pointer to a live object, so we get crashes when we "fix" things so they can be attached to a dead tree.
+            Limbo() is never called, so the cell isn't cleaned up properly.
+        A workable fix requires:
+            Change ObjectClass::Take_Damage() to freeze the tree at 1hp until the fire goes out.
+            Set hp to 0 and start the crumbling procedure if Fire_Out() is called when the tree is at 1hp.
+            Add the mising Limbo() call.
+        */
 		res = ObjectClass::Take_Damage(damage, distance, warhead, source, forced, indirectsource, specialarmorpen);
 
 		if (damage && warhead == WARHEAD_FIRE) {
@@ -141,7 +161,7 @@ ResultType TerrainClass::Take_Damage(int & damage, int distance, WarheadType war
 				*/
 				Shorten_Attached_Anims(this);
 			} else {
-                Detach_All();
+                //Detach_All(); //Redundant. ObjectClass::Take_Damage() just did that.
                 Mark();
 				Start_To_Crumble();
 			}
@@ -460,6 +480,10 @@ void TerrainClass::Fire_Out(void)
 
 	if (IsOnFire) {
 		IsOnFire = false;
+        // Chthon CFE Note: Tweaked ObjectClass::TakeDamage() will keep a burning terrain object at 1 hp until it's not on fire anymore.
+        if (Strength == 1 && ActiveCFEPatchConfig.EnableBurningTreeFix){
+            Strength = 0;
+        }
 		if (!IsCrumbling && !Strength) {
 			Detach_All();
 			Mark();
@@ -494,24 +518,7 @@ void TerrainClass::AI(void)
 	assert(IsActive);
 
 	ObjectClass::AI();
-    
-    // Chthon CFE Note: The burning animations are somehow getting detached during/after Shorten_Attached_Anims()
-    // So Fire_Out() never gets called to start the crumbling process after the tree dies
-    // So we need to do it ourselves
-    if (IsOnFire && !Strength && !IsCrumbling && ActiveCFEPatchConfig.EnableBurningTreeFix){
-        bool noanimsleft = true;
-        for (int index = 0; index < Anims.Count(); index++) {
-			AnimClass & anim = *Anims.Ptr(index);
-			if (anim.Object == this) {
-				noanimsleft = false;
-                break;
-			}
-		}
-		if (noanimsleft){
-            Fire_Out();
-        }
-    }
-    
+        
     if (*this == TERRAIN_MINE){
         if (ActiveCFEPatchConfig.BetterOreGrowth){
             int threshhold = 1;
