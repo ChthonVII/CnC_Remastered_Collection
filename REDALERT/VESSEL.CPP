@@ -2468,7 +2468,7 @@ bool VesselClass::Edge_Of_World_AI(void)
 void VesselClass::Repair_AI(void)
 {
 	if (IsSelfRepairing) {
-		if ((Frame % (TICKS_PER_MINUTE * Rule.RepairRate)) == 0) {
+		if ((FrameMB() % (TICKS_PER_MINUTE * Rule.RepairRate)) == 0) {
 			Mark(MARK_CHANGE);
 			int cost = Class->Repair_Cost();
 			int step = Class->Repair_Step();

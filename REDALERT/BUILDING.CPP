@@ -1534,7 +1534,7 @@ void BuildingClass::AI(void)
 	** Radar facilities and SAMs need to check for the proximity of a mobile
 	** radar jammer.
 	*/
-	if ((*this == STRUCT_RADAR || *this == STRUCT_SAM) && (Frame % TICKS_PER_SECOND) == 0) {
+	if ((*this == STRUCT_RADAR || *this == STRUCT_SAM) && (FrameMB() % TICKS_PER_SECOND) == 0) {
 		IsJammed = false;
 		for (int index = 0; index < Units.Count(); index++) {
 			UnitClass * obj = Units.Ptr(index);
@@ -6525,6 +6525,7 @@ void BuildingClass::Repair_AI(void)
 	/*
 	**	If it is repairing, then apply any repair effects as necessary.
 	*/
+    // Chthon CFE Note: Don't use FrameMB() because we want wrench icons synchronized
 	if (IsRepairing && (Frame % (Rule.RepairRate * TICKS_PER_MINUTE)) == 0) {
 		IsWrenchVisible = (IsWrenchVisible == false);
 		Mark(MARK_CHANGE);

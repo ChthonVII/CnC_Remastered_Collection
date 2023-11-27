@@ -446,7 +446,8 @@ void AircraftClass::Draw_It(int x, int y, WindowNumberType window) const
 	int jitter = 0;
 	if (Height == FLIGHT_LEVEL && Get_Speed() < 3) {
 		static int _jitter[] = {0,0,0,0,1,1,1,0,0,0,0,0,-1,-1,-1,0};
-		jitter = _jitter[::Frame % 16];
+		//jitter = _jitter[::Frame % 16];
+        jitter = _jitter[FrameMB() % 16];
 	}
 
 	// Virtual window needs to draw the body first so it's considered the primary object and the shadow is a sub-object
@@ -950,7 +951,7 @@ void AircraftClass::AI(void)
             fixed pfrac = Saturate(House->Power_Fraction(), 1);
             if (pfrac < fixed::_1_2) pfrac = fixed::_1_2;
 			int repaircycle = Inverse(pfrac) * 28; // repair pad has a 14-tick animation, so 28 ticks is half as fast
-            if (Frame % repaircycle == 0){
+            if (FrameMB() % repaircycle == 0){
                 Strength += Class->Repair_Step();
                 if (Strength > Class_Of().MaxStrength){
                     Strength = Class_Of().MaxStrength;
@@ -2347,7 +2348,7 @@ int AircraftClass::Process_Fly_To(bool slowdown, TARGET dest)
 	
 	// Chthon CFE Note: Since aircraft don't call Per_Cell_Process in flight, we need to set their visibility flags here
 	// Unlike everything else, aircraft can become "undiscovered" by their owner because they fly under the shroud
-	if (Frame % TICKS_PER_SECOND == 0){
+	if (FrameMB() % TICKS_PER_SECOND == 0){
         CELL cell = Coord_Cell(Center_Coord());
         if (Session.Type == GAME_NORMAL){
             if (!Is_Discovered_By_Player(PlayerPtr) && Map[cell].Is_Visible(PlayerPtr)) {

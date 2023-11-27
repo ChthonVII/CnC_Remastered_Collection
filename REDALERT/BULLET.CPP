@@ -384,7 +384,7 @@ void BulletClass::AI(void)
 	**	they only do so every other game frame (improves game speed and makes
 	**	missiles not so deadly).
 	*/
-	if ((Frame & 0x01) && Class->ROT != 0 && Target_Legal(TarCom)) {
+	if ((FrameMB() & 0x01) && Class->ROT != 0 && Target_Legal(TarCom)) {
 		PrimaryFacing.Set_Desired(Direction256(Coord, ::As_Coord(TarCom)));
 	}
 
@@ -545,7 +545,7 @@ int BulletClass::Shape_Number(void) const
 	**	For tumbling projectiles, fetch offset stage.
 	*/
 	if (Class->Tumble > 0) {
-		shapenum += (long)Frame % Class->Tumble;
+		shapenum += (long)FrameMB() % Class->Tumble;
 	}
 
 	return(shapenum);

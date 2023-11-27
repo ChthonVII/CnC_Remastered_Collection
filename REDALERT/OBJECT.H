@@ -128,10 +128,14 @@ class ObjectClass : public AbstractClass
 		*/
 		short Strength;
 
+        // Chthon CFE Note: Store the object's birthday so we can distribute "Frame % something" events more evenly
+        long BirthdayFrame;
+        
 		/*
 		** Some additional padding in case we need to add data to the class and maintain backwards compatibility for save/load
 		*/
-		unsigned char SaveLoadPadding[16];
+        // Chthon CFE Note: Original padding was 16. BirthdayFrame consumes 4 
+		unsigned char SaveLoadPadding[12];
 
 		/*-----------------------------------------------------------------------------------
 		**	Constructor & destructors.
@@ -268,6 +272,10 @@ class ObjectClass : public AbstractClass
 		virtual void Move(FacingType);
 
 		enum {FLIGHT_LEVEL=256};
+        
+        // Chthon CFE Note: Inline subtract birthday from frame
+        // Make sure the result is never negative in case this somehow get called before Frame loaded from a save game
+        inline long FrameMB(){return (Frame > BirthdayFrame) ? Frame - BirthdayFrame : BirthdayFrame - Frame;};
 
 };
 

@@ -2835,7 +2835,7 @@ void TechnoClass::AI(void)
         // heal if below 50% or
         // below 100% and rank 2+ and already have vanilla healing or
         // below 100% and rank 3 and certain unit types (buildings, medics, heavy tank)
-        if (    ((Frame % healcycle) == 0) &&
+        if (    ((FrameMB() % healcycle) == 0) &&
                  (
                     (Health_Ratio() <= Rule.ConditionYellow) ||
                     (

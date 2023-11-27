@@ -4339,7 +4339,7 @@ void InfantryClass::Movement_AI(void)
 							if (Target_Legal(TarCom)) {
 								Do_Action(DO_CRAWL);
                                 // Chthon CFE Note: Rank3 veteran dogs use "alpha howl" periodically while chasing
-                                if ((VeterancyRank == 3) && (Frame % (3*TICKS_PER_SECOND) == 0)){
+                                if ((VeterancyRank == 3) && (FrameMB() % (3*TICKS_PER_SECOND) == 0)){
                                     AlphaPuppersHowl();
                                 }
 							} else {
