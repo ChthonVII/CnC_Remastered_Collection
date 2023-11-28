@@ -2154,7 +2154,7 @@ int UnitClass::Shape_Number(void) const
 		*/
 		if (IsDriving)  {
 			//shapenum = 8 + (shapenum * 8) + ((::Frame+ID)/2) % 8;
-            shapenum = 8 + (shapenum * 8) + ((FrameMB()+ID)/2) % 8;
+            shapenum = 8 + (shapenum * 8) + (((const_cast<UnitClass*>(this))->FrameMB()+ID)/2) % 8;
 		} else {
 
 			/*
@@ -2162,7 +2162,7 @@ int UnitClass::Shape_Number(void) const
 			*/
 			if (Arm > 0)  {
 				//shapenum = 8 + 64 + (shapenum * 4) + ((::Frame+ID)/2) % 4;
-                shapenum = 8 + 64 + (shapenum * 4) + ((FrameMB()+ID)/2) % 4;
+                shapenum = 8 + 64 + (shapenum * 4) + (((const_cast<UnitClass*>(this))->FrameMB()+ID)/2) % 4;
 			}
 		}
 	} else {
@@ -2301,7 +2301,7 @@ void UnitClass::Draw_It(int x, int y, WindowNumberType window) const
 		if (Class->IsRadarEquipped) {
 			if (*this == UNIT_MGG) {
 				int x2 = x, y2 = y;
-				shapenum = 32 + (FrameMB() & 7);
+				shapenum = 32 + ((const_cast<UnitClass*>(this))->FrameMB() & 7);
 				Class->Turret_Adjust(PrimaryFacing, x2, y2);
 				Techno_Draw_Object(shapefile, shapenum, x2, y2, window);
 			} else {
@@ -2312,7 +2312,7 @@ void UnitClass::Draw_It(int x, int y, WindowNumberType window) const
 //					shapenum = 32 + (Frame % 32);
 //				}
 //#else
-				shapenum = 32 + (FrameMB() % 32);
+				shapenum = 32 + ((const_cast<UnitClass*>(this))->FrameMB() % 32);
 //#endif
 #ifdef FIXIT_CSII	//	checked - ajw 9/28/98
 				if (*this == UNIT_TESLATANK) {
@@ -2367,7 +2367,7 @@ void UnitClass::Draw_It(int x, int y, WindowNumberType window) const
 		shapefile = MFCD::Retrieve("FLAGFLY.SHP");
 		int flag_x = x + (ICON_PIXEL_W / 2) - 2;
 		int flag_y = y + (3 * ICON_PIXEL_H / 4) - Get_Build_Frame_Height(shapefile);
-		CC_Draw_Shape(this, "FLAGFLY", shapefile, FrameMB() % 14, flag_x, flag_y, window, SHAPE_CENTER|SHAPE_FADING|SHAPE_GHOST, HouseClass::As_Pointer(Flagged)->Remap_Table(false, Class->Remap), Map.UnitShadow, DIR_N, 0x0100, Flagged);
+		CC_Draw_Shape(this, "FLAGFLY", shapefile, (int)(const_cast<UnitClass*>(this))->FrameMB() % 14, flag_x, flag_y, window, SHAPE_CENTER|SHAPE_FADING|SHAPE_GHOST, HouseClass::As_Pointer(Flagged)->Remap_Table(false, Class->Remap), Map.UnitShadow, DIR_N, 0x0100, Flagged);
 	}
 
 	DriveClass::Draw_It(x, y, window);

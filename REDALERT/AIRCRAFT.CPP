@@ -447,7 +447,7 @@ void AircraftClass::Draw_It(int x, int y, WindowNumberType window) const
 	if (Height == FLIGHT_LEVEL && Get_Speed() < 3) {
 		static int _jitter[] = {0,0,0,0,1,1,1,0,0,0,0,0,-1,-1,-1,0};
 		//jitter = _jitter[::Frame % 16];
-        jitter = _jitter[FrameMB() % 16];
+        jitter = _jitter[(const_cast<AircraftClass*>(this))->FrameMB() % 16];
 	}
 
 	// Virtual window needs to draw the body first so it's considered the primary object and the shadow is a sub-object

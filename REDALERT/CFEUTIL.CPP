@@ -199,7 +199,7 @@ bool Reconcile_Config_With_Default(const INIClass& default, INIClass& config)
 void Initialise_CFE_Patch_Config()
 {
 	static constexpr const char* DefaultININame = "DEFAULT.CFEPATCHREDUX_RA.INI";
-    
+#ifdef CFE_TEST_BUILD
     const std::string ini_dir = Get_User_Mod_Dir() + "\\CFEPatchReduxRATESTBUILD";
 #else
     const std::string ini_dir = Get_User_Mod_Dir() + "\\CFEPatchReduxRA";

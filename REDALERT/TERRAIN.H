@@ -132,13 +132,14 @@ class TerrainClass : public ObjectClass, public StageClass
 		bool Load(Straw & file);
 		bool Save(Pipe & file) const;
 
-	private:
+	//private: //Chthon CFE Note: IsOnFire must be public for burning tree fix
 
 		/*
 		**	If this terrain object is on fire, then this flag will be true.
 		*/
 		unsigned IsOnFire:1;
 
+    private:
 		/*
 		**	Is this a terrain object that undergoes crumbling animation and it is
 		**	in fact crumbling at this time?

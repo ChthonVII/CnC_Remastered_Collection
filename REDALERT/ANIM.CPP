@@ -117,7 +117,7 @@ void Shorten_Attached_Anims(ObjectClass * obj)
 			//	anim.Loops = 0;
 			//}
             AnimClass* animptr = Anims.Ptr(index);
-            if (animptr && animptr->IsActive && (animptr->Object == obj)){
+            if (animptr && animptr->IsActive && (As_Object(animptr->xObject) == obj)){
                 animptr->Loops = 0;
             }
 		}

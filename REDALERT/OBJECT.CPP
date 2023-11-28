@@ -142,8 +142,8 @@ ObjectClass::ObjectClass(RTTIType rtti, int id) :
 	Trigger(NULL),
 	Strength(255),
 	IsSelectedMask(0)		// Mask showing who has selected this object
-    BirthdayFrame = Frame;         // Chthon CFE Note: Set BirthdayFrame
 {
+    BirthdayFrame = Frame;         // Chthon CFE Note: Set BirthdayFrame
 }
 
 

@@ -916,6 +916,7 @@ extern bool MPSuperWeaponDisable;
  *   07/17/1995 JLB : Limits EVA speaking unless the player can do something.                  *
  *=============================================================================================*/
 extern void Recalculate_Placement_Distances();
+extern void On_Message(const char* message, float timeout_seconds, long long message_id);
 
 void HouseClass::AI(void)
 {
