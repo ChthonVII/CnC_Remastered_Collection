@@ -928,11 +928,11 @@ void HouseClass::AI(void)
         // Chthon CFE Note: Announce mod version for all players
     if ((Frame == 75) && IsHuman && ActiveCFEPatchConfig.EnableVersionAnnounce){
 #ifdef CFE_TEST_BUILD        
-        char text[] = "CFE Patch Redux version 1.9 TEST BUILD 6";
+        char text[] = "CFE Patch Redux RA version 1.9 TEST BUILD 6";
 #else
-        char text[] = "CFE Patch Redux version 1.9";
+        char text[] = "CFE Patch Redux RA version 1.9";
 #endif
-        On_Message(text, 20.0f, TXT_YOURGAME_OUTDATED);
+        On_Message(text, 20.0f, -1); // -1 is the only id you can use in RA to display the supplied string instead of a hardcoded one.
     }
     
 	/*
