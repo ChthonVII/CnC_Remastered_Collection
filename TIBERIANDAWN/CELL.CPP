@@ -633,7 +633,7 @@ void CellClass::Occupy_Down(ObjectClass * object)
                     CFE_Debug_Printf("Frame %i: CellClass::Occupy_Down() cleaned up dangling ReservingVehicle pointer in cell %i, %i (%i) that pointed to 0x%X", Frame, Cell_X(Cell_Number()), Cell_Y(Cell_Number()), Cell_Number(), ReservingVehicle);
                 }
                 */
-                ReservingVehicle = (DriveClass*)object;
+                ReservingVehicle = (FootClass*)object;
                 Flag.Occupy.Vehicle = true;
             }
             /*
@@ -872,6 +872,12 @@ UnitClass * CellClass::Cell_Unit(void) const
 	return((UnitClass*)Cell_Find_Object(RTTI_UNIT));
 }
 
+// Chthon CFE Note: Should have this function for aircraft too
+AircraftClass * CellClass::Cell_Aircraft(void) const
+{
+	Validate();
+	return((AircraftClass*)Cell_Find_Object(RTTI_AIRCRAFT));
+}
 
 /***********************************************************************************************
  * CellClass::Cell_Infantry -- Returns with pointer of first infantry unit occupying the cell. *

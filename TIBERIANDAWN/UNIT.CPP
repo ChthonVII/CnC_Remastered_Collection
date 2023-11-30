@@ -4035,6 +4035,13 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType facing) const
 		*/
 		if (cellptr->Flag.Occupy.Vehicle && (cellptr->ReservingVehicle != this)) {
 			retval = MOVE_MOVING_BLOCK;
+            // If the vehicle moving into the cell is cloaked to you, then don't behave like you can see it
+            if (cellptr->ReservingVehicle != this){
+                FootClass* rv = cellptr->ReservingVehicle;
+                if (rv && rv->IsActive && rv->Is_Cloaked(this)){
+                    retval = MOVE_CLOAK;
+                }
+            }
 		} else {
             
             // Chthon CFE Note: need to bail now if repair bay is only thing on cell.

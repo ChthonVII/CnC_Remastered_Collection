@@ -100,7 +100,8 @@ bool CellClass::Should_Save(void) const
 			IsTrigger ||
 			Flag.Composite ||
 			OccupierPtr ||
-			Overlapper[0] || Overlapper[1] || Overlapper[2]
+			Overlapper[0] || Overlapper[1] || Overlapper[2] ||
+			ReservingVehicle
 			);
 }
 
@@ -240,16 +241,9 @@ void CellClass::Code_Pointers(void)
 	assert(CTFFlag == NULL);
     
     // Chthon CFE Note: Have to code and decode the ReservingVehicle pointer!
-    // Not that As_Target() is only implemented for youngest-decendent classes. For parent classes it will return 0.
+    // Not that As_Target() is virtual; we can call it only whatever type of pointer
     if (ReservingVehicle){
-        if (ReservingVehicle->What_Am_I() == RTTI_UNIT){
-            ReservingVehicle = (UnitClass*)ReservingVehicle->As_Target();
-        }
-        else {
-            ReservingVehicle = 0;
-            // remove this once it's clear it never happens
-            CFE_Debug_Printf("CellClass::Code_Pointers() tried to code a ReservingVehicle pointer that wasn't a UnitClass!!");
-        }
+        ReservingVehicle = ReservingVehicle->As_Target();
     }
     
 }
@@ -342,8 +336,18 @@ void CellClass::Decode_Pointers(void)
     // Chthon CFE Note: Have to code and decode the ReservingVehicle pointer!
     if (ReservingVehicle) {
         // in RA, we'll have to use Is_Target_Unit() to distinguish ground units and vessels
-		ReservingVehicle = As_Unit((TARGET)ReservingVehicle, false);
-		Check_Ptr((void *)ReservingVehicle, __FILE__, __LINE__);
+        // already have to b/c aircraft...
+        if (Is_Target_Unit((TARGET)ReservingVehicle)){
+            ReservingVehicle = As_Unit((TARGET)ReservingVehicle, false);
+            Check_Ptr((void *)ReservingVehicle, __FILE__, __LINE__);
+        }
+        else if (Is_Target_Aircraft((TARGET)ReservingVehicle)){
+            ReservingVehicle = As_Aircraft((TARGET)ReservingVehicle, false);
+            Check_Ptr((void *)ReservingVehicle, __FILE__, __LINE__);
+        }
+        else{
+            ReservingVehicle = nullptr;
+        }
 	}
 }
 

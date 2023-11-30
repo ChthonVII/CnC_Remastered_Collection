@@ -206,6 +206,7 @@ class CellClass
 		TerrainClass *  Cell_Terrain(void) const;
 		UnitClass *  Cell_Unit(void) const;
 		InfantryClass *  Cell_Infantry(void) const;
+        AircraftClass *  Cell_Aircraft(void) const; // Chthon CFE Note: should have this function for aircraft too
 		TriggerClass *  Get_Trigger(void) const;
 		int  Clear_Icon(void) const;
 		bool  Goodie_Check(FootClass * object, bool check_steel = false);
@@ -334,7 +335,7 @@ class CellClass
         int LongtermBlockage() const;
         
         // we need to fix the cell reservation system at least insofar that we know *who* reserved a cell
-        DriveClass* ReservingVehicle;
+        FootClass* ReservingVehicle;
         int TibResurgenceBuildup;
         int TibResurgenceCountdown;
         unsigned char BigFlipCheck;

@@ -1596,7 +1596,7 @@ void MapClass::Clean(void)
             continue;
         }
 		CellClass *cellptr = &(*this)[cell];
-        DriveClass* someunit = cellptr->ReservingVehicle;
+        FootClass* someunit = cellptr->ReservingVehicle;
         
         // no flags to clear
         if (!someunit && !cellptr->Flag.Occupy.Vehicle){
@@ -1604,7 +1604,7 @@ void MapClass::Clean(void)
         }
         
         // cell currently has a vehicle in it
-        if (cellptr->Cell_Unit()){
+        if (cellptr->Cell_Unit() || cellptr->Cell_Aircraft()){
             continue;
         }
         
@@ -1616,7 +1616,7 @@ void MapClass::Clean(void)
             }
             // this cell is the midpoint of a two-cell track (fugly)
             // need to punt to drive class (unless I want to tear out a bunch of private specifiers)
-            if (someunit->Track_Midpoint_Cell() == cell){
+            if ((someunit->What_Am_I() == RTTI_UNIT) && (((DriveClass*)someunit)->Track_Midpoint_Cell() == cell)){
                 continue;
             }
         }

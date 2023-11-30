@@ -1846,7 +1846,7 @@ void DriveClass::Mark_Track(COORDINATE headto, MarkType type)
                             // Chthon CFE Note: Fixed to prevent one unit from changing a flag set by another.
                             // Though the related fix in CELL.CPP seems to prevent this from ever being an issue.
                             CellClass* cellptr = &Map[cell];
-                            DriveClass* rv = cellptr->ReservingVehicle;
+                            FootClass* rv = cellptr->ReservingVehicle;
                             if (!rv || (rv == this) || ((type == MARK_UP) && !Map[cell].Flag.Occupy.Vehicle)){
                                 Map[cell].Flag.Occupy.Vehicle = value;
                                 if (type == MARK_UP){
@@ -1871,7 +1871,7 @@ void DriveClass::Mark_Track(COORDINATE headto, MarkType type)
             // Chthon CFE Note: Fixed to prevent one unit from changing a flag set by another.
             // Though the related fix in CELL.CPP seems to prevent this from ever being an issue.
 			CellClass* cellptr = &Map[cell];
-            DriveClass* rv = cellptr->ReservingVehicle;
+            FootClass* rv = cellptr->ReservingVehicle;
             if (!rv || (rv == this) || ((type == MARK_UP) && !Map[cell].Flag.Occupy.Vehicle)){
                 Map[cell].Flag.Occupy.Vehicle = value;
                 if (type == MARK_UP){
