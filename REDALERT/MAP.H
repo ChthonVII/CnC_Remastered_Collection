@@ -192,6 +192,11 @@ class MapClass: public GScreenClass
         int timelinedamage;
         int permanenttimelinedamage;
         
+        // we need to remove vehicle occupy/reserve flags that got set but not cleared
+        // not sure where this is happening (movement system is such a mess)
+        // but user bug reports say it is happening, so, meh
+        // Not happy about doing a full map scan every tick, but it can't be helped...
+        void CleanupZombieFlags();
         
 		/*
 		** Some additional padding in case we need to add data to the class and maintain backwards compatibility for save/load

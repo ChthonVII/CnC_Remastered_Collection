@@ -1689,15 +1689,60 @@ void DriveClass::Mark_Track(COORDINATE headto, MarkType type)
 
 					if (TrackIndex < cellidx && cellidx != -1) {
 						COORDINATE offset = Smooth_Turn(ptr[cellidx].Offset, dir);
-						Map[offset].Flag.Occupy.Vehicle = value;
+						//Map[offset].Flag.Occupy.Vehicle = value;
+                        // Chthon CFE Note: Fixed to prevent one unit from changing a flag set by another.
+                        // Though the related fix in CELL.CPP seems to prevent this from ever being an issue.
+                        CellClass* cellptr = &Map[offset]; // RA automatically converts Map[Coord] to Map[Coord_Cell(Coord)]
+                        FootClass* rv = cellptr->ReservingVehicle;
+                        if (!rv || (rv == this) || ((type == MARK_UP) && !Map[offset].Flag.Occupy.Vehicle)){
+                            Map[offset].Flag.Occupy.Vehicle = value;
+                            if (type == MARK_UP){
+                                cellptr->ReservingVehicle = nullptr;
+                            }
+                            else {
+                                cellptr->ReservingVehicle = this;
+                            }
+                        }
 					}
 				}
 			}
 		}
-		Map[headto].Flag.Occupy.Vehicle = value;
+		// Chthon CFE Note: Fixed to prevent one unit from changing a flag set by another.
+		//Map[headto].Flag.Occupy.Vehicle = value;
+		CellClass* cellptr = &Map[headto]; // RA automatically converts Map[Coord] to Map[Coord_Cell(Coord)]
+        FootClass* rv = cellptr->ReservingVehicle;
+        if (!rv || (rv == this) || ((type == MARK_UP) && !Map[headto].Flag.Occupy.Vehicle)){
+            Map[headto].Flag.Occupy.Vehicle = value;
+            if (type == MARK_UP){
+                cellptr->ReservingVehicle = nullptr;
+            }
+            else {
+                cellptr->ReservingVehicle = this;
+            }
+        }
 	}
 }
 
+// copy paste the logic for finding the midpoint of the track
+CELL DriveClass::Track_Midpoint_Cell(){
+    if (!IsOnShortTrack && TrackNumber != -1) {
+			int tracknum = TrackControl[TrackNumber].Track;
+			if (tracknum) {
+				TrackType const * ptr = RawTracks[tracknum - 1].Track;
+				int cellidx = RawTracks[tracknum - 1].Cell;
+				if (cellidx > -1) {
+					DirType dir = ptr[cellidx].Facing;
+
+					if (TrackIndex < cellidx && cellidx != -1) {
+						COORDINATE offset = Smooth_Turn(ptr[cellidx].Offset, dir); // in TD it's &dir b/c Smooth_Turn takes a pointer instead of a dir
+						CELL cell = Coord_Cell(offset);
+                        return cell;
+                    }
+                }
+            }
+    }
+    return -1;
+}
 
 /***********************************************************************************************
  * DriveClass::Ok_To_Move -- Checks to see if this object can begin moving.                    *

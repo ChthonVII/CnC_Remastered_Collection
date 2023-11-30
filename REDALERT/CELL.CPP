@@ -137,6 +137,8 @@ CellClass::CellClass(void) :
 	for (int index = 0; index < ARRAY_SIZE(Overlapper); index++) {
 		Overlapper[index] = 0;
 	}
+	// Chthon CFE Note: Mod stuff
+	ReservingVehicle = nullptr;
 }
 
 
@@ -657,7 +659,17 @@ void CellClass::Occupy_Down(ObjectClass * object)
 		case RTTI_VESSEL:
 		case RTTI_AIRCRAFT:
 		case RTTI_UNIT:
-			Flag.Occupy.Vehicle = true;
+            // Chthon CFE Note: Fixed to prevent one unit from changing a flag set by another.
+            // There seem to be two causes for this:
+            // (1) The major bug in the track-jumping logic in DRIVE.CPP (now fixed)
+            // (2) When tracks include a node that goes past an edge/corner a little bit into another cell.
+            // (Possibly due to track rotations/transpositions not accounting for
+            // "lepton 0 is in this cell, but lepton 256 is in the next cell") <-- guess
+            // Allowing a unit to pull up someone else's flag can lead to "two units in the same cell" situations.
+            if (!ReservingVehicle || (ReservingVehicle == object) || !Flag.Occupy.Vehicle) {
+                ReservingVehicle = (FootClass*)object;
+                Flag.Occupy.Vehicle = true;
+            }
 			break;
 
 		case RTTI_TERRAIN:
@@ -725,7 +737,17 @@ void CellClass::Occupy_Up(ObjectClass * object)
 		case RTTI_VESSEL:
 		case RTTI_AIRCRAFT:
 		case RTTI_UNIT:
-			Flag.Occupy.Vehicle = false;
+            // Chthon CFE Note: Fixed to prevent one unit from changing a flag set by another.
+            // There seem to be two causes for this:
+            // (1) The major bug in the track-jumping logic in DRIVE.CPP (now fixed)
+            // (2) When tracks include a node that goes past an edge/corner a little bit into another cell.
+            // (Possibly due to track rotations/transpositions not accounting for
+            // "lepton 0 is in this cell, but lepton 256 is in the next cell") <-- guess
+            // Allowing a unit to pull up someone else's flag can lead to "two units in the same cell" situations.
+            if (!ReservingVehicle || (ReservingVehicle == object) || !Flag.Occupy.Vehicle) {
+                ReservingVehicle = nullptr;
+                Flag.Occupy.Vehicle = false;
+            }
 			break;
 
 		case RTTI_TERRAIN:
@@ -851,6 +873,15 @@ UnitClass * CellClass::Cell_Unit(void) const
 
 	return((UnitClass*)Cell_Find_Object(RTTI_UNIT));
 }
+
+// Chthon CFE Note: should have this function for aircraft too
+AircraftClass * CellClass::Cell_Aircraft(void) const
+{
+	assert((unsigned)Cell_Number() <= MAP_CELL_TOTAL);
+
+	return((AircraftClass*)Cell_Find_Object(RTTI_AIRCRAFT));
+}
+
 
 
 /***********************************************************************************************

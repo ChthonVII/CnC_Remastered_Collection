@@ -144,6 +144,12 @@ void CellClass::Code_Pointers(void)
 	}
 
 	assert(CTFFlag == NULL);
+    
+    // Chthon CFE Note: Have to code and decode the ReservingVehicle pointer!
+    // Not that As_Target() is virtual; we can call it only whatever type of pointer
+    if (ReservingVehicle){
+        ReservingVehicle = ReservingVehicle->As_Target();
+    }
 }
 
 
@@ -181,6 +187,25 @@ void CellClass::Decode_Pointers(void)
 	}
 
 	CTFFlag = NULL;
+    
+    // Chthon CFE Note: Have to code and decode the ReservingVehicle pointer!
+    if (ReservingVehicle) {
+        if (Is_Target_Unit((TARGET)ReservingVehicle)){
+            ReservingVehicle = As_Unit((TARGET)ReservingVehicle, false);
+            Check_Ptr((void *)ReservingVehicle, __FILE__, __LINE__);
+        }
+        else if (Is_Target_Vessel((TARGET)ReservingVehicle)){
+            ReservingVehicle = As_Vessel((TARGET)ReservingVehicle, false);
+            Check_Ptr((void *)ReservingVehicle, __FILE__, __LINE__);
+        }
+        else if (Is_Target_Aircraft((TARGET)ReservingVehicle)){
+            ReservingVehicle = As_Aircraft((TARGET)ReservingVehicle, false);
+            Check_Ptr((void *)ReservingVehicle, __FILE__, __LINE__);
+        }
+        else{
+            ReservingVehicle = nullptr;
+        }
+	}
 }
 
 

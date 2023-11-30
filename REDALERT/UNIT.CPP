@@ -3672,13 +3672,20 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType ) const
 	**	If some allied object has reserved the cell, then consider the cell
 	**	as blocked by a moving object.
 	*/
-	if (retval == MOVE_OK && !crushable && (cellptr->Flag.Composite & 0x3F) != 0) {
+	if (retval == MOVE_OK && !crushable && (((cellptr->Flag.Composite & 0x3F) != 0) || (cellptr->ReservingVehicle != this))) {
 
 		/*
 		**	If reserved by a vehicle, then consider this blocked terrain.
 		*/
-		if (cellptr->Flag.Occupy.Vehicle) {
+		if (cellptr->Flag.Occupy.Vehicle && (cellptr->ReservingVehicle != this)) {
 			retval = MOVE_MOVING_BLOCK;
+            // If the vehicle moving into the cell is cloaked to you, then don't behave like you can see it
+            if (cellptr->ReservingVehicle != this){
+                FootClass* rv = cellptr->ReservingVehicle;
+                if (rv && rv->IsActive && rv->Is_Cloaked(this)){
+                    retval = MOVE_CLOAK;
+                }
+            }
 		} else {
 			if (cellptr->InfType != HOUSE_NONE && House->Is_Ally(cellptr->InfType)) {
 				retval = MOVE_MOVING_BLOCK;
@@ -3705,7 +3712,7 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType ) const
 	** If its ok to move into the cell because we can crush whats in the cell, then
 	** make sure no one else is already moving into the cell to crush something.
 	*/
-	if (retval == MOVE_OK && crushable && cellptr->Flag.Occupy.Vehicle) {
+	if (retval == MOVE_OK && crushable && cellptr->Flag.Occupy.Vehicle && (cellptr->ReservingVehicle != this)) {
 
 		/*
 		**	However, if the cell is occupied by a crushable vehicle, then we can

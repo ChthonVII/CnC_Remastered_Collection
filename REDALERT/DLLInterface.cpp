@@ -1889,6 +1889,8 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
 		DLLExportClass::Computer_Message(false);
 	}
 
+	Map.CleanupZombieFlags(); // Chthon CFE Note: clean up vehicle occupy/reserve flags once per tick
+	
 	if (ProgEndCalled) {
 		GlyphX_Debug_Print("ProgEndCalled - GameActive = false");
 		GameActive = false;

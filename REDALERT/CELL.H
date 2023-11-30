@@ -244,6 +244,7 @@ class CellClass
 		TerrainClass * Cell_Terrain(void) const;
 		UnitClass * Cell_Unit(void) const;
 		VesselClass * Cell_Vessel(void) const;
+        AircraftClass *  Cell_Aircraft(void) const; // Chthon CFE Note: should have this function for aircraft too
 		bool Goodie_Check(FootClass * object);
 		bool Is_Clear_To_Build(SpeedType loco = SPEED_TRACK) const;
 		bool Is_Clear_To_Move(SpeedType loco, bool ignoreinfantry, bool ignorevehicles, int zone=-1, MZoneType check=MZONE_NORMAL) const;
@@ -335,10 +336,17 @@ class CellClass
 		*/
 		AnimClass* CTFFlag;
 
+        // Chthon CFE Note: Mod stuff here
+public:
+        // we need to fix the cell reservation system at least insofar that we know *who* reserved a cell
+        FootClass* ReservingVehicle;
+        
 		/*
 		** Some additional padding in case we need to add data to the class and maintain backwards compatibility for save/load
 		*/
-		unsigned char SaveLoadPadding[28];
+        // Chthon CFE Note: Original padding was 28
+        // -4 for FootClass* ReservingVehicle
+		unsigned char SaveLoadPadding[24];
 };
 
 #endif

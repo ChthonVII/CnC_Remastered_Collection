@@ -301,22 +301,28 @@ MoveType VesselClass::Can_Enter_Cell(CELL cell, FacingType ) const
 	**	If some allied object has reserved the cell, then consider the cell
 	**	as blocked by a moving object.
 	*/
-	if (cellptr->Flag.Composite) {
+	if (cellptr->Flag.Composite || (cellptr->ReservingVehicle != this)) {
 
 		if (cellptr->Flag.Occupy.Building) {
 			return(MOVE_NO);
 		}
 
 		TechnoClass * techno = cellptr->Cell_Techno();
-		if (techno != NULL && techno->Is_Cloaked(this)) {
+		if (techno != NULL && (techno != this) && techno->Is_Cloaked(this)) {
 			return(MOVE_CLOAK);
 		}
 
 		/*
 		**	If reserved by a vehicle, then consider this blocked terrain.
 		*/
-		if (cellptr->Flag.Occupy.Vehicle) {
+		if (cellptr->Flag.Occupy.Vehicle && (cellptr->ReservingVehicle != this)) {
 			retval = MOVE_MOVING_BLOCK;
+            if (cellptr->ReservingVehicle != this){
+                FootClass* rv = cellptr->ReservingVehicle;
+                if (rv && rv->IsActive && rv->Is_Cloaked(this)){
+                    retval = MOVE_CLOAK;
+                }
+            }
 		}
 	}
 
