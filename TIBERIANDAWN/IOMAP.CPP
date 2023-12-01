@@ -243,7 +243,7 @@ void CellClass::Code_Pointers(void)
     // Chthon CFE Note: Have to code and decode the ReservingVehicle pointer!
     // Not that As_Target() is virtual; we can call it only whatever type of pointer
     if (ReservingVehicle){
-        ReservingVehicle = ReservingVehicle->As_Target();
+        ReservingVehicle = (FootClass*)ReservingVehicle->As_Target();
     }
     
 }
