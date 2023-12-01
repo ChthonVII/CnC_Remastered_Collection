@@ -262,7 +262,7 @@ ObjectTypeClass const & VesselClass::Class_Of(void) const
  * HISTORY:                                                                                    *
  *   03/14/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
-MoveType VesselClass::Can_Enter_Cell(CELL cell, FacingType ) const
+MoveType VesselClass::Can_Enter_Cell(CELL cell, FacingType facing) const
 {
 	assert(Vessels.ID(this) == ID);
 	assert(IsActive);
@@ -326,6 +326,110 @@ MoveType VesselClass::Can_Enter_Cell(CELL cell, FacingType ) const
 		}
 	}
 
+	// Chthon CFE Note: We need to deal with the possibility of making a diagonal move perpendicular to another unit's diagonal move
+	// The units will pass through the same spot at the corner, but it won't be noticed up till this point because neither of the cells involved in the other unit's move are involved in this unit's move.
+	if ((retval == MOVE_OK) && ((facing == FACING_NE) || (facing == FACING_SE) || (facing == FACING_SW) || (facing == FACING_NW))){
+        // the crossing point is the upper-left corner of the southeast cell
+        COORDINATE crossingpoint = 0;
+        switch (facing){
+            case FACING_NE:
+                crossingpoint = Cell_Coord(Adjacent_Cell(cell, FACING_S));
+                break;
+            case FACING_SE:
+                crossingpoint = Cell_Coord(cell);
+                break;
+            case FACING_SW:
+                crossingpoint = Cell_Coord(Adjacent_Cell(cell, FACING_E));
+                break;
+            case FACING_NW:
+                crossingpoint = Cell_Coord(Adjacent_Cell(cell, FACING_SE));
+                break;
+            default:
+                // should be unreachable
+                crossingpoint = Cell_Coord(cell);
+        }
+        FacingType reversefacing = (FacingType)((char)facing ^4);
+        // we can do this because FacingTypes have modular addition/subtraction
+        CELL xdcells[2] = {0,0};
+        xdcells[0] = Adjacent_Cell(cell, reversefacing + (FacingType)1);
+        xdcells[1] = Adjacent_Cell(cell, reversefacing - (FacingType)1);
+        if (Map.In_Radar(xdcells[0]) && Map.In_Radar(xdcells[1])){
+            for (int i=0; i<2; i++){
+                CellClass* xdcellptr = &Map[xdcells[i]];
+                ObjectClass *xdobj = xdcellptr->Cell_Occupier();
+                while (xdobj) {
+                    if ((xdobj != this) && xdobj->IsActive && !xdobj->IsInLimbo && xdobj->Strength){
+                        RTTIType xdrtti = xdobj->What_Am_I();
+                        if (xdrtti == RTTI_VESSEL){
+                            FootClass* xdfoot = (FootClass*)xdobj;
+                            COORDINATE xdhtcoord = xdfoot->Head_To_Coord();
+                            CELL xdhtcell = Coord_Cell(xdhtcoord);
+                            CELL otherxdcell = xdcells[(i+1)%2];
+                            bool iscrossblocker = false;
+                            if (xdhtcell == otherxdcell){
+                                iscrossblocker = true;
+                            }
+                            else if (xdhtcell == xdcells[i]){
+                                // in order to prevent "butt crossovers" we need to check
+                                // if the other unit just entered its destination cell but is still near the crossover point
+                                // So define a box from the crossing point to just short of the unit's headto
+                                // and see if the unit is inside it
+                                // Note that we are STILL missing a few possible crossover cases:
+                                //      * A much faster unit coming from two (or more) cells away
+                                //      * A unit that the vageries of the track system has transiently placed in
+                                //      either this unit's cell or the destination cell.
+                                // But those are hard cases to deal with and rare enough we can get away with ignoring them (I think...)
+                                int xbx = Coord_X(xdfoot->Coord);
+                                int xby = Coord_Y(xdfoot->Coord);
+                                int xbhtx = Coord_X(xdhtcoord);
+                                int xbhty = Coord_Y(xdhtcoord);
+                                int xpx = Coord_X(crossingpoint);
+                                int xpy = Coord_Y(crossingpoint);
+                                int highx;
+                                int lowx;
+                                int highy;
+                                int lowy;
+                                if (xbhtx > xpx){
+                                    highx = xbhtx - 1; // shift by one because <= later
+                                    lowx = xpx;
+                                }
+                                else {
+                                    highx = xpx;
+                                    lowx = xbhtx + 1; // shift by one because >= later
+                                }
+                                if (xbhty > xpy){
+                                    highy = xbhty - 1; // shift by one because <= later
+                                    lowy = xpy;
+                                }
+                                else {
+                                    highy = xpy;
+                                    lowy = xbhty + 1; // shift by one because >= later
+                                }
+                                if ((xbx >= lowx) && (xbx <= highx) && (xby >= lowy) && (xby <= highy)){
+                                    iscrossblocker = true;
+                                }
+                            }
+                            if (iscrossblocker){
+                                if (House->Is_Ally(xdfoot)){
+                                    return MOVE_MOVING_BLOCK;
+                                }
+                                else {
+                                    if (xdfoot->Is_Cloaked(this)){
+                                        return MOVE_CLOAK;
+                                    }
+                                    else {
+                                        return MOVE_DESTROYABLE;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    xdobj = xdobj->Next;
+                }
+            }
+        }
+    }
+	
 	/*
 	**	Return with the most severe reason why this cell would be impassable.
 	*/

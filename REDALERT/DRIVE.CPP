@@ -730,12 +730,57 @@ bool DriveClass::While_Moving(void)
 						return(false);
 					}
 					Mark(MARK_UP);
+                    // Chthon CFE Note: 
+					// I *believe* I've fixed all the bugs that may cause
+					// another unit to unexpectedly occupy the second cell.
+					// However, it's still possible for something to start to diagonally cross
+					// in front of us before we reach the midpoint.
+					// And that causes a visual "two units stacked in one place" bug.
+					// So we still need to check if we can enter the second cell
+					// when we reach the per-cell process point for the first cell.
+					// UnitClass::Can_Enter_Cell() has been patched to ignore the vehicle flag
+					// if the flag was set by this unit itself
+					// Otherwise Can_Enter_Cell() would always return a blockage.
+					CELL htcell = Coord_Cell(Head_To_Coord());
+                    MoveType cando = Can_Enter_Cell(htcell, Dir_Facing(dir));
+                    if (cando != MOVE_OK){
+                        //CFE_Debug_Printf("Frame %i, Unit 0x%X aborted move mid track because endpoint cell %i, %i (%i) is blocked (%i)! TrackNumber %i, TrackIndex %i", Frame, this, Cell_X(htcell), Cell_Y(htcell), htcell, cando, TrackNumber, TrackIndex);
+                        // unfortunately, we need to blow up the path and do a full stop,
+                        // since the "try again next frame" would replay Per_Cell_Process() repeatedly
+                        Path[0] = FACING_NONE; // Path[] is invalid because we already ate the next value and now we're aborting without going to that cell 
+                        actual = 0;
+                        Coord = Coord_Snap(Coord); // snap to the middle of the cell if we aren't exactly there already
+                        Stop_Driver();
+                        TrackNumber = -1;
+                        TrackIndex = NULL;
+                        Mark(MARK_DOWN);
+                        return true;
+                    }           
 				}
 
 				/*
 				**	The unit could "jump tracks". Check to see if the unit should
 				**	do so.
 				*/
+                /* Chthon CFE Note: This is opaque as hell, so some documentation may be helpful.
+                 * It's more realistic for vehicles to move along curved paths that look like real-world turns
+                 * than to just go straight from the center of one cell to the next 
+                 * A track is an array of x,y offsets (relative to the destination coordinate)
+                 * that simulates a curved path like a turning vehicle.
+                 * Some tracks provide a curved path from the center of the current cell
+                 * to the center of the next one, while others provide a path that's two cells long.
+                 * Now what's track jumping?
+                 * For two-cell paths, there's a check ~3/4 of the way along the track in to see if
+                 * the second half of this track plus the next move from Path[] can be combined
+                 * into another two-cell path.
+                 * If so, Path[0] is consumed, HeadToCoord is changed, the track is swapped,
+                 * and the track progress is set ~1/4 of the way along the new track.
+                 * This strikes me as not a good way to do things,
+                 * since we're consuming Path[] and changing HeadToCoord,
+                 * but without all the logic in Start_Of_Move() that usually goes with doing that.
+                 * I'd like to take it out and replace it with something less insane,
+                 * but I'm not confident I understand things well enough to do that correctly.
+                 */
 				if (/**this != UNIT_GUNBOAT &&*/ nextface != FACING_NONE && adj && RawTracks[tracknum-1].Jump == TrackIndex && TrackIndex) {
 					TurnTrackType const * newtrack;		// Proposed jump-to track.
 					int	tnum;
@@ -751,6 +796,16 @@ bool DriveClass::While_Moving(void)
 						switch (Can_Enter_Cell(Coord_Cell(c), nextface)) {
 							case MOVE_OK:
 								IsOnShortTrack = false;		// Shouldn't be necessary, but...
+								// Chthon CFE Note: We need to call Stop_Driver() *before* we change TrackNumber 
+								// Otherwise when Stop_Driver() calls Mark_Track() it may unflag the wrong cells.
+								// This is actually a *HUGE* bug.
+								// If a unit is unflagged a cell it has nothing to do with,
+								// then it may yank out someone else's flag.
+								// If that happens before the reserving unit gets into the cell,
+								// then the cell appears open for entry,
+								// and we can end up with two units both moving into this cell at the same time.
+								// Testing showed this as the biggest contributor to "two units in the same place" events.
+								Stop_Driver();
 								TrackNumber = tnum;
 								track = newtrack;
 
@@ -759,7 +814,7 @@ bool DriveClass::While_Moving(void)
 								ptr = RawTracks[tracknum-1].Track;
 								adj = false;
 
-								Stop_Driver();
+								//Stop_Driver(); // Chthon CFE Note: moved up
 								IsDriving = true;
 								Per_Cell_Process(PCP_END);
 								IsDriving = false;
@@ -782,6 +837,7 @@ bool DriveClass::While_Moving(void)
 								break;
 
 							case MOVE_TEMP:
+// Chthon CFE Note: These ifdefs mess up IDE's {} matching highlighting :(
 #ifdef TOFIX
 								if (*this == UNIT_HARVESTER || !House->IsHuman) {
 #else

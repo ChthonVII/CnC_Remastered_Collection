@@ -99,7 +99,7 @@ class VesselClass : public DriveClass
 		void LST_Close_Door(void);
 		virtual FireDataType Fire_Data(int) const;
 		virtual COORDINATE Fire_Coord(int which) const;
-		virtual MoveType Can_Enter_Cell(CELL cell, FacingType from=FACING_NONE) const;
+		virtual MoveType Can_Enter_Cell(CELL cell, FacingType facing=FACING_NONE) const;
 		virtual void Draw_It(int x, int y, WindowNumberType window) const;
 		virtual short const * Overlap_List(bool redraw=false) const;
 		virtual DirType Desired_Load_Dir(ObjectClass * passenger, CELL & moveto) const;
