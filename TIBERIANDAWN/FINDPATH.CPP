@@ -2108,6 +2108,11 @@ float FootClass::CFE_Passable_Cell(CELL cell, FacingType face, int depth, float 
             
             ObjectClass* uobject = cellptr->Cell_Occupier();
             
+            // blank that if it's us (due to track running over cell boundaries or whatever)
+            if (uobject == (ObjectClass*)this){
+                uobject = nullptr;
+            }
+            
             // now deal with various cases where we're blocked, but the cell doesn't have an occupier
             
             // if we faked a MOVE_MOVING_BLOCK because of a two-away unit, pick that up here
@@ -2120,10 +2125,19 @@ float FootClass::CFE_Passable_Cell(CELL cell, FacingType face, int depth, float 
             // that means someone used Mark_Track() to "reserve" it.
             // so let's try to find them if we can
             // because otherwise we need to guess about them
+            // ReservingVehicle may be it
+            if (!uobject && cellptr->ReservingVehicle){
+                FootClass* rv = cellptr->ReservingVehicle;
+                if ((rv != this) && rv->IsActive && !rv->IsInLimbo && rv->Strength){
+                    uobject = rv;
+                    isremoteblocker = true;
+                }
+            }
+            // No ReservingVehicle? Then loop through all possibilities. 
             if (!uobject && cellptr->Flag.Occupy.Vehicle){
                 for (int i = 0; i < Units.Count(); i++) {
                     UnitClass* unit = Units.Ptr(i);
-                    if (unit && unit->IsActive && !unit->IsInLimbo && unit->Strength && (cell == Coord_Cell(unit->Head_To_Coord()))){
+                    if (unit && ((ObjectClass*)unit != (ObjectClass*)this) && unit->IsActive && !unit->IsInLimbo && unit->Strength && (cell == Coord_Cell(unit->Head_To_Coord()))){
                         uobject = unit;
                         isremoteblocker = true;
                         break;
@@ -2134,7 +2148,7 @@ float FootClass::CFE_Passable_Cell(CELL cell, FacingType face, int depth, float 
             if (!uobject && (cellptr->Flag.Composite & 0x01F)){
                 for (int i = 0; i < Infantry.Count(); i++) {
                     InfantryClass* dude = Infantry.Ptr(i);
-                    if (dude && dude->IsActive && !dude->IsInLimbo && dude->Strength && (cell == Coord_Cell(dude->Head_To_Coord()))){
+                    if (dude && ((ObjectClass*)dude != (ObjectClass*)this) && dude->IsActive && !dude->IsInLimbo && dude->Strength && (cell == Coord_Cell(dude->Head_To_Coord()))){
                         uobject = dude;
                         isremoteblocker = true;
                         break;
@@ -2418,7 +2432,7 @@ float FootClass::CFE_Passable_Cell(CELL cell, FacingType face, int depth, float 
                                         }
                                     }
                                     // if we can pass on the inside, no extra cost!
-                                    // if we most pass on the outside, costs an extra diagonal
+                                    // if we must pass on the outside, costs an extra diagonal
                                     if (!insideOK){
                                         goaroundcost = 1.414f;
                                     }

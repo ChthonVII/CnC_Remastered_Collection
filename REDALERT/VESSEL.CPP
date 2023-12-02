@@ -301,29 +301,138 @@ MoveType VesselClass::Can_Enter_Cell(CELL cell, FacingType facing) const
 	**	If some allied object has reserved the cell, then consider the cell
 	**	as blocked by a moving object.
 	*/
-	if (cellptr->Flag.Composite || (cellptr->ReservingVehicle != this)) {
+    // Chthon CFE Note: This is buggy as fuck.
+    // Occupying objects and entering objects are all lumped together
+    // Allied and enemy are all lumped together
+    // Trying to untangle...
+            // if this is a cruiser, consider it unable to fire on things closer than X
+    bool tooclose = false;
+    if (Class->PrimaryWeapon && (Class->PrimaryWeapon->ID == WEAPON_8INCH) && (Distance(Cell_Coord(cell)) < 0x0100)){
+        tooclose = true;
+    }
+	if (cellptr->Flag.Composite || (cellptr->ReservingVehicle && (cellptr->ReservingVehicle != this))) {
 
+        // if building, then building
 		if (cellptr->Flag.Occupy.Building) {
+            BuildingClass* bb = cellptr->Cell_Building();
+            if (bb && bb->IsActive){
+                // is it friendly?
+                if (House->Is_Ally(bb)) {
+                    return(MOVE_NO);
+                }
+                // enemy?
+                else {
+                    // can we kill it?
+                    // let's assume all the primary weapons that a vessel type can have can destroy a sea building
+                    if (!tooclose && Class->PrimaryWeapon){
+                        return(MOVE_DESTROYABLE);
+                    }
+                    else {
+                        return(MOVE_NO);
+                    }
+                }
+            }
+            // flag was wrong?! Let's just not go there to be safe
 			return(MOVE_NO);
 		}
 
+		// if cloaked occupant
 		TechnoClass * techno = cellptr->Cell_Techno();
-		if (techno != NULL && (techno != this) && techno->Is_Cloaked(this)) {
+		if (techno != NULL && (techno != this) && techno->IsActive && techno->Is_Cloaked(this)) {
 			return(MOVE_CLOAK);
 		}
-
+		
+		// if cloaked entrant
+		FootClass* rv = cellptr->ReservingVehicle;
+        if (rv && (rv != this) && rv->IsActive && rv->Is_Cloaked(this)) {
+			return(MOVE_CLOAK);
+		}
+		
+		// non-cloaked occupant vessel
+		VesselClass* vv =cellptr->Cell_Vessel();
+        if (vv && (vv != this) && vv->IsActive){
+            // is it friendly?
+            if (House->Is_Ally(vv)) {
+                // is it moving?
+                if (Target_Legal(vv->NavCom) || vv->PrimaryFacing.Is_Rotating() || vv->IsDriving){
+                    return (MOVE_MOVING_BLOCK);
+                }
+                // stationary
+                else {
+                    return(MOVE_TEMP);
+                }
+            }
+            // enemy?
+            else {
+                // can we kill it? This is a hard question for boats
+                // are we a cruiser too close?
+                bool couldkill = !tooclose;
+                // are we totally unarmed?
+                if(!Class->PrimaryWeapon){
+                    couldkill = false;
+                }
+                // is it a sub and we lack anti-sub weapon?
+                if (couldkill && ((*vv == VESSEL_SS) || (*vv == VESSEL_MISSILESUB))){
+                    bool canhitsub = ((Class->PrimaryWeapon && Class->PrimaryWeapon->Bullet && Class->PrimaryWeapon->Bullet->IsAntiSub) || (Class->SecondaryWeapon && Class->SecondaryWeapon->Bullet && Class->SecondaryWeapon->Bullet->IsAntiSub));
+                    if (!canhitsub){
+                        couldkill = false;
+                    }
+                }
+                if (couldkill){
+                    return MOVE_DESTROYABLE;
+                }
+                else {
+                    return MOVE_NO;
+                }
+            }
+        }
+        
+        
+        // entrant vessel, have a pointer
+        if (rv && (rv != this) && rv->IsActive ){
+            // is it friendly?
+            if (House->Is_Ally(rv)) {
+                return (MOVE_MOVING_BLOCK);
+            }
+            // enemy?
+            else {
+                // can we kill it? This is a hard question for boats
+                // are we a cruiser too close?
+                bool couldkill = !tooclose;
+                // are we totally unarmed?
+                if(!Class->PrimaryWeapon){
+                    couldkill = false;
+                }
+                // is it a sub and we lack anti-sub weapon?
+                RTTIType whatrv = rv->What_Am_I();
+                if (couldkill && (whatrv == RTTI_VESSEL) && ((*((VesselClass*)rv) == VESSEL_SS) || (*((VesselClass*)rv) == VESSEL_MISSILESUB))){
+                    bool canhitsub = ((Class->PrimaryWeapon && Class->PrimaryWeapon->Bullet && Class->PrimaryWeapon->Bullet->IsAntiSub) || (Class->SecondaryWeapon && Class->SecondaryWeapon->Bullet && Class->SecondaryWeapon->Bullet->IsAntiSub));
+                    if (!canhitsub){
+                        couldkill = false;
+                    }
+                }
+                if (couldkill){
+                    return MOVE_DESTROYABLE;
+                }
+                else {
+                    return MOVE_NO;
+                }
+            }
+        }
+        
+        // entrant vessel, no pointer
+        // this case should never happen if ReservingVehicle is behaving correctly
+        if ((!rv || !rv->IsActive) && cellptr->Flag.Occupy.Vehicle && (vv != this)){
+            // have no idea if it's friendlyor not, so assume moving block (this is the vanilla behavior)
+            retval = MOVE_MOVING_BLOCK;
+        }
+        
 		/*
 		**	If reserved by a vehicle, then consider this blocked terrain.
 		*/
-		if (cellptr->Flag.Occupy.Vehicle && (cellptr->ReservingVehicle != this)) {
-			retval = MOVE_MOVING_BLOCK;
-            if (cellptr->ReservingVehicle != this){
-                FootClass* rv = cellptr->ReservingVehicle;
-                if (rv && rv->IsActive && rv->Is_Cloaked(this)){
-                    retval = MOVE_CLOAK;
-                }
-            }
-		}
+        //if (cellptr->Flag.Occupy.Vehicle) {
+		//	retval = MOVE_MOVING_BLOCK;
+		//}
 	}
 
 	// Chthon CFE Note: We need to deal with the possibility of making a diagonal move perpendicular to another unit's diagonal move
@@ -418,7 +527,27 @@ MoveType VesselClass::Can_Enter_Cell(CELL cell, FacingType facing) const
                                         return MOVE_CLOAK;
                                     }
                                     else {
-                                        return MOVE_DESTROYABLE;
+                                        // can we kill it? This is a hard question for boats
+                                        // are we a cruiser too close?
+                                        bool couldkill = !tooclose;
+                                        // are we totally unarmed?
+                                        if(!Class->PrimaryWeapon){
+                                            couldkill = false;
+                                        }
+                                        // is it a sub and we lack anti-sub weapon?
+                                        RTTIType whatxd = xdfoot->What_Am_I();
+                                        if (couldkill && (whatxd == RTTI_VESSEL) && ((*((VesselClass*)xdfoot) == VESSEL_SS) || (*((VesselClass*)xdfoot) == VESSEL_MISSILESUB))){
+                                            bool canhitsub = ((Class->PrimaryWeapon && Class->PrimaryWeapon->Bullet && Class->PrimaryWeapon->Bullet->IsAntiSub) || (Class->SecondaryWeapon && Class->SecondaryWeapon->Bullet && Class->SecondaryWeapon->Bullet->IsAntiSub));
+                                            if (!canhitsub){
+                                                couldkill = false;
+                                            }
+                                        }
+                                        if (couldkill){
+                                            return MOVE_DESTROYABLE;
+                                        }
+                                        else {
+                                            return MOVE_NO;
+                                        }
                                     }
                                 }
                             }

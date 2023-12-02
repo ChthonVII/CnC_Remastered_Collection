@@ -4028,6 +4028,70 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType facing) const
 	**	If some allied object has reserved the cell, then consider the cell
 	**	as blocked by a moving object.
 	*/
+    // Chthon CFE Note: This needs a total rewrite. It blurs cases together in ways that cause problems.
+    // Handle the cases individually
+    if (retval == MOVE_OK){
+        
+        // is there a unit heading there that isn't this unit?
+        // to be consistent with the infantry case, if we have a pointer to the vehicle, we'll work with it
+        FootClass* rv = cellptr->ReservingVehicle;
+        if (rv && (rv != this) && rv->IsActive){
+            // is it allied?
+            if (House->Is_Ally(rv)) {
+                retval = MOVE_MOVING_BLOCK;
+            }
+            // enemy?
+            else {
+                // maybe we can crush it? (only if crushable vehicles have been modded in...)
+                if (!(cancrush && rv->Class_Of().IsCrushable)){
+                    // is it cloaked?
+                    if (rv->Is_Cloaked(this)){
+                        retval = MOVE_CLOAK;
+                    }
+                    // maybe we can kill it?
+                    else if (Class->Primary != WEAPON_NONE) {
+                        retval = MOVE_DESTROYABLE;
+                    }
+                    // we can see it but can't crush or kill it
+                    else {
+                        return MOVE_NO;
+                    }
+                }
+            }
+        }
+        
+        
+       // a vehicle is entering the cell, but we don't have a pointer
+        // this case should never happen if ReservingVehicle is operating properly.
+        if ((!rv || !rv->IsActive) && cellptr->Flag.Occupy.Vehicle && (cellptr->Cell_Unit() != this)){
+            // have no idea if it's friendly or not, so assume moving block (this is the vanilla behavior)
+            retval = MOVE_MOVING_BLOCK;
+        }
+        
+        // is there infantry heading there?
+        if ((cellptr->Flag.Composite & 0x1F) != 0){
+            // is it allied?
+            if (cellptr->InfType != HOUSE_NONE && House->Is_Ally(cellptr->InfType)) {
+				retval = MOVE_MOVING_BLOCK;
+			}
+			// enemy?
+			else {
+                // can we crush it?
+                if (!cancrush){ // (this would be a bug if there was non-crushable infantry)
+                    // can we shoot it?
+                    if (Class->Primary != WEAPON_NONE) {
+						retval = MOVE_DESTROYABLE;
+                    // can't shoot, can't crush
+					} else {
+						return(MOVE_NO);
+					}
+                }
+            }
+        }
+    }
+    
+#ifdef deadcodeChthon   
+    bool vehiclethatisntme = ((cellptr->ReservingVehicle && (cellptr->ReservingVehicle != this)) || (!cellptr->ReservingVehicle && cellptr->Flag.Occupy.Vehicle && cellptr->Cell_Unit() && (cellptr->Cell_Unit() != this)));
 	if (retval == MOVE_OK && !crushable && cellptr->Flag.Composite && ((cellptr->Flag.Composite & 0xDF) || (cellptr->ReservingVehicle != this))) {
 
 		/*
@@ -4072,11 +4136,14 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType facing) const
 			}
 		}
 	}
+#endif //deadcodeChthon 
 
 	/*
 	** If its ok to move into the cell because we can crush whats in the cell, then
 	** make sure no one else is already moving into the cell to crush something.
 	*/
+    // Chthon CFE Note: this is already handled above
+#ifdef deadcodeChthon   
 	if (retval == MOVE_OK && crushable && cellptr->Flag.Occupy.Vehicle && (cellptr->ReservingVehicle != this)) {
 
 #ifdef ADVANCED
@@ -4093,6 +4160,7 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType facing) const
 		return(MOVE_MOVING_BLOCK);
 #endif
 	}
+#endif //deadcodeChthon 
 
 	// Chthon CFE Note: We need to deal with the possibility of making a diagonal move perpendicular to another unit's diagonal move
 	// The units will pass through the same spot at the corner, but it won't be noticed up till this point because neither of the cells involved in the other unit's move are involved in this unit's move.
@@ -4187,7 +4255,12 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType facing) const
                                             return MOVE_CLOAK;
                                         }
                                         else {
-                                            return MOVE_DESTROYABLE;
+                                            if (Class->Primary != WEAPON_NONE) {
+                                                return MOVE_DESTROYABLE;
+                                            }
+                                            else {
+                                                return MOVE_NO;
+                                            }
                                         }
                                     }
                                 }
@@ -4204,7 +4277,12 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType facing) const
                                                 return MOVE_CLOAK;
                                             }
                                             else {
-                                                return MOVE_DESTROYABLE;
+                                                if (Class->Primary != WEAPON_NONE) {
+                                                    return MOVE_DESTROYABLE;
+                                                }
+                                                else {
+                                                    return MOVE_NO;
+                                                }
                                             }
                                         }
                                     }

@@ -1876,8 +1876,33 @@ MoveType InfantryClass::Can_Enter_Cell(CELL cell, FacingType facing ) const
 	/*
 	** if a unit has the cell reserved then we just can't go in there.
 	*/
-	if (retval == MOVE_OK && cellptr->Flag.Occupy.Vehicle) {
-		return(MOVE_NO);
+	if (retval == MOVE_OK && (cellptr->Flag.Occupy.Vehicle || cellptr->ReservingVehicle)) {
+        // if we have a pointer to the unit, we can ally check
+        FootClass* rv = cellptr->ReservingVehicle;
+        if (rv && rv->IsActive){
+            // is it allied?
+            if (House->Is_Ally(rv)) {
+                retval = MOVE_MOVING_BLOCK;
+            }
+            // enemy?
+            else {
+                // is it cloaked?
+                if (rv->Is_Cloaked(this)){
+                    retval = MOVE_CLOAK;
+                }
+                // maybe we can kill it?
+                else if (Class->Primary != WEAPON_NONE) {
+                    retval = MOVE_DESTROYABLE;
+                }
+                // we can see it but can't kill it
+                else {
+                    return MOVE_NO;
+                }
+            }
+        }
+        else{
+            return(MOVE_NO);
+        }
 	}
 
 	/*
@@ -2000,7 +2025,12 @@ MoveType InfantryClass::Can_Enter_Cell(CELL cell, FacingType facing ) const
                                             return MOVE_CLOAK;
                                         }
                                         else {
-                                            return MOVE_DESTROYABLE;
+                                            if (Class->Primary != WEAPON_NONE) {
+                                                return MOVE_DESTROYABLE;
+                                            }
+                                            else {
+                                                return MOVE_NO;
+                                            }
                                         }
                                     }
                                 }
@@ -2020,7 +2050,12 @@ MoveType InfantryClass::Can_Enter_Cell(CELL cell, FacingType facing ) const
                                             return MOVE_CLOAK;
                                         }
                                         else {
-                                            return MOVE_DESTROYABLE;
+                                            if (Class->Primary != WEAPON_NONE) {
+                                                return MOVE_DESTROYABLE;
+                                            }
+                                            else {
+                                                return MOVE_NO;
+                                            }
                                         }
                                     }
                                 }
