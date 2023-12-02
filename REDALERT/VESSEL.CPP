@@ -305,11 +305,6 @@ MoveType VesselClass::Can_Enter_Cell(CELL cell, FacingType facing) const
     // Occupying objects and entering objects are all lumped together
     // Allied and enemy are all lumped together
     // Trying to untangle...
-            // if this is a cruiser, consider it unable to fire on things closer than X
-    bool tooclose = false;
-    if (Class->PrimaryWeapon && (Class->PrimaryWeapon->ID == WEAPON_8INCH) && (Distance(Cell_Coord(cell)) < 0x0100)){
-        tooclose = true;
-    }
 	if (cellptr->Flag.Composite || (cellptr->ReservingVehicle && (cellptr->ReservingVehicle != this))) {
 
         // if building, then building
@@ -324,7 +319,7 @@ MoveType VesselClass::Can_Enter_Cell(CELL cell, FacingType facing) const
                 else {
                     // can we kill it?
                     // let's assume all the primary weapons that a vessel type can have can destroy a sea building
-                    if (!tooclose && Class->PrimaryWeapon){
+                    if (Class->PrimaryWeapon){
                         return(MOVE_DESTROYABLE);
                     }
                     else {
@@ -365,12 +360,8 @@ MoveType VesselClass::Can_Enter_Cell(CELL cell, FacingType facing) const
             // enemy?
             else {
                 // can we kill it? This is a hard question for boats
-                // are we a cruiser too close?
-                bool couldkill = !tooclose;
                 // are we totally unarmed?
-                if(!Class->PrimaryWeapon){
-                    couldkill = false;
-                }
+                bool couldkill = Class->PrimaryWeapon ? true : false;
                 // is it a sub and we lack anti-sub weapon?
                 if (couldkill && ((*vv == VESSEL_SS) || (*vv == VESSEL_MISSILESUB))){
                     bool canhitsub = ((Class->PrimaryWeapon && Class->PrimaryWeapon->Bullet && Class->PrimaryWeapon->Bullet->IsAntiSub) || (Class->SecondaryWeapon && Class->SecondaryWeapon->Bullet && Class->SecondaryWeapon->Bullet->IsAntiSub));
@@ -397,12 +388,8 @@ MoveType VesselClass::Can_Enter_Cell(CELL cell, FacingType facing) const
             // enemy?
             else {
                 // can we kill it? This is a hard question for boats
-                // are we a cruiser too close?
-                bool couldkill = !tooclose;
                 // are we totally unarmed?
-                if(!Class->PrimaryWeapon){
-                    couldkill = false;
-                }
+                bool couldkill = Class->PrimaryWeapon ? true : false;
                 // is it a sub and we lack anti-sub weapon?
                 RTTIType whatrv = rv->What_Am_I();
                 if (couldkill && (whatrv == RTTI_VESSEL) && ((*((VesselClass*)rv) == VESSEL_SS) || (*((VesselClass*)rv) == VESSEL_MISSILESUB))){
@@ -528,12 +515,8 @@ MoveType VesselClass::Can_Enter_Cell(CELL cell, FacingType facing) const
                                     }
                                     else {
                                         // can we kill it? This is a hard question for boats
-                                        // are we a cruiser too close?
-                                        bool couldkill = !tooclose;
                                         // are we totally unarmed?
-                                        if(!Class->PrimaryWeapon){
-                                            couldkill = false;
-                                        }
+                                        bool couldkill = Class->PrimaryWeapon ? true : false;
                                         // is it a sub and we lack anti-sub weapon?
                                         RTTIType whatxd = xdfoot->What_Am_I();
                                         if (couldkill && (whatxd == RTTI_VESSEL) && ((*((VesselClass*)xdfoot) == VESSEL_SS) || (*((VesselClass*)xdfoot) == VESSEL_MISSILESUB))){
