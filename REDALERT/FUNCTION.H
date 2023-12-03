@@ -1103,6 +1103,14 @@ void CFE_Patch_Sound_Effect_For_All_Humans(VocType voc, COORDINATE coord=NULL, i
 void CFE_Patch_Sound_Effect_For_Seers(VocType voc, TechnoClass* thingy, int variation=1);
 void CFE_Patch_Sound_Effect_For_Seers(VocType voc, CELL cell, int variation=1);
 void  CFE_Patch_Speak_For_All_Humans(VoxType voice, COORDINATE coord=0, HouseClass* skiphouse=NULL);
+
+// if pointer is a wild pointer or null pointer, then returns false and sets RTTIdiscover to RTTI_NONE
+// otherwise, returns true and sets RTTIdiscover as appropriate
+// extraRTTI is used for things that don't have an RTTIType: 0=has RTTIType, 1=factory, 2=trigger, 3=teamtype, 4=house, 5=triggertype
+// Note: This function is potnetially veeeery slow. It should only be used when saving/loading saved games, and for debugging
+// Note: This function does NOT check if the pointer is dangling. To check for dangling pointer, try checking ptr->IsActive before calling any member functions.
+bool CFE_WildPointerCheck(void* ptr, RTTIType &RTTIdiscover, unsigned char &extraRTTI);
+
 void Initialise_CFE_Patch_Config(void);
 
 #endif

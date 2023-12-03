@@ -37,6 +37,7 @@
 
 #include	"function.h"
 #include	"layer.h"
+#include "CFEDEBUG.H"
 
 
 /***********************************************************************************************
@@ -182,3 +183,80 @@ int LayerClass::Sorted_Add(ObjectClass const * const object)
 }
 
 
+// Chthon CFE Note: Detect bad pointers and remove them from the Layer.
+// This is intended as a last resort against bad pointers in the Layers causes crashes when loading saved games.
+// This function is slow as ass, and so should not be used elsewhere.
+// returns true if the Layer was clean; false if corrections were made
+bool LayerClass::SanitizeLayer(){
+    
+    bool retval = true;
+    
+    // check for null and wild pointers
+    // There's a faster way to do this, but I don't trust WW's DIY vector implementation to iterate correctly if a removal is made mid-loop.
+    bool happy = false;
+    while (!happy){
+        happy = true;
+        for (int index = 0; index < Count(); index++) {
+            ObjectClass* obby = (*this)[index];
+            if (!obby){
+                CFE_Debug_Printf("SanitizeLayer() found a null pointer at index %i! (Please report this.)", index);
+                retval = false;
+                happy = false;
+                Delete(index);
+                break;
+            }
+            RTTIType thisrtti = RTTI_NONE;
+            unsigned char thisextrartti = 0;
+            if (!CFE_WildPointerCheck(reinterpret_cast<void*>(obby), thisrtti, thisextrartti)){
+                CFE_Debug_Printf("SanitizeLayer() found a wild pointer (0x%X) at index %i! (Please report this.)", obby, index);
+                retval = false;
+                happy = false;
+                Delete(index);
+                break;
+            }
+            if (thisextrartti > 0){
+                CFE_Debug_Printf("SanitizeLayer() found a pointer (0x%X, RTTI %i, extraRTTI %i) to something that isn't an ObjectClass at index %i! (Please report this.)", obby, thisrtti, thisextrartti, index);
+                retval = false;
+                happy = false;
+                Delete(index);
+                break;
+            }
+            if (!obby->IsActive){
+                CFE_Debug_Printf("SanitizeLayer() found a dangling pointer (0x%X, RTTI %i, extraRTTI %i) at index %i! (Please report this.)", obby, thisrtti, thisextrartti, index);
+                retval = false;
+                happy = false;
+                Delete(index);
+                break;
+            }
+            if (obby->IsInLimbo || !obby->IsDown){
+                CFE_Debug_Printf("SanitizeLayer() found an object (0x%X, RTTI %i, extraRTTI %i) that's not on the map (IsInLimbo %i, IsDown %i) at index %i! (Please report this.)", obby, thisrtti, thisextrartti, obby->IsInLimbo, obby->IsDown, index);
+                retval = false;
+                happy = false;
+                Delete(index);
+                break;
+            }
+        }
+    }
+    
+    // check for duplicates
+    for (int index = 0; index < Count()-1; index++) {
+        ObjectClass* obby = (*this)[index];
+        bool happy = false;
+        while (!happy){
+            happy = true;
+            for (int j = index+1; j < Count(); j++){
+                ObjectClass* jobby = (*this)[j];
+                if (obby == jobby){
+                    CFE_Debug_Printf("SanitizeLayer() found a duplicate (0x%X) at indices %i and %i! (Please report this.)", obby, index, j);
+                    retval = false;
+                    happy = false;
+                    Delete(j);
+                    break;
+                }
+            }
+        }
+    }
+    
+    
+    return retval;
+}
