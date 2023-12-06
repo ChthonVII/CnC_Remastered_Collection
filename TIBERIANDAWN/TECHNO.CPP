@@ -5869,7 +5869,12 @@ bool TechnoClass::Is_Known_To_Exist_By_Player(HouseClass *player) const
  *=============================================================================================*/
 bool TechnoClass::Evaluate_Cell_For_Wall(CELL cell) const
 {
-	/*
+	// quick out -- only CPU-controlled units will shoot walls automatically
+    if (House->IsHuman){
+        return false;
+    }
+    
+    /*
 	**	If the cell is not on the legal map, then always ignore it.
 	*/
 	// J_D: megamaps
@@ -5882,33 +5887,32 @@ bool TechnoClass::Evaluate_Cell_For_Wall(CELL cell) const
 		OverlayTypeClass const * optr = &OverlayTypeClass::As_Reference(cellptr->Overlay);
 
 		if (optr && optr->IsWall) {
-			if (What_Am_I() == RTTI_UNIT) {
-				UnitClass * u = (UnitClass *)this;
-				if (u->Class->Primary != WEAPON_NONE) {
-					WarheadTypeClass const * whead = &Warheads[BulletTypeClass::As_Reference(Weapons[u->Class->Primary].Fires).Warhead];
-					if (whead->IsWallDestroyer || (whead->IsWoodDestroyer && optr->IsWooden)) {
-						if (!House->IsHuman && !House->Is_Ally(cellptr->Owner) && !(cellptr->Owner == HOUSE_NONE) ) {
-							// We have found an enemy Wall and have a weapon to attack it.
-							//CCDebugString("Techno.ECFW - wall is Enemy \n");
-							return(true);
-						}
-					}
-				}
-			}
+            
+            // only shoot at walls that are enemy controlled
+            // or neutral if EnableAdvancedWallOwnership
+            if (!House->Is_Ally(cellptr->Owner) &&((cellptr->Owner != HOUSE_NONE) || ActiveCFEPatchConfig.EnableAdvancedWallOwnership)){
+                
+                // not sure why we need to cast to child class here...
+                if (What_Am_I() == RTTI_UNIT) {
+                    UnitClass * u = (UnitClass *)this;
+                    if (u->Class->Primary != WEAPON_NONE) {
+                        WarheadTypeClass const * whead = &Warheads[BulletTypeClass::As_Reference(Weapons[u->Class->Primary].Fires).Warhead];
+                        if (whead->IsWallDestroyer || (whead->IsWoodDestroyer && optr->IsWooden)) {
+                            return(true);
+                        }
+                    }
+                }
 
-			if (What_Am_I() == RTTI_INFANTRY) {
-				InfantryClass * i = (InfantryClass *)this;
-				if (i->Class->Primary != WEAPON_NONE) {
-					WarheadTypeClass const * whead = &Warheads[BulletTypeClass::As_Reference(Weapons[i->Class->Primary].Fires).Warhead];
-					if (whead->IsWallDestroyer || (whead->IsWoodDestroyer && optr->IsWooden)) {
-						if (!House->IsHuman && !House->Is_Ally(cellptr->Owner) && !(cellptr->Owner == HOUSE_NONE)) {
-							// We have found an enemy Wall and have a weapon to attack it.
-							//CCDebugString("Techno.ECFW - wall is Enemy \n");
-							return(true);
-						}
-					}
-				}
-			}
+                if (What_Am_I() == RTTI_INFANTRY) {
+                    InfantryClass * i = (InfantryClass *)this;
+                    if (i->Class->Primary != WEAPON_NONE) {
+                        WarheadTypeClass const * whead = &Warheads[BulletTypeClass::As_Reference(Weapons[i->Class->Primary].Fires).Warhead];
+                        if (whead->IsWallDestroyer || (whead->IsWoodDestroyer && optr->IsWooden)) {
+                            return(true);
+                        }
+                    }
+                }
+            }
 		}
 	}
 	// Returning without having found a valid Wall to attack.
