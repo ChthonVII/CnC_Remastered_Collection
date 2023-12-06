@@ -1723,29 +1723,29 @@ MoveType InfantryClass::Can_Enter_Cell(CELL cell, FacingType facing ) const
             }
 
             // #MinorAIFixes - Allow Infantry with correct weapons to pathfind through destroyable Walls. -- J_D: if the mod setting is on
-            if (ActiveCFEPatchConfig.AIvsWalls) {
-                if (optr->IsWall) {
-                    if (Class->Primary != WEAPON_NONE) {
-                        WarheadTypeClass const * whead = &Warheads[BulletTypeClass::As_Reference(Weapons[Class->Primary].Fires).Warhead];
-                        if (whead->IsWallDestroyer || (whead->IsWoodDestroyer && optr->IsWooden)) {
-                            if (!House->IsHuman && !House->Is_Ally(cellptr->Owner) && ((cellptr->Owner != HOUSE_NONE) || ActiveCFEPatchConfig.EnableAdvancedWallOwnership)) {
-                                return(MOVE_DESTROYABLE);
-                            }
-                            else {
-                                return(MOVE_NO);
-                            }
-                        }
-                        else {
-                            return(MOVE_NO);
-                        }
-                    }
-                    else {
-                        return(MOVE_NO);
+            // Chthon CFE Note: Refactored
+            if (optr->IsWall){
+                bool wallsurmountable = false;
+                // infantry can always go through holes in wall as per vanilla
+                if ((cellptr->OverlayData / 16) == optr->DamageLevels){
+                    wallsurmountable = true;
+                }
+                // otherwise we might be able to shoot it if CPU controlled and AIvsWalls enabled
+                // But do we *want* to? If we don't own it, yes. If neutral, only if EnableAdvancedWallOwnership is enabled
+                else if (   ActiveCFEPatchConfig.AIvsWalls &&
+                                !House->IsHuman &&
+                                (Class->Primary != WEAPON_NONE) &&
+                                !House->Is_Ally(cellptr->Owner) &&
+                                ((cellptr->Owner != HOUSE_NONE) || ActiveCFEPatchConfig.EnableAdvancedWallOwnership)
+                ){
+                    WarheadTypeClass const * whead = &Warheads[BulletTypeClass::As_Reference(Weapons[Class->Primary].Fires).Warhead];
+                    if (whead->IsWallDestroyer || (whead->IsWoodDestroyer && optr->IsWooden)) {
+                        if (retval < MOVE_DESTROYABLE) retval = MOVE_DESTROYABLE;
+                        wallsurmountable = true;
                     }
                 }
-            }
-            else if (optr->IsWall) {  // J_D: optr-> instead of otype.
-                if ((cellptr->OverlayData / 16) != optr->DamageLevels) {  // J_D: as above
+                // if no hole and cannot shoot wall, we cannot pass
+                if (!wallsurmountable){
                     return(MOVE_NO);
                 }
             }

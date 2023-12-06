@@ -3885,26 +3885,30 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType facing) const
 		}
 
 		if (optr->IsWall) {
-			if (ActiveCFEPatchConfig.EnableWallCrush && cancrush && optr->IsCrushable && !House->Is_Ally(cellptr->Owner) && (cellptr->Owner != HOUSE_NONE)){
-                destructiblewall = true;
-            }
-            else if (wallshooting && !House->IsHuman && (Class->Primary != WEAPON_NONE)) {
-				WarheadTypeClass const * whead = &Warheads[BulletTypeClass::As_Reference(Weapons[Class->Primary].Fires).Warhead];
-
-				if (whead->IsWallDestroyer || (whead->IsWoodDestroyer && optr->IsWooden)) {
-                    // #MinorAIFixes - Don't pathfind through neutral Walls. -- J_D; but do if advanced ownership is on -- Chthon
-					if (!House->Is_Ally(cellptr->Owner) && ((cellptr->Owner != HOUSE_NONE) || ActiveCFEPatchConfig.EnableAdvancedWallOwnership || !ActiveCFEPatchConfig.AIvsWalls)) {
-						if (retval < MOVE_DESTROYABLE) retval = MOVE_DESTROYABLE;
+            // Chthon CFE Note: Refactored
+            // do we *want* to destroy the wall?
+            // vanilla CPU-controlled want to shoot walls they don't own 
+            // vanilla wants to destroy neutral walls; AIvsWalls alone does not; EnableAdvancedWallOwnership does
+            // shoot only for CPU controlled (humans will target manually if/when they want)
+            // crush for both human and CPU controlled
+            bool Ilikethiswall = (House->Is_Ally(cellptr->Owner) || ((cellptr->Owner == HOUSE_NONE) && ActiveCFEPatchConfig.AIvsWalls && !ActiveCFEPatchConfig.EnableAdvancedWallOwnership));
+            if (!Ilikethiswall){
+                if (ActiveCFEPatchConfig.EnableWallCrush && cancrush && optr->IsCrushable){
+                    destructiblewall = true;
+                }
+                // no check for ActiveCFEPatchConfig.AIvsWalls here b/c vanilla lets units path through walls even though they can't target
+                else if (!House->IsHuman && (Class->Primary != WEAPON_NONE)) {
+                    WarheadTypeClass const * whead = &Warheads[BulletTypeClass::As_Reference(Weapons[Class->Primary].Fires).Warhead];
+                    if (whead->IsWallDestroyer || (whead->IsWoodDestroyer && optr->IsWooden)) {
+                        if (retval < MOVE_DESTROYABLE) retval = MOVE_DESTROYABLE;
                         destructiblewall = true;
-					} else {
-						return(MOVE_NO);
-					}
-				} else {
-					return(MOVE_NO);
-				}
-			} else {
-				return(MOVE_NO);
-			}
+                    }
+                }
+            }
+            // If we can't or won't crush or shoot the all, we cannot pass.
+            if (!destructiblewall){
+                return(MOVE_NO);
+            }
 		}
 	}
 
