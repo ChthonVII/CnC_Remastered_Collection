@@ -3911,7 +3911,7 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType facing) const
                                     else{
                                         // Even though we can't actually crush the infantry in this situation, it would be odd to let them block something that ordinarily could crush them.
                                         // So we'll pretend we can crush them and hopefully get something that looks like a narrow escape from being crushed.       
-                                        if (!cancrush) {
+                                        if (!crusher) {
                                             if (xdfoot->Is_Cloaked(this)){
                                                 return MOVE_CLOAK;
                                             }
