@@ -5893,7 +5893,8 @@ bool TechnoClass::Evaluate_Cell_For_Wall(CELL cell) const
             if (!House->Is_Ally(cellptr->Owner) &&((cellptr->Owner != HOUSE_NONE) || ActiveCFEPatchConfig.EnableAdvancedWallOwnership)){
                 
                 // not sure why we need to cast to child class here...
-                if (What_Am_I() == RTTI_UNIT) {
+                RTTIType metype = What_Am_I();
+                if (metype == RTTI_UNIT) {
                     UnitClass * u = (UnitClass *)this;
                     if (u->Class->Primary != WEAPON_NONE) {
                         WarheadTypeClass const * whead = &Warheads[BulletTypeClass::As_Reference(Weapons[u->Class->Primary].Fires).Warhead];
@@ -5903,7 +5904,7 @@ bool TechnoClass::Evaluate_Cell_For_Wall(CELL cell) const
                     }
                 }
 
-                if (What_Am_I() == RTTI_INFANTRY) {
+                else if (metype == RTTI_INFANTRY) {
                     InfantryClass * i = (InfantryClass *)this;
                     if (i->Class->Primary != WEAPON_NONE) {
                         WarheadTypeClass const * whead = &Warheads[BulletTypeClass::As_Reference(Weapons[i->Class->Primary].Fires).Warhead];
