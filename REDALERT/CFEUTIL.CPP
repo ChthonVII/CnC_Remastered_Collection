@@ -77,6 +77,7 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     GetSetting(ActiveCFEPatchConfig.EnableBuildingCaptureAnnouncements      , "FEATURES", "BUILDING_CAPTURE_ANNOUNCE");
     GetSetting(ActiveCFEPatchConfig.EnableSmarterSonar      , "FEATURES", "SMARTER_SONAR");
     GetSetting(ActiveCFEPatchConfig.EnableBurningTreeFix      , "FEATURES", "BURNING_TREE_FIX");
+    GetSetting(ActiveCFEPatchConfig.EnableDeathsDoorFix      , "FEATURES", "DEATHS_DOOR_FIX");
     
 
 	//Settings

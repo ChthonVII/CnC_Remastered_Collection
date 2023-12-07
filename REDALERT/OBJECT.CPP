@@ -1700,6 +1700,7 @@ ResultType ObjectClass::Take_Damage(int & damage, int distance, WarheadType warh
 
 	if (oldstrength && damage != 0 && (forced || !Class_Of().IsImmune)) {
 		int maxstrength = Class_Of().MaxStrength;
+        int rawdamage = damage;
 
 		/*
 		**	Modify damage based on the warhead type and the armor of the object. This results
@@ -1767,7 +1768,26 @@ ResultType ObjectClass::Take_Damage(int & damage, int distance, WarheadType warh
 			**	damage point. This will prolong the damage state as well as
 			**	give greater satisfaction when it is finally destroyed.
 			*/
-			damage = oldstrength;
+			// Chthon CFE Note: It looks like this mechanic was removed.
+            // There are traces of it in the switch statement below and the way BuildingClass handles RESULT_MAJOR.
+            // So let's implement it and try to fix the problems that probably led to it being removed.
+            int overkill = damage - oldstrength;
+            if (    ActiveCFEPatchConfig.EnableDeathsDoorFix &&
+                    Is_Techno() &&                                 // we don't want this for trees
+                    (rawdamage < 100) &&                    // big stuff like airstrikes (100 damage) should always do expected damage. Otherwise we may break missions.
+                    (damage < maxstrength / 2) &&       // one-shot kills should still be one-shot kills (ditto two-shot kills)
+                    (overkill < damage / 2) &&                // prohibit death's door save if doing so would negate half or more of the incoming damage
+                    (overkill < maxstrength / 10) &&        // prohibit death's door save if incoming damage would have made this object 110% dead
+                    // now we need to prevent multiple death's door saves back-to-back
+                    (oldstrength > 4) && // passive and veterancy healing is 1hp/sec or less, so >4hp means at least 3 sec since last save
+                    ((What_Am_I() != RTTI_BUILDING) || (oldstrength > (3*((BuildingClass*)this)->Class->Repair_Step()) + 1 )) // buildings are presumptively under repair, so thrice the repair step plus one should be at least 3 sec since last save
+                    // not currently considering objects under active repair at a repairbay/shipyard... maybe we should?
+            ){
+                damage = oldstrength - 1;
+            }
+            else {
+                damage = oldstrength;
+            }
 		}
 
 		/*

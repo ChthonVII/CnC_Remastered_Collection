@@ -124,6 +124,7 @@ struct CFEPatchConfig
     bool EnableBuildingCaptureAnnouncements = false;
     bool EnableSmarterSonar = false;
     bool EnableBurningTreeFix = false;
+    bool EnableDeathsDoorFix = false;
     bool EnableNewSkirmishAI = false;
 
     int EnableVeterancy = 0;
