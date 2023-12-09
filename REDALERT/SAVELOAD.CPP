@@ -361,7 +361,7 @@ bool Save_Game(const char *file_name, const char *descr)
 
     // Chthon CFE Note: Sanitize the layers before we save them.
 	CFE_Debug_Printf("Sanitizing map layers before saving...");
-	for (i = 0; i < LAYER_COUNT; i++) {
+	for (int i = 0; i < LAYER_COUNT; i++) {
         CFE_Debug_Printf("Sanitizing layer %i...", i);
         Map.Layer[i].SanitizeLayer();
 	}
