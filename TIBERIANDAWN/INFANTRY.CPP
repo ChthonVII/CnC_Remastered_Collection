@@ -1709,7 +1709,7 @@ MoveType InfantryClass::Can_Enter_Cell(CELL cell, FacingType facing ) const
 		return(MOVE_NO);
 	}
 	CellClass * cellptr = &Map[cell];
-
+    MoveType retval = MOVE_OK; // Chthon CFE Note: Declare here.
 	/*
 	**	Walls are considered impassable for infantry UNLESS the wall has a hole
 	**	in it.
@@ -1756,7 +1756,7 @@ MoveType InfantryClass::Can_Enter_Cell(CELL cell, FacingType facing ) const
 	** Loop through all of the objects in the square setting a bit
 	** for how they affect movement.
 	*/
-	MoveType retval = MOVE_OK;
+	//MoveType retval = MOVE_OK; // Chthon CFE Note: needs to be delcared higher
 	ObjectClass *obj = cellptr->Cell_Occupier();
 	while (obj) {
 
