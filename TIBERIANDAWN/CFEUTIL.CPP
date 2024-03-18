@@ -124,6 +124,7 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     GetSetting(ActiveCFEPatchConfig.MPPreplacedUnitOrderMode   , "SETTINGS", "MP_PREPLACED_UNIT_ORDER_MODE");
     GetSetting(ActiveCFEPatchConfig.BuildingDeathAnnounceMode   , "SETTINGS", "BUILDING_DEATH_ANNOUNCE_MODE");
     GetSetting(ActiveCFEPatchConfig.QuieterAirstrips   , "SETTINGS", "QUIETER_AIRSTRIPS");
+    GetSetting(ActiveCFEPatchConfig.SearchRangeFixMode   , "SETTINGS", "SEARCH_RANGE_FIX");
     
     //Balance
     GetSetting(ActiveCFEPatchConfig.OverrideAPCReqs         , "BALANCE", "DO_OVERRIDE_APC_NOREQ");
@@ -181,6 +182,9 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     
     // Clamp legcy render disable at 0-2
     ActiveCFEPatchConfig.LegacyRenderDisableMode = (std::max)(0, (std::min)(ActiveCFEPatchConfig.LegacyRenderDisableMode, 2));
+    
+    // Clamp search range fix at 0-2
+      ActiveCFEPatchConfig.SearchRangeFixMode = (std::max)(0, (std::min)(ActiveCFEPatchConfig.SearchRangeFixMode, 2));
     
     // If A-Star isn't enabled, distance constants will be compared against leptons rather than cells, so convert here
     if (!ActiveCFEPatchConfig.EnableASPathing){

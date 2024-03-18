@@ -1754,6 +1754,14 @@ TARGET TechnoClass::Greatest_Threat(ThreatType method) const
 	**	best target within the area is returned as a target.
 	*/
 	if (method & (THREAT_AREA|THREAT_RANGE)) {
+        // Chthon CFE Note: This is bugged in three respects:
+        // First, the implicit floor in int division results in a too-small-by-1 radius for weapon ranges not evenly divisible by 256
+        // Second, the use of < instead of <= in the scan loop results in a too-small-by-1 radius across the board.
+        // This is counteracted by the crange++ for the THREAT_RANGE case, but not the THREAT_AREA case
+        // I'm somewhat concerned that fixing the second bug may break missions that depend on sneaking with tight margins.
+        // Third, the crange++ for the THREAT_RANGE case bugs the half and quarter checks that also use crange
+        // Also could use a refactor
+        /*
 		int range = Threat_Range((method & THREAT_RANGE) ? 0 : 1);
 
 //		int range = MAX(Weapon_Range(0), Weapon_Range(1));
@@ -1764,6 +1772,34 @@ TARGET TechnoClass::Greatest_Threat(ThreatType method) const
 			crange = MAX(Weapon_Range(0), Weapon_Range(1)) / ICON_LEPTON_W;
 			crange++;
 		}
+		*/
+		int range = 0;
+        int crange = 0;
+        bool loopadjust = false; // do we need to account for the < instead of < in the search loop?
+        // THREAT_AREA
+        if (!(method & THREAT_RANGE)){
+            range = Threat_Range(1);
+            if (ActiveCFEPatchConfig.SearchRangeFixMode > 1){
+                crange = ceil((float)range / (float)ICON_LEPTON_W);
+                loopadjust = true;
+            }
+            else{
+                crange = range / ICON_LEPTON_W;
+            }
+        }
+        // THREAT_RANGE
+        else {
+            if (ActiveCFEPatchConfig.SearchRangeFixMode > 0){
+                crange = ceil((float)MAX(Weapon_Range(0), Weapon_Range(1)) / (float)ICON_LEPTON_W);
+                loopadjust = true;
+            }
+            else {
+                crange = MAX(Weapon_Range(0), Weapon_Range(1)) / ICON_LEPTON_W;
+                crange++;
+                // crange is used later for something else, so this ++ is a small bug. loopadjust avoids that
+            }
+        }
+		
 		CELL cell = Coord_Cell(Fire_Coord(0));
 //		CELL cell = Coord_Cell(Center_Coord());
 
@@ -1801,8 +1837,15 @@ TARGET TechnoClass::Greatest_Threat(ThreatType method) const
 		*/
 		TechnoClass const * object;
 		int value;
-        // Chthon CFE Note: < is wrong. Should be <=. Fix throughout when time permits.
-		for (int radius = 1; radius < crange; radius++) {
+        // Chthon CFE Note: < is wrong. Should be <=.
+        // Loopadjust fixes this unless we're trying to preserve vanilla behavior.
+        // Just ++ing crange is bad because that's also used for half and quarter checks
+        int adjustedradius = crange;
+        if (loopadjust){
+            adjustedradius++;
+        }
+		//for (int radius = 1; radius < crange; radius++) {
+        for (int radius = 1; radius < adjustedradius; radius++) {
 
 			/*
 			**	Scan the top and bottom rows of the "box".
@@ -1981,19 +2024,39 @@ TARGET TechnoClass::Greatest_Threat_Wall(ThreatType method, bool adjacent) const
 	**	best target within the area is returned as a target.
 	*/
 	if (method & (THREAT_AREA | THREAT_RANGE)) {
-		int range = Threat_Range((method & THREAT_RANGE) ? 0 : 1);
-
-		int crange = range / ICON_LEPTON_W;
-		if (range == 0) {
-			crange = MAX(Weapon_Range(0), Weapon_Range(1)) / ICON_LEPTON_W;
-			crange++;
-		}
+		int range = 0;
+        int crange = 0;
+        bool loopadjust = false; // do we need to account for the < instead of < in the search loop?
+        // THREAT_AREA
+        if (!(method & THREAT_RANGE)){
+            range = Threat_Range(1);
+            if (ActiveCFEPatchConfig.SearchRangeFixMode > 1){
+                crange = ceil((float)range / (float)ICON_LEPTON_W);
+                loopadjust = true;
+            }
+            else{
+                crange = range / ICON_LEPTON_W;
+            }
+        }
+        // THREAT_RANGE
+        else {
+            if (ActiveCFEPatchConfig.SearchRangeFixMode > 0){
+                crange = ceil((float)MAX(Weapon_Range(0), Weapon_Range(1)) / (float)ICON_LEPTON_W);
+                loopadjust = true;
+            }
+            else {
+                crange = MAX(Weapon_Range(0), Weapon_Range(1)) / ICON_LEPTON_W;
+                crange++;
+                // crange is used later for something else, so this ++ is a small bug. loopadjust avoids that
+            }
+        }
 
 		/*
 		**	If we only want 1 Cell radius, then override the range.
 		*/
 		if (adjacent) {
-			crange = 2; // Chthon CFE Note: would be 1 with bugfix
+			crange = 1;
+            loopadjust = true;
 		}
 
 		CELL cell = Coord_Cell(Fire_Coord(0));
@@ -2002,8 +2065,13 @@ TARGET TechnoClass::Greatest_Threat_Wall(ThreatType method, bool adjacent) const
 		**	Radiate outward from the object's location, looking for the best
 		**	target.
 		*/
-        // Chthon CFE Note: < is wrong. Should be <=. Fix throughout when time permits.
-		for (int radius = 1; radius < crange; radius++) {
+        // Chthon CFE Note: < is wrong. Should be <=. Loopadjust fixes this unless we're trying to preserve vanilla behavior.
+        int adjustedradius = crange;
+        if (loopadjust){
+            adjustedradius++;
+        }
+		//for (int radius = 1; radius < crange; radius++) {
+        for (int radius = 1; radius < adjustedradius; radius++) {
 
 			/*
 			**	Scan the top and bottom rows of the "box".
