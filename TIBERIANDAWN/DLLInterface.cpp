@@ -7090,8 +7090,18 @@ void DLLExportClass::Selected_Stop(uint64 player_id)
 		for (int index = 0; index < CurrentObject.Count(); index++) {
 			ObjectClass const * tech = CurrentObject[index];
 
-			if (tech && (tech->Can_Player_Move() || (tech->Can_Player_Fire() &&
-					tech->What_Am_I() != RTTI_BUILDING))) {
+			// Chthon CFE Note: Revise Petroglyph change so that builds can receive a stop order unless contructing or destructing
+			//if (tech && (tech->Can_Player_Move() || (tech->Can_Player_Fire() &&
+			//		tech->What_Am_I() != RTTI_BUILDING))) {
+			if (	tech && 
+					(	tech->Can_Player_Move() || 
+						(	tech->Can_Player_Fire() &&
+							(	(tech->What_Am_I() != RTTI_BUILDING) ||
+								((BuildingClass*)tech) -> CanAcceptStopOrder()
+							)
+						)
+					)
+			) {
 				OutList.Add(EventClass(EventClass::IDLE, tech->As_Target()));
 			}
 		}

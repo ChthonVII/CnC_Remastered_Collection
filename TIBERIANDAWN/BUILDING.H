@@ -318,6 +318,7 @@ class BuildingClass : public TechnoClass
 public:
         void FlushRefineryBib();
         void FlipWalls();
+		bool CanAcceptStopOrder();
 private:
 
 		/*

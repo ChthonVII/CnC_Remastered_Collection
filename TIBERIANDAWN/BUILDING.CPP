@@ -6583,3 +6583,8 @@ void BuildingClass::FlipWalls(){
     }
     return;
 }
+
+// 
+bool BuildingClass::CanAcceptStopOrder(){
+	return (IsActive && !IsInLimbo && Strength && HasOpened && Mission != MISSION_CONSTRUCTION && (Mission != MISSION_DECONSTRUCTION));
+}
