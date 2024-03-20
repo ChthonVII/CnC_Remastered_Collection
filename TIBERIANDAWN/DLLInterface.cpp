@@ -7094,13 +7094,8 @@ void DLLExportClass::Selected_Stop(uint64 player_id)
 			//if (tech && (tech->Can_Player_Move() || (tech->Can_Player_Fire() &&
 			//		tech->What_Am_I() != RTTI_BUILDING))) {
 			if (	tech && 
-					(	tech->Can_Player_Move() || 
-						(	tech->Can_Player_Fire() &&
-							(	(tech->What_Am_I() != RTTI_BUILDING) ||
-								((BuildingClass*)tech) -> CanAcceptStopOrder()
-							)
-						)
-					)
+					(tech->Can_Player_Move() || tech->Can_Player_Fire()) &&
+					((tech->What_Am_I() != RTTI_BUILDING) || ((BuildingClass*)tech) -> CanAcceptStopOrder())
 			) {
 				OutList.Add(EventClass(EventClass::IDLE, tech->As_Target()));
 			}
