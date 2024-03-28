@@ -3054,6 +3054,16 @@ typedef enum ArmorPenType : unsigned char {
 #define MAX_NAVQUEUE 10
 #define MAX_NAVQUEUE_INDEX (MAX_NAVQUEUE - 1)
 
+// Chthon CFE Note: Used for storing the type of a pending explosion from picking up a crate
+typedef enum CrateBombType : unsigned char {
+	CRATEBOMB_NONE = 0,
+	CRATEBOMB_EXPLOSION,
+	CRATEBOMB_NAPALM,
+	CRATEBOMB_NUKE,
+	CRATEBOMB_ION,
+	CRATEBOMB_COUNT
+} CrateBombType;
+
 #pragma warning (pop)
 
 #endif

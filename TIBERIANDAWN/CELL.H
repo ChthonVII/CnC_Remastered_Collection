@@ -333,6 +333,8 @@ class CellClass
 		};
         */
         int LongtermBlockage() const;
+		// Chthon CFE Note: Delayed handling of crate bombs
+		void ProcessCrateBomb();
         
         // we need to fix the cell reservation system at least insofar that we know *who* reserved a cell
         FootClass* ReservingVehicle;
@@ -341,6 +343,8 @@ class CellClass
         unsigned char BigFlipCheck;
         unsigned char LockOwner;
         unsigned char OwnershipQuantum;
+		CrateBombType PendingCellBomb;
+		FootClass* PendingCellBombVictim;
         
         
     private:
@@ -355,7 +359,10 @@ class CellClass
         // LockOwner ate 1 byte
         // OwnershipQuantum ate 1 byte
         // So reduce padding to 13
-		unsigned char SaveLoadPadding[13];
+        // PendingCellBomb 1 byte
+        // PendingCellBombVictim 4 bytes
+        // down to 8
+		unsigned char SaveLoadPadding[8];
 };
 
 #endif

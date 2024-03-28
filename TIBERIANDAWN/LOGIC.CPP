@@ -203,6 +203,13 @@ void LogicClass::AI(void)
 			index += count_diff;
 		}
 	}
+	
+	// Chthon CFE Note: Delayed crate bombs should be handled here.
+	// The original behavior could destroy a unit partway through it's AI() routine.
+	// This sometimes left a cell permanently reserved for a dead unit.
+	// It also posed a risk of use-after-free bugs depending on what the AI did after dying.
+	// While this would naturally go with the map stuff below, it needs to go here so that the scans are consistent with the old way
+	Map.ProcessCrateBombs();
 
 //	Heap_Dump_Check( "After Object AI" );
 

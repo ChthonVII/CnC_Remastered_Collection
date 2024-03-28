@@ -2396,7 +2396,16 @@ void MapClass::FlipWalls(){
     }
     return;
 }
-        
+ 
+// Chthon CFE Note: Delayed handling of crate bombs
+void MapClass::ProcessCrateBombs(){
+    for (int index = 0; index < MAP_CELL_TOTAL; index++) {
+		CELL cell = index;
+		CellClass* cellptr = &(*this)[cell];
+        cellptr->ProcessCrateBomb();
+    }
+}
+ 
 // Chthon CFE Note: Scan the map for bottlenecks and flag those cells appropriately
 // guardpoints = also scan for points to put guard towers near natural bottlenecks
 // don't need this yet

@@ -204,6 +204,9 @@ class MapClass: public GScreenClass
     public:
         // generate visceroids if infantry died in interesting ways
         bool ProcessTiberiumDeath(CELL where, COORDINATE specifically_where, unsigned char how);
+		
+		// Chthon CFE Note: Delayed handling of crate bombs
+		void ProcessCrateBombs();
         
         unsigned char VisceroidOffalCount = 0;
         unsigned char VisceroidTreeFrustrationCount = 0;

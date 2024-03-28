@@ -150,6 +150,8 @@ CellClass::CellClass(void)
     BigFlipCheck = 0;
     LockOwner = 0;
     OwnershipQuantum = 0;
+	PendingCellBomb = CRATEBOMB_NONE;
+	PendingCellBombVictim = nullptr;
 }
 
 
@@ -2071,7 +2073,7 @@ bool CellClass::Goodie_Check(FootClass * object, bool check_steel)
 
 	if (object && Overlay != OVERLAY_NONE && OverlayTypeClass::As_Reference(Overlay).IsCrate) {
 		bool steel = (Overlay == OVERLAY_STEEL_CRATE);
-		COORDINATE coord;			// Temporary working coordinate value.
+		//COORDINATE coord;			// Temporary working coordinate value. // Chthon CFE Note: no longer used here
 
 		if (check_steel && steel) {
 
@@ -2328,14 +2330,24 @@ bool CellClass::Goodie_Check(FootClass * object, bool check_steel)
 				**	Sometimes an explosion of great magnitude occurs.
 				*/
 				case NUKE:
-					new AnimClass(ANIM_ATOM_BLAST, Cell_Coord());
+					// Chthon CFE Note: This needs fixed. It may kill a unit in the middle of their movement routine. 
+					// This can leave the cell permanently reserved for a dead infantry, and may lead to wicked use-after-free crash bugs.
+					// Instead we will postpone the explosion until later in the tick, after unit AI is done.
+					//new AnimClass(ANIM_ATOM_BLAST, Cell_Coord());
+					PendingCellBomb = CRATEBOMB_NUKE;
+					PendingCellBombVictim = object;
 					break;
 
 				/*
 				**	Sometimes an explosion of great magnitude occurs.
 				*/
 				case ION:
-					new AnimClass(ANIM_ION_CANNON, Cell_Coord());
+					// Chthon CFE Note: This needs fixed. It may kill a unit in the middle of their movement routine. 
+					// This can leave the cell permanently reserved for a dead infantry, and may lead to wicked use-after-free crash bugs.
+					// Instead we will postpone the explosion until later in the tick, after unit AI is done.
+					//new AnimClass(ANIM_ION_CANNON, Cell_Coord());
+					PendingCellBomb = CRATEBOMB_ION;
+					PendingCellBombVictim = object;
 					break;
 
 				/*
@@ -2402,6 +2414,10 @@ bool CellClass::Goodie_Check(FootClass * object, bool check_steel)
 				**	A group of explosions are triggered around the crate.
 				*/
 				case EXPLOSION:
+					// Chthon CFE Note: This needs fixed. It may kill a unit in the middle of their movement routine. 
+					// This can leave the cell permanently reserved for a dead infantry, and may lead to wicked use-after-free crash bugs.
+					// Instead we will postpone the explosion until later in the tick, after unit AI is done.
+					/*
 					damage = 400;
 					object->Take_Damage((int&)damage, 0, WARHEAD_HE);
 					for (index = 0; index < 5; index++) {
@@ -2410,16 +2426,26 @@ bool CellClass::Goodie_Check(FootClass * object, bool check_steel)
 						damage = 400;
 						Explosion_Damage(coord, damage, NULL, WARHEAD_HE);
 					}
+					*/
+					PendingCellBomb = CRATEBOMB_EXPLOSION;
+					PendingCellBombVictim = object;
 					break;
 
 				/*
 				**	A napalm blast is triggered.
 				*/
 				case NAPALM:
+					// Chthon CFE Note: This needs fixed. It may kill a unit in the middle of their movement routine. 
+					// This can leave the cell permanently reserved for a dead infantry, and may lead to wicked use-after-free crash bugs.
+					// Instead we will postpone the explosion until later in the tick, after unit AI is done.
+					/*
 					coord = Coord_Mid(Cell_Coord(), object->Center_Coord());
 					new AnimClass(ANIM_NAPALM3, coord);
 					damage = 600;
 					Explosion_Damage(coord, damage, NULL, WARHEAD_FIRE);
+					*/
+					PendingCellBomb = CRATEBOMB_NAPALM;
+					PendingCellBombVictim = object;
 					break;
 
 				/*
@@ -2468,6 +2494,53 @@ bool CellClass::Goodie_Check(FootClass * object, bool check_steel)
 		}
 	}
 	return(true);
+}
+
+
+// Chthon CFE Note: Delayed handling of crate bombs
+void CellClass::ProcessCrateBomb(){
+	if (PendingCellBomb == CRATEBOMB_NONE){
+		return;
+	}
+	unsigned int damage;
+	int index;
+	COORDINATE coord;
+	switch (PendingCellBomb){
+		case CRATEBOMB_NUKE:
+			new AnimClass(ANIM_ATOM_BLAST, Cell_Coord());
+			break;
+		case CRATEBOMB_ION:
+			new AnimClass(ANIM_ION_CANNON, Cell_Coord());
+			break;
+		case CRATEBOMB_EXPLOSION:
+			damage = 400;
+			if (PendingCellBombVictim && PendingCellBombVictim->IsActive && !PendingCellBombVictim->IsInLimbo && PendingCellBombVictim->Strength){
+				PendingCellBombVictim->Take_Damage((int&)damage, 0, WARHEAD_HE);
+			}
+			for (index = 0; index < 5; index++) {
+				coord = Coord_Scatter(Cell_Coord(), Random_Pick(0, 0x0200));
+				new AnimClass(ANIM_FBALL1, coord);
+				damage = 400;
+				Explosion_Damage(coord, damage, NULL, WARHEAD_HE);
+			}
+			break;
+		case CRATEBOMB_NAPALM:
+			if (PendingCellBombVictim && PendingCellBombVictim->IsActive && !PendingCellBombVictim->IsInLimbo && PendingCellBombVictim->Strength){
+				coord = Coord_Mid(Cell_Coord(), PendingCellBombVictim->Center_Coord());
+			}
+			else {
+				coord = Cell_Coord();
+			}
+			new AnimClass(ANIM_NAPALM3, coord);
+			damage = 600;
+			Explosion_Damage(coord, damage, NULL, WARHEAD_FIRE);
+			break;
+		default:
+			break;
+	}
+	PendingCellBomb = CRATEBOMB_NONE;
+	PendingCellBombVictim = nullptr;
+	return;
 }
 
 
