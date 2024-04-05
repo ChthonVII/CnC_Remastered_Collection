@@ -3954,6 +3954,10 @@ void BuildingClass::Read_INI(char *buffer)
 						if (b->Trigger) {
 							b->Trigger->AttachCount++;
 						}
+						// Chthon CFE Note: disable the search range fix for preplaced units in SP, until this gets toggled
+						if (GameToPlay == GAME_NORMAL){
+							b->SPSearchRangeLimit = 1;
+						}
 					} else {
 
 						/*

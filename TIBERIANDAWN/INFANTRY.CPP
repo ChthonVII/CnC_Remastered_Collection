@@ -3468,6 +3468,10 @@ void InfantryClass::Read_INI(char *buffer)
                                 // in Remastered, Enter_Idle_Mode() assigns MISSION_GUARD or MISSION_GUARD_AREA
 								infantry->Enter_Idle_Mode();
 							}
+							// Chthon CFE Note: disable the search range fix for preplaced units in SP, until this gets toggled
+							if (GameToPlay == GAME_NORMAL){
+								infantry->SPSearchRangeLimit = 1;
+							}
 						} else {
 
 							/*

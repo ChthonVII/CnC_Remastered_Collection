@@ -741,6 +741,7 @@ int FootClass::Mission_Guard(void)
  *=============================================================================================*/
 int FootClass::Mission_Hunt(void)
 {
+	SPSearchRangeLimit = 0; // Chthon CFE Note: enable the search range fix when entering hunt mode
 	// Chthon CFE Note: Fix inspired by screaming_chicken.
     // THREAT_NORMAL is invalid input for Target_Something_Nearby(); results in a full-map scan.
     // New function starts small and scales up the search until it finds something.
@@ -1163,6 +1164,7 @@ bool FootClass::Unlimbo(COORDINATE coord, DirType dir)
 		**	Start in a still (non-moving) state.
 		*/
 		Path[0] = FACING_NONE;
+		
 		return(true);
 	}
 	return(false);

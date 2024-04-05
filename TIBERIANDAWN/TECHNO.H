@@ -234,11 +234,14 @@ class TechnoClass :	public RadioClass,
 		        
         unsigned short int IsKnownToExistByPlayerMask; // this can be a short; there are only 12 houses
         
+        unsigned char SPSearchRangeLimit = 0; // Flag to make CPU-controlled units in SP to not use the range fix, until this gets toggled off
+        
 		/*
 		** Some additional padding in case we need to add data to the class and maintain backwards compatibility for save/load
 		*/
         // Chthon CFE Note: Original padding was 16
         // with other ajustments, we can just get back to the same size with no padding
+        // update broken by adding SPSearchRangeLimit, oh well
 		//unsigned char SaveLoadPadding[16];
 
 		/*---------------------------------------------------------------------

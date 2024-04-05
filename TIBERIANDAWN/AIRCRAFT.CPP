@@ -531,6 +531,10 @@ void AircraftClass::Read_INI(char *buffer)
 							air->Strength = Fixed_To_Cardinal(air->Class->MaxStrength, strength);
 							if (air->Unlimbo(coord, dir)) {
 								air->Assign_Mission(AircraftClass::Mission_From_Name(strtok(NULL, ",\n\r")));
+								// Chthon CFE Note: disable the search range fix for preplaced units in SP, until this gets toggled
+								if (GameToPlay == GAME_NORMAL){
+									air->SPSearchRangeLimit = 1;
+								}
 							} else {
 								delete air;
 							}
@@ -2539,6 +2543,8 @@ int AircraftClass::Mission_Attack(void)
 		return(1);
 	}
 
+	SPSearchRangeLimit = 0; // Chthon CFE Note: enable the search range fix when entering hunt mode
+	
 	enum {
 		VALIDATE_AZ,
 		PICK_ATTACK_LOCATION,

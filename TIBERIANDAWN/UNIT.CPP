@@ -3487,6 +3487,7 @@ int UnitClass::Mission_Hunt(void)
                         )
                     )
         ){
+		SPSearchRangeLimit = 0; // Chthon CFE Note: enable the search range fix when entering hunt mode
         TARGET oldtarget = TarCom;
         // look for a nearby target
         if (Target_Something_Nearby(THREAT_AREA)) {
@@ -3581,6 +3582,8 @@ int UnitClass::Mission_Hunt(void)
 	else {
 
 		if (*this == UNIT_GUNBOAT) {
+			// Don't do this because it's more likely to break missions in the gunboat case
+			//SPSearchRangeLimit = 0; // Chthon CFE Note: enable the search range fix when entering hunt mode
 			if (!Target_Legal(NavCom)) {
 				if (PrimaryFacing == DIR_W) {
 					Assign_Destination( ::As_Target(XY_Cell(Map.MapCellX-1, Cell_Y(Coord_Cell(Coord)))) );
@@ -4862,6 +4865,11 @@ void UnitClass::Read_INI(char *buffer)
 								unit->Assign_Destination( ::As_Target(XY_Cell(Map.MapCellX-1, Cell_Y(Coord_Cell(unit->Coord)))));
 							}
 
+							// Chthon CFE Note: disable the search range fix for preplaced units in SP, until this gets toggled
+							if (GameToPlay == GAME_NORMAL){
+								unit->SPSearchRangeLimit = 1;
+							}
+							
 						} else {
 
 							/*

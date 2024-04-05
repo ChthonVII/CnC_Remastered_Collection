@@ -533,6 +533,7 @@ TechnoClass::TechnoClass(void) :
 	FirepowerBias = 1.0;
     LocalROFBias = 1.0;
     IsKnownToExistByPlayerMask = 0;
+	SPSearchRangeLimit = 0;
     
 }
 
@@ -1005,6 +1006,7 @@ TechnoClass::TechnoClass(HousesType house) :
 	FirepowerBias = 1.0;
     LocalROFBias = 1.0;
     IsKnownToExistByPlayerMask = 0;
+	SPSearchRangeLimit = 0;
 }
 
 
@@ -1300,6 +1302,12 @@ bool TechnoClass::Unlimbo(COORDINATE coord, DirType dir)
 		Commence();
 
 		IsLocked = Map.In_Radar(Coord_Cell(coord));
+		
+		// Chthon CFE Note: initialize CPU-controlled units in SP to not use the range fix, until this gets toggled later
+		if (/*(ActiveCFEPatchConfig.SearchRangeFixMode > 0) &&*/ (GameToPlay == GAME_NORMAL) && House && !House->IsHuman){
+			SPSearchRangeLimit = 1;
+		}
+		
 		return(true);
 	}
 	return(false);
@@ -1776,10 +1784,15 @@ TARGET TechnoClass::Greatest_Threat(ThreatType method) const
 		int range = 0;
         int crange = 0;
         bool loopadjust = false; // do we need to account for the < instead of < in the search loop?
+        int rangefixlevel = 0;
+		// is search range fix disabled for this unit (for now)?
+		if (!SPSearchRangeLimit){
+			rangefixlevel = ActiveCFEPatchConfig.SearchRangeFixMode;
+		}
         // THREAT_AREA
         if (!(method & THREAT_RANGE)){
             range = Threat_Range(1);
-            if (ActiveCFEPatchConfig.SearchRangeFixMode > 1){
+            if (rangefixlevel > 1){
                 crange = ceil((float)range / (float)ICON_LEPTON_W);
                 loopadjust = true;
             }
@@ -1789,7 +1802,7 @@ TARGET TechnoClass::Greatest_Threat(ThreatType method) const
         }
         // THREAT_RANGE
         else {
-            if (ActiveCFEPatchConfig.SearchRangeFixMode > 0){
+            if (rangefixlevel > 0){
                 crange = ceil((float)MAX(Weapon_Range(0), Weapon_Range(1)) / (float)ICON_LEPTON_W);
                 loopadjust = true;
             }
@@ -2027,10 +2040,15 @@ TARGET TechnoClass::Greatest_Threat_Wall(ThreatType method, bool adjacent) const
 		int range = 0;
         int crange = 0;
         bool loopadjust = false; // do we need to account for the < instead of < in the search loop?
+		int rangefixlevel = 0;
+		// is search range fix disabled for this unit (for now)?
+		if (!SPSearchRangeLimit){
+			rangefixlevel = ActiveCFEPatchConfig.SearchRangeFixMode;
+		}
         // THREAT_AREA
         if (!(method & THREAT_RANGE)){
             range = Threat_Range(1);
-            if (ActiveCFEPatchConfig.SearchRangeFixMode > 1){
+            if (rangefixlevel > 1){
                 crange = ceil((float)range / (float)ICON_LEPTON_W);
                 loopadjust = true;
             }
@@ -2040,7 +2058,7 @@ TARGET TechnoClass::Greatest_Threat_Wall(ThreatType method, bool adjacent) const
         }
         // THREAT_RANGE
         else {
-            if (ActiveCFEPatchConfig.SearchRangeFixMode > 0){
+            if (rangefixlevel > 0){
                 crange = ceil((float)MAX(Weapon_Range(0), Weapon_Range(1)) / (float)ICON_LEPTON_W);
                 loopadjust = true;
             }
@@ -2639,8 +2657,16 @@ void TechnoClass::Assign_Target(TARGET target)
 			**	Make sure that the target is not already dead.
 			*/
 			ObjectClass * object = As_Object(target);
-			if (object && (object->IsActive == false || object->Strength == 0)) {
-				target = TARGET_NONE;
+			//if (object && (object->IsActive == false || object->Strength == 0)) {
+			//	target = TARGET_NONE;
+			//}
+			if (object){
+				if ((object->IsActive == false) || (object->Strength == 0)) {
+					target = TARGET_NONE;
+				}
+				else {
+					SPSearchRangeLimit = 0; // Chthon CFE Note: enable the search range fix once this unit enters combat
+				}
 			}
 		}
 	}
@@ -3005,7 +3031,7 @@ void TechnoClass::Player_Assign_Mission(MissionType mission, TARGET target, TARG
 	if (AllowVoice) {
 		if (mission == MISSION_ATTACK) {
 			Response_Attack();
-        // Chthon CFE Note: Add sperate response for sabotage
+        // Chthon CFE Note: Add seperate response for sabotage
         } else if (mission == MISSION_SABOTAGE) {
             Response_Sabotage();
 		} else {
@@ -3026,6 +3052,8 @@ void TechnoClass::Player_Assign_Mission(MissionType mission, TARGET target, TARG
             mission = MISSION_QATTACKMOVE;
         }
     }
+	
+	SPSearchRangeLimit = 0; // Chthon CFE Note: enable the search range fix once the player gives an order
 	
 	Queue_Mission(As_Target(), mission, target, destination);
 }
