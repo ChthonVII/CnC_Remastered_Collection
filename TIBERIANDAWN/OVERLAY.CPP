@@ -252,11 +252,6 @@ bool OverlayClass::Mark(MarkType mark)
 						if (ToOwn != HOUSE_NONE) {
 							cellptr->Owner = ToOwn;
 						}
-						
-						// Chthon CFE Note: advanced wall ownership stuff
-						cellptr->BigFlipCheck = 1;
-                        cellptr->LockOwner = 0;
-                        cellptr->OwnershipQuantum = 0;
 
 					} else {
 						Delete_This();
@@ -389,6 +384,12 @@ void OverlayClass::Read_INI(char *buffer)
 			*/
 			if (cell >= MAP_CELL_W && cell <= MAP_CELL_TOTAL - MAP_CELL_W) {
 				new OverlayClass(classid, cell);
+				// Chthon CFE Note: Possibly change the cell ownership if this is a wall and advanced wall overship is enabled
+				// (Only works because preplaced buildings are placed before preplaced overlays.)
+				if (ActiveCFEPatchConfig.EnableAdvancedWallOwnership && OverlayTypeClass::As_Reference(classid).IsWall){
+					CellClass* cellptr = &Map[cell];
+					cellptr->FlipWall();
+				}
 			}
 		}
 		tbuffer += strlen(tbuffer)+1;

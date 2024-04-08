@@ -1577,9 +1577,14 @@ void BuildingClass::AI(void)
 	*/
 	if (!Strength) {
 		if (CountDown.Expired()) {
+			CELL centercell = Coord_Cell(Center_Coord()); // Chthon CFE Note: remember center cell so we don't use after free
 			Limbo();
 			Drop_Debris(WhomToRepay);
 			Delete_This();
+			// Chthon CFE Note: possibly flip nearby walls
+			if (ActiveCFEPatchConfig.EnableAdvancedWallOwnership){
+				Map.FlipWalls(centercell);
+			}
 		}
 		return;
 	}
@@ -1955,8 +1960,10 @@ bool BuildingClass::Unlimbo(COORDINATE coord, DirType dir)
 			Map.Flag_To_Redraw(false);
 		}
 		
-		// Chthon CFE Note: flag nearby walls for ownership evaluation
-        FlipWalls();
+		// Chthon CFE Note: possibly flip nearby walls
+		if (ActiveCFEPatchConfig.EnableAdvancedWallOwnership){
+			Map.FlipWalls(Coord_Cell(Center_Coord()));
+		}
 		
 		return(true);
 	}
@@ -2120,9 +2127,6 @@ ResultType BuildingClass::Take_Damage(int & damage, int distance, WarheadType wa
 				if (House) {
 					House->Check_Pertinent_Structures();
 				}
-				
-				// Chthon CFE Note: flag nearby walls for ownership evaluation
-				FlipWalls();
 				
 				break;
 
@@ -4451,8 +4455,10 @@ bool BuildingClass::Captured(HouseClass * newowner)
 		RallyPoint = TARGET_NONE;
         ShowInverseWallPreviewMarkers = 0;
         
-        // Chthon CFE Note: flag nearby walls for ownership evaluation
-        FlipWalls();
+        // Chthon CFE Note: possibly flip nearby walls
+		if (ActiveCFEPatchConfig.EnableAdvancedWallOwnership){
+			Map.FlipWalls(Coord_Cell(Center_Coord()));
+		}
 		
 		return(true);
 	}
@@ -4873,8 +4879,8 @@ int BuildingClass::Mission_Deconstruction(void)
 		case DURING:
 			if (IsReadyToCommence) {
 
-                // Chthon CFE Note: flag nearby walls for ownership evaluation
-				FlipWalls();
+                // Chthon CFE Note: remember center for wall flipping so we don't use after free
+				CELL centercell = Coord_Cell(Center_Coord());
                 
 				/*
 				**	Construction yards that deconstruct, really just revert back
@@ -4946,6 +4952,10 @@ int BuildingClass::Mission_Deconstruction(void)
 						memohouse->Check_Pertinent_Structures();
                         Map.Recalc(); // supposedly this forces sidebar to update list of buildables
 					}
+					// Chthon CFE Note: possibly flip nearby walls
+					if (ActiveCFEPatchConfig.EnableAdvancedWallOwnership){
+						Map.FlipWalls(centercell);
+					}
 
 				} else {
 
@@ -4970,6 +4980,10 @@ int BuildingClass::Mission_Deconstruction(void)
 					**	Finally, delete the building from the game.
 					*/
 					Delete_This();
+					// Chthon CFE Note: possibly flip nearby walls
+					if (ActiveCFEPatchConfig.EnableAdvancedWallOwnership){
+						Map.FlipWalls(centercell);
+					}
 				}
 				House->IsRecalcNeeded = true;
 			}
@@ -6552,37 +6566,6 @@ void BuildingClass::FlushRefineryBib(){
                 obj = obj->Next;
             }
             flushcell = Adjacent_Cell(flushcell, FACING_E);
-        }
-    }
-    return;
-}
-
-void BuildingClass::FlipWalls(){
-    const int gap = ActiveCFEPatchConfig.BuildingGap;
-    short const *offset = Occupy_List();
-    CELL mycell = Coord_Cell(Coord);
-    while (*offset != REFRESH_EOL) {
-        CELL cell = mycell + *offset++;
-        int x = Cell_X(cell);
-        int y = Cell_Y(cell);
-        int minx = x - gap;
-        if (minx < 0) minx = 0;
-        int maxx = x + gap;
-        if (maxx >= MAP_CELL_W) maxx = MAP_CELL_W - 1;
-        int miny = y - gap;
-        if (miny < 0) miny = 0;
-        int maxy = y + gap;
-        if (maxy >= MAP_CELL_H) maxy = MAP_CELL_H - 1;
-        for (int i = minx; i <= maxx; i++){
-            for (int j = miny; j <= maxy; j++){
-                CELL newcell = XY_Cell(i, j);
-                if (Map.In_Radar(newcell)){
-                    CellClass* newcellptr = &Map[newcell];
-                    if (newcellptr){
-                        newcellptr->BigFlipCheck = 1;
-                    }
-                }
-            }
         }
     }
     return;

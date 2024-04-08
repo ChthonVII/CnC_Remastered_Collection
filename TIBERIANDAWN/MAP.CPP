@@ -2281,116 +2281,25 @@ bool MapClass::ProcessTiberiumDeath(CELL where, COORDINATE specifically_where, u
     return false;
 }
 
-void MapClass::FlipWalls(){
-    const int gap = ActiveCFEPatchConfig.BuildingGap;
-    // do a full check at the start of the game, and then again once per minute
-    bool freebigcheck = ((Frame == 2) ||  (Frame % TICKS_PER_MINUTE == 0));
-    for (int index = 0; index < MAP_CELL_TOTAL; index++) {
-		CELL cell = index;
-        if (!Map.In_Radar(cell)) {
-            continue; // don't bother if the cell's not on the playable section of the map
+void MapClass::FlipWalls(CELL centercell){
+    int centerx = Cell_X(centercell);
+    int xmin = centerx - 16; // see CellClass::FlipWall() for why this is 16
+    int xmax = centerx + 16;
+    int centery = Cell_Y(centercell);
+    int ymin = centery - 16;
+    int ymax = centery + 16;
+    for (int y=ymin; y<=ymax; y++){
+        if ((y < 0) || (y >= MAP_CELL_H)){
+            continue;
         }
-		CellClass* cellptr = &(*this)[cell];
-        bool checkrequested = (cellptr->BigFlipCheck) ? true : false;
-        cellptr->BigFlipCheck = 0;
-        if (cellptr && cellptr->Overlay != OVERLAY_NONE) {
-            OverlayTypeClass const * optr = &OverlayTypeClass::As_Reference(cellptr->Overlay);
-            if (optr && optr->IsWall){
-                // flip sides if exactly one house owns all buildings within building gap distance
-                if (checkrequested || freebigcheck){
-                    int bcount = 0;
-                    HousesType fliphouse = HOUSE_NONE;
-                    int x = Cell_X(cell);
-                    int y = Cell_Y(cell);
-                    int minx = x - gap;
-                    int maxx = x + gap;
-                    int miny = y - gap;
-                    int maxy = y + gap;
-                    // scan for buildings in range
-                    for (int i = minx; i <= maxx; i++){
-                        for (int j = miny; j <= maxy; j++){
-                            CELL testcell = XY_Cell(i, j);
-                            if (Map.In_Radar(testcell)){
-                                CellClass* testptr = &(*this)[testcell];
-                                if (testptr){
-                                    BuildingClass* somebuilding = testptr->Cell_Building();
-                                    if (somebuilding && somebuilding->IsActive && !somebuilding->IsInLimbo && somebuilding->Strength){
-                                        HousesType somehouse = somebuilding->Owner();
-                                        if ((fliphouse != somehouse) && (somehouse != HOUSE_NONE)){
-                                            fliphouse = somehouse;
-                                            bcount++;
-                                            if (bcount > 1){
-                                                break;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        if (bcount > 1){
-                            break;
-                        }
-                    }
-                    // if we found exactly one house owning buildings in range
-                    if (bcount == 1){
-                        // check to see if this wall belongs to an ally
-                        bool allyblock = false;
-                        if (cellptr->Owner != HOUSE_NONE){
-                            HouseClass* myhouse = HouseClass::As_Pointer(cellptr->Owner);
-                            if (myhouse && myhouse->Is_Ally(fliphouse)){
-                                allyblock = true;
-                            }
-                        }
-                        // claim it
-                        if (!allyblock){
-                            cellptr->Owner = fliphouse;
-                            cellptr->LockOwner = 1;
-                            cellptr->OwnershipQuantum = 20;
-                        }
-                    }
-                    // unlock ownership if no building in range 
-                    else if (bcount == 0){
-                        cellptr->LockOwner = 0;
-                    }
-                }
-                // if ownership is unlocked, consider influence of adjacent wall pieces
-                if (!cellptr->LockOwner){
-                    bool exceededonce = false;
-                    HousesType besthouse = HOUSE_NONE;
-                    int bestscore = cellptr->OwnershipQuantum;
-                    for (FacingType dir : FacingCardinals){ //FACING_N, FACING_E, FACING_S, FACING_W
-                        CELL testcell = Adjacent_Cell(cell, dir);
-                        if (Map.In_Radar(testcell)){
-                            CellClass* testptr = &(*this)[testcell];
-                            if (testptr && (testptr->Overlay != OVERLAY_NONE)){
-                                OverlayTypeClass const * toptr = &OverlayTypeClass::As_Reference(testptr->Overlay);
-                                if (toptr && toptr->IsWall && (testptr->Owner != HOUSE_NONE)){
-                                    if (testptr->OwnershipQuantum > bestscore){
-                                        exceededonce = true;
-                                        bestscore = testptr->OwnershipQuantum;
-                                        besthouse = testptr->Owner;
-                                    }
-                                    else if (exceededonce && (testptr->OwnershipQuantum == bestscore)){
-                                        if (testptr->Owner != besthouse){
-                                            // ties go to the current owner, if they're part of the tie
-                                            if (testptr->Owner == cellptr->Owner){
-                                                besthouse = cellptr->Owner;
-                                            }
-                                            // if the current owner isn't part of the tie, decide ties by random
-                                            else if ((besthouse != cellptr->Owner) && (Random_Pick(0, 1) == 0)){
-                                                besthouse = cellptr->Owner;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    if (exceededonce){
-                        cellptr->Owner = besthouse;
-                        cellptr->OwnershipQuantum = bestscore - 1;
-                    }
-                }
+        for (int x=xmin; x<=xmax; x++){
+            if ((x < 0) || (x >= MAP_CELL_W)){
+                continue;
+            }
+            CELL testcell = XY_Cell(x, y);
+            if (In_Radar(testcell)){
+                CellClass* cellptr = &(*this)[testcell];
+                cellptr->FlipWall();
             }
         }
     }

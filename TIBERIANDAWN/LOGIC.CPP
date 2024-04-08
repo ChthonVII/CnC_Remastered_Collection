@@ -267,11 +267,6 @@ void LogicClass::AI(void)
             Map.Logic();
         }
     }
-    
-    // Chthon CFE Note: Do advanced wall owenerhship
-    if (ActiveCFEPatchConfig.EnableAdvancedWallOwnership){
-        Map.FlipWalls();
-    }
 
 //	Heap_Dump_Check( "After Map.Logic" );
 

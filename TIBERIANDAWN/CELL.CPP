@@ -147,9 +147,6 @@ CellClass::CellClass(void)
     TibResurgenceCountdown = 0;
     ReservingVehicle = nullptr;
     
-    BigFlipCheck = 0;
-    LockOwner = 0;
-    OwnershipQuantum = 0;
 	PendingCellBomb = CRATEBOMB_NONE;
 	PendingCellBombVictim = nullptr;
 }
@@ -1616,10 +1613,6 @@ int CellClass::Reduce_Wall(int damage)
 					if (scell) scell->Wall_Update();
 					CellClass * ecell = Adjacent_Cell(FACING_E);
 					if (ecell) ecell->Wall_Update();
-                    // Chthon CFE Note: advance wall ownership stuff
-                    BigFlipCheck = 0;
-                    LockOwner = 0;
-                    OwnershipQuantum = 0;
 					return(true);
 				}
 			}
@@ -2974,4 +2967,67 @@ int CellClass::LongtermBlockage() const {
         return 1;
     }
     return 0;
+}
+
+// ChthonCFE Note: For advanced wall ownership, flip walls based on ownership and distance of nearby buildings (inverse square weighting)
+void CellClass::FlipWall(){
+	if (Overlay != OVERLAY_NONE) {
+        OverlayTypeClass const * overlay = &OverlayTypeClass::As_Reference(Overlay);
+        if (overlay && overlay->IsWall){
+            int hscores[HOUSE_COUNT];
+			memset(&hscores[0], 0 , HOUSE_COUNT * sizeof(int));
+			// score for current owner
+			int nonescore = 0;
+			if (Owner == HOUSE_NONE){
+				nonescore = 270; // half the score of a cell with a real owner
+			}
+			else {
+				hscores[Owner] = 540; // same score as a building 4 diagonal squares away (see below)
+			}
+			// iterate over all buildings
+			for (int i = 0; i<Buildings.Count(); i++) {
+				BuildingClass* somebuilding = Buildings.Ptr(i);
+				if (somebuilding && somebuilding->IsActive && !somebuilding->IsInLimbo && somebuilding->Strength){
+					HousesType bowner = somebuilding->Owner();
+					if (bowner != HOUSE_NONE){
+						int somedist = Distance(Cell_Number(), Coord_Cell(somebuilding->Center_Coord()));
+						// 576 is picked as follows:
+						// 16 is 1/4 the length/width of the original TD map size.
+						// Assume this is a good meause of how big a base might be.
+						// 24 is 16 in both directions, using WW's "fast" distance formula.
+						// 576 is 24 squared.
+						int bscore = 576 - (somedist * somedist); // inverse square weighting
+						if (bscore > 0){
+							hscores[bowner] += bscore;
+						}
+					}
+				}
+			}
+			//see who has the best score
+			HousesType bestowner = HOUSE_NONE;
+			int bestscore = nonescore;
+			for (int i=0; i<HOUSE_COUNT; i++){
+				if (hscores[i] > bestscore){
+					bestowner = (HousesType)i;
+					bestscore = hscores[i];
+				}
+			}
+			// should the wall change hands?
+			if (Owner != bestowner){
+				// don't steal walls from allies
+				bool allyblock = false;
+				if (Owner != HOUSE_NONE){
+					HouseClass* myhouse = HouseClass::As_Pointer(Owner);
+					if (myhouse && myhouse->Is_Ally(bestowner)){
+						allyblock = true;
+					}
+				}
+				// finally, transfer ownership
+				if (!allyblock){
+					Owner = bestowner;
+				}
+			}
+        }
+	}
+	return;
 }

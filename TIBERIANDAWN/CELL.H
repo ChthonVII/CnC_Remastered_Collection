@@ -335,16 +335,16 @@ class CellClass
         int LongtermBlockage() const;
 		// Chthon CFE Note: Delayed handling of crate bombs
 		void ProcessCrateBomb();
+		// ChthonCFE Note: For advanced wall ownership, flip walls based on ownership and distance of nearby buildings (inverse square weighting)
+		void FlipWall();
         
         // we need to fix the cell reservation system at least insofar that we know *who* reserved a cell
         FootClass* ReservingVehicle;
         int TibResurgenceBuildup;
         int TibResurgenceCountdown;
-        unsigned char BigFlipCheck;
-        unsigned char LockOwner;
-        unsigned char OwnershipQuantum;
-		CrateBombType PendingCellBomb;
 		FootClass* PendingCellBombVictim;
+		CrateBombType PendingCellBomb;
+		
         
         
     private:
@@ -355,14 +355,13 @@ class CellClass
         // Chthon CFE Note: Original padding was 28
         // ReservingVehicle ate 4 bytes
         // TibResurgenceBuildup ate 4 bytes
-        // BigFlipCheck ate 1 byte
-        // LockOwner ate 1 byte
-        // OwnershipQuantum ate 1 byte
-        // So reduce padding to 13
-        // PendingCellBomb 1 byte
-        // PendingCellBombVictim 4 bytes
-        // down to 8
-		unsigned char SaveLoadPadding[8];
+        // TibResurgenceCountdown is 4 bytes
+		// (removed stuff using 3 bytes, leaving 13)
+        // So reduce padding to 16
+        // PendingCellBombVictim 4 bytes// 
+		// PendingCellBomb 1 byte
+        // down to 11
+		unsigned char SaveLoadPadding[11];
 };
 
 #endif
