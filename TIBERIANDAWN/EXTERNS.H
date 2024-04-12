@@ -139,6 +139,7 @@ struct CFEPatchConfig
     bool ApplyMPBalanceToSP = false;
     bool MPUnitsInSP = false;
     bool JDExtraAdjustments = false;
+    bool MPCivSight = false;
     
     int DefaultCustomMissionScenarioNumber = 1;
     int LegacyRenderDisableMode = 1;
