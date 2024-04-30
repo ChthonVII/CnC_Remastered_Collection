@@ -1010,8 +1010,8 @@ void Fixup_Scenario(bool issavedgameload) // Chthon CFE Note: added parameter so
     }
     
     // Chthon CFE Note: Sight for civilian crews in MP
-    // (MP only b/c this will alost certainly break some SP missions.)
-    if ((GameToPlay == GAME_NORMAL) && ActiveCFEPatchConfig.MPCivSight){
+    // (MP only b/c this will almost certainly break some SP missions.)
+    if ((GameToPlay != GAME_NORMAL) && ActiveCFEPatchConfig.MPCivSight){
 		((InfantryTypeClass&)InfantryTypeClass::As_Reference(INFANTRY_C1)).SightRange = 1;
 		((InfantryTypeClass&)InfantryTypeClass::As_Reference(INFANTRY_C7)).SightRange = 1;
 	}
