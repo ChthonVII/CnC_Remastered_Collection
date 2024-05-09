@@ -4813,6 +4813,10 @@ int BuildingClass::Mission_Deconstruction(void)
 						while (typ == INFANTRY_E7 && engine) {
 							typ = Crew_Type();
 						}
+						// Chthon CFE Note: Option for forcing MCV to spawn an engineer
+						if ((count == 1) && !engine && ActiveCFEPatchConfig.MCVAlwaysSpawnEngineer && (*this == STRUCT_CONST) && !IsCaptured && House->IsHuman) {
+							typ = INFANTRY_E7;
+						}
 						if (typ == INFANTRY_E7) engine = true;
 
 						InfantryClass * infantry = new InfantryClass(typ, House->Class->House);

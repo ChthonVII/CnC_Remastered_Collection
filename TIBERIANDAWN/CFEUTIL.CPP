@@ -94,6 +94,7 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     GetSetting(ActiveCFEPatchConfig.EnableWallCrush	, "FEATURES", "WALL_CRUSH");
     GetSetting(ActiveCFEPatchConfig.EnableAdvancedWallOwnership	, "FEATURES", "ADV_WALL_OWN");
     GetSetting(ActiveCFEPatchConfig.EnableHuntFix	, "FEATURES", "HUNT_FIX");
+    GetSetting(ActiveCFEPatchConfig.MCVAlwaysSpawnEngineer	, "FEATURES", "MCV_ALWAYS_SPAWN_ENGINEER");
     GetSetting(ActiveCFEPatchConfig.ShroudRemover      , "FEATURES", "SHROUD_REMOVER");  // J_D's thing; thanks to Terra_Ex and screaming_chicken
     
     
