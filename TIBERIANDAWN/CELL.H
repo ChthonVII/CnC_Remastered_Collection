@@ -336,7 +336,7 @@ class CellClass
 		// Chthon CFE Note: Delayed handling of crate bombs
 		void ProcessCrateBomb();
 		// ChthonCFE Note: For advanced wall ownership, flip walls based on ownership and distance of nearby buildings (inverse square weighting)
-		void FlipWall();
+		void FlipWall(HousesType gainhouse, HousesType losehouse);
         
         // we need to fix the cell reservation system at least insofar that we know *who* reserved a cell
         FootClass* ReservingVehicle;

@@ -1578,12 +1578,13 @@ void BuildingClass::AI(void)
 	if (!Strength) {
 		if (CountDown.Expired()) {
 			CELL centercell = Coord_Cell(Center_Coord()); // Chthon CFE Note: remember center cell so we don't use after free
+			HousesType formerowner = Owner(); // and the owner
 			Limbo();
 			Drop_Debris(WhomToRepay);
 			Delete_This();
 			// Chthon CFE Note: possibly flip nearby walls
 			if (ActiveCFEPatchConfig.EnableAdvancedWallOwnership){
-				Map.FlipWalls(centercell);
+				Map.FlipWalls(centercell, HOUSE_NONE, formerowner);
 			}
 		}
 		return;
@@ -1962,7 +1963,7 @@ bool BuildingClass::Unlimbo(COORDINATE coord, DirType dir)
 		
 		// Chthon CFE Note: possibly flip nearby walls
 		if (ActiveCFEPatchConfig.EnableAdvancedWallOwnership){
-			Map.FlipWalls(Coord_Cell(Center_Coord()));
+			Map.FlipWalls(Coord_Cell(Center_Coord()), Owner(), HOUSE_NONE);
 		}
 		
 		return(true);
@@ -4381,6 +4382,7 @@ bool BuildingClass::Captured(HouseClass * newowner)
 		newowner->IsRecalcNeeded = true;
 
 		HouseClass * oldowner = House;				// Added for RA AI in TD. ST - 7/26/2019 9:25AM
+		HousesType oldownernum = Owner();		// Chthon CFE Note: Also need to remember this
 
 		IsCaptured = true;
 		TechnoClass::Captured(newowner);
@@ -4457,7 +4459,7 @@ bool BuildingClass::Captured(HouseClass * newowner)
         
         // Chthon CFE Note: possibly flip nearby walls
 		if (ActiveCFEPatchConfig.EnableAdvancedWallOwnership){
-			Map.FlipWalls(Coord_Cell(Center_Coord()));
+			Map.FlipWalls(Coord_Cell(Center_Coord()), Owner(), oldownernum);
 		}
 		
 		return(true);
@@ -4904,6 +4906,7 @@ int BuildingClass::Mission_Deconstruction(void)
                     }
                     */
                     HouseClass* memohouse = House; // need to do  a couple things after deletion
+                    HousesType memohousenum = Owner();
                     
                     
                     ScenarioInit++;
@@ -4954,7 +4957,7 @@ int BuildingClass::Mission_Deconstruction(void)
 					}
 					// Chthon CFE Note: possibly flip nearby walls
 					if (ActiveCFEPatchConfig.EnableAdvancedWallOwnership){
-						Map.FlipWalls(centercell);
+						Map.FlipWalls(centercell, HOUSE_NONE, memohousenum);
 					}
 
 				} else {
@@ -4979,10 +4982,11 @@ int BuildingClass::Mission_Deconstruction(void)
 					/*
 					**	Finally, delete the building from the game.
 					*/
+					HousesType memohousenum = Owner(); // remember the owner for later
 					Delete_This();
 					// Chthon CFE Note: possibly flip nearby walls
 					if (ActiveCFEPatchConfig.EnableAdvancedWallOwnership){
-						Map.FlipWalls(centercell);
+						Map.FlipWalls(centercell, HOUSE_NONE, memohousenum);
 					}
 				}
 				House->IsRecalcNeeded = true;

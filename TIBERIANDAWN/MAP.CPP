@@ -52,6 +52,7 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
+//#include "CFEDEBUG.H"
 
 #define	MCW	MAP_CELL_W
 int const MapClass::RadiusOffset[] = {
@@ -2281,7 +2282,7 @@ bool MapClass::ProcessTiberiumDeath(CELL where, COORDINATE specifically_where, u
     return false;
 }
 
-void MapClass::FlipWalls(CELL centercell){
+void MapClass::FlipWalls(CELL centercell, HousesType gainhouse, HousesType losehouse){
     int centerx = Cell_X(centercell);
     int xmin = centerx - 16; // see CellClass::FlipWall() for why this is 16
     int xmax = centerx + 16;
@@ -2299,7 +2300,7 @@ void MapClass::FlipWalls(CELL centercell){
             CELL testcell = XY_Cell(x, y);
             if (In_Radar(testcell)){
                 CellClass* cellptr = &(*this)[testcell];
-                cellptr->FlipWall();
+                cellptr->FlipWall(gainhouse, losehouse);
             }
         }
     }

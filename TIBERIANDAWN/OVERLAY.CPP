@@ -388,7 +388,7 @@ void OverlayClass::Read_INI(char *buffer)
 				// (Only works because preplaced buildings are placed before preplaced overlays.)
 				if (ActiveCFEPatchConfig.EnableAdvancedWallOwnership && OverlayTypeClass::As_Reference(classid).IsWall){
 					CellClass* cellptr = &Map[cell];
-					cellptr->FlipWall();
+					cellptr->FlipWall(HOUSE_NONE, HOUSE_NONE);
 				}
 			}
 		}

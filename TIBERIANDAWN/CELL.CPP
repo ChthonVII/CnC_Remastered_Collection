@@ -2970,10 +2970,22 @@ int CellClass::LongtermBlockage() const {
 }
 
 // ChthonCFE Note: For advanced wall ownership, flip walls based on ownership and distance of nearby buildings (inverse square weighting)
-void CellClass::FlipWall(){
+void CellClass::FlipWall(HousesType gainhouse, HousesType losehouse){
 	if (Overlay != OVERLAY_NONE) {
         OverlayTypeClass const * overlay = &OverlayTypeClass::As_Reference(Overlay);
         if (overlay && overlay->IsWall){
+			// early out
+			bool hasgainer = gainhouse != HOUSE_NONE;
+			bool hasloser = losehouse != HOUSE_NONE;
+			// can't lose walls because you gained a building
+			if (hasgainer && (gainhouse == Owner)){
+				return;
+			}
+			// only the house losing a building can lose walls (unless it's a capture so there's also a gainer)
+			if (!hasgainer && hasloser && (losehouse != Owner)){
+				return;
+			}
+			
             int hscores[HOUSE_COUNT];
 			memset(&hscores[0], 0 , HOUSE_COUNT * sizeof(int));
 			// score for current owner
@@ -3014,17 +3026,20 @@ void CellClass::FlipWall(){
 			}
 			// should the wall change hands?
 			if (Owner != bestowner){
-				// don't steal walls from allies
-				bool allyblock = false;
-				if (Owner != HOUSE_NONE){
-					HouseClass* myhouse = HouseClass::As_Pointer(Owner);
-					if (myhouse && myhouse->Is_Ally(bestowner)){
-						allyblock = true;
+				// ensure that either someone losing a wall b/c they lost a building, or someone gaining a wall b/c they gained a building
+				if ((!hasgainer && !hasloser) || (hasgainer && (bestowner == gainhouse)) || (hasloser && (Owner == losehouse))){
+					// don't steal walls from allies
+					bool allyblock = false;
+					if (Owner != HOUSE_NONE){
+						HouseClass* myhouse = HouseClass::As_Pointer(Owner);
+						if (myhouse && myhouse->Is_Ally(bestowner)){
+							allyblock = true;
+						}
 					}
-				}
-				// finally, transfer ownership
-				if (!allyblock){
-					Owner = bestowner;
+					// finally, transfer ownership
+					if (!allyblock){
+						Owner = bestowner;
+					}
 				}
 			}
         }
