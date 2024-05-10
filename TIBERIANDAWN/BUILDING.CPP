@@ -2428,6 +2428,10 @@ BuildingClass::BuildingClass(StructType type, HousesType house) :
 	**	the house they are supposed to act like, regardless of who the current
 	**	owner may happen to be.
 	*/
+	// Chthon CFE Note: Bugfix these buildings always being flagged as captured in multiplayer
+	// Note that it's still wrong to be flagging them as captured if you *built* them via a captured MCV.
+	// But some GlyphX frontend stuff depends upon this being set.
+	/*
 	if ((type == STRUCT_AIRSTRIP || type == STRUCT_HAND) && house != HOUSE_BAD) {
 		ActLike = HOUSE_BAD;
 		IsCaptured = true;
@@ -2435,6 +2439,19 @@ BuildingClass::BuildingClass(StructType type, HousesType house) :
 	if ((type == STRUCT_WEAP || type == STRUCT_BARRACKS) && house != HOUSE_GOOD) {
 		ActLike = HOUSE_GOOD;
 		IsCaptured = true;
+	}
+	*/
+	if (type == STRUCT_AIRSTRIP || type == STRUCT_HAND) {
+		ActLike = HOUSE_BAD;
+		if (House->ActLike != HOUSE_BAD){
+			IsCaptured = true;
+		}
+	}
+	if (type == STRUCT_WEAP || type == STRUCT_BARRACKS) {
+		ActLike = HOUSE_GOOD;
+		if (House->ActLike != HOUSE_GOOD){
+			IsCaptured = true;
+		}
 	}
 
 	if (GameToPlay == GAME_INTERNET){
@@ -2453,7 +2470,7 @@ BuildingClass::BuildingClass(StructType type, HousesType house) :
     SAMAmmo = 0;
     ShowInverseWallPreviewMarkers = 0;
     HasOpened = 0;
-    
+    ReallyCaptured = false;
 }
 
 
@@ -2542,7 +2559,9 @@ void BuildingClass::Drop_Debris(TARGET source)
 	offset = Occupy_List();
 	int odds = 2;
 	if (Target_Legal(WhomToRepay)) odds -= 1;
-	if (IsCaptured) odds += 6;
+	// Chthon CFE Note: Fix so that only buildings that were really captured by an Engineer get this penalty.
+	//if (IsCaptured) odds += 6;
+	if (ReallyCaptured) odds += 6;
 
 	if (   Target_Legal(WhomToRepay) &&
             (
@@ -4385,6 +4404,7 @@ bool BuildingClass::Captured(HouseClass * newowner)
 		HousesType oldownernum = Owner();		// Chthon CFE Note: Also need to remember this
 
 		IsCaptured = true;
+		ReallyCaptured = true; // Chthon CFE Note: Add to distinguish buildings really captured by engineer vs. merely built via captured MCV.
 		TechnoClass::Captured(newowner);
 
 
@@ -4798,7 +4818,9 @@ int BuildingClass::Mission_Deconstruction(void)
 				*/
 				if (!Target_Legal(ArchiveTarget) || !Special.IsMCVDeploy || *this != STRUCT_CONST) {
 					int divisor = 200;
-					if (IsCaptured) divisor *= 2;
+					// Chthon CFE Note: Fix so that only buildings that were really captured by an Engineer get this penalty.
+					//if (IsCaptured) divisor *= 2;
+					if (ReallyCaptured) divisor *= 2;
 					int count = (Class->Raw_Cost()+(divisor-1)) / divisor;
 					bool engine = false;
 					count = Bound(count, 1, 5);
@@ -4814,7 +4836,7 @@ int BuildingClass::Mission_Deconstruction(void)
 							typ = Crew_Type();
 						}
 						// Chthon CFE Note: Option for forcing MCV to spawn an engineer
-						if ((count == 1) && !engine && ActiveCFEPatchConfig.MCVAlwaysSpawnEngineer && (*this == STRUCT_CONST) && !IsCaptured && House->IsHuman) {
+						if ((count == 1) && !engine && ActiveCFEPatchConfig.MCVAlwaysSpawnEngineer && (*this == STRUCT_CONST) && !ReallyCaptured && House->IsHuman) {
 							typ = INFANTRY_E7;
 						}
 						if (typ == INFANTRY_E7) engine = true;
@@ -6253,7 +6275,9 @@ InfantryType BuildingClass::Crew_Type(void) const
 			}
 
 		case STRUCT_CONST:
-			if (!IsCaptured && House->IsHuman && Random_Pick(0, 3) == 0) {
+			// Chthon CFE Note: Fix so that only buildings that were really captured by an Engineer get this penalty.
+			//if (!IsCaptured && House->IsHuman && Random_Pick(0, 3) == 0) {
+			if (!ReallyCaptured && House->IsHuman && Random_Pick(0, 3) == 0) {
 				return(INFANTRY_E7);
 			}
 			break;

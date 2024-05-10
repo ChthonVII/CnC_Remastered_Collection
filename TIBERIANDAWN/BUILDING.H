@@ -166,7 +166,8 @@ class BuildingClass : public TechnoClass
         short int SAMLoweringDelay;
         unsigned char SAMAmmo;
         unsigned char ShowInverseWallPreviewMarkers = 0;
-        unsigned char HasOpened; // borrowed from RA. (It's a bitfield in RA, and we could make it a bitfield here too if we had more bools to add.)
+        unsigned char HasOpened:1; // borrowed from RA. Now a bitfield so we can make more stuff here.
+        unsigned char ReallyCaptured:1; // Was this really captured by an engineer vs. built in a "captured" state? Bitfield so we can make more stuff here.
 
 		TARGET Target_For_Rally_Point() const;
 
