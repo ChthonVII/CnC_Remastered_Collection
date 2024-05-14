@@ -123,6 +123,7 @@ struct CFEPatchConfig
     bool EnableAdvancedWallOwnership = false;
     bool EnableHuntFix = false;
     bool MCVAlwaysSpawnEngineer = false;
+    bool SplitDualCapturables = false;
     bool ShroudRemover = false;
     
     bool OverrideAPCReqs = false;

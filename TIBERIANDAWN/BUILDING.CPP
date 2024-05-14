@@ -3567,7 +3567,9 @@ void BuildingClass::Grand_Opening(bool captured)
         if (*this == STRUCT_HELIPAD && !captured && (!House->IsHuman || PurchasePrice == 0 || PurchasePrice > Class->Raw_Cost())) {
             ScenarioInit++;
             AircraftClass * air = 0;
-            if (House->ActLike == HOUSE_GOOD) {
+			// Chthon CFE Note: Use the building's ActLike, not its owners.
+            //if (House->ActLike == HOUSE_GOOD) {
+			if (ActLike == HOUSE_GOOD) {
                 air = new AircraftClass(AIRCRAFT_ORCA, House->Class->House);
             } else {
                 air = new AircraftClass(AIRCRAFT_HELICOPTER, House->Class->House);

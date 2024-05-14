@@ -1699,6 +1699,7 @@ void UnitTypeClass::One_Time(void)
 			}
 			_makepath(fullname, NULL, NULL, buffer, ".SHP");
 			((void const *&)uclass.CameoData) = MixFileClass::Retrieve(fullname);
+			// Chthon CFE Note: No legacy icon redirection for nuke tank, presumably b/c Remastered never uses the legacy sidebar.
 		}
 
 		/*

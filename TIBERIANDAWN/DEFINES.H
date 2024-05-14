@@ -870,7 +870,7 @@ typedef enum StructType : char {
 	STRUCT_TEMPLE,
 	STRUCT_EYE,
 	STRUCT_MISSION,
-
+	
 	/*
 	**	All buildings that are never used as a prerequisite
 	**	for construction, follow this point. Typically, this is
@@ -922,6 +922,12 @@ typedef enum StructType : char {
 	STRUCT_BARBWIRE_WALL,
 	STRUCT_WOOD_WALL,
 
+	// Chthon CFE Note: Dummy building types for building helipads with captured MCV
+	// These only exist in the sidebar. They get swapped out for a standard helipad when placed down.
+	// Therefore we don't need STRUCTF #defines for them.
+	STRUCT_GDI_HELIPAD,
+	STRUCT_NOD_HELIPAD,
+	
 	STRUCT_COUNT,
 	STRUCT_FIRST=0
 } StructType;

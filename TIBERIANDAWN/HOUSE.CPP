@@ -597,6 +597,30 @@ bool HouseClass::Can_Build(TechnoTypeClass const * type, HousesType house) const
 	if (flags & STRUCTF_AIRSTRIP) flags |= STRUCTF_WEAP;
 	if (flags & STRUCTF_SAM) flags |= STRUCTF_HELIPAD;
 
+
+	// Chthon CFE Note: Special logic for dummy helipad types.
+	// These should only be buildable by a human player who's captured a MCV of the opposite faction
+	// (And in the case of the Nod helipad, only if Nod could build helipads.)
+	if (type->What_Am_I() == RTTI_BUILDINGTYPE){
+		if (((BuildingTypeClass const *)type)->Type == STRUCT_GDI_HELIPAD){
+			if (!ActiveCFEPatchConfig.SplitDualCapturables || !IsHuman || (ActLike == HOUSE_GOOD)){
+				return false;
+			}
+		}
+		else if (((BuildingTypeClass const *)type)->Type == STRUCT_NOD_HELIPAD){
+			if (!ActiveCFEPatchConfig.SplitDualCapturables || !IsHuman || (ActLike == HOUSE_BAD) || ((GameToPlay == GAME_NORMAL) && !(Special.IsJurassic && AreThingiesEnabled) && !ActiveCFEPatchConfig.MPUnitsInSP)){
+				return false;
+			}
+		}
+		// disable the regular helipad for dino missions so the player doesn't have 3 types
+		else if (((BuildingTypeClass const *)type)->Type == STRUCT_HELIPAD){
+			if (ActiveCFEPatchConfig.SplitDualCapturables && IsHuman && (GameToPlay == GAME_NORMAL) && Special.IsJurassic && AreThingiesEnabled){
+				return false;
+			}
+		}
+	}
+
+
 	/*
 	**	Multiplayer game uses a different legality check for building.
 	*/
@@ -3031,6 +3055,24 @@ bool HouseClass::Place_Object(RTTIType type, CELL cell)
 					**	placed by way of a remote event.
 					*/
 					if (tech->What_Am_I() != RTTI_BUILDING || ((BuildingClass *)tech)->Passes_Proximity_Check(cell)) {
+						// Chthon CFE Note: Swap the dummy helipad types for a real helipad
+						bool didswap = false;
+						bool unlimbofailed = false;
+						TechnoClass* oldtech = tech;
+						if (tech->What_Am_I() == RTTI_BUILDING && ((*((BuildingClass*)tech) == STRUCT_GDI_HELIPAD) || (*((BuildingClass*)tech) == STRUCT_NOD_HELIPAD))){
+							didswap = true;
+							// make a real helipad instead
+							tech = (TechnoClass*)BuildingTypeClass::As_Reference(STRUCT_HELIPAD).Create_One_Of(this);
+							// set it to behave like the GDI or Nod and flag as captured
+							if (*((BuildingClass*)oldtech) == STRUCT_GDI_HELIPAD){
+								((BuildingClass*)tech)->ActLike = HOUSE_GOOD;
+							}
+							else {
+								((BuildingClass*)tech)->ActLike = HOUSE_BAD;
+							}
+							((BuildingClass*)tech)->IsCaptured = true;
+						}
+						
 						builder->Transmit_Message(RADIO_HELLO, tech);
 						if (tech->Unlimbo(Cell_Coord(cell))) {
 							factory->Completed();
@@ -3043,14 +3085,21 @@ bool HouseClass::Place_Object(RTTIType type, CELL cell)
 								Map.PendingObject = 0;
 								Map.PendingHouse = HOUSE_NONE;
 							}
+							if (didswap){
+								delete oldtech; // delete the object that got build by the factory, since we put something else down
+							}
 							return(true);
 						} else {
                             // Chthon CFE Note: OK to use PlayerPtr b/c only ever called in context of DLLExportClass::Place(), which temporarily sets PlayerPtr to local house
 							if (this == PlayerPtr) {
 								Speak(VOX_DEPLOY);
 							}
+							unlimbofailed = true;
 						}
 						builder->Transmit_Message(RADIO_OVER_OUT);
+						if (didswap && unlimbofailed){
+							delete tech; // delete the object we created here but couldn't unlimbo
+						}
 					}
 				}
 				return(false);

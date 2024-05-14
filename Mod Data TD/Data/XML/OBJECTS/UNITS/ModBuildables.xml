@@ -18,7 +18,20 @@
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>	
 	
+	<ObjectTypeClass Name="TD_GPAD" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_GDI_G_HELIPAD</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_DESC_GDI_HELIPAD</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TD_Helipad</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
 	
-	
+	<ObjectTypeClass Name="TD_NPAD" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_GDI_N_HELIPAD</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_DESC_GDI_HELIPAD</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TD_Helipad</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
 	
 </ObjectTypeList>
