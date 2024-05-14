@@ -1099,6 +1099,12 @@ typedef enum UnitType : char{
 #define	UNITF_RAPT			(1L<<UNIT_RAPT)
 #define	UNITF_STEG			(1L<<UNIT_STEG)
 
+// Chthon CFE Note: This is missing from example mod!
+// (also, this imposes a de facto limit of 32 units)
+#ifdef PETROGLYPH_EXAMPLE_MOD
+	#define UNITF_NTNK (1L<<UNIT_NUKE_TANK)
+#endif			
+
 
 /**********************************************************************
 **	The variuos aircraft types are enumerated here. These include helicopters
