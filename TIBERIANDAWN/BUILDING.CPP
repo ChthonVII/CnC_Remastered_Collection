@@ -2430,7 +2430,10 @@ BuildingClass::BuildingClass(StructType type, HousesType house) :
 	*/
 	// Chthon CFE Note: Bugfix these buildings always being flagged as captured in multiplayer
 	// Note that it's still wrong to be flagging them as captured if you *built* them via a captured MCV.
-	// But some GlyphX frontend stuff depends upon this being set.
+	// But some GlyphX frontend stuff depends upon this being set, so use ReallyCaptured as a replacement where really being captured matters
+	
+	// Also, this should apply to ALL single-side buildings
+	
 	/*
 	if ((type == STRUCT_AIRSTRIP || type == STRUCT_HAND) && house != HOUSE_BAD) {
 		ActLike = HOUSE_BAD;
@@ -2441,13 +2444,45 @@ BuildingClass::BuildingClass(StructType type, HousesType house) :
 		IsCaptured = true;
 	}
 	*/
-	if (type == STRUCT_AIRSTRIP || type == STRUCT_HAND) {
+	bool begood = false;
+	bool bebad = false;
+	switch (type){
+		case STRUCT_OBELISK:
+		case STRUCT_TURRET:
+		case STRUCT_SAM:
+		case STRUCT_AIRSTRIP:
+		case STRUCT_HAND:
+		case STRUCT_TEMPLE:
+			bebad = true;
+			break;
+		
+		case STRUCT_WEAP:
+		case STRUCT_GTOWER:
+		case STRUCT_ATOWER:
+		case STRUCT_BARRACKS:
+		case STRUCT_EYE:
+			begood = true;
+			break;
+			
+		case STRUCT_BIO_LAB:
+			if (ActiveCFEPatchConfig.OverrideChemGuyBuff && ((GameToPlay != GAME_NORMAL) || ActiveCFEPatchConfig.ApplyMPBalanceToSP)){
+				bebad = true;
+			}
+			break;
+			
+		//case STRUCT_HOSPITAL: //just in case we ever make hospital buildable
+
+		default:
+			break;
+			
+	}
+	if (bebad) {
 		ActLike = HOUSE_BAD;
 		if (House->ActLike != HOUSE_BAD){
 			IsCaptured = true;
 		}
 	}
-	if (type == STRUCT_WEAP || type == STRUCT_BARRACKS) {
+	else if (begood) {
 		ActLike = HOUSE_GOOD;
 		if (House->ActLike != HOUSE_GOOD){
 			IsCaptured = true;
