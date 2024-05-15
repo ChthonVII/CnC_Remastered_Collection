@@ -3063,6 +3063,10 @@ bool HouseClass::Place_Object(RTTIType type, CELL cell)
 							didswap = true;
 							// make a real helipad instead
 							tech = (TechnoClass*)BuildingTypeClass::As_Reference(STRUCT_HELIPAD).Create_One_Of(this);
+							if (!tech){
+								// not really sure if we should play a sound here or fail silently
+								return false;
+							}
 							// set it to behave like the GDI or Nod and flag as captured
 							if (*((BuildingClass*)oldtech) == STRUCT_GDI_HELIPAD){
 								((BuildingClass*)tech)->ActLike = HOUSE_GOOD;
