@@ -1499,6 +1499,9 @@ UnitClass::UnitClass(UnitType classid, HousesType house) :
     HarvesterIsUnsticking = 0;
     LastHarvesterCell = 0;
     HarvCanWake = 0;
+	MemoIsCaptured = false;
+	MemoIsReallyCaptured = false;
+	MemoActLike = House->ActLike;
 }
 
 
@@ -2048,6 +2051,10 @@ bool UnitClass::Try_To_Deploy(void)
 			Mark(MARK_UP);
 			BuildingClass * building = new BuildingClass(STRUCT_CONST, House->Class->House);
 			if (building) {
+				// Chthon CFE Note: Copy the remembered ownership info from the unit to the building
+				building->IsCaptured = MemoIsCaptured;
+				building->ReallyCaptured = MemoIsReallyCaptured;
+				building->ActLike = MemoActLike;
 				if (building->Unlimbo(Adjacent_Cell(Coord, FACING_NW))) {
 
 					/*

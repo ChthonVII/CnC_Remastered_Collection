@@ -4951,6 +4951,11 @@ int BuildingClass::Mission_Deconstruction(void)
 						TARGET arch = ArchiveTarget;
 						COORDINATE place = Coord_Snap(Adjacent_Cell(Coord, DIR_SE));
 
+						// Chthon CFE Note: Save the buildings ownership info into the unit so we can access it when turning back into a building
+						unit->MemoIsCaptured = IsCaptured;
+						unit->MemoIsReallyCaptured = ReallyCaptured;
+						unit->MemoActLike = ActLike;
+						
 						Delete_This();
 
 						if (unit->Unlimbo(place, DIR_SW)) {
