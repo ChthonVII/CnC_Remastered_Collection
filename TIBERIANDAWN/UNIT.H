@@ -212,10 +212,10 @@ class UnitClass :	public TarComClass
 public:
         // Chthon CFE Note: counter for visceroid spawn animation duration
 		unsigned char SquidgySpawningTimer = 0;
-        unsigned char:1 HarvesterIsUnsticking;
-        unsigned char:1 HarvCanWake;
-		unsigned char:1 MemoIsCaptured;
-		unsigned char:1 MemoIsReallyCaptured;
+        unsigned char HarvesterIsUnsticking:1;
+        unsigned char HarvCanWake:1;
+		unsigned char MemoIsCaptured:1;
+		unsigned char MemoIsReallyCaptured:1;
 		HousesType MemoActLike;
         CELL LastHarvesterCell;
 
