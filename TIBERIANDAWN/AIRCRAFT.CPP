@@ -1270,12 +1270,38 @@ int AircraftClass::Mission_Unload(void)
 						FootClass * unit = (FootClass *)Detach_Object();
 
 						if (unit) {
+							// Chthon CFE Note: Swap out the "Nod MCV" dummy class for a real MCV and flag it as Nod and captured
+							bool didswap = false;
+							FootClass* oldunit = unit;
+							if ((unit->What_Am_I() == RTTI_UNIT) &&  (*((UnitClass*)unit) == UNIT_NMCV)){
+								didswap = true;
+								// make a real MCV instead
+								unit = (FootClass*)UnitTypeClass::As_Reference(UNIT_MCV).Create_One_Of(House);
+								if (!unit){
+									Attach(oldunit);
+									Status = BUG_OUT;
+									return(1);
+								}
+								// set it to behave like the Nod & flag as captured
+								((UnitClass*)unit)->MemoActLike = HOUSE_BAD;
+								((UnitClass*)unit)->MemoIsCaptured = true;
+							}
+								
 							CELL cell = Contact_With_Whom()->Find_Exit_Cell(unit);
 							if (cell) {
 								ScenarioInit++;
 								if (!unit->Unlimbo(Cell_Coord(cell))) {
-									Attach(unit);
+									//Attach(unit);
+									// delete the unit we just created and couldn't unlimbo and reattach the original
+									Attach(oldunit);
+									if (didswap){
+										delete unit;
+									}
 								} else {
+									// delete the original unit since we unlimboed something else
+									if (didswap){
+										delete oldunit;
+									}
 
 									/*
 									**	Cargo planes announce reinforcements when they unload
@@ -1308,7 +1334,12 @@ int AircraftClass::Mission_Unload(void)
 								Transmit_Message(RADIO_OVER_OUT);
 								Assign_Target(TARGET_NONE);
 							} else {
-								Attach(unit);
+								//Attach(unit);
+								// delete the unit we just created and couldn't unlimbo and reattach the original
+								Attach(oldunit);
+								if (didswap){
+									delete unit;
+								}
 							}
 
 //							if (Is_Something_Attached()) {

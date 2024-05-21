@@ -1076,6 +1076,10 @@ typedef enum UnitType : char{
 	UNIT_NUKE_TANK,			// Mammoth with a nuke
 #endif			
 
+	// Chthon CFE Note: Dummy unit to allow both types of MCV to be built if player has captured War Factory/Airstrip
+	UNIT_GMCV,
+	UNIT_NMCV,
+	
 	UNIT_COUNT,
 	UNIT_FIRST=0
 } UnitType;

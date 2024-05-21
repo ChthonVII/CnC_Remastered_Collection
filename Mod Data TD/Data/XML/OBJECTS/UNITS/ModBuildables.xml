@@ -34,4 +34,38 @@
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 	
+	<ObjectTypeClass Name="TD_GMCV" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TITLE_GDI_G_MCV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_DESC_GDI_MCV</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TD_MCV</BuildIcon>
+			<RequiredTypes>
+				<entry>TD_PYLE</entry>
+			</RequiredTypes>
+			<CategoryTypesWeakAgainst>
+				<entry>Category_Tanks</entry>
+			</CategoryTypesWeakAgainst>
+			<CategoryTypesStrongAgainst>
+				<entry>Category_Infantry</entry>
+			</CategoryTypesStrongAgainst>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	
+	<ObjectTypeClass Name="TD_NMCV" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TITLE_GDI_N_MCV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_DESC_GDI_MCV</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TD_MCV</BuildIcon>
+			<RequiredTypes>
+				<entry>TD_PYLE</entry>
+			</RequiredTypes>
+			<CategoryTypesWeakAgainst>
+				<entry>Category_Tanks</entry>
+			</CategoryTypesWeakAgainst>
+			<CategoryTypesStrongAgainst>
+				<entry>Category_Infantry</entry>
+			</CategoryTypesStrongAgainst>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	
 </ObjectTypeList>

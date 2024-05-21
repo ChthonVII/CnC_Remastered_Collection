@@ -1390,6 +1390,126 @@ static UnitTypeClass const UnitNukeTank(
 
 #endif PETROGLYPH_EXAMPLE_MOD
 
+// Chthon CFE Note: Dummy unit to allow both types of MCV to be built if player has captured War Factory/Airstrip
+// These only exist in the sidebar. They get swapped out for a standard MCV when placed down.
+static UnitTypeClass const UnitGDIMCV(
+	UNIT_GMCV,
+	TXT_MCV,									// NAME:			Text name of this unit type.
+	"GMCV",									// NAME:			Text name of this unit type.
+	ANIM_FBALL1,							// EXPLOSION:	Type of explosion when destroyed.
+	7,							// Build level.
+	STRUCTF_EYE,			// Building prerequisite.
+		true,				// Can this be a goodie surprise from a crate?
+		false,			// Is a leader type?
+		false,			// Only has eight facings?
+		false,			// Always use the given name for the vehicle?
+		false,			//	Is this a typical transport vehicle?
+		false,			// Can it be crushed by a heavy vehicle?
+		true,				// Can this unit squash infantry?
+		false,			// Does this unit harvest Tiberium?
+		false,			// Is invisible to radar?
+		true,				// Is selectable by player?
+		true,				// Can it be a target for attack or move?
+		false,			// Is it insignificant (won't be announced)?
+		false,			// Is it immune to normal combat damage?
+		false,			// Is it equipped with a combat turret?
+		false,			// Fires multiple shots in quick succession?
+		false,			// Can it be repaired in a repair facility?
+		true,				// Can the player construct or order this unit?
+		true,				// Is there a crew inside?
+		false,			// Does it have a rotating radar dish?
+		false,			// Is there an associated firing animation?
+		false,			// Must the turret be in a locked down position while moving?
+		true,				// Does it lay tracks while moving?
+		true,				// Is this a gigundo-rotund-enormous unit?
+		false,			// Is the unit's art as "chunky" cardinal facing only?
+		false,			// Is the unit capable of cloaking?
+		false,			// Does the unit have a constant animation?
+	-1,										// AMMO:			Number of shots it has (default).
+	600,										// STRENGTH:	Strength (in damage points).
+	2,											// SIGHTRANGE:	Range of sighting.
+	5000,										// COST:			Cost to build (Credits).
+	15,										// SCENARIO:	Starting availability scenario.
+	80,86,									// RISK/RWRD:	Risk/reward rating values.
+	HOUSEF_MULTI1|
+	HOUSEF_MULTI2|
+	HOUSEF_MULTI3|
+	HOUSEF_MULTI4|
+	HOUSEF_MULTI5|
+	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
+	HOUSEF_JP|
+	HOUSEF_GOOD,								// OWNABLE:		Ownable by house (bit field).
+	WEAPON_NONE,WEAPON_NONE,
+	ARMOR_ALUMINUM,						// ARMOR:		Armor type
+	SPEED_WHEEL,							// MOVE:			Locomotion type.
+	MPH_MEDIUM_SLOW,						// SPEED:		Miles per hour.
+	5,											// ROT:			Rate of turn (degrees per tick).
+	0,							// Turret center offset along body centerline.
+	MISSION_HUNT							// ORDERS:		Default order to give new unit.
+);
+
+// Chthon CFE Note: Dummy unit to allow both types of MCV to be built if player has captured War Factory/Airstrip
+// These only exist in the sidebar. They get swapped out for a standard MCV when placed down.
+static UnitTypeClass const UnitNodMCV(
+	UNIT_NMCV,
+	TXT_MCV,									// NAME:			Text name of this unit type.
+	"NMCV",									// NAME:			Text name of this unit type.
+	ANIM_FBALL1,							// EXPLOSION:	Type of explosion when destroyed.
+	7,							// Build level.
+	STRUCTF_EYE,			// Building prerequisite.
+		true,				// Can this be a goodie surprise from a crate?
+		false,			// Is a leader type?
+		false,			// Only has eight facings?
+		false,			// Always use the given name for the vehicle?
+		false,			//	Is this a typical transport vehicle?
+		false,			// Can it be crushed by a heavy vehicle?
+		true,				// Can this unit squash infantry?
+		false,			// Does this unit harvest Tiberium?
+		false,			// Is invisible to radar?
+		true,				// Is selectable by player?
+		true,				// Can it be a target for attack or move?
+		false,			// Is it insignificant (won't be announced)?
+		false,			// Is it immune to normal combat damage?
+		false,			// Is it equipped with a combat turret?
+		false,			// Fires multiple shots in quick succession?
+		false,			// Can it be repaired in a repair facility?
+		true,				// Can the player construct or order this unit?
+		true,				// Is there a crew inside?
+		false,			// Does it have a rotating radar dish?
+		false,			// Is there an associated firing animation?
+		false,			// Must the turret be in a locked down position while moving?
+		true,				// Does it lay tracks while moving?
+		true,				// Is this a gigundo-rotund-enormous unit?
+		false,			// Is the unit's art as "chunky" cardinal facing only?
+		false,			// Is the unit capable of cloaking?
+		false,			// Does the unit have a constant animation?
+	-1,										// AMMO:			Number of shots it has (default).
+	600,										// STRENGTH:	Strength (in damage points).
+	2,											// SIGHTRANGE:	Range of sighting.
+	5000,										// COST:			Cost to build (Credits).
+	15,										// SCENARIO:	Starting availability scenario.
+	80,86,									// RISK/RWRD:	Risk/reward rating values.
+	HOUSEF_MULTI1|
+	HOUSEF_MULTI2|
+	HOUSEF_MULTI3|
+	HOUSEF_MULTI4|
+	HOUSEF_MULTI5|
+	HOUSEF_MULTI6|
+	HOUSEF_MULTI7|
+	HOUSEF_MULTI8|
+	HOUSEF_JP|
+	HOUSEF_BAD,								// OWNABLE:		Ownable by house (bit field).
+	WEAPON_NONE,WEAPON_NONE,
+	ARMOR_ALUMINUM,						// ARMOR:		Armor type
+	SPEED_WHEEL,							// MOVE:			Locomotion type.
+	MPH_MEDIUM_SLOW,						// SPEED:		Miles per hour.
+	5,											// ROT:			Rate of turn (degrees per tick).
+	0,							// Turret center offset along body centerline.
+	MISSION_HUNT							// ORDERS:		Default order to give new unit.
+);
+
 /*
 **	This is the array of pointers to the static data associated with each
 **	vehicle type.
@@ -1420,6 +1540,9 @@ UnitTypeClass const * const UnitTypeClass::Pointers[UNIT_COUNT] = {
 #ifdef PETROGLYPH_EXAMPLE_MOD
 	&UnitNukeTank,		// UNIT_NUKE_TANK
 #endif //PETROGLYPH_EXAMPLE_MOD
+	// Chthon CFE Note: Dummy unit to allow both types of MCV to be built if player has captured War Factory/Airstrip
+	&UnitGDIMCV,
+	&UnitNodMCV,
 			
 };
 
@@ -1722,6 +1845,11 @@ void UnitTypeClass::One_Time(void)
 			ptr = MixFileClass::Retrieve(fullname);
 		}
 #endif //PETROGLYPH_EXAMPLE_MOD
+		// Chthon CFE Note: Dummy unit to allow both types of MCV to be built if player has captured War Factory/Airstrip
+		if (((index == UNIT_GMCV) || (index == UNIT_NMCV)) && ptr == NULL) {
+			_makepath(fullname, NULL, NULL, "MCV", ".SHP");
+			ptr = MixFileClass::Retrieve(fullname);
+		}
 
 		((void const *&)uclass.ImageData) = ptr;
 		if (ptr) {

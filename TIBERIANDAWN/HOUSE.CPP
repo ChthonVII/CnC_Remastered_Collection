@@ -575,7 +575,9 @@ bool HouseClass::Can_Build(TechnoTypeClass const * type, HousesType house) const
 	**	Perform some equivalency fixups for the building existance flags.
 	*/
 	long flags = ActiveBScan;
-
+	// Chthon CFE Note: save the flags before dirtying them up
+	long memoflags = flags;
+	
 	/*
 	**	AI players update flags using building quantity tracker.
 	**	Ensures consistent logic when determining building choices.
@@ -588,7 +590,7 @@ bool HouseClass::Can_Build(TechnoTypeClass const * type, HousesType house) const
 			}
 		}
 	}
-
+	
 	int pre = type->Pre;
 	if (flags & STRUCTF_ADVANCED_POWER) flags |= STRUCTF_POWER;
 	if (flags & STRUCTF_HAND) flags |= STRUCTF_BARRACKS;
@@ -616,6 +618,33 @@ bool HouseClass::Can_Build(TechnoTypeClass const * type, HousesType house) const
 		else if (((BuildingTypeClass const *)type)->Type == STRUCT_HELIPAD){
 			if (ActiveCFEPatchConfig.SplitDualCapturables && IsHuman && (GameToPlay == GAME_NORMAL) && Special.IsJurassic && AreThingiesEnabled){
 				return false;
+			}
+		}
+	}
+	// and MCVs
+	// MCVs must have appropriate capstone building
+	else if (type->What_Am_I() == RTTI_UNITTYPE){
+		if (((UnitTypeClass const *)type)->Type == UNIT_GMCV){
+			if (!ActiveCFEPatchConfig.SplitDualCapturables || !IsHuman || (ActLike == HOUSE_GOOD) || !(memoflags & STRUCTF_EYE)){
+				return false;
+			}
+		}
+		else if (((UnitTypeClass const *)type)->Type == UNIT_NMCV){
+			if (!ActiveCFEPatchConfig.SplitDualCapturables || !IsHuman || (ActLike == HOUSE_BAD) || !(memoflags & STRUCTF_TEMPLE)){
+				return false;
+			}
+		}
+		else if (((UnitTypeClass const *)type)->Type == UNIT_MCV){
+			if (ActiveCFEPatchConfig.SplitDualCapturables){
+				// disable the regular MCV for dino missions so the player doesn't have 3 types
+				if (IsHuman && (GameToPlay == GAME_NORMAL) && Special.IsJurassic && AreThingiesEnabled){
+					return false;
+				}
+				// if SplitDualCapturables is on, you need to have your own capstone building to build your own MCV
+				// (e.g., GDI player with War Factory + captured Temple cannot make GDI MCV)
+				if (((ActLike == HOUSE_GOOD) && !(memoflags & STRUCTF_EYE)) || ((ActLike == HOUSE_BAD) && !(memoflags & STRUCTF_TEMPLE))){
+					return false;
+				}
 			}
 		}
 	}
@@ -3002,10 +3031,36 @@ bool HouseClass::Place_Object(RTTIType type, CELL cell)
 			TechnoClass * pending = factory->Get_Object();
 			if (pending) {
 				TechnoClass * builder = pending->Who_Can_Build_Me(false, false);
-				TechnoTypeClass const *object_type = pending->Techno_Type_Class();
+				
+				// Chthon CFE Note: MCV swaperoo
+				// only swap the GDI here, since the Nod one needs to be handled when the cargo plane unloads
+				// (Exit_Object() for an airstrip deletes its input and summons the cargo plane with the TechnoTypeClass instead) 
+				TechnoClass* oldpending = pending;
+				bool didswap = false;
+				bool exitfailed = false;
+				bool nodmcv = false;
+				if (pending->What_Am_I() == RTTI_UNIT){
+					if (*((UnitClass*)pending) == UNIT_GMCV){
+						didswap = true;
+						// make a real MCV instead
+						pending = (TechnoClass*)UnitTypeClass::As_Reference(UNIT_MCV).Create_One_Of(this);
+						if (!pending){
+							factory->Set_Is_Blocked(true); // the alloc could succeed later if another unit somewhere gets deallocated
+							return false;
+						}
+						// set it to behave like the GDI  flag as captured
+						((UnitClass*)pending)->MemoActLike = HOUSE_GOOD;
+						((UnitClass*)pending)->MemoIsCaptured = true;
+					}
+					else if (*((UnitClass*)pending) == UNIT_NMCV){
+						nodmcv = true;
+					}
+				}
+				
+				// This is only used for the achievement, so force to MCV even if we're passing along a nod MCV to Exit_Object()
+				TechnoTypeClass const *object_type = nodmcv ? (TechnoTypeClass *)&UnitTypeClass::As_Reference(UNIT_MCV) : pending->Techno_Type_Class();
 
 				if (builder && builder->Exit_Object(pending)) {
-
 					/*
 					**	Since the object has left the factory under its own power, delete
 					**	the production manager tied to this slot in the sidebar. Its job
@@ -3026,9 +3081,17 @@ bool HouseClass::Place_Object(RTTIType type, CELL cell)
 							On_Ping(this, pending->Center_Coord());
 						}
 					}
+					
+					if (didswap){
+						delete oldpending; // delete the object that got build by the factory, since we put something else down
+					}
 
 				} else {
 
+					if (didswap){
+						delete pending; // delete the object we created here but couldn't unlimbo
+					}
+					
 					/*
 					**	The object could not leave under it's own power. Just wait
 					**	until the player tries to place the object again.
