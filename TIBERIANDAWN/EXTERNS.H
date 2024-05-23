@@ -124,6 +124,7 @@ struct CFEPatchConfig
     bool EnableHuntFix = false;
     bool MCVAlwaysSpawnEngineer = false;
     bool SplitDualCapturables = false;
+    bool BuildForbiddenSPCapturables = false;
     bool ShroudRemover = false;
     
     bool OverrideAPCReqs = false;

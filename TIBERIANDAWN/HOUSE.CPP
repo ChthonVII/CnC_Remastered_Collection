@@ -721,7 +721,9 @@ bool HouseClass::Can_Build(TechnoTypeClass const * type, HousesType house) const
 	*/
 	if (type->What_Am_I() == RTTI_BUILDINGTYPE &&
 		(((BuildingTypeClass const *)type)->Type == STRUCT_TEMPLE || ((BuildingTypeClass const *)type)->Type == STRUCT_OBELISK) &&
-		Class->House == HOUSE_GOOD) {
+		Class->House == HOUSE_GOOD &&
+		!ActiveCFEPatchConfig.BuildForbiddenSPCapturables
+	) {
 
 		return(false);
 	}
@@ -742,7 +744,9 @@ bool HouseClass::Can_Build(TechnoTypeClass const * type, HousesType house) const
 	*/
 	if (type->What_Am_I() == RTTI_BUILDINGTYPE &&
 		(((BuildingTypeClass const *)type)->Type == STRUCT_EYE) &&
-		Class->House == HOUSE_BAD) {
+		Class->House == HOUSE_BAD &&
+		!ActiveCFEPatchConfig.BuildForbiddenSPCapturables
+	) {
 
 		return(false);
 	}
