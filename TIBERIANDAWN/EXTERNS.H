@@ -125,6 +125,7 @@ struct CFEPatchConfig
     bool MCVAlwaysSpawnEngineer = false;
     bool SplitDualCapturables = false;
     bool BuildForbiddenSPCapturables = false;
+    bool EnableDistanceCalcFix = false;
     bool ShroudRemover = false;
     
     bool OverrideAPCReqs = false;

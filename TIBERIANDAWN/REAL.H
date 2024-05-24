@@ -204,6 +204,8 @@ extern long LParam;
 #include <fast.h>
 
 
+#include <cmath>
+
 extern long Frame;
 inline CELL Coord_XCell(COORDINATE coord) {return (CELL)(*(((unsigned char*)&coord)+1));}
 inline CELL Coord_YCell(COORDINATE coord) {return (CELL)(*(((unsigned char*)&coord)+3));}
@@ -904,6 +906,12 @@ inline int Distance(COORDINATE coord1, COORDINATE coord2)
  *=============================================================================================*/
 inline int Distance(CELL coord1, CELL coord2)
 {
+	if (ActiveCFEPatchConfig.EnableDistanceCalcFix){
+		int a = Cell_Y(coord1) - Cell_Y(coord2);
+		int b = Cell_X(coord1) - Cell_X(coord2);
+		return (int)(std::sqrt((a*a)+(b*b)) + 0.5);
+	}
+	
 	int	diff1, diff2;
 
 	diff1 = Cell_Y(coord1) - Cell_Y(coord2);

@@ -97,6 +97,7 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     GetSetting(ActiveCFEPatchConfig.MCVAlwaysSpawnEngineer	, "FEATURES", "MCV_ALWAYS_SPAWN_ENGINEER");
     GetSetting(ActiveCFEPatchConfig.SplitDualCapturables	, "FEATURES", "SPLIT_DUAL_CAPTURABLES");
     GetSetting(ActiveCFEPatchConfig.BuildForbiddenSPCapturables	, "FEATURES", "BUILD_FORBIDDEN_SP_CAPTURABLES");
+    GetSetting(ActiveCFEPatchConfig.EnableDistanceCalcFix	, "FEATURES", "DISTANCE_CALC_FIX");
     GetSetting(ActiveCFEPatchConfig.ShroudRemover      , "FEATURES", "SHROUD_REMOVER");  // J_D's thing; thanks to Terra_Ex and screaming_chicken
     
     
