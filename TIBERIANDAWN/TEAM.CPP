@@ -536,11 +536,22 @@ void TeamClass::AI(void)
         // Chthon CFE Note: Borrowed from MinorAIFixes
         // Don't let teams including an engineer target non-capturable things, like turrets
         bool teamhasengineers = false;
+		bool teamhascommandos = false;
         FootClass* thismember = Member;
         while (thismember){
-            if ((thismember->IsActive && !thismember->IsInLimbo && thismember->Strength && thismember->What_Am_I() == RTTI_INFANTRY) && (*((InfantryClass*)thismember) == INFANTRY_E7)){
-                teamhasengineers = true;
-                break;
+            if ((thismember->IsActive && !thismember->IsInLimbo && thismember->Strength && thismember->What_Am_I() == RTTI_INFANTRY)){
+				if (*((InfantryClass*)thismember) == INFANTRY_E7){
+					teamhasengineers = true;
+					if (teamhascommandos){
+						break;
+					}
+				}
+				else if (*((InfantryClass*)thismember) == INFANTRY_RAMBO){
+					teamhascommandos = true;
+					if (teamhasengineers){
+						break;
+					}
+				}
             }
             thismember = thismember->Member;
         }
@@ -557,7 +568,8 @@ void TeamClass::AI(void)
 
 			case TMISSION_ATTACKUNITS:
 				if (!Target_Legal(MissionTarget)) {
-					Assign_Mission_Target(Member->Greatest_Threat(THREAT_VEHICLES|THREAT_INFANTRY));
+					ThreatType somethreat = teamhascommandos ? THREAT_INFANTRY : (THREAT_VEHICLES|THREAT_INFANTRY);
+					Assign_Mission_Target(Member->Greatest_Threat(somethreat));
 					if (!Target_Legal(MissionTarget)) IsNextMission = true;
 				}
 				Coordinate_Attack();
@@ -565,6 +577,8 @@ void TeamClass::AI(void)
 
 			case TMISSION_ATTACKCIVILIANS:
 				if (!Target_Legal(MissionTarget)) {
+					// Chthon CFE Note: Leaving in place bug where team containing commando could attack civilian vehicles,
+					// because it's a pain to fix and probably never happens
 					Assign_Mission_Target(Member->Greatest_Threat(THREAT_CIVILIANS));
 					if (!Target_Legal(MissionTarget)) IsNextMission = true;
 				}
@@ -574,7 +588,7 @@ void TeamClass::AI(void)
 			case TMISSION_ATTACKTARCOM:
 			case TMISSION_RAMPAGE:
 				if (!Target_Legal(MissionTarget)) {
-                    ThreatType somethreat = teamhasengineers ? THREAT_CAPTURE : THREAT_NORMAL;
+                    ThreatType somethreat = teamhasengineers ? THREAT_CAPTURE : teamhascommandos ?  (THREAT_BUILDINGS|THREAT_INFANTRY) : THREAT_NORMAL;
 					Assign_Mission_Target(Member->Greatest_Threat(somethreat));
 					if (!Target_Legal(MissionTarget)) IsNextMission = true;
 				}
@@ -1108,6 +1122,21 @@ void TeamClass::Took_Damage(FootClass * , ResultType result, TechnoClass * sourc
 							}
 						}
 					}
+					// Chthon CFE Note: Also do not have team with engineer or commando respond to inappropriate targets
+					RTTIType sourcetype = source->What_Am_I();
+					FootClass* someunit;
+					someunit = Member;
+					while (someunit) {
+						if (	someunit && someunit->IsActive && (someunit->What_Am_I() == RTTI_INFANTRY) &&
+								(
+									((*((InfantryClass*)someunit) == INFANTRY_E7) && (sourcetype != RTTI_BUILDING)) || 
+									((*((InfantryClass*)someunit) == INFANTRY_RAMBO) && (sourcetype != RTTI_BUILDING) && (sourcetype != RTTI_INFANTRY) && ActiveCFEPatchConfig.SmarterCPUCommandos)
+								)
+						){
+							return;
+						}
+						someunit = someunit->Member;
+					}
 					Target = source->As_Target();
 				}
 			}
@@ -1146,11 +1175,23 @@ void TeamClass::Coordinate_Attack(void)
 		FootClass * unit = Member;
 		while (unit) {
 
+			// Chthon CFE Note: Skip commandos if they are already set to sabotage the target
+			if (	ActiveCFEPatchConfig.SmarterCPUCommandos &&
+					!House->IsHuman &&
+					(unit->What_Am_I() == RTTI_INFANTRY) &&
+					(*((InfantryClass*)unit) == INFANTRY_RAMBO) &&
+					((unit->Mission == MISSION_SABOTAGE) || (unit->Mission == MISSION_MOVE)) &&
+					(unit->NavCom == Target)
+			){
+				unit = unit->Member;
+				continue;
+			}
+			
 			Coordinate_Conscript(unit);
 
 			if (unit->IsInitiated && !unit->IsInLimbo) {
-
-				if (unit->Mission != MISSION_ATTACK && unit->Mission != MISSION_ENTER && unit->Mission != MISSION_CAPTURE) {
+				// Chthon CFE Note: Also consider sabotage
+				if (unit->Mission != MISSION_ATTACK && unit->Mission != MISSION_ENTER && unit->Mission != MISSION_CAPTURE && unit->Mission != MISSION_SABOTAGE) {
 					unit->Assign_Mission(MISSION_ATTACK);
 					unit->Assign_Target(TARGET_NONE);
 					unit->Assign_Destination(TARGET_NONE);

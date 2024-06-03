@@ -76,6 +76,7 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     GetSetting(ActiveCFEPatchConfig.EnableSmarterMammoths      , "FEATURES", "SMARTER_MAMMOTHS");
     GetSetting(ActiveCFEPatchConfig.EnableSmarterHarvesters      , "FEATURES", "SMARTER_HARVESTERS");
     GetSetting(ActiveCFEPatchConfig.EnableSmarterRefineries      , "FEATURES", "SMARTER_REFINERIES");
+    GetSetting(ActiveCFEPatchConfig.SmarterCPUCommandos      , "FEATURES", "SMARTER_CPU_COMMANDOS");
     GetSetting(ActiveCFEPatchConfig.EnableGunboatBugfix      , "FEATURES", "GUNBOAT_BUGFIX");
     GetSetting(ActiveCFEPatchConfig.BetterTibGrowth      , "FEATURES", "BETTER_TIB_GROWTH");
     GetSetting(ActiveCFEPatchConfig.TibIndexBugfix      , "FEATURES", "TIB_INDEX_BUGFIX");

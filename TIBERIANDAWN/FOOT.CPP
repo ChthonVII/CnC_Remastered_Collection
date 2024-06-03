@@ -719,6 +719,41 @@ int FootClass::Mission_Guard(void)
 	if (!Target_Something_Nearby(THREAT_RANGE)) {
 		Random_Animate();
 	}
+	
+	// Chthon CFE Note: Shunt enginners and commandos into going after buildings
+	// Limit this to CPU-controlled units b/c humans might not want to spend an enginner on a given target, or have a commando run into fire on its own
+	// also gate behind "smarter commandos" setting
+	if ((What_Am_I() == RTTI_INFANTRY) && !House->IsHuman && ActiveCFEPatchConfig.SmarterCPUCommandos){
+		if (*((InfantryClass*)this) == INFANTRY_E7){
+			TechnoClass* techno = As_Techno(TarCom);
+			if (techno && techno->IsActive && !techno->IsInLimbo && techno->Strength && (Owner() != techno->Owner()) &&
+				(   
+					((techno->What_Am_I() == RTTI_BUILDING) && ((BuildingClass*)techno)->Can_Capture()) ||
+					((techno->What_Am_I() == RTTI_AIRCRAFT) && (*((AircraftClass*)techno) == AIRCRAFT_TRANSPORT) && (((AircraftClass*)techno)->Pip_Count() == 0) && (((AircraftClass*)techno)->Altitude == 0))
+				)
+			){ 
+				Assign_Mission(MISSION_CAPTURE);
+				Assign_Destination(TarCom);
+				return(TICKS_PER_SECOND+5);
+			}
+		}
+		else if (*((InfantryClass*)this) == INFANTRY_RAMBO){
+			TechnoClass* techno = As_Techno(TarCom);
+			if (techno && techno->IsActive && !techno->IsInLimbo && techno->Strength && (techno->What_Am_I() == RTTI_BUILDING) && (Owner() != techno->Owner())){
+				TARGET sometarget = TarCom;
+				if (Distance(sometarget) > AI_COMMANDO_CROSSOVER_DIST){
+					Assign_Mission(MISSION_MOVE);
+				}
+				else {
+					Assign_Mission(MISSION_SABOTAGE);
+				}
+				Assign_Target(TARGET_NONE);
+				Assign_Destination(sometarget);
+				return(TICKS_PER_SECOND+5);
+			}
+		}
+	} 
+	
 	return(TICKS_PER_SECOND+Random_Picky((int)0, (int)4, (char*)NULL, (int)0));
 }
 
@@ -741,6 +776,14 @@ int FootClass::Mission_Guard(void)
  *=============================================================================================*/
 int FootClass::Mission_Hunt(void)
 {
+	// Chthon CFE Note: If a CPU commando is somehow targeting a vehicle or aircraft, drop it so a better target can be picked
+	if ((What_Am_I() == RTTI_INFANTRY) &&  (*((InfantryClass*)this) == INFANTRY_RAMBO) && ActiveCFEPatchConfig.SmarterCPUCommandos && Target_Legal(TarCom)){
+		TechnoClass* techno = As_Techno(TarCom);
+		if (techno && ((techno->What_Am_I() == RTTI_AIRCRAFT) || (techno->What_Am_I() == RTTI_UNIT))){
+			Assign_Target(TARGET_NONE);
+		}
+	}
+	
 	SPSearchRangeLimit = 0; // Chthon CFE Note: enable the search range fix when entering hunt mode
 	// Chthon CFE Note: Fix inspired by screaming_chicken.
     // THREAT_NORMAL is invalid input for Target_Something_Nearby(); results in a full-map scan.
@@ -755,12 +798,49 @@ int FootClass::Mission_Hunt(void)
     if (!found) {
 		Random_Animate();
 	} else {
+		// Chthon CFE Note: Rework so it works on commandos too
+		/*
 		if (What_Am_I() == RTTI_INFANTRY && ((InfantryTypeClass const &)Class_Of()).Type == INFANTRY_E7) {
 			Assign_Destination(TarCom);
 			Assign_Mission(MISSION_CAPTURE);
 		} else {
 			Approach_Target();
 		}
+		*/
+		if (What_Am_I() == RTTI_INFANTRY){
+			if (*((InfantryClass*)this) == INFANTRY_E7){
+				// This safety check wasn't here in vanilla. Let's add it to be totally sure we're going after something capturable.
+				TechnoClass* techno = As_Techno(TarCom);
+				if (techno && techno->IsActive && !techno->IsInLimbo && techno->Strength && (Owner() != techno->Owner()) &&
+					(   
+						((techno->What_Am_I() == RTTI_BUILDING) && ((BuildingClass*)techno)->Can_Capture()) ||
+						((techno->What_Am_I() == RTTI_AIRCRAFT) && (*((AircraftClass*)techno) == AIRCRAFT_TRANSPORT) && (((AircraftClass*)techno)->Pip_Count() == 0) && (((AircraftClass*)techno)->Altitude == 0))
+					)
+				){ 
+					Assign_Destination(TarCom);
+					Assign_Mission(MISSION_CAPTURE);
+					return(TICKS_PER_SECOND+5);
+				}
+			}
+			else if (*((InfantryClass*)this) == INFANTRY_RAMBO){
+				TechnoClass* techno = As_Techno(TarCom);
+				if (techno && techno->IsActive && !techno->IsInLimbo && techno->Strength && (techno->What_Am_I() == RTTI_BUILDING) && (Owner() != techno->Owner())){
+					TARGET sometarget = TarCom;
+					if (Distance(sometarget) > AI_COMMANDO_CROSSOVER_DIST){
+						Assign_Mission(MISSION_MOVE);
+					}
+					else {
+						Assign_Mission(MISSION_SABOTAGE);
+					}
+					Assign_Target(TARGET_NONE);
+					Assign_Destination(sometarget);
+					return(TICKS_PER_SECOND+5);
+				}
+			}
+		} 
+		// if we didn't hit a special case, then do the vanilla Approach_Target();
+		Approach_Target();
+		
 	}
 	return(TICKS_PER_SECOND+5);
 }
@@ -1124,6 +1204,40 @@ int FootClass::Mission_Guard_Area(void)
 		if (Target_Legal(TarCom)) return(1);
 		Random_Animate();
 	} else {
+		// Chthon CFE Note: Shunt enginners and commandos into going after buildings
+		// Limit this to CPU-controlled units b/c humans might not want to spend an enginner on a given target, or have a commando run into fire on its own
+		// also gate behind "smarter commandos" setting
+		if ((What_Am_I() == RTTI_INFANTRY) && !House->IsHuman && ActiveCFEPatchConfig.SmarterCPUCommandos){
+			if (*((InfantryClass*)this) == INFANTRY_E7){
+				TechnoClass* techno = As_Techno(TarCom);
+				if (techno && techno->IsActive && !techno->IsInLimbo && techno->Strength && (Owner() != techno->Owner()) &&
+					(   
+						((techno->What_Am_I() == RTTI_BUILDING) && ((BuildingClass*)techno)->Can_Capture()) ||
+						((techno->What_Am_I() == RTTI_AIRCRAFT) && (*((AircraftClass*)techno) == AIRCRAFT_TRANSPORT) && (((AircraftClass*)techno)->Pip_Count() == 0) && (((AircraftClass*)techno)->Altitude == 0))
+					)
+				){ 
+					Assign_Destination(TarCom);
+					Assign_Mission(MISSION_CAPTURE);
+					return(TICKS_PER_SECOND+5);
+				}
+			}
+			else if (*((InfantryClass*)this) == INFANTRY_RAMBO){
+				TechnoClass* techno = As_Techno(TarCom);
+				if (techno && techno->IsActive && !techno->IsInLimbo && techno->Strength && (techno->What_Am_I() == RTTI_BUILDING) && (Owner() != techno->Owner())){
+					TARGET sometarget = TarCom;
+					if (Distance(sometarget) > AI_COMMANDO_CROSSOVER_DIST){
+						Assign_Mission(MISSION_MOVE);
+					}
+					else{
+						Assign_Mission(MISSION_SABOTAGE);
+					}
+					Assign_Target(TARGET_NONE);
+					Assign_Destination(sometarget);
+					return(TICKS_PER_SECOND+5);
+				}
+			}
+		} 
+		
 		Approach_Target();
 	}
 	return(TICKS_PER_SECOND+Random_Picky((int)0, (int)4, (char*)NULL, (int)0));
@@ -1295,7 +1409,10 @@ ResultType FootClass::Take_Damage(int & damage, int distance, WarheadType warhea
 					Mission == MISSION_RESCUE ||
 					Mission == MISSION_GUARD_AREA ||
 					Mission == MISSION_ATTACK ||
-					Mission == MISSION_TIMED_HUNT)) {
+					Mission == MISSION_TIMED_HUNT ||
+					// Chthon CFE Note: Allow CPU commandos to break out of mission sabotage to shoot back at infantry
+					((Mission == MISSION_SABOTAGE) && ActiveCFEPatchConfig.SmarterCPUCommandos && !House->IsHuman && (source->What_Am_I() == RTTI_INFANTRY))) 
+			){
 
 				/*
 				**	Assign the source of the damage as the new target. This occurs for the computer

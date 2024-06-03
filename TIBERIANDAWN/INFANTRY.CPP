@@ -80,6 +80,8 @@
 
 #include	"function.h"
 
+//#include "CFEDEBUG.H"
+
 #ifndef ARRAY_SIZE
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 #endif
@@ -1106,6 +1108,54 @@ void InfantryClass::Assign_Target(TARGET target)
  *=============================================================================================*/
 void InfantryClass::AI(void)
 {
+
+	// Chthon CFE Note: Coerce stuff back into sabotage to prevent the commando from shooting at buildings
+	if ((*this == INFANTRY_RAMBO) && !House->IsHuman && ActiveCFEPatchConfig.SmarterCPUCommandos){
+		if (Target_Legal(TarCom)){
+			TechnoClass* techno = As_Techno(TarCom);
+			if (techno && techno->IsActive && !techno->IsInLimbo && techno->Strength && (Owner() != techno->Owner())){
+				if (techno->What_Am_I() == RTTI_BUILDING){
+					TARGET sometarget = TarCom;
+					if ((Distance(sometarget) > AI_COMMANDO_CROSSOVER_DIST) && (Mission != MISSION_SABOTAGE)){
+						Assign_Mission(MISSION_MOVE);
+					}
+					else if ((Mission != MISSION_SABOTAGE) || (NavCom != sometarget)){
+						Assign_Mission(MISSION_SABOTAGE);
+					}
+					Assign_Target(TARGET_NONE);
+					if (NavCom != sometarget){
+						Assign_Destination(sometarget);
+					}
+				}
+				// if we somehow got a vehicle or aircraft as the target, don't shoot at it
+				// problematic b/c AI starts delaying a bunch of ticks while swapping missions
+				else if ((techno->What_Am_I() == RTTI_UNIT) || (techno->What_Am_I() == RTTI_AIRCRAFT)){
+					// is our navcom a building? bomb it
+					TechnoClass* ntechno = As_Techno(NavCom);
+					if (ntechno && ntechno->IsActive && !ntechno->IsInLimbo && ntechno->Strength && (Owner() != ntechno->Owner()) && (ntechno->What_Am_I() == RTTI_BUILDING)){
+						if ((Distance(NavCom) > AI_COMMANDO_CROSSOVER_DIST) && (Mission != MISSION_SABOTAGE)){
+							Assign_Mission(MISSION_MOVE);
+						}
+						else if (Mission != MISSION_SABOTAGE){
+							Assign_Mission(MISSION_SABOTAGE);
+						}
+					}
+					else {
+						Assign_Mission(MISSION_HUNT);
+					}
+					Assign_Target(TARGET_NONE);
+				}
+			}
+		}
+		// jump move to sabotage if we are close enough
+		if (Mission == MISSION_MOVE && Target_Legal(NavCom) && (Distance(NavCom) <= AI_COMMANDO_CROSSOVER_DIST)){
+			TechnoClass* techno = As_Techno(NavCom);
+			if (techno && techno->IsActive && !techno->IsInLimbo && techno->Strength && (Owner() != techno->Owner()) && (techno->What_Am_I() == RTTI_BUILDING)){
+				Assign_Mission(MISSION_SABOTAGE);
+			}
+		}
+	}
+	
 	Validate();
 	FootClass::AI();
 
@@ -2183,6 +2233,14 @@ FireErrorType InfantryClass::Can_Fire(TARGET target, int which) const
 		}
 	}
 
+	// Chthon CFE Note: Don't let commandos shoot at buildings
+	if ((*this == INFANTRY_RAMBO) && ActiveCFEPatchConfig.SmarterCPUCommandos){
+		TechnoClass* techno = As_Techno(TarCom);
+		if (techno && techno->IsActive && !techno->IsInLimbo && techno->Strength && (techno->What_Am_I() == RTTI_BUILDING) && (Owner() != techno->Owner())){
+			return(FIRE_RANGE);
+		}
+	}
+	
 	return(FootClass::Can_Fire(target, which));
 }
 
@@ -2897,15 +2955,19 @@ TARGET InfantryClass::Greatest_Threat(ThreatType threat) const
 			//
 			break;		                   // Added. ST - 4/24/2019 11:02AM
 
+		
 		/*
 		**	Dragon missile equiped soldiers are also assumed to carry a Stinger missile. As such,
 		**	they will consider aircraft a legal target.
 		*/
+		// Chthon CFE Note: Move the "default" clause to the bottom for clarity
+		/*
 		default:
 			if (BulletTypeClass::As_Reference(Weapons[Class->Primary].Fires).IsAntiAircraft) {
 				threat = threat | THREAT_AIR;
 			}
 			break;
+		*/
 
 		/*
 		**	The sniper rifle equipped soldier doesn't go hunting for targets
@@ -2921,7 +2983,23 @@ TARGET InfantryClass::Greatest_Threat(ThreatType threat) const
                     return(TARGET_NONE);
                 }
 			}
+			// Fix CPU-controlled commando to only target infantry or buildings.
+			// Elsewhere we will set him to mission sabotage if he picks a building
+			else if (!House->IsHuman && ActiveCFEPatchConfig.SmarterCPUCommandos){
+				return(TechnoClass::Greatest_Threat((threat & (THREAT_RANGE | THREAT_AREA)) | THREAT_INFANTRY | THREAT_BUILDINGS));
+			}
+			break;
 			
+		/*
+		**	Dragon missile equiped soldiers are also assumed to carry a Stinger missile. As such,
+		**	they will consider aircraft a legal target.
+		*/
+		// Chthon CFE Note: Move the "default" clause to the bottom for clarity
+		default:
+			if (BulletTypeClass::As_Reference(Weapons[Class->Primary].Fires).IsAntiAircraft) {
+				threat = threat | THREAT_AIR;
+			}
+			break;
 	}
 	// Chthon CFE Note: In RA we needed to add something to make infantry attack buildings in attack-move mode, but that doesn't seem to be needed here.
 	return(FootClass::Greatest_Threat(threat));
@@ -3761,6 +3839,22 @@ int InfantryClass::Mission_Attack(void)
             }
         }
     }
+    // Chthon CFE Note: Same for commandos
+    else if ((*this == INFANTRY_RAMBO) && !House->IsHuman && ActiveCFEPatchConfig.SmarterCPUCommandos){
+		TechnoClass* techno = As_Techno(TarCom);
+		if (techno && techno->IsActive && !techno->IsInLimbo && techno->Strength && (techno->What_Am_I() == RTTI_BUILDING) && (Owner() != techno->Owner())){
+			TARGET sometarget = TarCom;
+			if (Distance(sometarget) > AI_COMMANDO_CROSSOVER_DIST){
+				Assign_Mission(MISSION_MOVE);
+			}
+			else{
+				Assign_Mission(MISSION_SABOTAGE);
+			}
+			Assign_Target(TARGET_NONE);
+			Assign_Destination(sometarget);
+			return(1);
+		}
+	}
 	return(FootClass::Mission_Attack());
 }
 

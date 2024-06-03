@@ -3080,6 +3080,9 @@ typedef enum CrateBombType : unsigned char {
 	CRATEBOMB_COUNT
 } CrateBombType;
 
+// Chthon CFE Note: Range at which an AI-controlled commando should change from MISSION_MOVE to MISSION_HUNT
+#define AI_COMMANDO_CROSSOVER_DIST (8 * CELL_LEPTON_W)
+
 #pragma warning (pop)
 
 #endif
