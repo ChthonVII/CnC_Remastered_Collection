@@ -3043,6 +3043,10 @@ bool UnitClass::Harvesting(void)
         }
 		//reducer = ptr->Reduce_Tiberium(MIN(reducer, UnitTypeClass::STEP_COUNT-Tiberium));
 		Tiberium += reducer;
+		// Chthon CFE Note: Gain XP for harvesting. 5x multiplier is equal to 1/5 tiberium harvested and should make rank1 after 10 loads.
+		if ((ActiveCFEPatchConfig.EnableVeterancy == 2) || ((ActiveCFEPatchConfig.EnableVeterancy == 1) && (GameToPlay != GAME_NORMAL))){
+			GainVeterancyXP(5 * reducer);
+		}
 		Set_Stage(0);
 		Set_Rate(2);
 
