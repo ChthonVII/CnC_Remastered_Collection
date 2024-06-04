@@ -1314,7 +1314,7 @@ ResultType UnitClass::Take_Damage(int & damage, int distance, WarheadType warhea
 			*/
             
             // Chthon CFE Note: rank 3 veteran buggys can crush
-            bool buggycrusher = (VeterancyRank == 3 && What_Am_I() == RTTI_UNIT && *((UnitClass*)this) == UNIT_BUGGY);
+            bool buggycrusher = ((VeterancyRank == 3) && (*this == UNIT_BUGGY));
             
 			if ((Class->Primary == WEAPON_NONE || (Distance(source) < 0x0180 && BulletTypeClass::As_Reference(Weapons[Class->Primary].Fires).Warhead != WARHEAD_FIRE)) &&
 						(GameToPlay != GAME_NORMAL ||
@@ -3797,7 +3797,7 @@ MoveBitType UnitClass::Blocking_Object(TechnoClass const *techno, CELL cell) con
 			*/
             
             // Chthon CFE Note: rank 3 veteran buggys can crush
-            bool buggycrusher = (VeterancyRank == 3 && What_Am_I() == RTTI_UNIT && *((UnitClass*)this) == UNIT_BUGGY);
+            bool buggycrusher = ((VeterancyRank == 3) && (*this == UNIT_BUGGY));
             
 			if (techno->Class_Of().IsCrushable && (cellptr->Flag.Composite & 0xE0) == 0 && (Class->IsCrusher || buggycrusher)) {
 
@@ -4680,7 +4680,7 @@ ActionType UnitClass::What_Action(ObjectClass * object) const
 	if (action == ACTION_ATTACK && !Can_Player_Fire()) {
         
         // Chthon CFE Note: rank 3 veteran buggys can crush
-        bool buggycrusher = (VeterancyRank == 3 && What_Am_I() == RTTI_UNIT && *((UnitClass*)this) == UNIT_BUGGY);
+        bool buggycrusher = ((VeterancyRank == 3) && (*this == UNIT_BUGGY));
 
 		if ((Class->IsCrusher || buggycrusher) && object->Class_Of().IsCrushable) {
 			action = ACTION_MOVE;
