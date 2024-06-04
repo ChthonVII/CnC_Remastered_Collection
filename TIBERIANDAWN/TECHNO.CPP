@@ -5693,9 +5693,12 @@ void TechnoClass::GainVeterancyXP(unsigned short int XP){
     }
     
     // don't let superweapon buildings gain XP (that would be overpowered)
+    // Actually, this is OK. The building just gains passive stats. Nothing is transferred to the super weapon unless we expressly code it.
+    /*
     if ((What_Am_I() == RTTI_BUILDING) && ((*((BuildingClass*)this) == STRUCT_EYE) || (*((BuildingClass*)this) == STRUCT_TEMPLE))){
         return;
     }
+    */
     
     // gain XP
     unsigned int oldXP = VeterancyXP;
