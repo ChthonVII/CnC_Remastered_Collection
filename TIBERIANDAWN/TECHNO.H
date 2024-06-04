@@ -234,7 +234,8 @@ class TechnoClass :	public RadioClass,
 		        
         unsigned short int IsKnownToExistByPlayerMask; // this can be a short; there are only 12 houses
         
-        unsigned char SPSearchRangeLimit = 0; // Flag to make CPU-controlled units in SP to not use the range fix, until this gets toggled off
+        unsigned char SPSearchRangeLimit:1; // Flag to make CPU-controlled units in SP to not use the range fix, until this gets toggled off
+        unsigned char VeteranCloak:1; // Flag that cloaking is from veterancy rather than crate or inherent unit property.
         
 		/*
 		** Some additional padding in case we need to add data to the class and maintain backwards compatibility for save/load
@@ -413,6 +414,8 @@ bool Target_Something_Nearby_Hunt(ThreatType threat=THREAT_RANGE);
 bool Verify_Attack_Walls(bool speedcheck);
 virtual TARGET Greatest_Threat_Wall(ThreatType method, bool adjacent) const;
 bool Evaluate_Cell_For_Wall(CELL cell) const;
+
+bool Am_I_A_Foot();
 
 };
 

@@ -1676,22 +1676,7 @@ void FootClass::Per_Cell_Process(bool center)
         // Chthon CFE Note: revise so that units cloaked b/c of veterancy bonus still trip cell triggers
         // Missions break otherwise
 		//if (Cloak != CLOAKED && trigger && trigger->House == Owner()) {
-        if (    trigger && (trigger->House == Owner()) &&
-                (
-                    (Cloak != CLOAKED) ||
-                    (
-                        (VeterancyRank == 3) &&
-                        (
-                            ((What_Am_I() == RTTI_INFANTRY) && (*((InfantryClass*)this) == INFANTRY_RAMBO)) ||
-                            (
-                                (What_Am_I() == RTTI_UNIT) &&
-                                (*((UnitClass*)this) == UNIT_APC) &&
-                                ((Owner() == HOUSE_BAD ) || (House->ActLike == HOUSE_BAD))
-                            )
-                        )
-                    )
-                )
-        ) {
+        if (trigger && (trigger->House == Owner()) && ((Cloak != CLOAKED) || VeteranCloak)) {
 			trigger->Spring(EVENT_PLAYER_ENTERED, mycell);
 		}
 //	}

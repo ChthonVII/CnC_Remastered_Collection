@@ -534,7 +534,7 @@ TechnoClass::TechnoClass(void) :
     LocalROFBias = 1.0;
     IsKnownToExistByPlayerMask = 0;
 	SPSearchRangeLimit = 0;
-    
+    VeteranCloak = 0;
 }
 
 
@@ -1007,6 +1007,7 @@ TechnoClass::TechnoClass(HousesType house) :
     LocalROFBias = 1.0;
     IsKnownToExistByPlayerMask = 0;
 	SPSearchRangeLimit = 0;
+	VeteranCloak = 0;
 }
 
 
@@ -2278,7 +2279,9 @@ void TechnoClass::AI(void)
         // Chthon CFE Note: rank 3 veteran stealth tanks get a better cloak -- starts up faster and always works despite damage
         bool bettercloak = (VeterancyRank == 3 && What_Am_I() == RTTI_UNIT && *((UnitClass*)this) == UNIT_STANK);
         
-		if (Cloak == UNCLOAKED) {
+		//if (Cloak == UNCLOAKED) { // Chthon CFE Note: Don't cloak moving commandos with veterancy-based cloak
+		bool movingcommando = VeteranCloak && (What_Am_I() == RTTI_INFANTRY) && (((FootClass*)this)->IsDriving || (((FootClass*)this)->Path[0] != FACING_NONE));
+		if ((Cloak == UNCLOAKED) && !movingcommando) {
 			// Changed for multiplayer so we can visually see the different players in the original renderer. ST - 3/13/2019 5:40PM
 			if (Is_Owned_By_Player()) Mark(MARK_CHANGE);
 			//if (IsOwnedByPlayer) Mark(MARK_CHANGE);
@@ -3987,7 +3990,7 @@ CELL TechnoClass::Nearby_Location(TechnoClass const * ) const
 void TechnoClass::Do_Uncloak(void)
 {
 	if (IsCloakable && (Cloak == CLOAKED || Cloak == CLOAKING)) {
-		if (What_Am_I() == RTTI_INFANTRY){
+		if (VeteranCloak && (What_Am_I() == RTTI_INFANTRY)){
             Sound_Effect(VOC_WIND_GUST, Coord);
         }
 		else {
@@ -4017,7 +4020,7 @@ void TechnoClass::Do_Uncloak(void)
 void TechnoClass::Do_Cloak(void)
 {
 	if (IsCloakable && (Cloak == UNCLOAKED || Cloak == UNCLOAKING)) {
-		if (What_Am_I() == RTTI_INFANTRY){
+		if (VeteranCloak && (What_Am_I() == RTTI_INFANTRY)){
             Sound_Effect(VOC_WIND_GUST, Coord);
         }
 		else {
@@ -5727,6 +5730,10 @@ void TechnoClass::GainVeterancyXP(unsigned short int XP){
             
             // commandos gain stealth
             else if (*((InfantryClass*)this) == INFANTRY_RAMBO){
+				// in the unlikely case that the commando already picked up a cloak crate, the cloak crate takes precedence
+				if (!IsCloakable){
+					VeteranCloak = true;
+				}
                 IsCloakable = true;
             }
         }
@@ -5759,7 +5766,10 @@ void TechnoClass::GainVeterancyXP(unsigned short int XP){
             // GDI APCs get on-board medic (handled in UnitClass::AI())
             // NOD APCs get stealth
             else if ((*((UnitClass*)this) == UNIT_APC) && ((Owner() == HOUSE_BAD ) || (House->ActLike == HOUSE_BAD))){
-                IsCloakable = true;
+                if (!IsCloakable){
+					VeteranCloak = true;
+				}
+				IsCloakable = true;
             }
             
             // MLRS get more damage reduction
@@ -6068,4 +6078,20 @@ bool TechnoClass::Verify_Attack_Walls(bool speedcheck)
 	**	This Techno object is not able to attack walls.
 	*/
 	return(false);
+}
+
+// Chthon CFE Note: Helper function to know if we can safely cast to FootClass
+bool TechnoClass::Am_I_A_Foot(){
+	bool retval = false;
+	RTTIType mytype = What_Am_I();
+	switch (mytype){
+		case RTTI_AIRCRAFT:
+		case RTTI_INFANTRY:
+		case RTTI_UNIT:
+			retval = true;
+			break;
+		default:
+			break;
+	}
+	return retval;
 }

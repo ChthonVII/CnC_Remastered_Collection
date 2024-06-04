@@ -2465,6 +2465,7 @@ bool CellClass::Goodie_Check(FootClass * object, bool check_steel)
 
 						if (obj && obj->Is_Techno() && Distance(Cell_Coord(), obj->Center_Coord()) < 0x0300) {
 							((TechnoClass *)obj)->IsCloakable = true;
+							((TechnoClass *)obj)->VeteranCloak = false; // Chthon CFE Note: In the unlikely case a rank 3 veteran commando picks up a cloak crate, the cloak crate takes precedence.
 						}
 					}
 					break;

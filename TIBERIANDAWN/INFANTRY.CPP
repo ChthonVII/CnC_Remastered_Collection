@@ -1268,7 +1268,7 @@ void InfantryClass::AI(void)
 		case FIRE_CLOAKED:
 			Do_Uncloak();
             // Chthon CFE Note: If stealth commando, accelerate the decloak
-            if ((*this == INFANTRY_RAMBO) && (VeterancyRank == 3)) {
+            if (VeteranCloak) {
                 CloakingDevice.Graphic_Logic();
                 CloakingDevice.Graphic_Logic();
             }
@@ -1644,6 +1644,10 @@ void InfantryClass::AI(void)
 			Mark(MARK_DOWN);
 		}
 		//IsNewNavCom = false; // Chthon CFE Note: dead code
+	}
+	// Chthon CFE Note: Commandos with cloak due to veterancy are not cloaked while moving
+	if (VeteranCloak && (IsDriving || (Path[0] != FACING_NONE)){
+		Do_Uncloak();
 	}
     
 }
