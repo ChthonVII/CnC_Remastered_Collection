@@ -54,7 +54,8 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include	"function.h"
-#include "CFEDEBUG.H"
+#include <cmath>
+//#include "CFEDEBUG.H"
 
 /*
 ** This contains the value of the Virtual Function Table Pointer
@@ -1112,7 +1113,13 @@ void AnimClass::Middle(void)
 
 				int damage;
                 if (ActiveCFEPatchConfig.EnableNukeRadiusFix){
-                    int realradius = (ABS(x) > ABS(y)) ? ABS(x) + (ABS(y)/2) : ABS(y) + (ABS(x)/2);
+					int realradius;
+					if (ActiveCFEPatchConfig.EnableDistanceCalcFix){
+						realradius = (int)(std::sqrt((x * x) + (y * y)) + 0.5);
+					}
+					else {
+						realradius = (ABS(x) > ABS(y)) ? ABS(x) + (ABS(y)/2) : ABS(y) + (ABS(x)/2);
+					}
                     damage = (2 * rawdamage)/(realradius + 2); // rearrange terms to minimize truncation error
                 }
                 else {
