@@ -1646,7 +1646,7 @@ void InfantryClass::AI(void)
 		//IsNewNavCom = false; // Chthon CFE Note: dead code
 	}
 	// Chthon CFE Note: Commandos with cloak due to veterancy are not cloaked while moving
-	if (VeteranCloak && (IsDriving || (Path[0] != FACING_NONE)){
+	if (VeteranCloak && (IsDriving || (Path[0] != FACING_NONE))){
 		Do_Uncloak();
 	}
     
