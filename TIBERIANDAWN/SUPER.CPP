@@ -381,3 +381,38 @@ void SuperClass::Forced_Charge(bool player)
 		}
 	}
 }	
+
+
+// Chthon CFE Note: Adjust cooldown based on building veterancy
+// returns true if cooldown was changed
+bool SuperClass::AdjustCooldown(int basetime, int vetlevel){
+	if (!IsPresent || IsOneTime){
+		return false;
+	}
+	
+	int oldcoolddown = RechargeTime;
+	int newcooldown = basetime;
+	if (vetlevel){
+		newcooldown = (int)((newcooldown / (1.0 + (0.1 * vetlevel))) + 0.5);
+	}
+	if (oldcoolddown != newcooldown){
+		RechargeTime = newcooldown;
+		int delta = newcooldown - oldcoolddown; // positive if cooldown is getting longer, negative if shorter
+		if (IsSuspended){
+			SuspendTime += delta;
+			if (SuspendTime < 1){
+				SuspendTime = 1;
+			}
+		}
+		else if (!IsReady){
+			int remain = Control;
+			remain += delta;
+			if (remain < 1){
+				remain = 1;
+			}
+			Control = remain;
+		}
+		return true;
+	}
+	return false;
+}

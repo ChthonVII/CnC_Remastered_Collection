@@ -55,6 +55,10 @@ class SuperClass {
 
 		//Needed access to recharge times for tooltips - 2019/08/14 Jason Scott 
 		int Get_Recharge_Time() const { return(RechargeTime); };
+		
+		// Chthon CFE Note: Adjust cooldown based on building veterancy
+		// returns true if cooldown was changed
+		bool AdjustCooldown(int basetime, int vetlevel);
 
 	private:
 		bool Recharge(bool player=false);

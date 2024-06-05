@@ -520,6 +520,11 @@ class HouseClass {
 
 		// MBL 09.08.2020 Mod support stub
 		void Handle_Mod_Game_Command(CELL cell, int mod_command_index); // mod_command_index = 0-3
+		
+		// Chthon CFE Note: Figure out max veterancy and super weapon structures
+		int MaxAdvCommVeterancy();
+		int MaxTempleVeterancy();
+		void VeterancyAdjustSuperCooldown();
 
 #ifdef USE_RA_AI
 		/*

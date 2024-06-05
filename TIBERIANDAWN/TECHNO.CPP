@@ -5850,6 +5850,11 @@ void TechnoClass::GainVeterancyXP(unsigned short int XP){
             // Regen beginning at rank 2 is handled in TechnoClass::AI()
         }
         
+        // speed up the recharge of super weapons
+        if ((What_Am_I() == RTTI_BUILDING) && ((*((BuildingClass*)this) == STRUCT_EYE) || (*((BuildingClass*)this) == STRUCT_TEMPLE))){
+			House->VeterancyAdjustSuperCooldown();
+		}
+        
         // play a sound for the owner only
         // let's try calling the API function directly so we can set the house pointer correctly
         // also, the XML for the sound needs to indicate it should only play for one player -- IsUnitResponseVO works, and I'm guessing IsGUI and IsHUDVO would too.

@@ -3399,7 +3399,14 @@ bool BuildingClass::Limbo(void)
 			Update_Specials();
 		}
 #endif
-
+		
+		// Chthon CFE Note: Check if owner lost veterancy bonus for super cooldown times
+		if (!ScenarioInit){
+			IsInLimbo = true; // make sure this building isn't counted when the check runs
+			House->VeterancyAdjustSuperCooldown();
+			IsInLimbo = false; // Set it back to false so the rest of the Limbo code works.
+		}
+		
 	}
 	return(TechnoClass::Limbo());
 }

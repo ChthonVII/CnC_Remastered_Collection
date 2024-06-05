@@ -8968,3 +8968,38 @@ unsigned HouseClass::Get_Ally_Flags()
 }
 
 #endif
+
+// Chthon CFE Note: Figure out max veterancy and super weapon structures
+int HouseClass::MaxAdvCommVeterancy(){
+	int retval = 0;
+	for (int index = 0; index < Buildings.Count(); index++) {
+		BuildingClass const * building = Buildings.Ptr(index);
+		if (building && building->IsActive && !building->IsInLimbo && building->Strength && (building->House == this) && (*building == STRUCT_EYE) && ((int)building->VeterancyRank > retval)){
+			retval = building->VeterancyRank;
+		}        
+	}
+	return retval;
+}
+
+int HouseClass::MaxTempleVeterancy(){
+	int retval = 0;
+	for (int index = 0; index < Buildings.Count(); index++) {
+		BuildingClass const * building = Buildings.Ptr(index);
+		if (building && building->IsActive && !building->IsInLimbo && building->Strength && (building->House == this) && (*building == STRUCT_TEMPLE) && ((int)building->VeterancyRank > retval)){
+			retval = building->VeterancyRank;
+		}        
+	}
+	return retval;
+}
+
+void HouseClass::VeterancyAdjustSuperCooldown(){
+	if (IonCannon.Is_Present()){
+		int ionvetlevel = MaxAdvCommVeterancy();
+		IonCannon.AdjustCooldown(ION_CANNON_GONE_TIME, ionvetlevel);
+	}
+	if (NukeStrike.Is_Present()){
+		int nukevetlevel = MaxTempleVeterancy();
+		NukeStrike.AdjustCooldown(NUKE_GONE_TIME, nukevetlevel);
+	}
+	return;
+}
