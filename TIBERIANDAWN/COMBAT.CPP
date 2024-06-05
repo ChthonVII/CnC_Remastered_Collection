@@ -37,7 +37,7 @@
 #include	"function.h"
 
 int Modify_Damage(int damage, WarheadType warhead, ArmorType armor);
-void Explosion_Damage(COORDINATE coord, unsigned strength, TechnoClass * source, WarheadType warhead, ArmorPenType specialarmorpen = ARMORPEN_NONE, bool givesxp = true);
+void Explosion_Damage(COORDINATE coord, unsigned strength, TechnoClass * source, WarheadType warhead, ArmorPenType specialarmorpen, bool givesxp);
 
 
 /***********************************************************************************************
