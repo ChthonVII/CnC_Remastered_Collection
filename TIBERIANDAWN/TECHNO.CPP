@@ -2280,7 +2280,7 @@ void TechnoClass::AI(void)
         bool bettercloak = (VeterancyRank == 3 && What_Am_I() == RTTI_UNIT && *((UnitClass*)this) == UNIT_STANK);
         
 		//if (Cloak == UNCLOAKED) { // Chthon CFE Note: Don't cloak moving commandos with veterancy-based cloak
-		bool movingcommando = VeteranCloak && (What_Am_I() == RTTI_INFANTRY) && (((FootClass*)this)->IsDriving || (((FootClass*)this)->Path[0] != FACING_NONE));
+		bool movingcommando = VeteranCloak && (What_Am_I() == RTTI_INFANTRY) && (((FootClass*)this)->IsDriving || (((FootClass*)this)->Path[0] != FACING_NONE) || Target_Legal(((FootClass*)this)->NavCom) || (Target_Legal(TarCom) && !In_Range(TarCom)));
 		if ((Cloak == UNCLOAKED) && !movingcommando) {
 			// Changed for multiplayer so we can visually see the different players in the original renderer. ST - 3/13/2019 5:40PM
 			if (Is_Owned_By_Player()) Mark(MARK_CHANGE);
