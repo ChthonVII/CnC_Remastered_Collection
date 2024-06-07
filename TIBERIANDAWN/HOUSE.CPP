@@ -8993,6 +8993,9 @@ int HouseClass::MaxTempleVeterancy(){
 }
 
 void HouseClass::VeterancyAdjustSuperCooldown(){
+	if (!IsHuman && (GameToPlay == GAME_NORMAL)){
+		return;
+	}
 	if (IonCannon.Is_Present()){
 		int ionvetlevel = MaxAdvCommVeterancy();
 		IonCannon.AdjustCooldown(ION_CANNON_GONE_TIME, ionvetlevel);
