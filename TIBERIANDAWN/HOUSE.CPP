@@ -3804,8 +3804,8 @@ TechnoTypeClass const * HouseClass::Suggest_New_Object(RTTIType objecttype) cons
 
 				/*
 				**	A computer controlled house will try to build a replacement
-				**	harvester if possible. Never replace harvesters if the game
-				**	is in easy mode.
+				**	harvester if possible. Never replace harvesters if the AI
+				**	is set to easy mode.
 				**		CFE Note: Vanilla bugfix - Difficulty is CORRECTLY set to check !DIFF_EASY here, but not in two other spots that also control the same harvester replacement logic.
 				**		Jump to the others by searching the below phrase:
 				**			CFE Harvester Build Fix
@@ -6905,8 +6905,8 @@ int HouseClass::AI_Unit(void)
 
 	/*
 	**	A computer controlled house will try to build a replacement
-	**	harvester if possible. Never replace harvesters if the game
-	**	is in easy mode.
+	**	harvester if possible. Never replace harvesters if the AI
+	**	is set to easy mode.
 	**		CFE Note: Vanilla bugfix - Difficulty was accidentally set check if != DIFF_HARD, when it was supposed to be != DIFF_EASY.
 	**		Was correct in one place but not the other two spots (including this one) with the same harvester build logic. 
 	**		Jump to the others by searching the below phrase:
