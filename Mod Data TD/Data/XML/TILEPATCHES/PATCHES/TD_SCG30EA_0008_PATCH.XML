@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<XML>
+  <TileOverridePatchClass>
+   <PatchName>TD_scg30EA_0008</PatchName>
+   <DirectoryPath>PATCHES\TD_scg30EA_0008\</DirectoryPath>
+   <FPS>5</FPS>
+   <Tiles>
+    <Entry>
+     <TextureName>pa0008.tem-0_0</TextureName>
+     <X>0</X>
+     <Y>0</Y>
+    </Entry>
+   </Tiles>
+  </TileOverridePatchClass>
+</XML>

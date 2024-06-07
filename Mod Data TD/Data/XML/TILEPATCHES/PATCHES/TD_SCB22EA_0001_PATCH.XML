@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<XML>
+  <TileOverridePatchClass>
+   <PatchName>TD_scb22EA_0001</PatchName>
+   <DirectoryPath>Patches\TD_scb22EA_0001\</DirectoryPath>
+   <FPS>5</FPS>
+   <Tiles>
+    <Entry>
+     <TextureName>pa0001.des-0_0</TextureName>
+     <X>0</X>
+     <Y>0</Y>
+    </Entry>
+    <Entry>
+     <TextureName>pa0001.des-0_1</TextureName>
+     <X>0</X>
+     <Y>1</Y>
+    </Entry>
+    <Entry>
+     <TextureName>pa0001.des-1_0</TextureName>
+     <X>1</X>
+     <Y>0</Y>
+    </Entry>
+    <Entry>
+     <TextureName>pa0001.des-1_1</TextureName>
+     <X>1</X>
+     <Y>1</Y>
+    </Entry>	
+   </Tiles>
+  </TileOverridePatchClass>
+</XML>

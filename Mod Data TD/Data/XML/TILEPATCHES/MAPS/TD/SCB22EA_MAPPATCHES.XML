@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<XML>
+ <MapPatchingDataClass>
+  <PatchPositions>
+   <Entry>
+    <X>7</X>
+    <Y>46</Y>
+    <PatchName>TD_scb22EA_0001</PatchName>
+   </Entry>
+   <Entry>
+    <X>60</X>
+    <Y>36</Y>
+    <PatchName>TD_scb22EA_0001</PatchName>
+   </Entry>
+   <Entry>
+    <X>5</X>
+    <Y>20</Y>
+    <PatchName>TD_scb22EA_0001</PatchName>
+   </Entry>
+   <Entry>
+    <X>54</X>
+    <Y>4</Y>
+    <PatchName>TD_scb22EA_0001</PatchName>
+   </Entry>
+  </PatchPositions>
+ </MapPatchingDataClass>
+</XML>

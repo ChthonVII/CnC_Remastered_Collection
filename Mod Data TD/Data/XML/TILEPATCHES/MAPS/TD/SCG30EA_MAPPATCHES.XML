@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<XML>
+ <MapPatchingDataClass>
+  <PatchPositions>
+   <Entry>
+    <X>35</X>
+    <Y>30</Y>
+    <PatchName>TD_scg30EA_0001</PatchName>
+   </Entry>
+   <Entry>
+    <X>5</X>
+    <Y>32</Y>
+    <PatchName>TD_scg30EA_0002</PatchName>
+   </Entry>
+   <Entry>
+    <X>9</X>
+    <Y>31</Y>
+    <PatchName>TD_scg30EA_0003</PatchName>
+   </Entry>
+   <Entry>
+    <X>10</X>
+    <Y>31</Y>
+    <PatchName>TD_scg30EA_0004</PatchName>
+   </Entry>
+   <Entry>
+    <X>13</X>
+    <Y>15</Y>
+    <PatchName>TD_scg30EA_0005</PatchName>
+   </Entry>
+   <Entry>
+    <X>21</X>
+    <Y>32</Y>
+    <PatchName>TD_scg30EA_0006</PatchName>
+   </Entry>
+   <Entry>
+    <X>23</X>
+    <Y>25</Y>
+    <PatchName>TD_scg30EA_0007</PatchName>
+   </Entry>
+   <Entry>
+    <X>1</X>
+    <Y>11</Y>
+    <PatchName>TD_scg30EA_0008</PatchName>
+   </Entry>
+  </PatchPositions>
+ </MapPatchingDataClass>
+</XML>
