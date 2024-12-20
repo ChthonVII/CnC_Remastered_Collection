@@ -146,6 +146,7 @@ struct CFEPatchConfig
 	int  BuildingGapOffset = 0;
 	int  OreCapacityOffset = 0;
     int SharedChronoDisasterOdds = 20;
+    int TurkeyFixMode = 0; // 0=no bonus (buggy original RA behavior, 11/18/2024 Remastered patch behavior); 1=90% build time (intended original RA behavior, Remastered launch behavior, insanely overpowered); 2=110% build speed bonus from extra production structures (CFE patch rebalance)
 };
 
 extern CFEPatchConfig ActiveCFEPatchConfig;

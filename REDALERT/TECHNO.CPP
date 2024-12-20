@@ -7261,7 +7261,8 @@ int TechnoTypeClass::Time_To_Build(HousesType house) const
 		/*
 		** New feature - Turkey has a 10% build speed bonus even though it isn't specified in the rules
 		*/
-		if (hptr->ActLike == HOUSE_TURKEY) {
+		// Chthon CFE Note: This was removed from offical client in 11/18/2024 patch. Make this toggleable.
+		if ((hptr->ActLike == HOUSE_TURKEY) && (ActiveCFEPatchConfig.TurkeyFixMode == 1)) {
 			if (hptr->BuildSpeedBias == fixed(1)) {
 				time *= 9;
 				time /= 10;
@@ -7302,6 +7303,8 @@ int TechnoTypeClass::Time_To_Build(HousesType house) const
 	time *= scale;
 
 	int divisor = hptr->Factory_Count(What_Am_I());
+	// Chthon CFE Note: Add new Turkey fix and clean up pointless division by 1
+	/*
 	if (divisor != 0) {
 #ifdef FIXIT_CSII	//	checked - ajw 9/28/98
 		// Hack: allow the multiple-factory bonus, but only up to two factories if
@@ -7315,6 +7318,26 @@ int TechnoTypeClass::Time_To_Build(HousesType house) const
 #else
 		time /= divisor;
 #endif
+	}
+	*/
+	if (divisor > 1){
+#ifdef FIXIT_CSII
+		if (NewUnitsEnabled){
+			divisor = 2;
+		}
+#endif
+		// Optional balance fix gives Turkey build speed bonus as if it had 1.1x as many factories beyond the first.
+		// (As opposed to overpowered 0.9x build time for everything, or no bonus at all under 11/18/2024 patch.)
+		if ((hptr->ActLike == HOUSE_TURKEY) && (ActiveCFEPatchConfig.TurkeyFixMode == 2)){
+			float fdivisor = (float)divisor;
+			fdivisor = fdivisor + ((fdivisor - 1.0)/10.0);
+			float ftime = (float)time;
+			ftime = (ftime / fdivisor) + 0.5;
+			time = (int)ftime;
+		}
+		else {
+			time /= divisor;
+		}
 	}
 
 	return(time);

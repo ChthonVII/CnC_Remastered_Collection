@@ -99,6 +99,7 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
 	GetSetting(ActiveCFEPatchConfig.WallsAlwaysHaveFullCost	, "SETTINGS", "WALLS_HAVE_FULL_COST");
     GetSetting(ActiveCFEPatchConfig.InverseBuildingPreviewMode           , "SETTINGS", "INVERSE_PREVIEW_MODE");
     GetSetting(ActiveCFEPatchConfig.SharedChronoDisasterOdds           , "SETTINGS", "SHARED_CHRONO_ODDS");
+	GetSetting(ActiveCFEPatchConfig.TurkeyFixMode           , "SETTINGS", "TURKEY_FIX_MODE");
 
 	//Clamp Wall Length between 1 (build at all) and 10 (buffer limits)
 	ActiveCFEPatchConfig.WallBuildLength = (std::max)(1, (std::min)(ActiveCFEPatchConfig.WallBuildLength, 10));
