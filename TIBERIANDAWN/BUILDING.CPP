@@ -860,6 +860,23 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window)
             float deltaY = (float)Ydistance / (float) steps;
             // draw a series of small dots
             for (int i=0; i<steps; i++){
+                // if the distance is very far, we may draw too many dots and the GlyphX client will crash
+                // so skip dots in the middle if the line is long
+                if (steps > 32){
+                    int togo = steps - i -1;
+                    if ((i > 16) && (togo > 16) && (i % 2 != 0)){
+                        continue;
+                    }
+                    if ((i > 32) && (togo > 32) && (i % 4 != 0)){
+                        continue;
+                    }
+                    if ((i > 64) && (togo > 64) && (i % 8 != 0)){
+                        continue;
+                    }
+                    if ((i > 128) && (togo > 128) && (i % 16 != 0)){
+                        continue;
+                    }
+                }
                 int diffX = (int)((float)i * deltaX);
                 if (negativeX){
                     diffX *= -1;
