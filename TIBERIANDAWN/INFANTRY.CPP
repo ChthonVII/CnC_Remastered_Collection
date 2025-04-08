@@ -1131,13 +1131,18 @@ void InfantryClass::AI(void)
 				// problematic b/c AI starts delaying a bunch of ticks while swapping missions
 				else if ((techno->What_Am_I() == RTTI_UNIT) || (techno->What_Am_I() == RTTI_AIRCRAFT)){
 					// is our navcom a building? bomb it
-					TechnoClass* ntechno = As_Techno(NavCom);
-					if (ntechno && ntechno->IsActive && !ntechno->IsInLimbo && ntechno->Strength && (Owner() != ntechno->Owner()) && (ntechno->What_Am_I() == RTTI_BUILDING)){
-						if ((Distance(NavCom) > AI_COMMANDO_CROSSOVER_DIST) && (Mission != MISSION_SABOTAGE)){
-							Assign_Mission(MISSION_MOVE);
+					if (Target_Legal(NavCom)){
+						TechnoClass* ntechno = As_Techno(NavCom);
+						if (ntechno && ntechno->IsActive && !ntechno->IsInLimbo && ntechno->Strength && (Owner() != ntechno->Owner()) && (ntechno->What_Am_I() == RTTI_BUILDING)){
+							if ((Distance(NavCom) > AI_COMMANDO_CROSSOVER_DIST) && (Mission != MISSION_SABOTAGE)){
+								Assign_Mission(MISSION_MOVE);
+							}
+							else if (Mission != MISSION_SABOTAGE){
+								Assign_Mission(MISSION_SABOTAGE);
+							}
 						}
-						else if (Mission != MISSION_SABOTAGE){
-							Assign_Mission(MISSION_SABOTAGE);
+						else {
+							Assign_Mission(MISSION_HUNT);
 						}
 					}
 					else {
