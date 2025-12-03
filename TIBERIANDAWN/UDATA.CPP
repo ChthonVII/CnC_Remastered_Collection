@@ -1399,7 +1399,7 @@ static UnitTypeClass const UnitGDIMCV(
 	ANIM_FBALL1,							// EXPLOSION:	Type of explosion when destroyed.
 	7,							// Build level.
 	STRUCTF_EYE,			// Building prerequisite.
-		true,				// Can this be a goodie surprise from a crate?
+		false,				// Can this be a goodie surprise from a crate?
 		false,			// Is a leader type?
 		false,			// Only has eight facings?
 		false,			// Always use the given name for the vehicle?
@@ -1459,7 +1459,7 @@ static UnitTypeClass const UnitNodMCV(
 	ANIM_FBALL1,							// EXPLOSION:	Type of explosion when destroyed.
 	7,							// Build level.
 	STRUCTF_EYE,			// Building prerequisite.
-		true,				// Can this be a goodie surprise from a crate?
+		false,				// Can this be a goodie surprise from a crate?
 		false,			// Is a leader type?
 		false,			// Only has eight facings?
 		false,			// Always use the given name for the vehicle?

@@ -2284,6 +2284,16 @@ bool CellClass::Goodie_Check(FootClass * object, bool check_steel)
 
 					while (!utp) {
 						UnitType utype = Random_Pick(UNIT_FIRST, (UnitType)(UNIT_COUNT-1));
+						// Chthon CFE Note: If "GDI MCV"/"Nod MCV" dummy class, reroll
+						if ((utype == UNIT_GMCV) || (utype == UNIT_NMCV)){
+							utp = NULL;
+							continue;
+						}
+						// Chthon CFE Note: If nuke tank, but nuke tank isn't enabled, reroll
+						if ((utype == UNIT_NUKE_TANK) && !ActiveCFEPatchConfig.EnableNukeTank){
+							utp = NULL;
+							continue;
+						}
 						if (utype != UNIT_MCV || MPlayerBases) {
 							utp = &UnitTypeClass::As_Reference(utype);
 							if (utp->IsCrateGoodie && (utp->Ownable & (1 << object->Owner())) && utp->Level <= BuildLevel+2) break;
@@ -2291,9 +2301,58 @@ bool CellClass::Goodie_Check(FootClass * object, bool check_steel)
 						}
 					}
 
+					// Chthon CFE Note: If Split Dual Capturables is enabled, 50% chance to get the other side's MCV if you already have your own
+					bool swapmcv = false;
+					if ((utype == UNIT_MCV) && ActiveCFEPatchConfig.SplitDualCapturables){
+						bool haveownmcv = false;
+						// check buildings
+						for (int index = 0; index < Buildings.Count(); index++) {
+							BuildingClass* checkbuilding = Buildings.Ptr(index);
+							if (checkbuilding && checkbuilding->IsActive && !checkbuilding->IsInLimbo && checkbuilding->Strength &&
+								(*((BuildingClass*)checkbuilding) == STRUCT_CONST) &&
+								(object->Owner() == checkbuilding->Owner()) &&
+								(checkbuilding->ActLike == object->House->ActLike) &&
+								checkbuilding->Mission != MISSION_DECONSTRUCTION
+							) {
+								haveownmcv = true;
+								break;
+							}
+						}
+						if (!haveownmcv){
+							for (int index = 0; index < Units.Count(); index++) {
+								UnitClass* checkunit = Units.Ptr(index);
+								if (checkunit && checkunit->IsActive && !checkunit->IsInLimbo && checkunit.Strength &&
+									(*((UnitClass*)checkunit) == UNIT_MCV) &&
+									(object->Owner() == checkunit->Owner()) &&
+									(checkunit->MemoActLike == object->House->ActLike)
+								) {
+									haveownmcv = true;
+									break;
+								}
+							}
+						}
+						if (haveownmcv){
+							int mcvswappick = Random_Pick(0, 1);
+							if (mcvswappic == 0){
+								swapmcv = true;
+							}
+						}
+					}
+
 					UnitClass * unit = (UnitClass *)utp->Create_One_Of(object->House);
 					if (unit) {
 						if (unit->Unlimbo(Cell_Coord())) {
+							// Chthon CFE Note: maybe swap the MCV
+							if (swapmcv){
+								if (object->House->ActLike == HOUSE_GOOD){
+									unit->MemoActLike = HOUSE_BAD;
+								}
+								else {
+									unit->MemoActLike = HOUSE_GOOD;
+								}
+								unit->MemoIsCaptured = true;
+							}
+							// vanilla code -- the unit cannot enter the cell b/c it's now occupied
 							return(false);
 						}
 						delete unit;
