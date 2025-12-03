@@ -2303,7 +2303,7 @@ bool CellClass::Goodie_Check(FootClass * object, bool check_steel)
 
 					// Chthon CFE Note: If Split Dual Capturables is enabled, 50% chance to get the other side's MCV if you already have your own
 					bool swapmcv = false;
-					if ((utype == UNIT_MCV) && ActiveCFEPatchConfig.SplitDualCapturables){
+					if ((utype == UNIT_MCV) && ActiveCFEPatchConfig.SplitDualCapturables && (GameToPlay != GAME_NORMAL)){
 						bool haveownmcv = false;
 						// check buildings
 						for (int index = 0; index < Buildings.Count(); index++) {
