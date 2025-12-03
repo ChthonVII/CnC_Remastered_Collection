@@ -621,7 +621,12 @@ short const * AircraftTypeClass::Overlap_List(void) const
  *=============================================================================================*/
 BuildingClass * AircraftTypeClass::Who_Can_Build_Me(bool , bool legal, HousesType house) const
 {
-	BuildingClass * anybuilding = NULL;
+	// CFE Chthon Note: fix for picking open helipads borrow from Nyerguds
+	// https://github.com/Nyerguds/CnC_Tiberian_Dawn/blob/938905c2e9b929087b7c4dc9052c2bc9c1ca088c/CODE/AADATA.CPP#L615
+
+	BuildingClass* anybuilding = nullptr;
+	BuildingClass* anyfreebuilding = nullptr;
+	bool foundLeader = false;
 	for (int index = 0; index < Buildings.Count(); index++) {
 		BuildingClass * building = Buildings.Ptr(index);
 
@@ -633,9 +638,41 @@ BuildingClass * AircraftTypeClass::Who_Can_Build_Me(bool , bool legal, HousesTyp
 				(!legal || building->House->Can_Build(Type, building->ActLike)) &&
 				building->Class->ToBuild == RTTI_AIRCRAFTTYPE) {
 
-			if (building->IsLeader) return(building);
-			anybuilding = building;
+			if (ActiveCFEPatchConfig.EnableSmarterAircraft){
+				bool isleader = building->IsLeader;
+				if (isleader) {
+					foundLeader = true;
+				}
+				bool busy = building->In_Radio_Contact();
+				// If leader is available, always use that.
+				if (isleader && !busy) {
+					return(building);
+				}
+				// Store available fallback
+				if (!busy && (anyfreebuilding == nullptr)) {
+					anyfreebuilding = building;
+				}
+				// Leader was found but not available; return found free building.
+				if (foundLeader && (anyfreebuilding != nullptr)) {
+					return(anyfreebuilding);
+				}
+				// Always prefer leader as fallback.
+				// Chthon changed to match vanilla behavior of picking last building in case of no leader and all busy
+				//if ((anybuilding == nullptr) || isleader) {
+				if (isleader || !foundLeader) {
+					anybuilding = building;
+				}
+			}
+			// vanilla behavior
+			else {
+				if (building->IsLeader) return(building);
+				anybuilding = building;
+			}
 		}
+	}
+	// Nothing was set primary. If anything was available, return it.
+	if (anyfreebuilding != nullptr) {
+		return(anyfreebuilding);
 	}
 	return(anybuilding);
 }
