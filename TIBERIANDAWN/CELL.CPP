@@ -2282,8 +2282,10 @@ bool CellClass::Goodie_Check(FootClass * object, bool check_steel)
 						utp = &UnitTypeClass::As_Reference(UNIT_HARVESTER);
 					}
 
+					UnitType memotype = UNIT_NONE; // Chthon CFE Note: remember unit type for later
 					while (!utp) {
 						UnitType utype = Random_Pick(UNIT_FIRST, (UnitType)(UNIT_COUNT-1));
+						memotype = utype; //remember type
 						// Chthon CFE Note: If "GDI MCV"/"Nod MCV" dummy class, reroll
 						if ((utype == UNIT_GMCV) || (utype == UNIT_NMCV)){
 							utp = NULL;
@@ -2303,7 +2305,7 @@ bool CellClass::Goodie_Check(FootClass * object, bool check_steel)
 
 					// Chthon CFE Note: If Split Dual Capturables is enabled, 50% chance to get the other side's MCV if you already have your own
 					bool swapmcv = false;
-					if ((utype == UNIT_MCV) && ActiveCFEPatchConfig.SplitDualCapturables && (GameToPlay != GAME_NORMAL)){
+					if ((memotype == UNIT_MCV) && ActiveCFEPatchConfig.SplitDualCapturables && (GameToPlay != GAME_NORMAL)){
 						bool haveownmcv = false;
 						// check buildings
 						for (int index = 0; index < Buildings.Count(); index++) {
@@ -2321,7 +2323,7 @@ bool CellClass::Goodie_Check(FootClass * object, bool check_steel)
 						if (!haveownmcv){
 							for (int index = 0; index < Units.Count(); index++) {
 								UnitClass* checkunit = Units.Ptr(index);
-								if (checkunit && checkunit->IsActive && !checkunit->IsInLimbo && checkunit.Strength &&
+								if (checkunit && checkunit->IsActive && !checkunit->IsInLimbo && checkunit->Strength &&
 									(*((UnitClass*)checkunit) == UNIT_MCV) &&
 									(object->Owner() == checkunit->Owner()) &&
 									(checkunit->MemoActLike == object->House->ActLike)
@@ -2333,7 +2335,7 @@ bool CellClass::Goodie_Check(FootClass * object, bool check_steel)
 						}
 						if (haveownmcv){
 							int mcvswappick = Random_Pick(0, 1);
-							if (mcvswappic == 0){
+							if (mcvswappick == 0){
 								swapmcv = true;
 							}
 						}
