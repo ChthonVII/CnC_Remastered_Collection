@@ -2709,7 +2709,7 @@ bool UnitClass::Goto_Tiberium(void)
 			/*
 			**	Perform a ring search outward from the center.
 			*/
-            int maxradius = (Map.MapBinaryVersion == MAP_VERSION_MEGA) ? 128 : 64;
+            int maxradius = 128; // Chthon CFE Note: we will revise this if we hit the 16th iteration with no tiberium.
 			for (int radius = 1; radius < maxradius; radius++) {
 				CELL cell = center;
 				CELL bestcell = 0;
@@ -2765,6 +2765,20 @@ bool UnitClass::Goto_Tiberium(void)
 				if (bestcell) {
 					Assign_Destination(::As_Target(bestcell));
 					return(false);
+				}
+				// Chthon CFE Note: If we've run for awhile, let's figure a tighter cap on the radius.
+				// This is still terribly inefficient, but we can't do better without rewriting the order cells are evaluated.
+				if (radius == 16){
+					int cellx = Cell_X(center);
+					int celly = Cell_Y(center);
+					int newradius = cellx - Map.MapCellX + 1; // add 1 to account for < instead of <= in for statement
+					int otherradius = Map.MapCellX + Map.MapCellWidth - cellx; // add 1 (ditto)
+					newradius = (otherradius > newradius) ? otherradius : newradius;
+					otherradius = celly - Map.MapCellY + 1; // add 1 (ditto)
+					newradius = (otherradius > newradius) ? otherradius : newradius;
+					otherradius = Map.MapCellY + Map.MapCellHeight - celly; // add 1 (ditto)
+					newradius = (otherradius > newradius) ? otherradius : newradius;
+					maxradius = (newradius < maxradius) ? newradius : maxradius;
 				}
 			}
 		}
