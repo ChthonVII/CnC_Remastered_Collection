@@ -6417,9 +6417,14 @@ int HouseClass::AI_Unit(void)
 
 	/*
 	**	A computer controlled house will try to build a replacement
-	**	harvester if possible.
+	**	harvester if possible. Never replace harvesters if the game
+	**	is in easy mode.
+	**		CFE Note: Vanilla bugfix - Difficulty was accidentally set check if != DIFF_HARD, when it was supposed to be != DIFF_EASY.
+	**		Was correct in one place but not the other two spots (including this one) with the same harvester build logic. 
+	**		Jump to the others by searching the below phrase:
+	**			CFE Harvester Build Fix
 	*/
-	if (IQ >= Rule.IQHarvester && !IsTiberiumShort && !IsHuman && BQuantity[STRUCT_REFINERY] > UQuantity[UNIT_HARVESTER] && Difficulty != DIFF_HARD) {
+	if (IQ >= Rule.IQHarvester && !IsTiberiumShort && !IsHuman && BQuantity[STRUCT_REFINERY] > UQuantity[UNIT_HARVESTER] && Difficulty != DIFF_EASY) {
 		if (UnitTypeClass::As_Reference(UNIT_HARVESTER).Level <= (unsigned)Control.TechLevel) {
 			BuildUnit = UNIT_HARVESTER;
 			return(TICKS_PER_SECOND);
