@@ -100,6 +100,7 @@ void Populate_CFE_Patch_Config_From_INI(const INIClass& ini)
     GetSetting(ActiveCFEPatchConfig.BuildForbiddenSPCapturables	, "FEATURES", "BUILD_FORBIDDEN_SP_CAPTURABLES");
     GetSetting(ActiveCFEPatchConfig.EnableDistanceCalcFix	, "FEATURES", "DISTANCE_CALC_FIX");
     GetSetting(ActiveCFEPatchConfig.ShroudRemover      , "FEATURES", "SHROUD_REMOVER");  // J_D's thing; thanks to Terra_Ex and screaming_chicken
+    GetSetting(ActiveCFEPatchConfig.DeadBuildingScatterFix      , "FEATURES", "DEAD_BUILDING_SCATTER_FIX");
     
     
 	//Settings

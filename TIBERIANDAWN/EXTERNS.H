@@ -128,6 +128,7 @@ struct CFEPatchConfig
     bool BuildForbiddenSPCapturables = false;
     bool EnableDistanceCalcFix = false;
     bool ShroudRemover = false;
+    bool DeadBuildingScatterFix = false;
     
     bool OverrideAPCReqs = false;
     bool OverrideWarFactoryHP = false;

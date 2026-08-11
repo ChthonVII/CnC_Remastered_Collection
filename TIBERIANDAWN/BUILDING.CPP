@@ -2643,6 +2643,15 @@ void BuildingClass::Drop_Debris(TARGET source)
 					if (i->Unlimbo(Cell_Coord(newcell), DIR_N)) {
 						i->Strength = Random_Pick(5, (int)i->Class->MaxStrength);
 						i->Scatter(0, true);
+						// Chthon CFE Note: Scatter assigns Mission_Move.
+						// But it's getting immediately clobbered.
+						// We need to commence it now before it gets overwritten.
+						// We also need to briefly stun infantry so they can't shoot and must move.
+						// Then they'll start the mission assigned below *after* they finish scattering.
+						if (ActiveCFEPatchConfig.DeadBuildingScatterFix){
+							i->Commence();
+							i->Arm = 5;
+						}
 						if (source != TARGET_NONE && !House->Is_Ally(As_Object(source))) {
 							i->Assign_Mission(MISSION_ATTACK);
 							i->Assign_Target(source);
