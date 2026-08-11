@@ -151,9 +151,9 @@ struct CFEPatchConfig
     int EnableVeterancy = 0;
     int EnableCommandoGuard = 1;
     int SafeSabotage = 0;
-	int InfantryTiberiumAversion = 0;
+    int InfantryTiberiumAversion = 0;
     int BuildingGap = 2;
-	int HarvyQueueJumpCutoff = 4;
+    int HarvyQueueJumpCutoff = 4;
     int HarvyOptimizeUnloadWaitWeight = 13;
     int HarvyOptimizeThrashingCutoff = 5;
     int HarvyOptimizeThrashingNumerator = 2;
@@ -162,11 +162,11 @@ struct CFEPatchConfig
     int HarvyOptimizeCommunalismNumerator = 9;
     int HarvyOptimizeCommunalismDenominator = 4;
     int HarvyOptimizeCommunalismWeight = 29;
-	int TibGrowthScale = 1;
+    int TibGrowthScale = 1;
     int TibResurgeDelay = 7200;
     int TreeVisceroidSpawnMode = 0;
     int MeanerVisceroids = 0;
-	int WallBuildLength = 5;
+    int WallBuildLength = 5;
     int InverseBuildingPreviewMode = 0; // 0=off; 1= MP only; 2 = all game modes
     int SmarterSAMAmmo = 2;
     int SmarterSAMBalanceDelay = 0;
