@@ -2,13 +2,15 @@
 ------------------
 This mod updates the original CFE Patch mod by cfehunter and its RA port by Root-Core to the official 9/24/2020 hotfix patch (supposedly the final official patch) and adds new features.
 
-The current version is 1.8.
+The current version is 1.9 for TD, and 1.8 for RA.
 
 The Tiberian Dawn mod is available on Steam Workshop here: [link](https://steamcommunity.com/sharedfiles/filedetails/?id=2239875646)
 
 The Red Alert mod is available on Steam Workshop here: [link](https://steamcommunity.com/sharedfiles/filedetails/?id=2268301299)
 
 If you don't have Steam (or Steam is misbehaving), you can download the mod directly from Github here: [link](https://github.com/ChthonVII/CnC_Remastered_Collection/releases).
+
+Test builds are also available on github, and can be installed as an independent mod side-by-side with the current release.
 
 # Static Features
 ------------------
@@ -18,6 +20,8 @@ If you don't have Steam (or Steam is misbehaving), you can download the mod dire
 - Incorporates "Jozef's Silver Funpark."
 - Incorporates "Red USSR Flag for all Soviet Barracks."
 - Numerous vanilla bugfixes.
+- Renamed some TD units to better match C&C95 build icons, tooltips, manual, unofficial 1.06 patch.
+- Support for some special tags in custom mission INI files.
 
 # Customizable Features
 ------------------
@@ -66,6 +70,35 @@ The following features can be controlled via the INI file located at "My Documen
 - Building Death Announcements (TD only) -- Implements unfinished building death announcements in TD. Various modes for whether the announcement is generic of faction-based, and who can hear it.
 - Building Capture Announcements (RA only) -- Implements unfinished building capture announcements in RA.
 - Smarter Sonar (RA only) -- If enabled, the sonar ping superweapon only reveals subs unfriendly to the user. (Vanilla behavior reveals friendly subs too.)
+- Version Announce -- The mod's version number will be announced to all human players 5 seconds into each mission/map.
+- INI file tag support for setting scenario numbers for custom missions.
+- Sell Fix Chance -- Caps the odds on each tick that the CPU player will sell a building it can't afford to repair at 15/51. (WW forgot about this bit of code when they made higher scenario numbers for Covert Ops and console missions. They fixed it in RA.)
+- INI file tag support for forcing helicopter reinforcement to CPU players in SP games to be "loaners" that fly off the map when done with their assigned mission(s).
+- INI file tag support for custom dino missions/maps.
+- Smarter Refineries -- Refineries will periodically ask friendly units blocking their bay to scatter while they have a harvester inbound.
+- Smarter Harvesters -- Enables several harvester AI improvements: If a harvester is stuck for a few seconds, it will turn around and back up a cell. Also, a harvester checks if its memorized last harvesting spot is still enterable before assigning that as its destination. If a harvester goes to sleep because there's no tiberium to be found, it will recheck for tiberium once per minute and wake up if it finds some.
+- Burning Tree Fix -- It is possible to burn down certain types of trees, as originally intended. This fixes issues with flame tanks and flame guys believing they can path through these trees even though they can't.
+- Death's Door -- Based on comment in original code for ObjectClass::Take_Damage() and unused supporting code for RESULT_MAJOR. If enabled, in cases where survival is plausible and not balance breaking, fatal damage is reduced to instead leave an object with 1 hp.
+- Nuke Radius Fix -- Fixes bugs so that nuke damage scales with proximity to epicenter as originally intended.
+- Gunboat Bugfix -- If enabled, prevents gunboats from getting fixated on an out-of-range target.
+- Tiberium Resurgence -- After ~7.5 minutes of having trivial or zero tiberium in the 8 adjacent cells, a sporing tiberium tree will unleash a burst of rapid tiberium growth.
+- AI wall shooting -- CPU-controlled units will shoot non-allied walls blocking them from their target, or because they have nothing better to do.
+- Wall crushing - Heavy units can crush lightweight walls in TD, just like in RA.
+- Advanced Wall Ownership -- Walls segments can flip ownership depending on who owns the nearby buildings.
+- Hunt Fix -- Fixes the AI for CPU-controlled units in Mission_Hunt so that, instead of picking a target from any enemy on the map, they prefer in-range enemies, followed by walls blocking them from in-the-area enemies, followed by in-the-area enemies, followed by adjacent walls, finally followed by any enemy on the map.
+- Legacy Render Auto Disable -- Force disable legacy rendering when loading a saved skirmish to work around GlyphX crash bug.
+- Quieter Airstrips -- Silence duplicative voice announcements when airstrip produces units.
+- Search Radius Fix -- Fix a trio of vanilla search radius bugs.
+- Multiplayer Civilian Sight -- Gives sight radius 1 to the civilian units you can get as crew from silos/refineries/harvesters in multiplayer.
+- Distance Calculation Fix -- Computes distances correctly. (The biggest practical impact is that some units can shoot a little further at some diagonals.)
+- Forced MCV Engineer Spawn --Forces (non-captured) Con Yard to always spawn 1x engineer when sold.
+- Build Forbidden SP Capturables -- Allows building Adv. Comm, Temple, and Obelisk via captured CY in single-player.
+- Smarter CPU Commandos -- Makea AI-controlled commandos radically smarter.
+- Split Buildables -- Splits helipads and MCVs into GDI and Nod versions.
+- Dead Building Scatter Fix -- Infantry exiting destroyed buildings complete their scatter action before undertaking a mission (e.g., attacking whoever destroyed the building), as originally intended.
+- Shroud Remover. Removes shroud. Intended as a mission design aid.
+- JD's Extra Adjustments. Directly copies the "extra adjustments" balance changes from john_drak's PRP.
+
 
 # LAN Multiplayer
 ------------------
@@ -100,7 +133,7 @@ As per original CFE Patch notes:
 
 Root-Core -- original RA port of CFE patch.
 
-screaming_chicken -- smarter aircraft fly-in tweak, inspiration for smarter SAMs, several bugfixes.
+screaming_chicken -- smarter aircraft fly-in tweak, inspiration for smarter SAMs, several bugfixes, several engineer fixes, inspiration for smarter harvesters, inspiration for hunt fix.
 
 eksmad -- "Red USSR Flag for all Soviet Barracks"
 
@@ -121,6 +154,8 @@ ChthonVII -- Merge official patches since cfehunter and Root-Core abandoned proj
 Noddynod443 -- LAN multiplayer testing.
 
 Nyerguds -- "A most remarkable Metasequoia Glyptostroboides, " explanation of several little-known bugs from legacy C&C.
+
+john_drak -- AI wall shooting, JD's extra balance adjustments, shroud remover.
 
 
 # A Reminder About the GPL
